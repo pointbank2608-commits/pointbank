@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useGameWorkspace } from '../../context/GameWorkspaceContext';
 import { gameClock } from '../../lib/gameClock';
 import { shuffled } from '../../lib/storybook';
-import { ADVENTURE_NAMES, adventureErrors, correctionAccepted, detectiveSentence, sentenceOrderCorrect, targetKey, targetPoint, wordKey, type AdventureConfig, type AdventureRound, type AdventureType } from '../../lib/adventureGames';
+import { ADVENTURE_NAMES, adventureErrors, correctionAccepted, detectiveGaps, detectiveSentence, sentenceOrderCorrect, targetKey, targetPoint, wordKey, type AdventureConfig, type AdventureRound, type AdventureType } from '../../lib/adventureGames';
 import { useAdventureEngine, type AdventureEngine } from '../../lib/useAdventureEngine';
 import ArrangePieces from './ArrangePieces';
 import { FishArt, FishingTackle, type FishingCast } from './FishingArt';
@@ -35,7 +35,7 @@ export default function AdventureGame({type,config:c,onRestart,preparedRounds}:{
       {e.phase==='ready'&&!workspace&&<div className="ad-overlay"><h2>{ADVENTURE_NAMES[type][1]}</h2><p>클릭·터치·키보드로 함께 배워요.</p><button className="ad-primary" onClick={e.start}>게임 시작</button></div>}
       {e.phase==='review'&&<div className="ad-overlay ad-review" role="status"><span className="ad-medal">★</span><h2>{type==='grammardetective'?'사건 해결!':'잘했어요!'}</h2><p className="ad-learned">{e.records.at(-1)?.answer}</p>{e.current.kind==='case'&&<p>{e.current.item.explanation}</p>}<Voice text={e.records.at(-1)?.answer||''}/><button className="ad-primary" onClick={e.next}>{e.index+1===e.total?(type==='sentencerocket'?'로켓 발사':'결과 보기'):'다음 문제 →'}</button></div>}
       {e.phase==='finale'&&<RocketFinale finish={e.finish} sound={e.sound}/>}
-      {e.phase==='finished'&&<div className="ad-overlay ad-results"><span className="ad-medal">🏆</span><h2>모험 완료!</h2><p>{e.total}개 미션 완료 · 다시 도전한 횟수 {e.mistakes}회</p><ol>{e.records.map((r,i)=><li key={i}>{r.answer}</li>)}</ol><button className="ad-primary" onClick={onRestart}>다시 플레이</button></div>}
+      {e.phase==='finished'&&<div className="ad-overlay ad-results"><span className="ad-medal">🏆</span><h2>모험 완료!</h2><p>{e.total}개 미션 완료 · 다시 도전한 횟수 {e.mistakes}회</p>{type==='grammardetective'&&<p>한 번에 오류를 찾은 문제 {e.records.filter(record=>record.detective?.foundOnFirstTry).length}개 · 한 번에 고친 문제 {e.records.filter(record=>record.detective?.repairedOnFirstTry).length}개</p>}<ol>{e.records.map((r,i)=><li key={i}>{r.answer}</li>)}</ol><button className="ad-primary" onClick={onRestart}>다시 플레이</button></div>}
       {e.expired&&<div className="ad-overlay"><h2>잠깐 쉬었다 다시 도전해요!</h2><p>아직 같은 문제예요. 단어를 다시 살펴봐요.</p><button className="ad-primary" onClick={e.retry}>같은 문제 다시 도전</button></div>}
       {e.phase==='playing'&&<p className={`ad-notice ${e.reaction}`} role="status" aria-live="polite">{e.notice||'천천히 살펴보고 도전해요.'}</p>}
     </>}
@@ -85,13 +85,82 @@ function Sentence({type,e,r}:{type:AdventureType;e:AdventureEngine;r:Extract<Adv
     <button className="ad-primary" disabled={e.busy} onClick={()=>e.judge(sentenceOrderCorrect(r.sentence,order),'문장 완성',r.sentence.text,{duration:1800})}>{train?'출발! 문장 확인':'연료 채우기 · 문장 확인'}</button></>;
 }
 function Detective({c,e,r}:{c:AdventureConfig;e:AdventureEngine;r:Extract<AdventureRound,{kind:'case'}>}){
-  const item=r.item;const [selected,setSelected]=useState<string|null>(null),[edits,setEdits]=useState<Record<string,string>>({}),[typed,setTyped]=useState('');
-  const ranges=[...item.errors].sort((a,b)=>a.start-b.start);const active=ranges.find(x=>x.id===selected);const nodes=[];let last=0;
-  function chooseRange(id:string|null){if(e.busy)return;if(!id){e.judge(false,'오류 찾기',item.correct);return;}setSelected(id);e.sound('pick');}
-  for(const range of ranges){if(range.start>last)nodes.push(<button key={`plain${last}`} onClick={()=>chooseRange(null)}>{item.incorrect.slice(last,range.start)}</button>);nodes.push(<button key={range.id} className={`${selected===range.id?'is-selected':''} ${edits[range.id]?'is-fixed':''}`} onClick={()=>chooseRange(range.id)} disabled={e.busy||!!edits[range.id]}>{edits[range.id]||item.incorrect.slice(range.start,range.end)}</button>);last=range.end;}
-  if(last<item.incorrect.length)nodes.push(<button key="tail" onClick={()=>chooseRange(null)}>{item.incorrect.slice(last)}</button>);
-  function repair(value:string){if(!active)return;const correct=value===active.replacement;if(!correct){e.judge(false,item.incorrect,item.correct);return;}const next={...edits,[active.id]:value};if(Object.keys(next).length===ranges.length){if(e.judge(true,item.incorrect,detectiveSentence(item,next),{duration:1700}))setEdits(next);}else{setEdits(next);setSelected(null);e.sound('place');}}
-  return <><div className="ad-prompt">🔎 {c.detectiveMode==='choice'?'틀린 부분을 찾고, 올바른 표현을 골라요.':'틀린 부분을 살펴보고, 바른 문장 전체를 써요.'}</div><img className={`ad-detective-character ${e.reaction}`} src="/skins/adventure/detective-sprite.webp" alt="강아지 탐정"/><div className={`ad-case-file ${e.reaction==='correct'?'ad-solved':''}`}><small>CASE #{e.index+1} · 오류 {ranges.length}개</small><div className="ad-evidence">{nodes}</div>{c.detectiveMode==='choice'?active&&!edits[active.id]&&<div className="ad-choices">{active.choices.map(v=><button key={v} disabled={e.busy} onClick={()=>repair(v)}>{v}</button>)}</div>:<form onSubmit={event=>{event.preventDefault();e.judge(correctionAccepted(typed,item,c),item.incorrect,item.correct);}}><label>수정한 전체 문장<input autoComplete="off" value={typed} onChange={ev=>setTyped(ev.target.value)} disabled={e.busy}/></label><button className="ad-primary" disabled={e.busy||!typed.trim()}>사건 해결</button></form>}{e.reaction==='correct'&&<strong className="ad-stamp">SOLVED ✓</strong>}</div><p className="ad-control-help">같은 단어가 여러 번 나오면 각각의 위치를 확인해요.</p></>;
+  const item=r.item;
+  const [selected,setSelected]=useState<string|null>(null);
+  const [edits,setEdits]=useState<Record<string,string>>({});
+  const [typed,setTyped]=useState('');
+  const missedLocation=useRef(false);
+  const missedRepair=useRef(false);
+  const detectiveResult=()=>({foundOnFirstTry:!missedLocation.current,repairedOnFirstTry:!missedRepair.current});
+  const ranges=[...item.errors].sort((a,b)=>a.start-b.start);
+  const active=ranges.find(range=>range.id===selected);
+  const tokens=[...item.incorrect.matchAll(/\S+/gu)];
+  const gaps=new Set(detectiveGaps(item.incorrect));
+  function chooseRange(id?:string){
+    if(e.busy||e.paused||e.expired)return;
+    if(!id){
+      if(e.judge(false,'오류 찾기',item.correct))missedLocation.current=true;
+      setSelected(null);
+      return;
+    }
+    setSelected(id);
+    e.sound('pick');
+  }
+  function repair(value:string){
+    if(!active||Object.hasOwn(edits,active.id)||e.busy||e.paused||e.expired)return;
+    const next={...edits,[active.id]:value};
+    const sentence=detectiveSentence(item,next);
+    if(value!==active.replacement && !(ranges.length===1&&correctionAccepted(sentence,item,c))){
+      if(e.judge(false,item.incorrect,item.correct))missedRepair.current=true;
+      return;
+    }
+    if(Object.keys(next).length===ranges.length){
+      if(e.judge(true,item.incorrect,sentence,{duration:1700,detective:detectiveResult()}))setEdits(next);
+    }else{setEdits(next);setSelected(null);e.sound('place');}
+  }
+  return <>
+    <div className="ad-prompt">🔎 {item.context?'상황을 읽고 문장을 고쳐요.':'틀린 단어나 빠진 자리를 찾고 고쳐요.'}</div>
+    <img className={`ad-detective-character ${e.reaction}`} src="/skins/adventure/detective-sprite.webp" alt="강아지 탐정"/>
+    <div className={`ad-case-file ${e.reaction==='correct'?'ad-solved':''}`}>
+      <small>CASE #{e.index+1} · 오류 {ranges.length}개</small>
+      {item.context&&<p className="ad-detective-context">상황 · {item.context}</p>}
+      <div className="ad-evidence ad-detective-tokens" lang="en">
+        {tokens.map((token,i)=>{
+          const start=token.index!;
+          const end=start+token[0].length;
+          const word=token[0].replace(/[.,!?;:]+$/u,'')||token[0];
+          const punctuation=token[0].slice(word.length);
+          const range=ranges.find(error=>error.start<error.end&&error.start<end&&error.end>start);
+          const insertion=gaps.has(start)?ranges.find(error=>error.start===start&&error.end===start):undefined;
+          const fixed=range&&Object.hasOwn(edits,range.id);
+          const inserted=insertion&&Object.hasOwn(edits,insertion.id);
+          const firstFixed=fixed&&!tokens.slice(0,i).some(previous=>previous.index!+previous[0].length>range.start);
+          const fixedWord=firstFixed?edits[range.id].trim():'';
+          return <span className="ad-detective-token" key={start}>
+            <button type="button" className={`ad-detective-gap ${inserted?'is-fixed':''} ${insertion&&selected===insertion.id?'is-selected':''}`}
+              aria-label={`${word} 앞에 빠진 말 선택`} disabled={e.busy||inserted}
+              onClick={()=>chooseRange(insertion?.id)}>{inserted?edits[insertion.id].trim():'·'}</button>
+            {fixed?<span className="is-fixed">{fixedWord}{punctuation&&!fixedWord.endsWith(punctuation)?punctuation:''}</span>:
+              <><button type="button" className={range&&selected===range.id?'is-selected':''} disabled={e.busy} onClick={()=>chooseRange(range?.id)}>{word}</button>{punctuation}</>}
+          </span>;
+        })}
+      </div>
+      {active&&!Object.hasOwn(edits,active.id)&&(c.detectiveMode==='choice'?
+        <div className="ad-choices">{active.choices.map(value=><button type="button" key={value} disabled={e.busy} onClick={()=>repair(value)}>
+          {value.trim()||(active.start===active.end?'그대로 두기':'빼기')}
+        </button>)}</div>:
+        <form onSubmit={event=>{
+          event.preventDefault();
+          const correct=correctionAccepted(typed,item,c);
+          if(e.judge(correct,item.incorrect,correct?typed.trim():item.correct,{detective:detectiveResult()})&&!correct)missedRepair.current=true;
+        }}>
+          <label>수정한 전체 문장<input autoComplete="off" value={typed} onChange={event=>setTyped(event.target.value)} disabled={e.busy}/></label>
+          <button className="ad-primary" disabled={e.busy||!typed.trim()}>사건 해결</button>
+        </form>)}
+      {e.reaction==='correct'&&<strong className="ad-stamp">SOLVED ✓</strong>}
+    </div>
+    <p className="ad-control-help">단어를 누르거나, 빠진 말이 있으면 단어 앞의 점을 누르세요.</p>
+  </>;
 }
 const icons={tree:'🌳',palm:'🌴',house:'🏠',river:'💧',rock:'🪨',chest:'🧰',cave:'⛰️',bridge:'🌉'};
 function Hunt({c,e,r}:{c:AdventureConfig;e:AdventureEngine;r:Extract<AdventureRound,{kind:'clue'}>}){

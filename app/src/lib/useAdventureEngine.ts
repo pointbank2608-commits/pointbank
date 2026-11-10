@@ -4,7 +4,8 @@ import { useMiniGameSfx } from './miniGameSfx';
 import { adventureRounds, adventureSeconds, type AdventureConfig, type AdventureRound, type AdventureType } from './adventureGames';
 
 export type AdventurePhase = 'ready' | 'playing' | 'review' | 'finale' | 'finished';
-export interface LearningRecord { prompt: string; answer: string; mistakes: number }
+interface DetectiveResult { foundOnFirstTry: boolean; repairedOnFirstTry: boolean }
+export interface LearningRecord { prompt: string; answer: string; mistakes: number; detective?: DetectiveResult }
 export function useAdventureEngine(type: AdventureType,c:AdventureConfig,externalPaused:boolean,preparedRounds?: AdventureRound[]) {
   const [rounds]=useState(()=>preparedRounds ?? adventureRounds(type,c));
   const [phase,setPhase]=useState<AdventurePhase>('ready');
@@ -42,7 +43,7 @@ export function useAdventureEngine(type: AdventureType,c:AdventureConfig,externa
   const resetTime=useCallback(()=>{const seconds=adventureSeconds(type,c);remainingRef.current=seconds;setRemaining(seconds);setExpired(false);},[type,c]);
   const start=useCallback(()=>{if(rounds.length){resetTime();setPhase('playing');sounds.play('start');}},[rounds.length,resetTime,sounds]);
   useEffect(()=>{if(expired)sounds.play('timeUp');},[expired,sounds]);
-  function judge(correct:boolean,prompt:string,answer:string,options:{complete?:boolean;duration?:number}={}) {
+  function judge(correct:boolean,prompt:string,answer:string,options:{complete?:boolean;duration?:number;detective?:DetectiveResult}={}) {
     if(lock.current||paused||expired||phase!=='playing')return false;
     lock.current=true;setBusy(true);setReaction(correct?'correct':'wrong');
     setNotice(correct?answer:'괜찮아요! 다시 살펴보고 도전해요.');
@@ -52,7 +53,7 @@ export function useAdventureEngine(type: AdventureType,c:AdventureConfig,externa
     }else sounds.play(correct?(type==='treasurehunt'&&index+1===rounds.length?'treasure':'correct'):'wrong');
     const complete=options.complete!==false;
     timer.current=gameClock.setTimeout(()=>{
-      if(correct&&complete){setRecords(old=>[...old,{prompt,answer,mistakes:roundMistakes.current}]);setPhase('review');}
+      if(correct&&complete){setRecords(old=>[...old,{prompt,answer,mistakes:roundMistakes.current,detective:options.detective}]);setPhase('review');}
       else setReaction('idle');
       setBusy(false);lock.current=false;
     },options.duration ?? (correct?1600:800));

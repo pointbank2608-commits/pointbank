@@ -12,7 +12,7 @@ export const ADVENTURE_NAMES: Record<AdventureType, [string, string]> = {
 export interface AdventureWord { id: string; word: string; meaning: string; tags: string[] }
 export interface AdventureSentence { id: string; text: string; tokens: string[] }
 export interface DetectiveError { id: string; start: number; end: number; replacement: string; choices: string[] }
-export interface DetectiveCase { id: string; incorrect: string; correct: string; errors: DetectiveError[]; accepted: string[]; explanation: string }
+export interface DetectiveCase { id: string; incorrect: string; correct: string; errors: DetectiveError[]; accepted: string[]; explanation: string; context?: string; rule?: string }
 export const PLACE_ICONS = ['tree', 'palm', 'house', 'river', 'rock', 'chest', 'cave', 'bridge'] as const;
 export interface IslandPlace { id: string; name: string; icon: typeof PLACE_ICONS[number]; x: number; y: number }
 export const RELATIONS = ['at', 'under', 'above', 'left', 'right', 'behind'] as const;
@@ -37,6 +37,7 @@ export interface AdventureConfig {
   shuffle: boolean;
   listening: boolean;
   detectiveMode: 'choice' | 'type';
+  detectiveDraft?: { sentences: string; rules: string[] };
   caseSensitive: boolean;
   punctuationSensitive: boolean;
   simpleClaw: boolean;
@@ -131,8 +132,11 @@ export function adventureErrors(type: AdventureType,c: AdventureConfig): string[
       }
       const ranges=[...item.errors].sort((a,b)=>a.start-b.start);
       if(new Set(ranges.map(r=>r.id)).size!==ranges.length)out.push(`${i+1}번: 오류 식별자가 중복돼요. 오류 범위를 다시 지정하세요.`);
-      if(c.detectiveMode==='choice'&&ranges.some(r=>r.choices.some(v=>!v.trim())))out.push(`${i+1}번: 빈 선택지를 지우거나 채워 주세요.`);
-      if(!item.incorrect.trim()||!item.correct.trim()||!ranges.length||ranges.some((e,j)=>!Number.isInteger(e.start)||!Number.isInteger(e.end)||e.start<0||e.end>item.incorrect.length||e.start>=e.end||!e.replacement.trim()||(j>0&&ranges[j-1].end>e.start)||(c.detectiveMode==='choice'&&(e.choices.length<2||!e.choices.includes(e.replacement)||new Set(e.choices.map(normalizeStory)).size!==e.choices.length))))out.push(`${i+1}번: 오류 범위와 정답·수정 선택지를 확인하세요. 범위는 겹칠 수 없어요.`);
+      if(!ranges.length||ranges.some((e,j)=>!Number.isInteger(e.start)||!Number.isInteger(e.end)||e.start<0||e.end>item.incorrect.length||e.start>e.end||
+        (e.start===e.end&&(!e.replacement.trim()||!detectiveGaps(item.incorrect).includes(e.start)))||
+        item.incorrect.slice(e.start,e.end)===e.replacement||
+        (j>0&&(ranges[j-1].end>e.start||ranges[j-1].start===e.start))||
+        (c.detectiveMode==='choice'&&(e.choices.length<2||!e.choices.includes(e.replacement)||new Set(e.choices.map(normalizeStory)).size!==e.choices.length))))out.push(`${i+1}번: 오류 범위와 정답·수정 선택지를 확인하세요. 범위는 겹칠 수 없어요.`);
       const repaired=detectiveSentence(item,Object.fromEntries(ranges.map(e=>[e.id,e.replacement])));
       if(normalizeStory(repaired)!==normalizeStory(item.correct))out.push(`${i+1}번: 지정한 범위를 고친 결과가 전체 정답 문장과 일치하지 않아요.`);
     });
@@ -166,9 +170,16 @@ export function adventureRounds(type: AdventureType,c: AdventureConfig): Adventu
   else if(type==='grammardetective')rows=c.cases.map(item=>({kind:'case',id:item.id,item}));
   else if(type==='treasurehunt')rows=c.clues.map(clue=>({kind:'clue',id:clue.id,clue}));
   else rows=c.missions.map(mission=>({kind:'mission',id:mission.id,mission}));
+  if(type==='grammardetective'&&c.detectiveDraft){
+    const deck=rows.slice(0,c.count);
+    return c.shuffle?shuffled(deck):deck;
+  }
   return (c.shuffle?shuffled(rows):rows).slice(0,c.count);
 }
 export function sentencePieces(sentence: AdventureSentence) { return sentence.tokens.map((text,index)=>({id:`${sentence.id}:${index}`,text,index})); }
+export function detectiveGaps(sentence: string): number[] {
+  return Array.from(sentence.matchAll(/\S+/gu), token => token.index!);
+}
 export function sentenceOrderCorrect(sentence: AdventureSentence,ids:string[]):boolean {
   const pieces=sentencePieces(sentence),byId=new Map(pieces.map(p=>[p.id,p.text]));
   return ids.length===pieces.length&&new Set(ids).size===pieces.length&&normalizeStory(ids.map(id=>byId.get(id) || '').join(' '))===normalizeStory(sentence.text);

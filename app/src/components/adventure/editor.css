@@ -2,3 +2,13 @@
 
 /* Editor defaults yield to shared controls with their own background/text pair. */
 @layer components{.ad-editor button{background:#f2f7fb}}
+.ad-detective-rule-set { border: 1px solid #ccdae9; border-radius: .75rem; padding: .75rem; }
+.ad-detective-rule-actions, .ad-detective-rules, .ad-detective-counts { display: flex; gap: .5rem; flex-wrap: wrap; }
+.ad-detective-rules label { display: inline-flex; flex: 0 1 auto; flex-direction: row; align-items: center; gap: .35rem; min-height: 2.75rem; padding: .25rem .65rem; border: 1px solid #dce5ee; border-radius: .6rem; }
+.ad-detective-rules label:has(:checked) { border-color: #80b2f0; background: #edf5ff; }
+.ad-detective-preview { margin-top: .75rem; padding: .85rem; background: #f3f7fc; border-radius: .75rem; }
+.ad-detective-counts { list-style: none; padding: 0; }
+.ad-detective-counts li { background: white; border-radius: .5rem; padding: .4rem .6rem; }
+.ad-detective-counts small { display: block; }
+.ad-detective-review-list { max-height: 18rem; overflow-y: auto; padding-left: 1.5rem; overflow-wrap: anywhere; }
+.ad-detective-review-list li + li { margin-top: .45rem; }

@@ -104,3 +104,10 @@
 @media (prefers-reduced-motion: reduce) {
   .ad-grammardetective .ad-case-file, .ad-grammardetective .ad-detective-character { animation: none; }
 }
+.ad-detective-context { margin: .5rem 0; color: #324a62; }
+.ad-grammardetective .ad-detective-tokens { display: flex; flex-wrap: wrap; justify-content: center; gap: .18em 0; }
+.ad-detective-token { display: inline-flex; align-items: baseline; max-width: 100%; overflow-wrap: anywhere; }
+.ad-grammardetective .ad-detective-tokens button { margin: 0; padding: .08em .12em; }
+.ad-grammardetective .ad-detective-tokens button.ad-detective-gap { border: 0; background: transparent; min-width: 1em; color: #655846; }
+.ad-grammardetective .ad-detective-tokens button.ad-detective-gap.is-selected { background: #ffdd9b; }
+.ad-detective-tokens .is-fixed { color: #176748; }

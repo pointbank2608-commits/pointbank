@@ -1,5 +1,6 @@
 import GameCreateButton from '../components/GameCreateButton';
 import GameCatalogNav from '../components/GameCatalogNav';
+import {GameFavoriteButton, useGameFavorites} from '../components/GameFavoriteButton';
 import { GAME_BROWSE_GROUPS, gameBrowseGroups, type GameBrowseGroup } from '../lib/gameBrowse';
 import { prepareClassroomGame, classroomGameRequirement } from '../lib/gameWorkspace';
 import { ownedQuickSource, type QuickActivitySource } from '../lib/quickActivity';
@@ -15,7 +16,7 @@ import { GAME_CATALOG, isFreeTierGame, type GameCatalogEntry } from '../lib/game
 import { PHONICS_GAMES, gameAvailability, gameName, phonicsGameUnits } from '../lib/phonicsGames';
 import { gameVisual, worldBackground } from '../lib/phonicsGameVisuals';
 
-type ViewMode = 'library' | 'all';
+type ViewMode = 'library' | 'all' | 'favorites';
 
 const phonicsUnits = phonicsGameUnits();
 const phonicsCards = PHONICS_GAMES.map(game => ({
@@ -31,6 +32,7 @@ export default function GamesPage() {
   // Main navigation always opens the complete catalogue. Saved games remain an explicit tab.
   const [viewMode, setViewMode] = useState<ViewMode>('all');
   const [query, setQuery] = useState('');
+  const favorites = useGameFavorites();
   const [libraryError, setLibraryError] = useState(false);
   const [retry, setRetry] = useState(0);
 
@@ -65,17 +67,18 @@ export default function GamesPage() {
 
   const search = query.trim().toLocaleLowerCase();
   const en = i18n.resolvedLanguage?.startsWith('en') ?? false;
-  const byCategory = GAME_CATALOG.filter((g) =>
+  const favoritesOnly = viewMode === 'favorites';
+  const generalPool = GAME_CATALOG.filter(g => (!showLibrary || librarySet.has(g.type)) && (!favoritesOnly || favorites.ids.has(g.type)));
+  const phonicsPool = phonicsCards.filter(({game}) => !favoritesOnly || favorites.ids.has(`phonics:${game.id}`));
+  const games = generalPool.filter((g) =>
     (activeCategory === 'all' || gameBrowseGroups(g).includes(activeCategory)) &&
     `${t(g.nameKey)} ${t(g.descKey)}`.toLocaleLowerCase().includes(search));
-  const games = showLibrary ? byCategory.filter((g) => librarySet.has(g.type)) : byCategory;
   const phonics = !showLibrary && (activeCategory === 'all' || activeCategory === 'phonics')
-    ? phonicsCards.filter(({game}) => `${game.ko} ${game.en} ${game.goal.join(' ')}`.toLocaleLowerCase().includes(search))
+    ? phonicsPool.filter(({game}) => `${game.ko} ${game.en} ${game.goal.join(' ')}`.toLocaleLowerCase().includes(search))
     : [];
-  const pool = showLibrary ? GAME_CATALOG.filter((g) => librarySet.has(g.type)) : GAME_CATALOG;
   const categoryCount = (category: GameBrowseGroup) => category === 'phonics'
-    ? showLibrary ? 0 : phonicsCards.length
-    : pool.filter(game => gameBrowseGroups(game).includes(category)).length;
+    ? showLibrary ? 0 : phonicsPool.length
+    : generalPool.filter(game => gameBrowseGroups(game).includes(category)).length;
 
   const libraryEmpty = showLibrary && libraryLoaded && (libraryTypes?.length ?? 0) === 0;
 
@@ -150,6 +153,11 @@ export default function GamesPage() {
       ) : (
         <>
           <div className="flex flex-wrap gap-2" role="group" aria-label={t('gameBrowse.categories')}>
+            {favorites.enabled && <button type="button" aria-pressed={favoritesOnly}
+              className="min-h-11 rounded-full border border-outline-variant/60 bg-white px-4 font-semibold text-deep-navy aria-pressed:border-warm-yellow aria-pressed:bg-warm-yellow"
+              onClick={() => {setViewMode(favoritesOnly?'all':'favorites');setActiveCategory('all');}}>
+              {en?'★ Favorites':'★ 즐겨찾기'} {favorites.ids.size}
+            </button>}
             <button
               type="button"
               onClick={() => setActiveCategory('all')}
@@ -180,22 +188,25 @@ export default function GamesPage() {
           </div>
 
           {games.length === 0 && phonics.length === 0 && <div className="rounded-xl bg-surface-container-lowest p-8 text-center">
-            <p>{t('classroomUx.noGames')}</p>
+            <p>{favoritesOnly && favorites.ids.size===0 ? (en?'Tap a star on a game card to find it here.':'게임 카드의 별을 누르면 여기에 모아 볼 수 있어요.') : t('classroomUx.noGames')}</p>
             <button type="button" onClick={() => { setQuery(''); setActiveCategory('all'); }} className="mt-3 min-h-11 rounded-lg px-4 text-primary underline">{t('classroomUx.clearFilters')}</button>
           </div>}
           {(games.length > 0 || phonics.length > 0) && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {games.map((g) => (
-                <GameCard key={g.type} g={g} locked={isStaff && !hasFullAccess && !isFreeTierGame(g.type)} />
+                <div key={g.type} className="relative grid">
+                  <GameCard g={g} locked={isStaff && !hasFullAccess && !isFreeTierGame(g.type)} />
+                  {favorites.enabled&&<GameFavoriteButton name={t(g.nameKey)} selected={favorites.ids.has(g.type)} onToggle={()=>favorites.toggle(g.type)}/>}
+                </div>
               ))}
               {phonics.map(({game, unit}) => (
-                <Link key={game.id} to={`/phonics-games/${game.id}${unit ? `?unit=${encodeURIComponent(unit.id)}` : ''}`} state={{phonicsQuickPlay:true}} className="group overflow-hidden rounded-xl bg-surface-container-lowest shadow-card transition hover:-translate-y-1 hover:shadow-lg">
+                <div key={game.id} className="relative grid"><Link to={`/phonics-games/${game.id}${unit ? `?unit=${encodeURIComponent(unit.id)}` : ''}`} state={{phonicsQuickPlay:true}} className="group overflow-hidden rounded-xl bg-surface-container-lowest shadow-card transition hover:-translate-y-1 hover:shadow-lg">
                   <img className="h-36 w-full object-cover" loading="lazy" src={worldBackground(gameVisual(game).world)} alt="" />
                   <div className="p-5">
                     <h3 className="font-title-md text-title-md text-on-surface">{gameName(game, en)}</h3>
                     <p className="font-body-md text-body-md text-on-surface-variant">{game.goal[en ? 1 : 0]}</p>
                   </div>
-                </Link>
+                </Link>{favorites.enabled&&<GameFavoriteButton name={gameName(game,en)} selected={favorites.ids.has(`phonics:${game.id}`)} onToggle={()=>favorites.toggle(`phonics:${game.id}`)}/>}</div>
               ))}
             </div>
           )}
@@ -241,7 +252,7 @@ function GameCard({ g, locked }: { g: GameCatalogEntry; locked: boolean }) {
           <span className="material-symbols-outlined">{g.icon}</span>
         </div>
         {locked && (
-          <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-inverse-surface/70 backdrop-blur-sm flex items-center justify-center">
+          <div className="absolute top-3 right-16 w-7 h-7 rounded-full bg-inverse-surface/70 backdrop-blur-sm flex items-center justify-center">
             <span className="material-symbols-outlined text-[16px] text-inverse-on-surface">lock</span>
           </div>
         )}

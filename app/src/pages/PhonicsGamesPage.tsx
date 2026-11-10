@@ -15,6 +15,7 @@ import AccessibleDialog from '../components/AccessibleDialog';
 import GameStartCard from '../components/GameStartCard';
 import GameReportButton from '../components/GameReportButton';
 import GameCatalogNav from '../components/GameCatalogNav';
+import {GameFavoriteButton, useGameFavorites} from '../components/GameFavoriteButton';
 import {DragBox,DragButton} from '../components/PhonicsDrag';
 import {hasPhoneme,playPhoneme} from '../lib/phonicsPhonemes';
 import {clockSeconds,formFor,twistOf,type PlayForm} from '../lib/phonicsTwists';
@@ -69,6 +70,8 @@ export default function PhonicsGamesPage(){
  const game=PHONICS_GAMES.find(g=>g.id===gameId);
  const unit=requested??(game&&!rawUnit?units.find(candidate=>!gameAvailability(game,candidate)):undefined)??units[0];
  const [query,setQuery]=useState('');const [rounds,setRounds]=useState(6);
+ const favorites=useGameFavorites();
+ const [favoritesOnly,setFavoritesOnly]=useState(false);
  const entryKey=`${location.pathname}:${location.key}:${unit.id}`;
  const [startedEntry,setStartedEntry]=useState<string|null>(null);
  const playing=startedEntry===entryKey;
@@ -86,6 +89,7 @@ export default function PhonicsGamesPage(){
  const search = query.trim().toLocaleLowerCase();
  const candidates = PHONICS_GAMES.filter(candidate =>
    candidate.stages.includes(unit.step) &&
+   (!favoritesOnly || favorites.ids.has(`phonics:${candidate.id}`)) &&
    (world === 'all' || gameVisual(candidate).world === world) &&
    `${candidate.ko} ${candidate.en} ${candidate.goal.join(' ')}`.toLocaleLowerCase().includes(search)
  );
@@ -139,6 +143,8 @@ export default function PhonicsGamesPage(){
       <input type="search" value={query} onChange={e => setQuery(e.target.value)} className="w-full px-4" />
     </label>
     <div className="flex flex-wrap gap-2" role="group" aria-label={l(en, '놀이 세계', 'Play worlds')}>
+      {favorites.enabled&&<button className={catalogChip} type="button" aria-pressed={favoritesOnly}
+        onClick={()=>setFavoritesOnly(!favoritesOnly)}>{l(en,'★ 즐겨찾기','★ Favorites')}</button>}
       <button className={catalogChip} type="button" aria-pressed={world === 'all'} onClick={() => setWorld('all')}>
         {l(en, '모든 세계', 'All worlds')}
       </button>
@@ -154,7 +160,7 @@ export default function PhonicsGamesPage(){
           const blocked = gameAvailability(candidate, unit, en);
           const visual = gameVisual(candidate);
           return (
-            <Link key={candidate.id} data-game-card={candidate.id} to={`/phonics-games/${candidate.id}?unit=${encodeURIComponent(unit.id)}`}
+            <div key={candidate.id} className="relative grid"><Link data-game-card={candidate.id} to={`/phonics-games/${candidate.id}?unit=${encodeURIComponent(unit.id)}`}
               className="group overflow-hidden rounded-xl bg-surface-container-lowest shadow-card transition motion-safe:hover:-translate-y-1 hover:shadow-lg">
               <div className="pg-catalog-cover relative h-36 overflow-hidden">
                 <PhonicsGameCover game={candidate} />
@@ -170,7 +176,7 @@ export default function PhonicsGamesPage(){
                 </span>
                 {blocked && <p className="pg-reason mt-2">{blocked}</p>}
               </div>
-            </Link>
+            </Link>{favorites.enabled&&<GameFavoriteButton name={gameName(candidate,en)} selected={favorites.ids.has(`phonics:${candidate.id}`)} onToggle={()=>favorites.toggle(`phonics:${candidate.id}`)}/>}</div>
           );
         })}
       </div>
