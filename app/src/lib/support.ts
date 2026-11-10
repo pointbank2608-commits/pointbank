@@ -115,26 +115,32 @@ function lastPageBeforeHelp(): string {
   return window.location.href;
 }
 
-export async function createTicket(params: {
+export async function openTicket(params: {
   category: TicketCategory;
   subject: string;
-  body: string;
-  attachmentPath: string | null;
   attachedLessonId?: string | null;
+  pageUrl?: string;
 }): Promise<SupportTicket> {
   const { data, error } = await supabase
     .from('support_tickets')
     .insert({
       category: params.category,
       subject: params.subject,
-      page_url: lastPageBeforeHelp(),
+      page_url: params.pageUrl ?? lastPageBeforeHelp(),
       user_agent: navigator.userAgent.slice(0, 400),
       ...(params.attachedLessonId ? { attached_lesson_id: params.attachedLessonId } : {}),
     })
     .select('*')
     .single();
   if (error) throw error;
-  const ticket = data as SupportTicket;
+  return data as SupportTicket;
+}
+
+export async function createTicket(params: Parameters<typeof openTicket>[0] & {
+  body: string;
+  attachmentPath: string | null;
+}): Promise<SupportTicket> {
+  const ticket = await openTicket(params);
   await sendTicketMessage(ticket.id, 'user', params.body, params.attachmentPath);
   return ticket;
 }

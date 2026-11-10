@@ -27,6 +27,7 @@ import { MAX_POP_CARDS, MAX_ROUND_CARDS, popcornCount } from '../lib/popcorn';
 import GameMusicPicker from './GameMusicPicker';
 import { resolveResultSound } from '../lib/gameMusic';
 import { PASS_BALL_MUSIC, passBallMusic } from '../lib/passBallMusic';
+import GameReportButton from './GameReportButton';
 
 const btn = 'min-h-11 rounded-xl border border-outline-variant bg-white px-4 py-2 text-base font-bold text-deep-navy focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40';
 const primaryBtn = 'min-h-11 rounded-xl bg-primary px-5 py-2 text-base font-bold text-white focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40';
@@ -597,9 +598,13 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           <button className={tab(open === 'saves')} aria-expanded={open === 'saves'} onClick={() => toggle('saves')}>{text('저장/불러오기', 'Save / Load')}</button>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-1.5">
+          {workspace.playing && <button type="button" className={`${util} ${workspace.running ? '' : 'bg-primary! text-white!'}`} disabled={!workspace.running && !workspace.canStart} onClick={workspace.running ? workspace.pause : workspace.start}>
+            {t(workspace.running ? 'teacherGame.pause' : 'flow.resume')}
+          </button>}
           {onRestart && <button className={util} onClick={onRestart} data-frame-restart>{text('다시하기', 'Restart')}</button>}
           <button className={util} onClick={fullscreen ? onExitFullscreen : onFullscreen}>{text(fullscreen ? '전체화면 끄기' : '전체화면', fullscreen ? 'Exit fullscreen' : 'Fullscreen')}</button>
           <button className={`${util} text-error`} onClick={() => { close(); workspace.exitPlay(); }}>{text('나가기', 'Exit')}</button>
+          {gameName && <GameReportButton gameName={gameName} className={util} />}
         </div>
       </div>
       {showTurn && !hasOwnTurnDisplay(info?.gameType ?? 'wheel', info?.selected?.config) && turnState && turnState.order.length > 0 && (() => {
@@ -609,7 +614,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         const members = turnMembers(now);
         return (
           <div className="mt-2 flex w-full items-center gap-3 rounded-xl bg-gradient-to-r from-warm-yellow/40 via-primary-fixed to-white px-3 py-2" data-turn-bar role="status" aria-live="polite">
-            <button type="button" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-deep-navy shadow-sm hover:bg-surface-container-low" aria-label={text('이전 차례', 'Previous turn')} onClick={() => moveTurn(turnState.turn - 1)}>◀</button>
+            <button type="button" disabled={workspace.playing && !workspace.running} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-deep-navy shadow-sm hover:bg-surface-container-low disabled:opacity-40" aria-label={text('이전 차례', 'Previous turn')} onClick={() => moveTurn(turnState.turn - 1)}>◀</button>
             <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-1">
               <p className="flex min-w-0 items-center gap-2 text-2xl font-extrabold text-deep-navy">
                 <span className="shrink-0 rounded-full bg-deep-navy px-3 py-0.5 text-xs font-bold text-white">{text('지금 차례', 'Now')}</span>
@@ -624,7 +629,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
               )}
             </div>
             <span className="shrink-0 rounded-full bg-white px-3 py-1 text-sm font-bold tabular-nums text-on-surface-variant">{turnState.turn + 1} / {n}</span>
-            <button type="button" className={primaryBtn} onClick={() => moveTurn(turnState.turn + 1)}>{text('다음 차례', 'Next turn')}</button>
+            <button type="button" disabled={workspace.playing && !workspace.running} className={primaryBtn} onClick={() => moveTurn(turnState.turn + 1)}>{text('다음 차례', 'Next turn')}</button>
           </div>
         );
       })()}

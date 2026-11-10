@@ -1,5 +1,6 @@
 import { isGameSoundOn } from './gameSfx';
 import { cubicBezier } from './easing';
+import { gameClock } from './gameClock';
 import type { MusicSelection } from './types';
 
 /**
@@ -34,8 +35,7 @@ function ctx(): AudioContext {
   return sharedCtx;
 }
 
-function tone(time: number, freq: number, duration: number, gain: number, type: OscillatorType = 'sine') {
-  const c = ctx();
+function playTone(c: AudioContext, time: number, freq: number, duration: number, gain: number, type: OscillatorType = 'sine') {
   const osc = c.createOscillator();
   const g = c.createGain();
   osc.type = type;
@@ -48,8 +48,7 @@ function tone(time: number, freq: number, duration: number, gain: number, type: 
   osc.stop(time + duration + 0.02);
 }
 
-function noiseBurst(time: number, duration: number, gain: number) {
-  const c = ctx();
+function playNoise(c: AudioContext, time: number, duration: number, gain: number) {
   const bufferSize = Math.floor(c.sampleRate * duration);
   const buffer = c.createBuffer(1, bufferSize, c.sampleRate);
   const data = buffer.getChannelData(0);
@@ -63,11 +62,24 @@ function noiseBurst(time: number, duration: number, gain: number) {
 }
 
 /** 재생 시작. 되돌아오는 함수를 부르면 그 시점에서 소리를 멈춘다(반복 재생용 stop). */
-export function playBuiltin(id: string, opts: { loop?: boolean } = {}): () => void {
+type MusicOptions = { loop?: boolean; pauseWithGame?: boolean };
+
+export function playBuiltin(id: string, opts: MusicOptions = {}): () => void {
   if (!isGameSoundOn()) return () => {};
-  const c = ctx();
+  const c = opts.pauseWithGame ? new AudioContext() : ctx();
+  const tone = (time: number, freq: number, duration: number, gain: number, type?: OscillatorType) =>
+    playTone(c, time, freq, duration, gain, type);
+  const noiseBurst = (time: number, duration: number, gain: number) =>
+    playNoise(c, time, duration, gain);
+  const updatePlayback = (paused: boolean) => {
+    void (paused ? c.suspend() : c.resume()).catch(() => {});
+  };
+  const unsubscribe = opts.pauseWithGame ? gameClock.onPause(updatePlayback) : undefined;
+  if (opts.pauseWithGame) updatePlayback(gameClock.paused());
+  const scheduleTimeout = (fn: () => void, ms: number) =>
+    opts.pauseWithGame ? gameClock.setTimeout(fn, ms) : window.setTimeout(fn, ms);
   let stopped = false;
-  let timer: ReturnType<typeof setTimeout> | null = null;
+  let timer: number | null = null;
 
   function playOnce(startAt: number): number {
     switch (id) {
@@ -138,7 +150,7 @@ export function playBuiltin(id: string, opts: { loop?: boolean } = {}): () => vo
   function schedule(startAt: number) {
     const len = playOnce(startAt);
     if (opts.loop && !stopped) {
-      timer = setTimeout(() => {
+      timer = scheduleTimeout(() => {
         if (!stopped) schedule(c.currentTime + 0.05);
       }, (len + 0.05) * 1000);
     }
@@ -147,8 +159,14 @@ export function playBuiltin(id: string, opts: { loop?: boolean } = {}): () => vo
   schedule(c.currentTime + 0.02);
 
   return () => {
+    if (stopped) return;
     stopped = true;
-    if (timer) clearTimeout(timer);
+    if (timer !== null) {
+      if (opts.pauseWithGame) gameClock.clearTimeout(timer);
+      else window.clearTimeout(timer);
+    }
+    unsubscribe?.();
+    if (opts.pauseWithGame) void c.close().catch(() => {});
   };
 }
 
@@ -189,7 +207,7 @@ export function playWheelSpinTicks(totalDegrees: number, durationMs: number): ()
   const TICK_DEG = 9; // 대략 40칸/바퀴 밀도 — 촘촘하지도 허전하지도 않은 정도로 조정함
   const SAMPLE_STEPS = 600;
   let stopped = false;
-  const timers: ReturnType<typeof setTimeout>[] = [];
+  const timers: number[] = [];
 
   let nextThreshold = TICK_DEG;
   for (let i = 1; i <= SAMPLE_STEPS && nextThreshold <= totalDegrees; i++) {
@@ -199,7 +217,7 @@ export function playWheelSpinTicks(totalDegrees: number, durationMs: number): ()
       const atMs = frac * durationMs;
       const speedFrac = 1 - frac;
       timers.push(
-        setTimeout(() => {
+        gameClock.setTimeout(() => {
           if (!stopped) wheelTickClick(ctx().currentTime, speedFrac);
         }, atMs),
       );
@@ -209,7 +227,7 @@ export function playWheelSpinTicks(totalDegrees: number, durationMs: number): ()
 
   return () => {
     stopped = true;
-    timers.forEach(clearTimeout);
+    timers.forEach(gameClock.clearTimeout);
   };
 }
 
@@ -300,14 +318,20 @@ export function resolveResultSound(stored: MusicSelection | null | undefined): M
  * 선택된 배경음악을 재생한다. 기본 제공 효과음이면 합성음을, 업로드 파일이면
  * <audio> 로 재생한다. 반환된 함수를 부르면 멈춘다. music 이 없으면 아무 일도 안 한다.
  */
-export function playMusic(music: MusicSelection | null | undefined, opts: { loop?: boolean } = {}): () => void {
+export function playMusic(music: MusicSelection | null | undefined, opts: MusicOptions = {}): () => void {
   if (!music || !isGameSoundOn()) return () => {};
   if (music.kind === 'builtin') return playBuiltin(music.id, opts);
 
   const audio = new Audio(music.url);
   audio.loop = !!opts.loop;
-  void audio.play().catch(() => {});
+  const updatePlayback = (paused: boolean) => {
+    if (paused) audio.pause();
+    else if (!audio.ended && isGameSoundOn()) void audio.play().catch(() => {});
+  };
+  const unsubscribe = opts.pauseWithGame ? gameClock.onPause(updatePlayback) : undefined;
+  updatePlayback(!!opts.pauseWithGame && gameClock.paused());
   return () => {
+    unsubscribe?.();
     audio.pause();
     audio.currentTime = 0;
   };

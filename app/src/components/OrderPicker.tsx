@@ -47,14 +47,14 @@ export default function OrderPicker({ pool, music, resultSound }: Props) {
   // 기계가 멈추는 순간(phase가 idle로 돌아가는 순간) 같이 멈춘다.
   useEffect(() => {
     if (phase !== 'mixing') return;
-    const stop = playMusic(music, { loop: true });
+    const stop = playMusic(music, { loop: true, pauseWithGame: true });
     return () => stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
   function mix() {
     if (!canMix || phase === 'mixing') return;
-    timersRef.current.forEach(clearTimeout);
+    timersRef.current.forEach(gameClock.clearTimeout);
     timersRef.current = [];
     setOrder(shuffle(pool));
     setDrawnCount(0);

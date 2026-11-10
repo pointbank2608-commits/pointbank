@@ -67,7 +67,21 @@ const server = await createServer({
         if (p.endsWith("/src/context/AuthContext.tsx")) return auth;
         if (p.endsWith("/src/context/ToastContext.tsx")) return toast;
         if (p.endsWith("/src/lib/supabase.ts"))
-          return "export const supabase={rpc:async(name)=>{if(name==='live_host_create')window.__liveCreated=true;return {data:name==='my_deletion_request'?null:[],error:null}},channel:()=>({on(){return this},subscribe(){return this},unsubscribe(){}})};";
+          return `
+            const from = (table) => ({ insert: (row) => {
+              if (table === 'support_tickets') return { select: () => ({ single: async () => {
+                (window.__gameReports ??= []).push(row);
+                return { data: { id: 'report-1' }, error: null };
+              } }) };
+              if (table === 'support_messages') {
+                if (window.__reportMessageFails) return { error: new Error('simulated write failure') };
+                (window.__reportMessages ??= []).push(row);
+                return { error: null };
+              }
+              throw new Error('Unexpected insert into ' + table);
+            } });
+            export const supabase={from,rpc:async(name)=>{if(name==='live_host_create')window.__liveCreated=true;return {data:name==='my_deletion_request'?null:[],error:null}},channel:()=>({on(){return this},subscribe(){return this},unsubscribe(){}})};
+          `;
       },
     },
   ],
@@ -302,7 +316,95 @@ try {
  async function verify(type){
   const ctx=await browser.newContext({viewport:args.includes('--mobile')?{width:390,height:844}:{width:1280,height:900}});await ctx.route('https://**/*',r=>r.abort());const page=await ctx.newPage();
   const errs=[];page.on('pageerror',e=>errs.push(String(e)));
-  await page.goto(fixture+`?start=/games/${type}${audit?'&applyAudit':''}${pictureAudit?'&pictureAudit':''}`);await page.locator('[data-play-mode="play"] [data-game]').first().waitFor({timeout:20000}).catch(()=>{});
+  const timedSample = type === 'bomb' || type === 'passball';
+  if (timedSample) await page.addInitScript(() => {
+   window.__roundSounds = [];
+   window.__pausedRoundSounds = [];
+   const isRoundSound = (src) => /\/(bomb-tick\.m4a|pass-the-ball-bgm\.mp3)(\?|$)/.test(src);
+   HTMLMediaElement.prototype.play = function () {
+    if (isRoundSound(this.src)) window.__roundSounds.push(this.src);
+    return Promise.resolve();
+   };
+   HTMLMediaElement.prototype.pause = function () {
+    if (isRoundSound(this.src)) window.__pausedRoundSounds.push(this.src);
+   };
+  });
+  await page.goto(fixture+`?start=/games/${type}${audit?'&applyAudit':''}${pictureAudit?'&pictureAudit':''}`);
+  const startCard = page.locator('[data-game-start-card]');
+  await startCard.waitFor({ timeout: 15000 });
+  assert.ok((await startCard.getByRole('heading').innerText()).trim());
+  assert.ok((await startCard.locator('p').innerText()).trim());
+  assert.equal(await page.locator('[data-play-mode="prepare"] [data-game-fit][inert]').count(), 1);
+  if (timedSample) assert.deepEqual(await page.evaluate(() => window.__roundSounds), []);
+  await startCard.getByRole('button', { name: '게임 시작', exact: true }).click();
+  await startCard.waitFor({ state: 'hidden' });
+  await expectPlay(page);
+  if (timedSample) {
+   await page.waitForFunction(() => window.__roundSounds.length > 0, null, { timeout: 5000 });
+  }
+  if (args.includes('--pause-audit')) {
+   const controls = page.locator('[data-frame-controls]');
+   const pause = controls.getByRole('button', { name: '잠시 멈춤', exact: true });
+   const resume = controls.getByRole('button', { name: '계속하기', exact: true });
+   const board = await page.locator('[data-game-fit]').elementHandle();
+   const soundsBeforePause = timedSample ? await page.evaluate(() => ({
+    plays: window.__roundSounds.length, pauses: window.__pausedRoundSounds.length,
+   })) : null;
+   if (type === 'wheel') {
+    await page.getByRole('button', { name: '돌리기', exact: true }).last().click();
+    await page.waitForFunction(() => document.querySelector('[data-game-fit]').getAnimations({ subtree: true })
+     .some(animation => animation instanceof CSSTransition && animation.transitionProperty === 'transform'));
+   }
+   await pause.click();
+   await page.waitForFunction(() => window.__clock.paused());
+   assert.equal(await board.evaluate(el => el.inert), true);
+   const stoppedAt = await page.evaluate(() => window.__clock.now());
+   if (soundsBeforePause) assert.equal(await page.evaluate(() => window.__pausedRoundSounds.length), soundsBeforePause.pauses + 1);
+   if (type === 'wheel') assert.ok(await board.evaluate(el => el.getAnimations({ subtree: true })
+    .some(animation => animation instanceof CSSTransition && animation.transitionProperty === 'transform' && animation.playState === 'paused')));
+   await page.keyboard.press('Tab');
+   assert.equal(await page.evaluate(() => window.__clock.now()), stoppedAt);
+   await resume.click();
+   await expectPlay(page);
+   await page.waitForFunction(() => !window.__clock.paused());
+   assert.equal(await board.evaluate(el => el.isConnected && !el.inert), true);
+   if (soundsBeforePause) assert.equal(await page.evaluate(() => window.__roundSounds.length), soundsBeforePause.plays + 1);
+   console.log(type, 'pause/resume: PASS');
+  }
+  if (type === 'wheel' && args.includes('--report-audit')) {
+   const contact = page.getByRole('button', { name: '문의하기', exact: true });
+   await contact.click();
+   const report = page.getByRole('dialog', { name: '게임 문의하기' });
+   const body = report.getByRole('textbox', { name: '문의 내용' });
+   const send = report.getByRole('button', { name: '보내기', exact: true });
+   assert.equal(await send.isEnabled(), false);
+   await page.keyboard.press('Escape');
+   assert.equal(await contact.evaluate(el => el === document.activeElement), true);
+   assert.equal(await page.evaluate(() => window.__gameReports), undefined);
+   await contact.click();
+   await report.getByLabel('문의 유형').selectOption('idea');
+   await body.fill('돌림판에서 글씨가 작아요.');
+   await page.evaluate(() => { window.__reportMessageFails = true; });
+   await send.click();
+   await report.getByRole('alert').waitFor();
+   assert.equal(await body.inputValue(), '돌림판에서 글씨가 작아요.');
+   await page.evaluate(() => { window.__reportMessageFails = false; });
+   await send.click();
+   await report.getByText(/문의를 보냈어요/).waitFor();
+   assert.deepEqual(await page.evaluate(() => window.__gameReports), [{
+    category: 'idea',
+    subject: '게임 문의 · 돌림판',
+    page_url: 'http://127.0.0.1:5263/games/wheel',
+    user_agent: await page.evaluate(() => navigator.userAgent),
+   }]);
+   assert.deepEqual(await page.evaluate(() => window.__reportMessages), [{
+    ticket_id: 'report-1', sender: 'user', body: '돌림판에서 글씨가 작아요.', attachment_path: null,
+   }]);
+   assert.equal(await report.getByRole('link', { name: '내 문의' }).getAttribute('href'), '/help?ticket=report-1');
+   await report.getByRole('button', { name: '닫기', exact: true }).click();
+   await expectPlay(page);
+   console.log('wheel game report cancel, retry and delivery: PASS');
+  }
   if(type==='wordfishing')await page.locator('.ad-wordfishing .ad-fish').first().waitFor({timeout:5000});
   if(type==='quizshow'){
    await page.getByText('학생 휴대폰 화면(미리보기)',{exact:true}).waitFor({timeout:5000});
@@ -311,6 +413,33 @@ try {
   const r=await page.evaluate(()=>({dialog:!!document.querySelector('dialog[open]'),toolbar:!!document.querySelector('[data-game-toolbar]'),mode:document.querySelector('[data-play-mode]')?.getAttribute('data-play-mode'),overlay:!!document.querySelector('[data-game-ready-overlay]'),board:!!document.querySelector('[data-game]')}));
   console.log(type,JSON.stringify(r),errs.slice(0,2).join('|'));
   if(r.dialog||r.overlay||!r.board||r.mode!=='play'||errs.length){bad.push(type);await page.screenshot({path:resolve(root,'../output/instant-'+type+'.png')});}
+  if (type === 'ladder') {
+   const participants = page.locator('[data-ladder-participants]');
+   const results = page.locator('[data-ladder-results]');
+   const dialog = page.getByRole('dialog');
+   await participants.getByRole('button', { name: '참가자 1', exact: true }).click();
+   await dialog.getByRole('textbox').fill('민지');
+   await dialog.getByRole('button', { name: '저장', exact: true }).click();
+   await participants.getByRole('button', { name: '민지', exact: true }).waitFor();
+   await results.getByRole('button', { name: '결과 1', exact: true }).click();
+   await dialog.getByRole('textbox').fill('발표하기');
+   await dialog.getByRole('textbox').press('Enter');
+   await results.getByRole('button', { name: '발표하기', exact: true }).waitFor();
+
+   const stage = page.locator('[data-game-fit]');
+   await stage.getByRole('button', { name: '한 명씩 결과 보기', exact: true }).click();
+   assert.equal(await results.getByRole('button').count(), 0);
+   await participants.getByRole('button', { name: '민지', exact: true }).click();
+   await page.locator('[data-ladder-outcome]').waitFor();
+   assert.equal(await dialog.count(), 0);
+   await stage.getByRole('button', { name: '다시하기', exact: true }).first().click();
+   await results.getByRole('button', { name: '발표하기', exact: true }).waitFor();
+   await stage.getByRole('button', { name: '한 번에 결과 보기', exact: true }).click();
+   assert.equal(await participants.getByRole('button').count(), 0);
+   assert.equal(await results.getByRole('button').count(), 0);
+   await page.locator('[data-ladder-outcome]').first().waitFor();
+   assert.deepEqual(errs, []);
+  }
   if(expandedPictureAudit) {
    try { await auditExpandedPictures(page,type); assert.deepEqual(errs,[]); }
    catch(error){ bad.push(type); console.error(type,error.message); }

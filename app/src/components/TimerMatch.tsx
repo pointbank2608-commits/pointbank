@@ -166,7 +166,7 @@ export default function TimerMatch({
     setPhase('running');
     setElapsedMs(0);
     startTimeRef.current = gameClock.now();
-    stopMusicRef.current = playMusic(music, { loop: true });
+    stopMusicRef.current = playMusic(music, { loop: true, pauseWithGame: true });
 
     const tick = () => {
       setElapsedMs(gameClock.now() - startTimeRef.current);

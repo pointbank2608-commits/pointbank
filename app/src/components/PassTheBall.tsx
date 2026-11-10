@@ -113,7 +113,7 @@ export default function PassTheBall({
     stopMusicRef.current();
     setMissionWord(null);
     setPhase('active');
-    stopMusicRef.current = playMusic(music, { loop: true });
+    stopMusicRef.current = playMusic(music, { loop: true, pauseWithGame: true });
     const lo = Math.min(minSec, maxSec);
     const span = Math.max(maxSec - lo, 0);
     const delaySec = lo + Math.random() * span;
@@ -205,7 +205,7 @@ export default function PassTheBall({
 
           {phase === 'idle' && (
             <button data-initial-game-start type="button" onClick={start} className={`${pill} min-h-20 !bg-primary !text-2xl`}>
-              {t('flow.start')}
+              {t('flow.startRound')}
             </button>
           )}
 

@@ -7,6 +7,8 @@ import { GRAMMAR_GAME_TYPES } from '../lib/grammarGames';
 import { instantStart, itemsAlwaysHidden } from '../lib/gamePreparation';
 import { GamePlayContext, useGamePlay } from '../context/GamePlayContext';
 import { GameWorkspaceFrameControls, GameWorkspaceValidation } from './GameWorkspace';
+import GameStartCard from './GameStartCard';
+import { GAME_CATALOG } from '../lib/gameCatalog';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { clearBoardReturn, hasBoardReturn } from '../lib/boardMaterial';
@@ -109,11 +111,11 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
   const started = useRef<string | null>(null);
 
   const workspace = useGameWorkspace();
-  const pictureTemplate = workspace?.info?.selected;
+  const template = workspace?.info?.selected;
   const frameGame = gameType ?? bg;
-  const pictureModeTemplate = pictureTemplate?.config.pictureWordMode && pictureTemplate.game_type === frameGame && pictureWordModeKind(frameGame) !== null ? pictureTemplate : null;
+  const pictureModeTemplate = template?.config.pictureWordMode && template.game_type === frameGame && pictureWordModeKind(frameGame) !== null ? template : null;
   const roster = workspace?.roster ?? suppliedRoster;
-  const selection = autoStartForSelection ? workspace?.info?.selected?.id ?? '' : '';
+  const selection = autoStartForSelection ? template?.id ?? '' : '';
   useEffect(() => {
     if (!workspace?.running) {
       if (!workspace?.playing) started.current = null;
@@ -125,10 +127,26 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
   }, [workspace?.running, workspace?.playing, selection]);
 
   const { t } = useTranslation();
+  const catalogGame = workspace?.waitingForSampleStart
+    ? GAME_CATALOG.find(game => game.type === workspace.info?.gameType)
+    : undefined;
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const stageRef = useRef<HTMLDivElement>(null);
   const scaleRef = useRef<HTMLDivElement>(null);
+  const paused = !!workspace?.playing && !workspace.running;
+  useEffect(() => {
+    if (!paused || typeof CSSTransition === 'undefined') return;
+    // CSS animation-play-state already handles keyframes, but not transitions (e.g. wheel spins).
+    const transitions = stageRef.current?.getAnimations({ subtree: true })
+      .filter(animation => animation instanceof CSSTransition && animation.playState === 'running') ?? [];
+    transitions.forEach(animation => animation.pause());
+    return () => {
+      transitions.forEach(animation => {
+        if (animation.playState === 'paused') animation.play();
+      });
+    };
+  }, [paused]);
   const [isFullscreen, setIsFullscreen] = useState(false);
   // 커리큘럼 "수업 시작하기" 중에는 게임이 발표 영역 전체를 채운다 — 이 컴포넌트 자신의 전체화면과
   // 같은 "채우기" 배치·확대 규칙(fill)을 쓰되, 브라우저 전체화면 대신 발표 영역(PresentZoomArea)을
@@ -627,6 +645,14 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
         {/* Keep the same parent chain so view changes never remount a running game. */}
         <div className="relative flex min-h-0 flex-1 flex-col" data-game-preview>
         <GameWorkspaceValidation />
+        {catalogGame && workspace?.canStart && !workspace.panel && (
+          <GameStartCard name={t(catalogGame.nameKey)} description={t(catalogGame.descKey)} onStart={workspace.start} />
+        )}
+        {paused && !workspace?.panel && (
+          <div className="pointer-events-none absolute inset-0 z-20 grid place-items-center bg-deep-navy/25">
+            <p role="status" className="rounded-2xl bg-white px-6 py-3 text-xl font-bold text-deep-navy shadow-lg">{t('teacherGame.paused')}</p>
+          </div>
+        )}
         <div ref={stageRef} data-game-fit={scrollContent ? 'scroll' : 'contain'} inert={!!workspace && (!workspace.running || !!workspace.panel)} className={fill ? 'game-fs-stage' : undefined} style={{ position: 'relative', zIndex: 1, ...(fill && scrollContent ? { overflow: 'auto', alignItems: 'flex-start', justifyContent: 'flex-start' } : {}) }}>
           <div
             className={fill ? 'contents' : 'mx-auto'}

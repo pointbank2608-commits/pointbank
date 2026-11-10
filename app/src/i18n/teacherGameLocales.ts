@@ -1,6 +1,7 @@
 export const teacherGameKo = {
   leave: '게임 목록으로 나가기',
   pause: '잠시 멈춤', playing: '게임 진행 중', paused: '잠시 멈춘 상태', ready: '시작 전',
+  livePauseHint: '휴대폰 참여 문제는 답변을 마친 뒤 잠시 멈출 수 있어요.',
   tools: '소리·화면 도구',
   moreWords: '이 단어로 더 해보기', moreSentences: '이 문장으로 더 해보기', moreContent: '이 내용으로 더 해보기',
   switchGame: '다른 게임으로 바꾸기', addToLesson: '내 수업에 넣기',
@@ -12,6 +13,7 @@ export const teacherGameKo = {
 export const teacherGameEn = {
   leave: 'Back to game list',
   pause: 'Pause', playing: 'Game in progress', paused: 'Paused', ready: 'Ready to start',
+  livePauseHint: 'You can pause after the current live question closes.',
   tools: 'Sound and display tools',
   moreWords: 'Do more with these words', moreSentences: 'Do more with these sentences', moreContent: 'Do more with this content',
   switchGame: 'Switch to another game', addToLesson: 'Add to my lesson',

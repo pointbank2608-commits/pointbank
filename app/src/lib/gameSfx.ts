@@ -1,4 +1,5 @@
 import { useEffect, useRef, useSyncExternalStore } from 'react';
+import { gameClock } from './gameClock';
 
 /**
  * 게임 효과음·배경음악(2026-09-28, 선생님이 게임·순간마다 직접 고른 소리).
@@ -108,7 +109,7 @@ export function setGameSoundOn(on: boolean): void {
   } catch {
     /* 저장이 막혀도 이번 화면에서는 적용 */
   }
-  activeBgm.forEach((a) => (on ? void a.play().catch(() => {}) : a.pause()));
+  activeBgm.forEach((a) => (on && !gameClock.paused() ? void a.play().catch(() => {}) : a.pause()));
   listeners.forEach((l) => l());
 }
 
@@ -155,8 +156,14 @@ export function startBgm(n: number, volume = 0.3): () => void {
   a.loop = true;
   a.volume = volume;
   activeBgm.add(a);
-  if (soundOn) void a.play().catch(() => {});
+  const updatePlayback = (paused: boolean) => {
+    if (soundOn && !paused) void a.play().catch(() => {});
+    else a.pause();
+  };
+  const unsubscribe = gameClock.onPause(updatePlayback);
+  updatePlayback(gameClock.paused());
   return () => {
+    unsubscribe();
     a.pause();
     activeBgm.delete(a);
   };

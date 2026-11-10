@@ -22,6 +22,8 @@ import {
 import type { LiveQuestion } from '../lib/types';
 import { speak } from '../lib/speech';
 import { playSfx, useBgm, useGameSfx } from '../lib/gameSfx';
+import { gameClock } from '../lib/gameClock';
+import { useGameWorkspace } from '../context/GameWorkspaceContext';
 
 /**
  * 대회 퀴즈쇼 — 전자칠판(선생님) 화면. 대기실(QR·입장 번호) → 라운드 소개 → 문제 → 정답 공개 → 순위 → … → 시상대.
@@ -55,9 +57,16 @@ interface Props {
 }
 
 const PREVIEW_ME = 'preview-me';
+const liveClock = {
+  setTimeout: (fn: () => void, ms: number) => window.setTimeout(fn, ms),
+  clearTimeout: (id: number) => window.clearTimeout(id),
+  setInterval: (fn: () => void, ms: number) => window.setInterval(fn, ms),
+  clearInterval: (id: number) => window.clearInterval(id),
+};
 
 export default function QuizShowHost({ title, questions, classId, templateId, speedBonus, preview = false, autoPreview = false }: Props) {
   const { t } = useTranslation();
+  const setPauseLocked = useGameWorkspace()?.setPauseLocked;
   const [session, setSession] = useState<LiveSession | null>(null);
   const [players, setPlayers] = useState<LivePlayer[]>([]);
   const [answers, setAnswers] = useState<LiveAnswer[]>([]);
@@ -70,7 +79,8 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   // 온라인(줌) 수업: 채팅에 붙일 입장 링크 복사
   const [linkCopied, setLinkCopied] = useState(false);
   const [startLocal, setStartLocal] = useState<number | null>(null);
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState(() => preview ? gameClock.dateNow() : Date.now());
+  const clock = preview ? gameClock : liveClock;
   const channelRef = useRef<RealtimeChannel | null>(null);
   const previewStarted = useRef(false);
   useEffect(() => {
@@ -80,10 +90,18 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
     const time = new Date(now).toISOString();
     setSession({ id: 'preview', code: '------', title, questions, speed_bonus: speedBonus, phase: 'question', q_index: 0, q_started_at: time, created_at: time, ended_at: null });
     setPlayers([{ id: PREVIEW_ME, session_id: 'preview', nickname: t('liveQuiz.previewMe'), joined_at: time }]);
-    setStartLocal(now);
+    const startedAt = gameClock.dateNow();
+    setStartLocal(startedAt);
+    setNow(startedAt);
   }, [preview, autoPreview, questions, title, speedBonus, t]);
 
   const phase: LivePhase | null = session?.phase ?? null;
+  const pauseLocked = !preview && (phase === 'question' || busy);
+  useEffect(() => {
+    if (!pauseLocked || !setPauseLocked) return;
+    setPauseLocked(true);
+    return () => setPauseLocked(false);
+  }, [pauseLocked, setPauseLocked]);
   const qIndex = session?.q_index ?? -1;
   const qs = session?.questions ?? questions;
   const current = qIndex >= 0 ? qs[qIndex] : null;
@@ -163,9 +181,9 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   // 문제 타이머
   useEffect(() => {
     if (phase !== 'question') return;
-    const id = window.setInterval(() => setNow(Date.now()), 250);
-    return () => window.clearInterval(id);
-  }, [phase]);
+    const id = clock.setInterval(() => setNow(preview ? gameClock.dateNow() : Date.now()), 250);
+    return () => clock.clearInterval(id);
+  }, [phase, clock, preview]);
 
   function ping() {
     void channelRef.current?.send({ type: 'broadcast', event: 'state', payload: {} });
@@ -182,7 +200,11 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
         setRoundIntro(null);
         return;
       }
-      if (nextPhase === 'question') setStartLocal(Date.now());
+      if (nextPhase === 'question') {
+        const startedAt = gameClock.dateNow();
+        setStartLocal(startedAt);
+        setNow(startedAt);
+      }
       setSession({ ...session, phase: nextPhase, q_index: nextIndex, q_started_at: nextPhase === 'question' ? new Date().toISOString() : session.q_started_at });
       setPeek(false);
       return;
@@ -268,7 +290,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
       // 문제마다 한 번만. 타이머 숫자가 바뀌어 이 effect 가 다시 돌아도 예약을 취소하지 않는다.
       autoRevealed.current = qIndex;
       const at = qIndex;
-      window.setTimeout(() => {
+      clock.setTimeout(() => {
         if (autoRevealed.current === at) void go('reveal', at);
       }, everyoneAnswered ? 900 : 300);
     }
@@ -278,8 +300,8 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   // 듣기 라운드: 문제가 열릴 때 한 번 읽어 준다(다시 듣기 버튼도 있음)
   useEffect(() => {
     if (phase === 'question' && current?.style === 'listen' && current.speak) {
-      const id = window.setTimeout(() => speak(current.speak ?? ''), 600);
-      return () => window.clearTimeout(id);
+      const id = clock.setTimeout(() => speak(current.speak ?? ''), 600);
+      return () => clock.clearTimeout(id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, qIndex]);

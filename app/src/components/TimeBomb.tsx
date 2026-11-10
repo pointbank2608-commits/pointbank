@@ -165,10 +165,10 @@ export default function TimeBomb({
   }, []);
 
   useEffect(()=>{
-    if(phase!=='active'||!soundOn||(workspace&&(!workspace.running||!!workspace.panel)))return;
-    const stop=playMusic(music,{loop:true});stopMusicRef.current=stop;
+    if(phase!=='active'||!soundOn)return;
+    const stop=playMusic(music,{loop:true,pauseWithGame:true});stopMusicRef.current=stop;
     return stop;
-  },[phase,music,soundOn,workspace?.running,workspace?.panel]); // eslint-disable-line react-hooks/exhaustive-deps
+  },[phase,music,soundOn]);
 
   function start() {
     if (phase === 'active') return;
@@ -351,7 +351,7 @@ export default function TimeBomb({
 
               {phase === 'idle' && (
                 <button data-initial-game-start onClick={start} className={`${pill} min-h-20 !bg-primary !text-2xl`}>
-                  {t('flow.start')}
+                  {t('flow.startRound')}
                 </button>
               )}
 

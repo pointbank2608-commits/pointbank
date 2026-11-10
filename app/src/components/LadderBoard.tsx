@@ -9,6 +9,7 @@ import { emptyLadder, generateLadder, traceAll, tracePath, type LadderGrid } fro
 import { playMusic } from '../lib/gameMusic';
 import { colorFor } from '../lib/wheel';
 import type { GameItem, MusicSelection } from '../lib/types';
+import AccessibleDialog from './AccessibleDialog';
 
 interface Props {
   participants: GameItem[];
@@ -16,19 +17,20 @@ interface Props {
   resultOrder?: LadderResultOrder;
   music?: MusicSelection | null;
   resultSound?: MusicSelection | null;
-  /** true면 이름 인라인 수정 + 참가자/결과 목록 패널 + 사다리 +/- 를 보여준다(선생님용 실제 플레이 화면에서만). */
+  /** 선생님이 사다리에서 참가자와 결과를 직접 수정할 수 있다. */
   editable?: boolean;
   onEditParticipant?: (id: string, label: string) => void;
   onEditResult?: (id: string, label: string) => void;
   onAddColumn?: () => void;
   onRemoveColumn?: () => void;
-  /** 오른쪽 목록의 빼기 — 사다리는 참가자·결과가 한 줄이라 그 줄(참가자+결과)을 통째로 뺀다 */
+  /** 해당 열의 참가자와 결과를 함께 뺀다. */
   onRemoveAt?: (index: number) => void;
   templateName?: string;
   onRenameTemplate?: (name: string) => void;
 }
 
 type Mode = 'all' | 'one';
+type LabelEdit = { kind: 'participant' | 'result'; id: string };
 
 // 50인치대 전자칠판/태블릿에서 뒤에서도 잘 보이도록 큼직하게 잡은 값.
 const COL_W = 128;
@@ -71,14 +73,14 @@ export default function LadderBoard({
   const { t } = useTranslation();
   const { itemsHidden, fullscreen } = useGamePlay();
   const n = participants.length;
-  const [resultIds, setResultIds] = useState(() => resultOrder === 'random' ? shuffledResultIds(results) : results.map(r => r.id));
-  const arrangedResults = resultOrder === 'input' ? results : [
+  const [mapping, setMapping] = useState<number[] | null>(null);
+  const [resultIds, setResultIds] = useState<string[]>([]);
+  const arrangedResults = mapping === null || resultOrder === 'input' ? results : [
     ...resultIds.map(id => results.find(r => r.id === id)).filter((r): r is GameItem => !!r),
     ...results.filter(r => !resultIds.includes(r.id)),
   ];
   const [mode, setMode] = useState<Mode>('all');
   const [grid, setGrid] = useState<LadderGrid>(() => emptyLadder(Math.max(n, 2), DEFAULT_ROWS));
-  const [mapping, setMapping] = useState<number[] | null>(null);
   const [revealed, setRevealed] = useState<Set<number>>(new Set());
   // 결과가 열릴 때마다 "한 판 끝"을 알린다 — 차례 바가 자동 넘김을 켜 두었으면 다음 차례로 넘어간다
   const revealedBefore = useRef(0);
@@ -87,8 +89,7 @@ export default function LadderBoard({
     revealedBefore.current = revealed.size;
   }, [revealed]);
   const [runningSet, setRunningSet] = useState<Set<number>>(new Set());
-  const [participantDrafts, setParticipantDrafts] = useState<Record<string, string>>({});
-  const [resultDrafts, setResultDrafts] = useState<Record<string, string>>({});
+  const [labelEdit, setLabelEdit] = useState<LabelEdit | null>(null);
   const [editingTemplateName, setEditingTemplateName] = useState(false);
   const [templateNameDraft, setTemplateNameDraft] = useState('');
   const pathRefs = useRef<(SVGPathElement | null)[]>([]);
@@ -100,47 +101,19 @@ export default function LadderBoard({
   const [scale, setScale] = useState(1);
   const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
 
-  useEffect(() => {
-    setParticipantDrafts(Object.fromEntries(participants.map((p) => [p.id, p.label])));
-  }, [participants]);
+  const canEditBoard = !!editable && !itemsHidden && mapping === null;
+  const editItems = labelEdit?.kind === 'participant' ? participants : results;
+  const editIndex = labelEdit ? editItems.findIndex(item => item.id === labelEdit.id) : -1;
+  const editItem = editItems[editIndex];
+  const editLabel = t(labelEdit?.kind === 'participant' ? 'gameLadder.editParticipant' : 'gameLadder.editResult');
 
-  useEffect(() => {
-    setResultDrafts(Object.fromEntries(results.map((r) => [r.id, r.label])));
-  }, [results]);
-
-  function handleParticipantDraftChange(id: string, value: string) {
-    setParticipantDrafts((prev) => ({ ...prev, [id]: value }));
-  }
-
-  function commitParticipantDraft(id: string) {
-    const value = (participantDrafts[id] ?? '').trim();
-    if (value) onEditParticipant?.(id, value);
-  }
-
-  function handleResultDraftChange(id: string, value: string) {
-    setResultDrafts((prev) => ({ ...prev, [id]: value }));
-  }
-
-  function commitResultDraft(id: string) {
-    const value = (resultDrafts[id] ?? '').trim();
-    if (value) onEditResult?.(id, value);
-  }
-
-  // 다른 게임 목록과 같은 모양의 빼기 버튼. 사다리는 최소 2줄이라 2줄이면 막는다.
-  function removeAtButton(index: number) {
-    if (!onRemoveAt) return null;
-    return (
-      <button
-        type="button"
-        onClick={() => onRemoveAt(index)}
-        disabled={n <= 2}
-        title={t('gameLadder.removeColumnHint')}
-        aria-label={t('gameLadder.removeColumnHint')}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-on-surface-variant transition-colors hover:bg-error/10 hover:text-error disabled:cursor-not-allowed disabled:opacity-30"
-      >
-        <span className="material-symbols-outlined text-[18px]">remove_circle</span>
-      </button>
-    );
+  function commitLabel(value: string) {
+    if (!canEditBoard || !labelEdit || !editItem) return;
+    const label = value.trim();
+    if (!label) return;
+    const update = labelEdit.kind === 'participant' ? onEditParticipant : onEditResult;
+    if (label !== editItem.label) update?.(editItem.id, label);
+    setLabelEdit(null);
   }
 
   function startEditTemplateName() {
@@ -276,7 +249,7 @@ export default function LadderBoard({
     newLadder();
     const all = Array.from({ length: n }, (_, i) => i);
     setRunningSet(new Set(all));
-    stopMusicRef.current = playMusic(music, { loop: true });
+    stopMusicRef.current = playMusic(music, { loop: true, pauseWithGame: true });
     revealPathEls(all, () => {
       setRevealed(new Set(all));
       setRunningSet(new Set());
@@ -294,7 +267,7 @@ export default function LadderBoard({
   function revealOne(i: number) {
     if (!mapping || revealed.has(i) || runningSet.has(i)) return;
     setRunningSet((prev) => new Set(prev).add(i));
-    const stopMusic = playMusic(music, { loop: false });
+    const stopMusic = playMusic(music, { pauseWithGame: true });
     oneStopsRef.current.push(stopMusic);
     revealPathEls([i], () => {
       setRevealed((prev) => new Set(prev).add(i));
@@ -350,6 +323,7 @@ export default function LadderBoard({
         ) : (
           <button
             type="button"
+            disabled={!canEditBoard}
             onClick={startEditTemplateName}
             title={t('gameAdmin.renameInlineHint')}
             className="mb-2 max-w-[420px] truncate font-headline-lg-mobile text-headline-lg-mobile text-deep-navy hover:bg-surface-container-lowest rounded-lg px-2 transition-colors"
@@ -357,13 +331,12 @@ export default function LadderBoard({
             {templateName}
           </button>
         ))}
-      {editable && !itemsHidden && (
-        <div className="mb-3 max-w-[420px] text-center font-caption text-caption text-on-surface-variant">
+      {canEditBoard && (
+        <div className="mb-3 max-w-[420px] text-center text-base font-semibold text-deep-navy">
           {t('gameLadder.editHint')}
         </div>
       )}
 
-      <div className={`flex w-full max-w-full flex-col items-center gap-6 ${editable ? 'md:flex-row md:items-start md:justify-center' : ''}`}>
       <div className="flex w-full min-w-0 max-w-full flex-col items-center">
       <div className="flex flex-wrap justify-center gap-2.5 mb-6">
         <button
@@ -376,11 +349,11 @@ export default function LadderBoard({
         <button
           onClick={startOneByOne}
           disabled={busy}
-          className="px-5 py-2.5 rounded-full bg-warm-yellow hover:brightness-95 disabled:opacity-60 text-tertiary-container font-label-md text-label-md shadow-sm transition-all"
+          className="px-5 py-2.5 rounded-full bg-warm-yellow hover:brightness-95 disabled:opacity-60 text-deep-navy font-label-md text-label-md font-bold shadow-sm transition-all"
         >
           {t('gameLadder.revealOneButton')}
         </button>
-        {revealed.size > 0 && (
+        {mapping && (
           <button
             type="button"
             onClick={retry}
@@ -402,17 +375,28 @@ export default function LadderBoard({
           }}
         >
           <div ref={scaleContentRef} style={{ width, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
-        <div className="flex mb-3 items-stretch" style={{ width }}>
+        <div className="flex mb-3 items-stretch" style={{ width }} data-ladder-participants>
           {participants.map((p, i) => {
             const plaque = (
               <span
-                className="inline-block max-w-[112px] truncate rounded-full px-3 py-2 font-title-md text-sm font-bold text-white"
+                className="inline-block max-w-[112px] truncate rounded-full px-3 py-2 font-title-md text-base font-extrabold text-deep-navy"
                 style={plaqueStyle(i, revealed.has(i))}
               >
                 {p.label}
               </span>
             );
-            return mode === 'one' ? (
+            return canEditBoard && onEditParticipant ? (
+              <button
+                key={p.id}
+                type="button"
+                title={t('gameLadder.editParticipant')}
+                onClick={() => setLabelEdit({ kind: 'participant', id: p.id })}
+                style={{ width: COL_W }}
+                className="flex min-h-11 flex-none items-center justify-center rounded-full px-1 hover:brightness-105 focus-visible:outline-2 focus-visible:outline-primary"
+              >
+                {plaque}
+              </button>
+            ) : mode === 'one' ? (
               <button
                 key={p.id}
                 type="button"
@@ -477,7 +461,7 @@ export default function LadderBoard({
             ))}
           </svg>
 
-          {editable && (
+          {canEditBoard && (
             // 사다리가 화면보다 넓어 가로 스크롤이 생겨도 +/- 는 보이는 영역 오른쪽 끝에
             // 항상 붙어있어야(스크롤해서 찾아야 하는 게 아니라) 해서, 절대좌표 대신
             // sticky로 스크롤 컨테이너(overflow-x-auto) 기준 오른쪽에 고정한다.
@@ -509,18 +493,21 @@ export default function LadderBoard({
         </div>
 
         <div className="flex mt-4 items-stretch" style={{ width }} data-ladder-results>
-          {arrangedResults.map((r, i) => (
-            <div key={r.id} style={{ width: COL_W }} className="flex-none flex items-center justify-center px-1.5">
-              <div
-                className={`w-full rounded-2xl px-1.5 py-2.5 text-center font-title-md text-sm font-bold text-white [word-break:keep-all] transition-transform ${
-                  landedResultIndex(i) ? 'scale-110' : ''
-                }`}
-                style={plaqueStyle(i, landedResultIndex(i))}
-              >
-                {r.label}
+          {arrangedResults.map((r, i) => {
+            const landed = landedResultIndex(i);
+            const className = `w-full rounded-2xl px-1.5 py-2.5 text-center font-title-md text-base font-extrabold text-deep-navy [overflow-wrap:anywhere] transition-transform ${landed ? 'scale-110' : ''}`;
+            const style = plaqueStyle(i, landed);
+            return (
+              <div key={r.id} style={{ width: COL_W }} className="flex flex-none items-center justify-center px-1.5">
+                {canEditBoard && onEditResult ? (
+                  <button type="button" title={t('gameLadder.editResult')} className={`${className} min-h-11 hover:brightness-105 focus-visible:outline-2 focus-visible:outline-primary`}
+                    style={style} onClick={() => setLabelEdit({ kind: 'result', id: r.id })}>
+                    {r.label}
+                  </button>
+                ) : <div className={className} style={style}>{r.label}</div>}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
           </div>
         </div>
@@ -559,56 +546,36 @@ export default function LadderBoard({
         </div>
       )}
       </div>
-
-      {editable && !itemsHidden && (
-        <div className="w-full md:w-[260px] md:shrink-0 space-y-4">
-          <div>
-            <div className="mb-1.5 font-caption text-caption text-on-surface-variant">
-              {t('gameLadder.participantsPanelLabel')}
+      {canEditBoard && labelEdit && editItem && (
+        <AccessibleDialog label={editLabel} onClose={() => setLabelEdit(null)}>
+          <form className="space-y-4 p-5" onSubmit={(event) => {
+            event.preventDefault();
+            commitLabel(String(new FormData(event.currentTarget).get('label') ?? ''));
+          }}>
+            <label className="grid gap-2 font-bold text-deep-navy">
+              {editLabel}
+              <input
+                autoFocus
+                required
+                name="label"
+                defaultValue={editItem.label}
+                onFocus={(event) => event.currentTarget.select()}
+                className="min-h-11 w-full rounded-xl border border-outline-variant px-3 text-base focus-visible:outline-2 focus-visible:outline-primary"
+              />
+            </label>
+            <div className="flex flex-wrap gap-2">
+              <button type="submit" className="min-h-11 rounded-xl bg-primary px-5 font-bold !text-white">{t('common.save')}</button>
+              <button type="button" className="min-h-11 rounded-xl border border-outline-variant px-4" onClick={() => setLabelEdit(null)}>{t('common.cancel')}</button>
+              {onRemoveAt && n > 2 && editIndex < n && editIndex < results.length && (
+                <button type="button" className="min-h-11 rounded-xl px-3 text-error" onClick={() => {
+                  setLabelEdit(null);
+                  onRemoveAt(editIndex);
+                }}>{t('gameLadder.removeColumnHint')}</button>
+              )}
             </div>
-            <div className="space-y-1.5">
-              {participants.map((p, i) => (
-                <div key={p.id} className="flex items-center gap-1">
-                  <input
-                    value={participantDrafts[p.id] ?? p.label}
-                    onChange={(e) => handleParticipantDraftChange(p.id, e.target.value)}
-                    onBlur={() => commitParticipantDraft(p.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-                    }}
-                    style={{ color: colorFor(i) }}
-                    className="min-w-0 flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                  />
-                  {removeAtButton(i)}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div className="mb-1.5 font-caption text-caption text-on-surface-variant">
-              {t('gameLadder.resultsPanelLabel')}
-            </div>
-            <div className="space-y-1.5">
-              {results.map((r, i) => (
-                <div key={r.id} className="flex items-center gap-1">
-                  <input
-                    value={resultDrafts[r.id] ?? r.label}
-                    onChange={(e) => handleResultDraftChange(r.id, e.target.value)}
-                    onBlur={() => commitResultDraft(r.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-                    }}
-                    style={{ color: colorFor(i) }}
-                    className="min-w-0 flex-1 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body-md text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                  />
-                  {removeAtButton(i)}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+          </form>
+        </AccessibleDialog>
       )}
-      </div>
     </div>
   );
 }

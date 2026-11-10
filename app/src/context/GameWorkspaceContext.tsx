@@ -47,6 +47,7 @@ export interface WorkspaceContextValue {
   fullscreen: boolean;
   setFullscreen: (value: boolean) => void;
   canStart: boolean;
+  waitingForSampleStart: boolean;
   validation: string;
   playing: boolean;
   teacherToolsTarget: HTMLElement | null;
@@ -54,6 +55,8 @@ export interface WorkspaceContextValue {
   turn: { current: string; next: string; all?: string[]; index: number; total: number; advance: () => boolean; goto?: (index: number) => void } | null;
   hasSource: boolean;
   pause: () => void;
+  pauseLocked: boolean;
+  setPauseLocked: (locked: boolean) => void;
   openTeams: () => void;
   roster: GameItem[];
   stage: HTMLElement | null;

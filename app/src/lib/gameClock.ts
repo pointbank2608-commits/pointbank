@@ -7,6 +7,7 @@ type Entry = {
 };
 const jobs = new Map<number, Entry>();
 const owners = new Set<string>();
+const pauseListeners = new Set<(paused: boolean) => void>();
 let nextId = 0;
 let pausedAt: number | null = null;
 let offset = 0;
@@ -49,17 +50,24 @@ export function pauseGameClock(owner: string, paused: boolean) {
       });
     }
     owners.add(owner);
+    if (owners.size === 1) pauseListeners.forEach(listener => listener(true));
   } else {
     owners.delete(owner);
     if (!owners.size && pausedAt !== null) {
       offset += performance.now() - pausedAt;
       pausedAt = null;
       jobs.forEach((job, id) => arm(id, job));
+      pauseListeners.forEach(listener => listener(false));
     }
   }
 }
 export const gameClock = {
   now,
+  paused: () => owners.size > 0,
+  onPause: (listener: (paused: boolean) => void) => {
+    pauseListeners.add(listener);
+    return () => { pauseListeners.delete(listener); };
+  },
   dateNow: () =>
     Date.now() -
     offset -

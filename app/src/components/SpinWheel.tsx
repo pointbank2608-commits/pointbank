@@ -340,7 +340,7 @@ export default function SpinWheel({
     } else {
       // 업로드한 파일은 그 자체가 이미 감속하는 소리라 한 번만 재생하고, 기본 제공
       // 합성음(두구두구 등)은 기존처럼 반복 재생한다.
-      stopMusicRef.current = playMusic(music, { loop: music.kind !== 'upload' });
+      stopMusicRef.current = playMusic(music, { loop: music.kind !== 'upload', pauseWithGame: true });
     }
 
     timerRef.current = gameClock.setTimeout(() => {
