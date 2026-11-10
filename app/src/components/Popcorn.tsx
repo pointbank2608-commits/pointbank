@@ -11,6 +11,7 @@ import AccessibleDialog from './AccessibleDialog';
 import { useGamePlay } from './GameThemeFrame';
 import type { GameItem } from '../lib/types';
 import { GAME_SFX, playSfx } from '../lib/gameSfx';
+import { gameClock } from '../lib/gameClock';
 
 interface Props {
   items: GameItem[];
@@ -71,6 +72,11 @@ export default function Popcorn({
   useNativeGameTurn(players && sharedTurn ? {current:sharedTurn.current,next:sharedTurn.next,index:sharedTurn.index,total:sharedTurn.total,enabled:items.length>0&&teamsOn} : {current:t('gamePopcorn.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gamePopcorn.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:items.length>0&&teamsOn});
   const [scores, setScores] = useState<Record<Team, number>>({ blue: 0, red: 0 });
   const [lastCard, setLastCard] = useState<Card | null>(null);
+  useEffect(() => {
+    if (!roundComplete || lastCard !== 'pop') return;
+    const timer = gameClock.setTimeout(() => setLastCard(null), 1500);
+    return () => gameClock.clearTimeout(timer);
+  }, [roundComplete, lastCard]);
   const [poppedTeam, setPoppedTeam] = useState<Team | null>(null);
   const [poppedName, setPoppedName] = useState<string | null>(null);
   const [hop, setHop] = useState(0);
@@ -152,6 +158,10 @@ export default function Popcorn({
     ? players.map((name, index) => ({ name, score: playerScores[index] ?? 0 }))
     : [{ name: teamLabel('blue'), score: scores.blue }, { name: teamLabel('red'), score: scores.red }];
   results.sort((a, b) => b.score - a.score);
+  const rankByScore = new Map<number, number>();
+  results.forEach(({ score }, index) => {
+    if (!rankByScore.has(score)) rankByScore.set(score, index + 1);
+  });
   const pill =
     'game-clay-action px-10 py-3 rounded-full bg-secondary hover:bg-on-secondary-container text-on-secondary font-title-md text-title-md shadow-sm transition-colors';
 
@@ -370,14 +380,22 @@ export default function Popcorn({
               {lastCard && <p className="mt-2 break-words">{t('gamePopcorn.lastWord', { word: lastCard.label })}</p>}
             </header>
             {results.length > 0 && (
-              <ul className="min-h-0 space-y-2 overflow-y-auto px-1" aria-label={t('gamePopcorn.scoreLabel')}>
-                {results.map(({ name, score }, index) => (
-                  <li key={index} className="flex items-center justify-between gap-4 rounded-xl bg-surface-container-low px-4 py-3">
-                    <span className="min-w-0 break-words text-lg font-bold">{name}</span>
-                    <span className="shrink-0 text-xl font-black tabular-nums">{t('gamePopcorn.points', { count: score })}</span>
-                  </li>
-                ))}
-              </ul>
+              <ol className="min-h-0 space-y-2 overflow-y-auto px-1" aria-label={t('gamePopcorn.scoreLabel')}>
+                {results.map(({ name, score }, index) => {
+                  const rank = rankByScore.get(score)!;
+                  const tied = results[index - 1]?.score === score || results[index + 1]?.score === score;
+                  return (
+                    <li key={index} className={`flex items-center gap-2 rounded-xl border px-3 py-3 sm:gap-4 sm:px-4 ${rank === 1 ? 'border-amber-400 bg-amber-50 text-amber-950' : 'border-transparent bg-surface-container-low'}`}>
+                      <span className={`shrink-0 rounded-full px-2 py-1 text-sm font-black tabular-nums ${rank === 1 ? 'bg-amber-300' : 'bg-white'}`}>
+                        {rank === 1 && <span aria-hidden="true">🏆 </span>}
+                        {t(tied ? 'gamePopcorn.tiedRank' : 'gamePopcorn.rank', { rank })}
+                      </span>
+                      <span className="min-w-0 flex-1 [overflow-wrap:anywhere] text-lg font-bold">{name}</span>
+                      <span className="shrink-0 text-xl font-black tabular-nums">{t('gamePopcorn.points', { count: score })}</span>
+                    </li>
+                  );
+                })}
+              </ol>
             )}
             <footer className="flex flex-wrap justify-center gap-2">
               <button type="button" autoFocus className="min-h-11 rounded-xl border border-outline-variant px-4 font-bold" onClick={() => setResultsDismissed(true)}>{t('common.close')}</button>

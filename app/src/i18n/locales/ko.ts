@@ -620,6 +620,8 @@ const ko = {
     roundComplete: '{{round}}라운드가 끝났어요!',
     nextRound: '다음 라운드 시작',
     roundResults: '{{round}}라운드 결과',
+    rank: '{{rank}}등',
+    tiedRank: '공동 {{rank}}등',
     showResults: '결과 다시 보기',
     lastWord: '마지막 단어 · {{word}}',
     points: '{{count}}점',

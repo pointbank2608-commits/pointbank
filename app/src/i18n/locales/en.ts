@@ -623,6 +623,8 @@ const en: Ko = {
     roundComplete: 'Round {{round}} is complete!',
     nextRound: 'Start next round',
     roundResults: 'Round {{round}} results',
+    rank: '#{{rank}}',
+    tiedRank: 'Tied #{{rank}}',
     showResults: 'View results again',
     lastWord: 'Last word · {{word}}',
     points: '{{count}} pts',
