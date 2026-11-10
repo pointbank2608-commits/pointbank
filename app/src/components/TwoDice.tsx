@@ -1,7 +1,6 @@
-import { usePictureWordTurn } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ClayDie from './ClayDie';
 import AccessibleDialog from './AccessibleDialog';
@@ -15,6 +14,9 @@ import './two-dice.css';
 
 interface Props {
   items: GameItem[];
+  size?: number;
+  teamCount?: number;
+  rounds?: number;
   /** true면 오른쪽에 항목 개수 조절 + 이름 수정 목록 패널을 보여준다(선생님용 실제 플레이 화면에서만). */
   editable?: boolean;
   onEditItem?: (id: string, label: string) => void;
@@ -26,9 +28,8 @@ interface Props {
   onRemoveItem?: (itemId?: string) => void;
 }
 
-type Team = 'blue' | 'red';
-
-const SIZE = 6;
+const TEAMS = ['blue', 'red', 'green', 'purple'] as const;
+type Team = typeof TEAMS[number];
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -38,30 +39,28 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-/** 항목이 36개보다 많으면 무작위 36개만, 적으면 부족한 만큼 반복해서 6x6 판을 채운다. */
-function pickBoardItems(items: GameItem[]): GameItem[] {
+function pickBoardItems(items: GameItem[], size: number): GameItem[] {
   if (!items.length) return [];
   const pool = shuffle(items);
-  return Array.from({ length: SIZE * SIZE }, (_, i) => pool[i % pool.length]);
+  return Array.from({ length: size * size }, (_, i) => pool[i % pool.length]);
 }
 
-/** 가로 6줄 + 세로 6줄 + 대각선 2줄 = 빙고에서 이길 수 있는 모든 줄. */
-const LINES: number[][] = [
-  ...Array.from({ length: SIZE }, (_, r) => Array.from({ length: SIZE }, (_, c) => r * SIZE + c)),
-  ...Array.from({ length: SIZE }, (_, c) => Array.from({ length: SIZE }, (_, r) => r * SIZE + c)),
-  Array.from({ length: SIZE }, (_, i) => i * SIZE + i),
-  Array.from({ length: SIZE }, (_, i) => i * SIZE + (SIZE - 1 - i)),
-];
-
-function findWinningLine(claimed: Record<number, Team>, team: Team): number[] | null {
-  for (const line of LINES) {
-    if (line.every((idx) => claimed[idx] === team)) return line;
-  }
-  return null;
+function findWinningLine(claimed: Record<number, Team>, team: Team, size: number, idx: number): number[] | null {
+  const row = Math.floor(idx / size);
+  const col = idx % size;
+  const line = (cell: (i: number) => number) => Array.from({ length: size }, (_, i) => cell(i));
+  return [
+    line(i => row * size + i), line(i => i * size + col),
+    ...(row === col ? [line(i => i * (size + 1))] : []),
+    ...(row + col === size - 1 ? [line(i => (i + 1) * (size - 1))] : []),
+  ].find(cells => cells.every(i => claimed[i] === team)) ?? null;
 }
 
 export default function TwoDice({
   items,
+  size = 6,
+  teamCount = 2,
+  rounds = 9,
   editable,
   onEditItem,
   templateName,
@@ -69,10 +68,12 @@ export default function TwoDice({
   onAddItem,
   onRemoveItem,
 }: Props) {
-  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
-  const [board, setBoard] = useState<GameItem[]>(() => pickBoardItems(items));
+  const teams = useMemo(() => TEAMS.slice(0, teamCount), [teamCount]);
+  const solo = teamCount === 1;
+  const turnLimit = teamCount >= 3 ? rounds * teamCount : null;
+  const [board, setBoard] = useState<GameItem[]>(() => pickBoardItems(items, size));
   const [die1, setDie1] = useState<number | null>(null);
   const [die2, setDie2] = useState<number | null>(null);
   const [target1, setTarget1] = useState(1);
@@ -83,8 +84,12 @@ export default function TwoDice({
   const [tossKey, setTossKey] = useState(0);
   const [claimed, setClaimed] = useState<Record<number, Team>>({});
   const [turn, setTurn] = useState<Team>('blue');
-  const [winner, setWinner] = useState<Team | null>(null);
-  useNativeGameTurn({current:t('gameTwoDice.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gameTwoDice.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:items.length>0&&!winner});
+  const [rollCount, setRollCount] = useState(0);
+  const [result, setResult] = useState<{ leaders: Team[]; bingo: boolean } | null>(null);
+  const teamLabel = (team: Team) => t(solo ? 'gameTwoDice.solo' : `gameTwoDice.teams.${team}`);
+  const turnIndex = teams.indexOf(turn);
+  const nextTeam = teams[(turnIndex + 1) % teamCount];
+  useNativeGameTurn({ current: teamLabel(turn), next: teamLabel(nextTeam), index: turnIndex, total: teamCount, enabled: !solo && items.length > 0 && !result });
   const [winLine, setWinLine] = useState<number[] | null>(null);
   const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
   const [editingTemplateName, setEditingTemplateName] = useState(false);
@@ -92,10 +97,12 @@ export default function TwoDice({
   const [reshuffleOpen, setReshuffleOpen] = useState(false);
   const rollingRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
+  const claimSoundRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
-      if (timerRef.current) gameClock.clearTimeout(timerRef.current);
+      if (timerRef.current !== null) gameClock.clearTimeout(timerRef.current);
+      if (claimSoundRef.current !== null) gameClock.clearTimeout(claimSoundRef.current);
     };
   }, []);
 
@@ -106,8 +113,9 @@ export default function TwoDice({
   }, [items]);
 
   const reshuffleBoard = useCallback(() => {
-    if (timerRef.current) gameClock.clearTimeout(timerRef.current);
-    setBoard(pickBoardItems(items));
+    if (timerRef.current !== null) gameClock.clearTimeout(timerRef.current);
+    if (claimSoundRef.current !== null) gameClock.clearTimeout(claimSoundRef.current);
+    setBoard(pickBoardItems(items, size));
     rollingRef.current = false;
     setTossKey(0);
     setHighlightIndex(null);
@@ -119,9 +127,10 @@ export default function TwoDice({
     setRolling(false);
     setClaimed({});
     setTurn('blue');
-    setWinner(null);
+    setRollCount(0);
+    setResult(null);
     setWinLine(null);
-  }, [items]);
+  }, [items, size]);
 
   const itemIds = JSON.stringify(items.map((item) => item.id));
   const previousItemIds = useRef(itemIds);
@@ -157,10 +166,10 @@ export default function TwoDice({
 
 
   function roll() {
-    if (rollingRef.current || items.length === 0 || board.length !== SIZE * SIZE || winner) return;
+    if (rollingRef.current || items.length === 0 || board.length !== size * size || result) return;
     rollingRef.current = true;
-    const d1 = 1 + Math.floor(Math.random() * SIZE);
-    const d2 = 1 + Math.floor(Math.random() * SIZE);
+    const d1 = 1 + Math.floor(Math.random() * size);
+    const d2 = 1 + Math.floor(Math.random() * size);
     setTarget1(d1);
     setTarget2(d2);
     setHighlightIndex(null);
@@ -168,34 +177,40 @@ export default function TwoDice({
     setTossKey((n) => n + 1);
     playSfx(GAME_SFX.twodice.shake);
     const rollingTeam = turn;
-    if (timerRef.current) gameClock.clearTimeout(timerRef.current);
+    if (timerRef.current !== null) gameClock.clearTimeout(timerRef.current);
     timerRef.current = gameClock.setTimeout(() => {
       setDie1(d1);
       setDie2(d2);
-      const idx = (d1 - 1) * SIZE + (d2 - 1);
+      const idx = (d1 - 1) * size + (d2 - 1);
       playSfx(GAME_SFX.twodice.roll);
-      // 빈 칸을 차지하면 칩 놓는 소리(빙고가 되면 빙고 소리가 따로 난다)
-      if (!claimed[idx]) gameClock.setTimeout(() => playSfx(GAME_SFX.twodice.claim), 220);
       setHighlightIndex(idx);
       const word = board[idx];
       setHistory((prev) => [{ key: `${gameClock.dateNow()}`, label: word.label, team: rollingTeam }, ...prev].slice(0, 8));
-      setClaimed((prev) => {
-        if (prev[idx]) return prev;
-        const next = { ...prev, [idx]: rollingTeam };
-        const line = findWinningLine(next, rollingTeam);
-        if (line) {
-          setWinner(rollingTeam);
-          setWinLine(line);
-        }
-        return next;
-      });
+      const newClaim = !claimed[idx];
+      const next = newClaim ? { ...claimed, [idx]: rollingTeam } : claimed;
+      const owners = Object.values(next);
+      const line = newClaim ? findWinningLine(next, rollingTeam, size, idx) : null;
+      if (newClaim && !line) {
+        if (claimSoundRef.current !== null) gameClock.clearTimeout(claimSoundRef.current);
+        claimSoundRef.current = gameClock.setTimeout(() => playSfx(GAME_SFX.twodice.claim), 220);
+      }
+      setClaimed(next);
+      setRollCount(rollCount + 1);
+      if (line) {
+        setResult({ leaders: [rollingTeam], bingo: true });
+        setWinLine(line);
+      } else if (owners.length === size * size || (turnLimit !== null && rollCount + 1 >= turnLimit)) {
+        const counts = teams.map(team => owners.filter(owner => owner === team).length);
+        setResult({ leaders: teams.filter((_, i) => counts[i] === Math.max(...counts)), bingo: false });
+      } else {
+        setTurn(nextTeam);
+      }
       rollingRef.current = false;
       setRolling(false);
-      setTurn((prev) => (prev === 'blue' ? 'red' : 'blue'));
     }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 80 : DICE_ROLL_MS);
   }
 
-  useStepSounds(0, !!winner, undefined, GAME_SFX.twodice.bingo);
+  useStepSounds(0, result?.bingo === true, undefined, GAME_SFX.twodice.bingo);
 
   if (items.length === 0) {
     return (
@@ -208,9 +223,15 @@ export default function TwoDice({
 
   const row = die1 ?? 1;
   const col = die2 ?? 1;
-  const teamLabel = (team: Team) => (team === 'blue' ? t('gameTwoDice.teamBlue') : t('gameTwoDice.teamRed'));
-  const blueCount = Object.values(claimed).filter((v) => v === 'blue').length;
-  const redCount = Object.values(claimed).filter((v) => v === 'red').length;
+  const owners = Object.values(claimed);
+  const score = (team: Team) => (
+    <div key={team} className={`td-score td-score-${team}`}><span>{teamLabel(team)}</span><b>{owners.filter(owner => owner === team).length}</b></div>
+  );
+  const resultNames = result?.leaders.map(teamLabel).join(' · ');
+  const status = result
+    ? result.bingo ? (solo ? t('gameTwoDice.soloBingo') : t('gameTwoDice.bingoMessage', { team: resultNames }))
+      : t(result.leaders.length > 1 ? 'gameTwoDice.tied' : 'gameTwoDice.mostCells', { team: resultNames })
+    : solo ? t('gameTwoDice.soloGoal') : t('gameTwoDice.turnLabel', { team: teamLabel(turn) });
 
   return (
     <div className="td-game">
@@ -241,34 +262,35 @@ export default function TwoDice({
               {t('gameAdmin.editHintItems')}
             </div>
           )}
-      <section className="td-scoreboard" data-turn-display aria-label={t('turnDisplay.region')}>
-        <div className="td-score td-score-blue"><span>{teamLabel('blue')}</span><b>{blueCount}</b></div>
-        <span data-turn-current hidden>{teamLabel(winner ?? turn)}</span>
-        <span data-turn-next hidden>{teamLabel(turn === 'blue' ? 'red' : 'blue')}</span>
-        <div className={`td-turn td-turn-${winner ?? turn}`} role="status">
-          {winner ? t('gameTwoDice.bingoMessage', { team: teamLabel(winner) }) : t('gameTwoDice.turnLabel', { team: teamLabel(turn) })}
+      <section className={`td-scoreboard td-scoreboard-${teamCount}`} data-turn-display aria-label={t('turnDisplay.region')}>
+        {teamCount === 2 ? score('blue') : teams.map(score)}
+        <span data-turn-current hidden>{teamLabel(turn)}</span>
+        <span data-turn-next hidden>{teamLabel(nextTeam)}</span>
+        <div className={`td-turn td-turn-${result?.leaders.length === 1 ? result.leaders[0] : turn}`} role="status">
+          {status}
+          {!result && turnLimit !== null && <small className="td-rolls-left">{t('gameTwoDice.rollsLeft', { count: turnLimit - rollCount })}</small>}
         </div>
-        <div className="td-score td-score-red"><span>{teamLabel('red')}</span><b>{redCount}</b></div>
+        {teamCount === 2 && score('red')}
       </section>
 
       <div className="td-layout">
         <div className="td-board" data-skin-stage="board">
-          <table aria-label={t('gameTwoDice.boardLabel')}>
-            <colgroup><col className="td-axis-col" /><col span={SIZE} /></colgroup>
+          <table aria-label={t('gameTwoDice.boardLabel', { size })}>
+            <colgroup><col className="td-axis-col" /><col span={size} /></colgroup>
             <thead>
               <tr>
                 <td />
-                {Array.from({ length: SIZE }, (_, c) => (
+                {Array.from({ length: size }, (_, c) => (
                   <th key={c} scope="col" className={!rolling && die2 === c + 1 ? 'td-active-col' : undefined}>{c + 1}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {Array.from({ length: SIZE }, (_, r) => (
+              {Array.from({ length: size }, (_, r) => (
                 <tr key={r} className={!rolling && die1 === r + 1 ? 'td-active-row' : undefined}>
                   <th scope="row">{r + 1}</th>
-                  {board.slice(r * SIZE, (r + 1) * SIZE).map((item, c) => {
-                    const i = r * SIZE + c;
+                  {board.slice(r * size, (r + 1) * size).map((item, c) => {
+                    const i = r * size + c;
                     const owner = claimed[i];
                     return (
                       <td key={c} data-skin-object="cell" title={item.label}
@@ -295,7 +317,7 @@ export default function TwoDice({
                 <span className="td-die-label">{rolling || die1 === null ? t('gameTwoDice.rowAxis') : t('gameTwoDice.rowLabel', { n: row })}</span>
               </div>
             </div>
-            <button type="button" onClick={() => pictureTurn(roll)} disabled={rolling || !!winner} className="td-roll">
+            <button type="button" onClick={roll} disabled={rolling || !!result} className="td-roll">
               {rolling ? t('gameTwoDice.rolling') : t('gameTwoDice.rollButton')}
             </button>
           </div>
@@ -312,8 +334,8 @@ export default function TwoDice({
       </div>
 
       <div className="td-footer">
-        <button type="button" onClick={() => setReshuffleOpen(true)} className="td-reset">
-          {winner ? t('gameTwoDice.playAgainButton') : t('gameTwoDice.reshuffleButton')}
+        <button type="button" onClick={() => setReshuffleOpen(true)} className="td-roll td-reset">
+          {result ? t('gameTwoDice.playAgainButton') : t('gameTwoDice.reshuffleButton')}
         </button>
         {history.length > 0 && (
           <details className="td-history">

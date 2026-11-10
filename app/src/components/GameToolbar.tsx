@@ -67,6 +67,10 @@ const SIMPLE_OPTS: Record<string, SimpleOpt[]> = {
     { key: 'tugFreeze', ko: '틀렸을 때 얼음 시간', en: 'Freeze time', kind: 'choice', def: '3', parse: Number, choices: [{ v: '2', ko: '2초', en: '2s' }, { v: '3', ko: '3초', en: '3s' }, { v: '5', ko: '5초', en: '5s' }] },
     { key: 'tugSeconds', ko: '제한 시간', en: 'Time limit', kind: 'choice', def: '180', parse: Number, choices: [{ v: '0', ko: '제한 없음', en: 'None' }, { v: '60', ko: '1분', en: '1 min' }, { v: '120', ko: '2분', en: '2 min' }, { v: '180', ko: '3분', en: '3 min' }, { v: '300', ko: '5분', en: '5 min' }] },
   ],
+  twodice: [
+    { key: 'twoDiceSize', ko: '보드 크기', en: 'Board size', kind: 'choice', def: 6, parse: Number, choices: [3, 4, 5, 6].map(n => ({ v: String(n), ko: `${n}×${n}`, en: `${n}×${n}` })) },
+    { key: 'twoDiceRounds', ko: '팀당 굴리는 횟수', en: 'Rolls per team', kind: 'choice', def: 9, parse: Number, choices: [6, 9, 12].map(n => ({ v: String(n), ko: `${n}회`, en: String(n) })) },
+  ],
   wordhoops: [
     { key: 'hoopsTeams', ko: '참여', en: 'Players', kind: 'choice', def: '2', parse: Number, choices: [{ v: '2', ko: '두 팀 대결', en: 'Two teams' }, { v: '1', ko: '혼자 연습', en: 'Solo practice' }] },
     { key: 'hoopsRule', ko: '승부 방식', en: 'Game rule', kind: 'choice', def: 'race', choices: [{ v: 'race', ko: '정해진 슛을 빨리·정확히', en: 'Fixed shots, fastest' }, { v: 'timed', ko: '제한 시간 안에 많이', en: 'Most baskets in time' }] },
@@ -138,6 +142,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const [pClass, setPClass] = useState('');
   const [pMode, setPMode] = useState<Mode>('none');
   const [pTeams, setPTeams] = useState(2);
+  const [pDiceTeams, setPDiceTeams] = useState(2);
   const [pSound, setPSound] = useState(true);
   const [pItemSource, setPItemSource] = useState<ItemSource>('list');
   const [pText, setPText] = useState('');
@@ -239,6 +244,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const turnMembers = (id: string) => (turnState?.mode === 'team' ? roster.filter((row) => (turnState.teamOf[row.id] ?? 0) === Number(id.split('-')[1])).map((row) => row.label).join(', ') : '');
   const itemSettings = !!type && ITEM_SETTINGS_GAMES.has(type);
   const isLadder = type === 'ladder';
+  const isTwoDice = type === 'twodice';
+  const diceTeams = info?.selected?.config.twoDiceTeams ?? 2;
   const isBomb = type === 'bomb';
   const isTimerMatch = type === 'timer';
   const isPopcorn = type === 'popcorn';
@@ -277,12 +284,13 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     setPPictureList('');
     setPSaved('');
     setPClass(info?.classId || '');
+    setPDiceTeams(diceTeams);
     const teamCap = isGrammar ? 4 : nativeTeams ? 8 : 6;
     setPMode(isGrammar ? (play.teams > 0 ? 'team' : play.showScore ? 'solo' : 'none') : !isShowOrderOn() ? 'none' : turnState?.mode === 'team' ? 'team' : 'solo');
     setPTeams(Math.min(teamCap, Math.max(2, nativeTeams ? (info?.teamCount ?? 2) : (turnState?.mode === 'team' ? turnState.teamCount : play.teams || 2))));
     setPAbsent(info?.classId ? loadAbsent(info.classId) : []);
     setAbsentOpen(false);
-    if (!info?.classId && info?.classes.length && !(isGrammar ? play.teams === 0 && !play.showScore : !isShowOrderOn())) {
+    if (!isTwoDice && !info?.classId && info?.classes.length && !(isGrammar ? play.teams === 0 && !play.showScore : !isShowOrderOn())) {
       const first = info.classes[0].id;
       setPClass(first);
       setPAbsent(loadAbsent(first));
@@ -391,8 +399,17 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const applyClass = () => run(async () => {
     if (!info) return;
     const classChanged = pClass !== (info.classId || '');
-    // 결석 학생: 이미 불러온 반이면 체크한 대로, 다른 반으로 바꾸는 중이면 그 반에 기억해 둔 대로
     if (pClass) saveAbsent(pClass, pAbsent);
+    if (isTwoDice) {
+      if (info.selected && pDiceTeams !== diceTeams) {
+        await info.applyGuide({
+          items: info.selected.items,
+          config: { ...info.selected.config, twoDiceTeams: pDiceTeams },
+        });
+      }
+      if (classChanged) info.selectClass(pClass);
+      return;
+    }
     // 차례·팀을 짤 명단(결석 제외). 반을 바꾸는 중이면 그 반 학생을 바로 불러온다.
     const students = pStudents.length > 0 ? pStudents : classChanged && pClass ? (await fetchStudentsOfClass(pClass)).map((row): GameItem => ({ id: row.id, label: row.name })) : fullRoster;
     const gone = pClass ? loadAbsent(pClass) : [];
@@ -700,7 +717,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           <div className="space-y-2 rounded-xl bg-surface-container-low p-3">
             <label className="block text-sm font-bold">{text('반', 'Class')}
               <select className={field} value={pClass} onChange={(e) => { const next = e.target.value; setPClass(next); setAbsentOpen(false); setPAbsent(next ? loadAbsent(next) : []); }}>
-                <option value="" disabled={pMode !== 'none'}>{text('반 없이 하기', 'No class')}</option>
+                <option value="" disabled={!isTwoDice && pMode !== 'none'}>{text('반 없이 하기', 'No class')}</option>
                 {info.classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </label>
@@ -738,7 +755,19 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             )}
           </div>
         )}
-        <div className="space-y-2">
+        {isTwoDice ? (
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-bold">{text('참여 방식', 'How to play')}</legend>
+            <div className="flex flex-wrap gap-2">
+              {[1, 2, 3, 4].map(count => (
+                <button key={count} type="button" className={chip(pDiceTeams === count)} aria-pressed={pDiceTeams === count} onClick={() => setPDiceTeams(count)}>
+                  {count === 1 ? text('혼자 연습', 'Solo practice') : text(`${count}팀 대결`, `${count} teams`)}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-on-surface-variant">{text('반을 선택하지 않아도 참여 방식을 고를 수 있어요. 참여 방식을 바꾸면 새 판을 시작해요.', 'You can choose how to play without a class. Changing this starts a new board.')}</p>
+          </fieldset>
+        ) : <div className="space-y-2">
           <p className="text-sm font-bold">{text('참여 방식', 'How to play')}</p>
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" className={chip(pMode === 'none')} aria-pressed={pMode === 'none'} onClick={() => setPMode('none')}>{text('없음', 'None')}</button>
@@ -754,14 +783,14 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             </div>
           )}
           <p className="text-xs text-on-surface-variant">{text('개인·팀을 고르면 도구줄 아래에 지금 차례가 보여요. 팀은 "적용"을 누르면 학생이 무작위로 나뉘어요. 직접 바꾸려면 아래 팀·순서 정하기를 쓰세요.', 'Press Apply to split students into random teams. Use Set teams and order to adjust by hand.')}</p>
-        </div>
-        {pMode !== 'none' && !isBomb && (
+        </div>}
+        {!isTwoDice && pMode !== 'none' && !isBomb && (
           <label className="flex min-h-11 items-center gap-2 font-bold">
             <input type="checkbox" className="h-5 w-5" checked={pAutoTurn} onChange={(e) => setPAutoTurn(e.target.checked)} />
             {text('한 판이 끝나면 자동으로 다음 차례로 넘기기', 'Move to the next turn automatically')}
           </label>
         )}
-        {pEff.length > 0 && pMode !== 'none' && (
+        {!isTwoDice && pEff.length > 0 && pMode !== 'none' && (
           <button type="button" className={btn} onClick={() => setOrderOpen(true)}>{text('팀·순서 정하기 (반 명단)', 'Set teams and order')}</button>
         )}
       </>)}
@@ -808,7 +837,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         )}
         {simpleOpts.length > 0 && (
           <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
-            {simpleOpts.map((o) => (
+            {simpleOpts.filter(o => o.key !== 'twoDiceRounds' || diceTeams >= 3).map((o) => (
               <div key={o.key} className="space-y-1">
                 <p className="text-sm font-bold">{text(o.ko, o.en)}</p>
                 {o.kind === 'choice' ? (
@@ -820,6 +849,9 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
                 )}
               </div>
             ))}
+            {isTwoDice && <p className="text-sm text-on-surface-variant">{diceTeams >= 3
+              ? text('한 줄을 먼저 채우면 승리해요. 횟수를 다 쓰거나 판이 가득 차면 가장 많은 칸을 차지한 팀이 이겨요. 같은 점수는 공동 1위예요.', 'Complete a line to win. If rolls run out or the board fills, most cells wins. Equal scores share first place.')
+              : text('가로·세로·대각선 중 한 줄을 채우면 빙고예요.', 'Complete a row, column, or diagonal to get bingo.')}</p>}
             {(pOpt.hoopsMode === 'picture' || pOpt.tugMode === 'picture') && <p className="text-sm text-on-surface-variant">{t(pictureWordQuestions(info?.selected?.config).length ? 'gameWordHoops.pictureHint' : 'gameWordHoops.pictureNeedsList')}</p>}
           </div>
         )}

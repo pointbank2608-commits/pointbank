@@ -58,6 +58,9 @@ export default function TwoDicePage() {
 
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
+  const size = [3, 4, 5, 6].find(n => n === selected?.config.twoDiceSize) ?? 6;
+  const teams = [1, 2, 3, 4].find(n => n === selected?.config.twoDiceTeams) ?? 2;
+  const rounds = [6, 9, 12].find(n => n === selected?.config.twoDiceRounds) ?? 9;
 
   async function persistItems(next: GameItem[]): Promise<boolean> {
     if (!selected) return false;
@@ -260,8 +263,11 @@ export default function TwoDicePage() {
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
             <TwoDice
-              key={roundKey}
+              key={`${roundKey}:${size}:${teams}:${rounds}`}
               items={selected.items}
+              size={size}
+              teamCount={teams}
+              rounds={rounds}
               editable={false}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}

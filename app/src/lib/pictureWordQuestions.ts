@@ -10,7 +10,7 @@ const NATIVE = new Set<GameType>([
   'flashcards', 'wordclaw', 'treasuredig', 'fourclues',
 ]);
 const SEPARATE = new Set<GameType>(['wordhoops', 'tugofwar', 'quizshow']);
-const EXTRA_WORD_GAMES = new Set<GameType>(['shopping', 'watermelon', 'twodice', 'order', 'ladder']);
+const EXTRA_WORD_GAMES = new Set<GameType>(['shopping', 'watermelon', 'order', 'ladder']);
 
 export function pictureWordModeKind(type?: GameType): 'native' | 'turn' | null {
   if (!type || SEPARATE.has(type)) return null;

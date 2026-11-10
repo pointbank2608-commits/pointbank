@@ -458,6 +458,9 @@ export interface GameTemplateConfig {
   tugMode?: 'text' | 'picture';
   pictureWords?: Pick<FullCardItem, 'id' | 'word' | 'imageUrl'>[];
   pictureWordMode?: boolean;
+  twoDiceSize?: number;
+  twoDiceTeams?: number;
+  twoDiceRounds?: number;
   pictureWordListId?: string;
   /** race 정해진 슛을 먼저 끝내기 · timed 제한 시간 안에 많이 넣기, 그리고 제한 시간(초) */
   hoopsRule?: 'race' | 'timed';

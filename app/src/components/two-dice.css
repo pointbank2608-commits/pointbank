@@ -47,6 +47,17 @@
 .td-score b { font-size: 1.2em; font-variant-numeric: tabular-nums; }
 .td-score-blue { background: #c9ecff; }
 .td-score-red { background: #f8dce5; }
+.td-score-green { background: #ccefd9; }
+.td-score-purple { background: #e9dcff; }
+.td-scoreboard-1 { grid-template-columns: 1fr auto; }
+.td-scoreboard-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.td-scoreboard-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.td-scoreboard:is(.td-scoreboard-3, .td-scoreboard-4) .td-score {
+  padding-inline: clamp(5px, 1.5cqw, 23px);
+  gap: clamp(4px, 1cqw, 13px);
+}
+.td-scoreboard:is(.td-scoreboard-3, .td-scoreboard-4) .td-turn { grid-column: 1 / -1; }
+.td-rolls-left { margin-inline-start: .8em; font-weight: 600; white-space: nowrap; }
 .td-turn {
   border-radius: 999px;
   padding: 4px clamp(8px, 1.7cqw, 24px);
@@ -56,6 +67,8 @@
   font-size: clamp(12px, 1.55cqw, 18px);
 }
 .td-turn-red { background: #be3552; }
+.td-turn-green { background: #1f7148; }
+.td-turn-purple { background: #6844a4; }
 
 .td-layout {
   display: grid;
@@ -90,6 +103,8 @@
 .td-board .td-active-row > th { background: #ffc29c; }
 .td-board .td-cell-blue { box-shadow: inset 0 0 0 3px #2d85cf; background: #d8efff; }
 .td-board .td-cell-red { box-shadow: inset 0 0 0 3px #df6681; background: #ffe0e7; }
+.td-board .td-cell-green { box-shadow: inset 0 0 0 3px #36865b; background: #d6f1e0; }
+.td-board .td-cell-purple { box-shadow: inset 0 0 0 3px #815aba; background: #eee3ff; }
 .td-board .td-hit {
   position: relative;
   z-index: 1;
@@ -150,9 +165,8 @@
 }
 .td-reading-word { display: flex; align-items: center; flex: 1; min-height: clamp(51px, 10cqw, 130px); padding: 5px 8px; }
 .td-reading-placeholder { width: 100%; font-size: 28px; font-weight: 750; color: #55799e; }
-.td-footer { display: flex; align-items: baseline; justify-content: center; flex-wrap: wrap; gap: 0 8px; margin-top: 5px; }
-.td-reset { min-height: 36px; padding: 3px 12px; color: #124781; font-size: 13px; font-weight: 700; }
-.td-reset:hover { text-decoration: underline; }
+.td-footer { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px 14px; margin-top: 12px; }
+.td-reset { width: auto; max-width: 100%; padding-inline: 18px; font-size: clamp(14px, 1.6cqw, 20px); }
 .td-history { width: fit-content; max-width: 100%; font-size: 13px; }
 .td-history ul { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; padding: 5px 0; }
 .td-history li { border-radius: 20px; padding: 3px 9px; overflow-wrap: anywhere; }

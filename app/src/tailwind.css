@@ -1047,18 +1047,9 @@ html[data-game-focus] [data-app-main] { margin-left: 0; padding-top: 0; }
   animation: c4-win 0.9s ease-in-out infinite;
 }
 
-/* Shared geometry for the six-face clay dice. Motion lives in clay-dice.css. */
+/* Shared dice layout and rotation driver. Motion lives in clay-dice.css. */
 .td-die-scene { position:relative; width:var(--td-size); height:var(--td-size); }
 .td-cube { position:relative; width:100%; height:100%; transform-style:preserve-3d; transform:rotateX(var(--td-rx,0deg)) rotateY(var(--td-ry,0deg)); }
-.td-face { position:absolute; inset:0; overflow:hidden; backface-visibility:hidden; }
-.td-face-front { transform:translateZ(calc(var(--td-size) / 2)); }
-.td-face-back { transform:rotateY(180deg) translateZ(calc(var(--td-size) / 2)); }
-.td-face-right { transform:rotateY(90deg) translateZ(calc(var(--td-size) / 2)); }
-.td-face-left { transform:rotateY(-90deg) translateZ(calc(var(--td-size) / 2)); }
-.td-face-top { transform:rotateX(90deg) translateZ(calc(var(--td-size) / 2)); }
-.td-face-bottom { transform:rotateX(-90deg) translateZ(calc(var(--td-size) / 2)); }
-.td-pips { position:absolute; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); place-items:center; pointer-events:none; }
-.td-pip { aspect-ratio:1; }
 .td-die-shadow { position:absolute; border-radius:50%; pointer-events:none; }
 /* 구멍 안에 보이는 점토 원판: 가장자리 하이라이트·그늘로 두께를 살린다 */
 .c4-disc {

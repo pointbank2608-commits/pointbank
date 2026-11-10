@@ -666,6 +666,13 @@ const en: Ko = {
   },
 
   gameTwoDice: {
+    teams: { blue: 'Blue team', red: 'Red team', green: 'Green team', purple: 'Purple team' },
+    solo: 'My cells',
+    soloGoal: 'Complete a line to get bingo',
+    soloBingo: 'You got bingo!',
+    mostCells: '{{team}} wins with the most cells!',
+    tied: 'Tied for first: {{team}}',
+    rollsLeft: '{{count}} rolls left in total',
     defaultItem: 'Item {{n}}',
     studentClassTitle: "{{className}}'s Two Dice",
     newButton: '+ New list',
@@ -680,7 +687,7 @@ const en: Ko = {
     rowAxis: 'Row',
     colLabel: 'Col {{n}}',
     rowLabel: 'Row {{n}}',
-    boardLabel: 'Two Dice 6×6 game board',
+    boardLabel: 'Two Dice {{size}}×{{size}} game board',
     readWord: 'Word to read',
     reshuffleButton: 'Start new game (reshuffle)',
     recentResults: 'Recent results',
@@ -691,12 +698,12 @@ const en: Ko = {
     bingoMessage: '🎉 {{team}} bingo! Winner!',
     playAgainButton: 'Play again',
     infoDescription:
-      'Roll two dice to color a square for your team, and race to complete a row, column, or diagonal first.',
+      'Roll two dice, read the word they land on, and try to get bingo. Practice alone or play with 2–4 teams.',
     infoSteps: [
-      'In settings, add words to fill the 6x6 grid.',
-      'The blue and red teams take turns tapping "Roll the dice".',
-      'Read the word in the square the dice point to — it gets colored for your team.',
-      'The first team to complete a row, column, or diagonal wins!',
+      'Choose words in My words/sentences, players in Class settings, and a board size in Game settings.',
+      'Tap "Roll the dice" on your turn.',
+      'Land on an unclaimed square to color it. Read the word the dice point to.',
+      'Complete a row, column, or diagonal to get bingo.',
     ],
   },
 

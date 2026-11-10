@@ -461,7 +461,12 @@ export function useGameTemplates(params: {
       const draft = makeDraft({ cards: wordListToCards(list), kind, name: list.name, id: list.id });
       if (gameType === 'wordhoops') draft.config.hoopsMode = selected?.config.hoopsMode ?? draft.config.hoopsMode;
       if (gameType === 'tugofwar') draft.config.tugMode = selected?.config.tugMode ?? draft.config.tugMode;
-      if (selected?.config.pictureWordMode) {
+      if (gameType === 'twodice') {
+        draft.config.twoDiceSize = selected?.config.twoDiceSize;
+        draft.config.twoDiceTeams = selected?.config.twoDiceTeams;
+        draft.config.twoDiceRounds = selected?.config.twoDiceRounds;
+      }
+      if (gameType !== 'twodice' && selected?.config.pictureWordMode) {
         draft.config.pictureWordMode = true;
         draft.config.pictureWordListId = list.id;
       }
