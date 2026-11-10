@@ -35,8 +35,9 @@ export default function DetectiveGenerator({draft, count, lists, loading, onGene
   }
   return <div className="ad-edit-card" data-detective-generator>
     <h3>{l('내 문장으로 문제 만들기','Make questions from my sentences')}</h3>
-    <WordListPicker variant="label" kind="sentence" wordLists={lists} loading={loading}
-      onImportLabels={rows=>revise([sentences.trim(),...rows].filter(Boolean).join('\n'))}/>
+    <p>{l('저장한 문장을 불러오거나 직접 입력하고, 출제할 문법을 골라 미리보기를 확인하세요.', 'Load saved sentences or enter your own, then choose grammar rules and check the preview.')}</p>
+    <WordListPicker variant="full" kind="sentence" wordLists={lists} loading={loading}
+      onImportFull={rows=>revise([sentences.trim(),...rows.map(row=>row.word.trim())].filter(Boolean).join('\n'))}/>
     <label>{l('올바른 영어 문장 (한 줄에 하나)','Correct English sentences (one per line)')}
       <textarea aria-label={l('올바른 영어 문장 (한 줄에 하나)','Correct English sentences (one per line)')}
         rows={5} value={sentences} placeholder={'She can swim.\nShe needs a pencil.\nThis bag is bigger than mine.'} onChange={event=>revise(event.target.value)}/>

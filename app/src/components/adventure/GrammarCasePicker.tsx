@@ -22,7 +22,7 @@ export default function GrammarCasePicker({ onSelect }: { onSelect: (cases: Dete
   }
   return (
     <div className="ad-edit-card">
-      <strong>문법 항목에서 사건 가져오기</strong>
+      <strong>준비된 문법 문제 가져오기</strong>
       <div className="ad-edit-row">
         <label>문법 항목
           <select aria-label="문법 항목" value={id} onChange={(e) => select(e.target.value)}>
