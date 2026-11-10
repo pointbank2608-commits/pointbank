@@ -158,6 +158,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
   const [pseudoFs, setPseudoFs] = useState(false);
   const fullOn = isFullscreen || pseudoFs;
   const fill = fullOn || presenting || !!workspace?.playing;
+  const responsiveScene = gameType === 'grammardetective';
   const reportFullscreen=workspace?.setFullscreen;
   useEffect(()=>{reportFullscreen?.(fullOn);return ()=>reportFullscreen?.(false);},[fullOn,reportFullscreen]);
   const [scrollContent, setScrollContent] = useState(false);
@@ -279,7 +280,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
       const wrap = scaleRef.current;
       if (!stage || !wrap) return;
 
-      if (!fill && window.innerWidth < DESKTOP_BREAKPOINT) {
+      if (responsiveScene || (!fill && window.innerWidth < DESKTOP_BREAKPOINT)) {
         setScale(1);
         setNaturalSize(old => old.w || old.h ? { w:0, h:0 } : old);
         setScrollContent(false);
@@ -387,7 +388,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
       if (fitFrame) window.cancelAnimationFrame(fitFrame);
       window.removeEventListener('resize', fit);
     };
-  }, [fill, gameType, bg]);
+  }, [fill, gameType, bg, responsiveScene]);
 
   function enterPseudo() {
     setPseudoFs(true);
@@ -653,7 +654,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
             <p role="status" className="rounded-2xl bg-white px-6 py-3 text-xl font-bold text-deep-navy shadow-lg">{t('teacherGame.paused')}</p>
           </div>
         )}
-        <div ref={stageRef} data-game-fit={scrollContent ? 'scroll' : 'contain'} inert={!!workspace && (!workspace.running || !!workspace.panel)} className={fill ? 'game-fs-stage' : undefined} style={{ position: 'relative', zIndex: 1, ...(fill && scrollContent ? { overflow: 'auto', alignItems: 'flex-start', justifyContent: 'flex-start' } : {}) }}>
+        <div ref={stageRef} data-game-fit={responsiveScene ? 'responsive' : scrollContent ? 'scroll' : 'contain'} inert={!!workspace && (!workspace.running || !!workspace.panel)} className={fill ? 'game-fs-stage' : undefined} style={{ position: 'relative', zIndex: 1, ...(fill && scrollContent ? { overflow: 'auto', alignItems: 'flex-start', justifyContent: 'flex-start' } : {}) }}>
           <div
             className={fill ? 'contents' : 'mx-auto'}
             style={!fill && naturalSize.h > 0

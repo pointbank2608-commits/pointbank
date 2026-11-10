@@ -120,7 +120,6 @@ function Detective({c,e,r}:{c:AdventureConfig;e:AdventureEngine;r:Extract<Advent
   }
   return <>
     <div className="ad-prompt">🔎 {item.context?'상황을 읽고 문장을 고쳐요.':'틀린 단어나 빠진 자리를 찾고 고쳐요.'}</div>
-    <img className={`ad-detective-character ${e.reaction}`} src="/skins/adventure/detective-sprite.webp" alt="강아지 탐정"/>
     <div className={`ad-case-file ${e.reaction==='correct'?'ad-solved':''}`}>
       <small>CASE #{e.index+1} · 오류 {ranges.length}개</small>
       {item.context&&<p className="ad-detective-context">상황 · {item.context}</p>}
