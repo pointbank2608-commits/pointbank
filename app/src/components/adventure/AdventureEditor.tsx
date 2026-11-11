@@ -1,9 +1,9 @@
-import {detectiveSuggestion} from '../../lib/detectiveSuggestion';
+import {detectiveCaseFromVariant, detectiveSuggestion, previewDetectiveDraft} from '../../lib/detectiveSuggestion';
 import {useTranslation} from 'react-i18next';
 import DetectiveCaseEditor from './DetectiveCaseEditor';
 import DetectiveGenerator, {type DetectiveGeneratorHandle, type DetectiveInput} from './DetectiveGenerator';
 import GrammarCasePicker from './GrammarCasePicker';
-import { useEffect,useRef,useState } from 'react';
+import { useEffect,useMemo,useRef,useState } from 'react';
 import {usePreparationCommit} from '../../lib/usePreparationCommit';
 import {isSentenceList} from '../../lib/gameWorkspace';
 import { ADVENTURE_NAMES, adventureErrors, adventureId, importedAdventureWords, PLACE_ICONS, RELATIONS, RELATION_NAMES, targetKey, wordTokens, type AdventureConfig, type AdventureType, type IslandTarget } from '../../lib/adventureGames';
@@ -19,6 +19,9 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
   const [sentencePreview,setSentencePreview]=useState<DetectiveInput|null>(null);
   const [wordPreview,setWordPreview]=useState<DetectiveInput|null>(null);
   const draftDirty=!!(sentencePreview||wordPreview);
+  const draft=wordPreview&&sentencePreview?null:wordPreview??sentencePreview;
+  const draftSource=wordPreview?'words':'sentences';
+  const draftQuestions=useMemo(()=>draft?previewDetectiveDraft(draft.text,draft.rules,draftSource).ready:[],[draft,draftSource]);
   const detectiveAuthoring=useRef<HTMLDetailsElement>(null);
   const detectiveWordAuthoring=useRef<HTMLDetailsElement>(null);
   const sentenceGenerator=useRef<DetectiveGeneratorHandle>(null);
@@ -46,6 +49,12 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
   }
   const prepared=type==='grammardetective'?{...c,cases:c.cases.map(item=>{if(item.errors.length)return item;const suggestion=detectiveSuggestion(item.incorrect,item.correct);return suggestion?{...item,errors:[{id:'suggestion-'+item.id,...suggestion}]}:item;})}:c;
   async function commit(){
+    if(draft && draftQuestions.length){
+      const cases=draftQuestions.map(({variant,context})=>detectiveCaseFromVariant(variant,undefined,context||undefined));
+      await onApply(withCases({cases}));
+      onDirty(false);
+      return true;
+    }
     if(draftDirty||adventureErrors(type,prepared).length){
       const authoring=wordPreview?detectiveWordAuthoring.current:detectiveAuthoring.current;
       if(authoring)authoring.open=true;
@@ -72,7 +81,13 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
       return true;
     });
   },[registerListImporter,type]);
-  const errors=[...(draftDirty?['미리보기에서 ‘이 문제로 게임 시작’을 누르거나 변경을 취소하세요.']:[]),...adventureErrors(type,prepared)];const vocab=['balloonpop','wordfishing','wordclaw'].includes(type);const sentence=type==='wordtrain'||type==='sentencerocket';
+  const draftError = wordPreview && sentencePreview
+    ? '단어와 문장 미리보기를 둘 다 수정했어요. 사용할 미리보기에서 ‘이 문제로 게임 시작’을 눌러 주세요.'
+    : draft && !draftQuestions.length
+      ? '지금 미리보기에는 적용할 문제가 없어요. 문법이나 입력 내용을 바꿔 보세요.'
+      : '';
+  const errors = draftQuestions.length ? [] : [...(draftError ? [draftError] : []), ...adventureErrors(type,prepared)];
+  const vocab=['balloonpop','wordfishing','wordclaw'].includes(type);const sentence=type==='wordtrain'||type==='sentencerocket';
   function set<K extends keyof AdventureConfig>(key:K,v:AdventureConfig[K]){edit({...c,[key]:v});}
   function targetSelect(v:IslandTarget,onChange:(v:IslandTarget)=>void){return <select value={targetKey(v)} onChange={e=>{const [placeId,relation]=e.target.value.split(':');onChange({placeId,relation:relation as IslandTarget['relation']});}}>{c.places.flatMap(p=>RELATIONS.map(relation=><option key={`${p.id}:${relation}`} value={`${p.id}:${relation}`}>{p.name} · {RELATION_NAMES[relation]}</option>))}</select>;}
   return <section ref={root} className="ad-editor"><h2>{ADVENTURE_NAMES[type][1]} · 교사 설정</h2><p>‘적용’을 누르면 입력한 내용으로 준비해요. 다시 쓸 게임은 상단 ‘저장/불러오기’에서 저장할 수 있어요. 플레이 중에는 등록한 정답만 사용해요.</p>

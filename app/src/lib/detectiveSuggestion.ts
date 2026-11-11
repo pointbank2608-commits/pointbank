@@ -41,8 +41,12 @@ export function detectiveSuggestion(incorrect:string,correct:string):Omit<Detect
  return {start,end,replacement,choices:[incorrect.slice(start,end),replacement]};
 }
 
-const singularNouns = 'apple|orange|egg|umbrella|ant|elephant|owl|banana|book|dog|cat|pencil|car|cup|box|chair|desk|kite|bag|bus|sandwich';
-const pluralNouns: Record<string,string> = {apples:'apple',bananas:'banana',pencils:'pencil',cats:'cat',dogs:'dog',books:'book',boxes:'box',buses:'bus',chairs:'chair',cars:'car',bags:'bag',children:'child',teeth:'tooth',feet:'foot'};
+const singularNouns = 'apple|orange|egg|umbrella|ant|elephant|owl|banana|book|dog|cat|pencil|car|cup|box|chair|desk|kite|bag|bus|sandwich|chicken|cow|duck|hen|horse|pig|sheep|puppy';
+const pluralNouns: Record<string,string> = {
+  apples:'apple',bananas:'banana',pencils:'pencil',cats:'cat',dogs:'dog',books:'book',boxes:'box',
+  buses:'bus',chairs:'chair',cars:'car',bags:'bag',children:'child',teeth:'tooth',feet:'foot',
+  chickens:'chicken',cows:'cow',ducks:'duck',hens:'hen',horses:'horse',pigs:'pig',puppies:'puppy',
+};
 const pluralBySingular = new Map(Object.entries(pluralNouns).map(([plural, singular]) => [singular, plural]));
 const countableNouns = new Set(singularNouns.split('|'));
 const actionVerbs = new Set('go come run swim walk talk write sing sleep sit stand jump climb dance smile laugh work study read cook cry wait play listen travel fly'.split(' '));
@@ -151,7 +155,7 @@ function wordVariants(input:string, rules:readonly string[]):Variant[] {
 }
 
 export function previewDetectiveDraft(text:string, rules:readonly string[], source:'words'|'sentences'='sentences'){
- const rows=text.split(/\r?\n/).flatMap((line,index)=>{
+ const rows=(source==='words'?text.replaceAll(',', '\n'):text).split(/\r?\n/).flatMap((line,index)=>{
    const [sentence,...context]=line.split('|');
    const correct=sentence.trim();
    return correct?[{index,correct,context:context.join('|').trim(),variants:source==='words'?wordVariants(correct,rules):detectiveVariants(correct,rules)}]:[];
