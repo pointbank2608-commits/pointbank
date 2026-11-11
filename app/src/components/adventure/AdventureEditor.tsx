@@ -12,13 +12,12 @@ import WordListPicker from '../WordListPicker';
 import SentenceBankPicker from '../SentenceBankPicker';
 import './editor.css';
 
-export default function AdventureEditor({type,value,lists,loading,busy,onApply,onDirty}:{type:AdventureType;value:AdventureConfig;lists:WordList[];loading:boolean;busy:boolean;onApply:(value:AdventureConfig)=>Promise<void>;onDirty:(dirty:boolean)=>void}){
+export default function AdventureEditor({type,value,lists,loading,busy,onApply,onDirty}:{type:AdventureType;value:AdventureConfig;lists:WordList[];loading:boolean;busy:boolean;onApply:(value:AdventureConfig,start?:boolean)=>Promise<void>;onDirty:(dirty:boolean)=>void}){
   const {t,i18n}=useTranslation();const root=useRef<HTMLElement>(null);
   const [c,setC]=useState(()=>structuredClone(value));const [wordText,setWordText]=useState(()=>value.words.map(w=>`${w.word} / ${w.meaning} / ${w.tags.join(', ')}`).join('\n'));
   const [sentenceText,setSentenceText]=useState(()=>value.sentences.map(s=>s.text).join('\n'));const [place,setPlace]=useState(value.places[0]?.id||'');
   const [sentencePreview,setSentencePreview]=useState<DetectiveInput|null>(null);
   const [wordPreview,setWordPreview]=useState<DetectiveInput|null>(null);
-  const [selectedGenerator,setSelectedGenerator]=useState<'words'|'sentences'|null>(null);
   const draftDirty=!!(sentencePreview||wordPreview);
   const detectiveAuthoring=useRef<HTMLDetailsElement>(null);
   const detectiveWordAuthoring=useRef<HTMLDetailsElement>(null);
@@ -31,17 +30,19 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
     if(source==='words')setWordPreview(draft);else setSentencePreview(draft);
     onDirty(!!(draft||(source==='words'?sentencePreview:wordPreview))||JSON.stringify(c)!==JSON.stringify(value));
   }
-  function chooseCases(next:Pick<AdventureConfig,'cases'> & Partial<Pick<AdventureConfig,'detectiveDraft'|'detectiveWordDraft'>>,source:'words'|'sentences'|null){
+  function withCases(next:Pick<AdventureConfig,'cases'> & Partial<Pick<AdventureConfig,'detectiveDraft'|'detectiveWordDraft'>>){
     // Keep the other source's input available without applying its preview to the game.
-    edit({...c,
+    return {...c,
       detectiveWordDraft:wordPreview?{words:wordPreview.text,rules:wordPreview.rules}:c.detectiveWordDraft,
       detectiveDraft:sentencePreview?{sentences:sentencePreview.text,rules:sentencePreview.rules}:c.detectiveDraft,
       ...next,
-    });
+    };
+  }
+  function chooseCases(cases:AdventureConfig['cases']){
+    edit(withCases({cases}));
     setWordPreview(null);
     setSentencePreview(null);
-    setSelectedGenerator(source);
-    setActiveCaseId(next.cases[0]?.id);
+    setActiveCaseId(cases[0]?.id);
   }
   const prepared=type==='grammardetective'?{...c,cases:c.cases.map(item=>{if(item.errors.length)return item;const suggestion=detectiveSuggestion(item.incorrect,item.correct);return suggestion?{...item,errors:[{id:'suggestion-'+item.id,...suggestion}]}:item;})}:c;
   async function commit(){
@@ -71,7 +72,7 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
       return true;
     });
   },[registerListImporter,type]);
-  const errors=[...(draftDirty?['미리보기의 문제를 사용하거나 변경을 취소한 후 적용하세요.']:[]),...adventureErrors(type,prepared)];const vocab=['balloonpop','wordfishing','wordclaw'].includes(type);const sentence=type==='wordtrain'||type==='sentencerocket';
+  const errors=[...(draftDirty?['미리보기에서 ‘이 문제로 게임 시작’을 누르거나 변경을 취소하세요.']:[]),...adventureErrors(type,prepared)];const vocab=['balloonpop','wordfishing','wordclaw'].includes(type);const sentence=type==='wordtrain'||type==='sentencerocket';
   function set<K extends keyof AdventureConfig>(key:K,v:AdventureConfig[K]){edit({...c,[key]:v});}
   function targetSelect(v:IslandTarget,onChange:(v:IslandTarget)=>void){return <select value={targetKey(v)} onChange={e=>{const [placeId,relation]=e.target.value.split(':');onChange({placeId,relation:relation as IslandTarget['relation']});}}>{c.places.flatMap(p=>RELATIONS.map(relation=><option key={`${p.id}:${relation}`} value={`${p.id}:${relation}`}>{p.name} · {RELATION_NAMES[relation]}</option>))}</select>;}
   return <section ref={root} className="ad-editor"><h2>{ADVENTURE_NAMES[type][1]} · 교사 설정</h2><p>‘적용’을 누르면 입력한 내용으로 준비해요. 다시 쓸 게임은 상단 ‘저장/불러오기’에서 저장할 수 있어요. 플레이 중에는 등록한 정답만 사용해요.</p>
@@ -86,17 +87,17 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
       <details ref={detectiveWordAuthoring} className="ad-detective-authoring" data-detective-word-authoring>
         <summary>{i18n.resolvedLanguage?.startsWith('en')?'Make questions from my words':'내 단어로 문제 만들기'}</summary>
         <div className="ad-detective-authoring-body">
-          <DetectiveGenerator ref={wordGenerator} source="words" initialText={c.detectiveWordDraft?.words} initialRules={c.detectiveWordDraft?.rules} selectedForGame={selectedGenerator==='words'}
+          <DetectiveGenerator ref={wordGenerator} source="words" initialText={c.detectiveWordDraft?.words} initialRules={c.detectiveWordDraft?.rules} busy={busy}
             lists={lists.filter(list=>!isSentenceList(list))} loading={loading} onDraftChange={draft=>updateDraft('words',draft)}
-            onGenerate={({text:words,rules},cases)=>chooseCases({detectiveWordDraft:{words,rules},cases},'words')}/>
+            onGenerate={({text:words,rules},cases)=>void onApply(withCases({detectiveWordDraft:{words,rules},cases}),true).catch(()=>{})}/>
         </div>
       </details>
       <details ref={detectiveAuthoring} className="ad-detective-authoring" data-detective-sentence-authoring>
         <summary>{t('launchUx.detectiveAuthoring', {count:c.cases.length})}</summary>
         <div className="ad-detective-authoring-body">
-          <DetectiveGenerator ref={sentenceGenerator} initialText={c.detectiveDraft?.sentences} initialRules={c.detectiveDraft?.rules} selectedForGame={selectedGenerator==='sentences'} lists={lists.filter(isSentenceList)} loading={loading}
+          <DetectiveGenerator ref={sentenceGenerator} initialText={c.detectiveDraft?.sentences} initialRules={c.detectiveDraft?.rules} busy={busy} lists={lists.filter(isSentenceList)} loading={loading}
             onDraftChange={draft=>updateDraft('sentences',draft)}
-            onGenerate={({text:sentences,rules},cases)=>chooseCases({detectiveDraft:{sentences,rules},cases},'sentences')}
+            onGenerate={({text:sentences,rules},cases)=>void onApply(withCases({detectiveDraft:{sentences,rules},cases}),true).catch(()=>{})}
             onReview={(correct,context,detectiveDraft)=>{
               const existing=c.cases.find(item=>item.correct===correct&&!item.incorrect);
               const id=existing?.id??adventureId();
@@ -123,7 +124,7 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
             onRemove={()=>set('cases',c.cases.filter(item=>item.id!==activeCase.id))}/>}
         </div>
       </details>
-      {!preparing&&<GrammarCasePicker selectedForGame={selectedGenerator===null} onSelect={cases=>chooseCases({cases},null)}/>}
+      {!preparing&&<GrammarCasePicker selectedForGame onSelect={chooseCases}/>}
       {!preparing&&<details><summary>{t('launchUx.advanced')}</summary><div className="ad-edit-row"><label>{t('launchUx.detectiveMode')}<select value={c.detectiveMode} onChange={e=>set('detectiveMode',e.target.value as AdventureConfig['detectiveMode'])}><option value="choice">{t('launchUx.choiceMode')}</option><option value="type">{t('launchUx.typeMode')}</option></select></label><label><input type="checkbox" checked={c.caseSensitive} onChange={e=>set('caseSensitive',e.target.checked)}/>{t('launchUx.caseSensitive')}</label><label><input type="checkbox" checked={c.punctuationSensitive} onChange={e=>set('punctuationSensitive',e.target.checked)}/>{t('launchUx.punctuationSensitive')}</label></div></details>}
     </>}
     {type==='treasurehunt'&&<><h3>지도 장소 배치</h3><p>장소를 선택하고 지도 영역을 누르면 위치가 바뀝니다. 지점은 실제 장소의 상대 위치에 표시됩니다.</p><div className="ad-map-editor" onClick={e=>{const rect=e.currentTarget.getBoundingClientRect();set('places',c.places.map(p=>p.id===place?{...p,x:Math.round(Math.max(14,Math.min(86,(e.clientX-rect.left)/rect.width*100))),y:Math.round(Math.max(18,Math.min(78,(e.clientY-rect.top)/rect.height*100)))}:p));}}>{c.places.map(p=><button key={p.id} className={place===p.id?'is-selected':''} style={{left:`${p.x}%`,top:`${p.y}%`}} onClick={e=>{e.stopPropagation();setPlace(p.id);}}>{p.name}</button>)}</div>{c.places.map(p=><div className="ad-edit-row" key={p.id}><input aria-label="장소 이름" value={p.name} onFocus={()=>setPlace(p.id)} onChange={e=>set('places',c.places.map(x=>x.id===p.id?{...x,name:e.target.value}:x))}/><select value={p.icon} onChange={e=>set('places',c.places.map(x=>x.id===p.id?{...x,icon:e.target.value as typeof p.icon}:x))}>{PLACE_ICONS.map(icon=><option key={icon}>{icon}</option>)}</select><span>{p.x}%, {p.y}%</span><button onClick={()=>set('places',c.places.filter(x=>x.id!==p.id))}>삭제</button></div>)}<button onClick={()=>{const id=adventureId();set('places',[...c.places,{id,name:'new place',icon:'tree',x:50,y:50}]);setPlace(id);}}>+ 장소 추가</button>

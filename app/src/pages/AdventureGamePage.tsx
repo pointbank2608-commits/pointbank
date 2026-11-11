@@ -1,5 +1,5 @@
 import {useGameWorkspace} from '../context/GameWorkspaceContext';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { useGameTemplates } from '../lib/useGameTemplates';
@@ -19,7 +19,9 @@ export default function AdventureGamePage({ type }: { type: AdventureType }) {
   const {profile}=useAuth();
   const [fallback,setFallback]=useState(()=>({adventure:sampleAdventure(type)}));
   const [revision,setRevision]=useState(0);
+  const [startRevision,setStartRevision]=useState<number>();
   const [busy,setBusy]=useState(false);
+  const applying=useRef(false);
   const [pending,setPending]=useState(false);
   const [name,setName]=useState('');
   const [addLesson,setAddLesson]=useState(false);
@@ -33,17 +35,24 @@ export default function AdventureGamePage({ type }: { type: AdventureType }) {
       return { kind: 'vocab', id: row.id, word, choices, accepted: [wordKey(word.word)], imageUrl: row.imageUrl };
     })
     : undefined;
-  async function apply(value: AdventureConfig) {
-    if (adventureErrors(type,value).length || busy) return;
+  async function apply(value: AdventureConfig, start=false) {
+    if (adventureErrors(type,value).length || busy || applying.current) return;
+    applying.current=true;
     setBusy(true);
     try {
       const next={...selected?.config,adventure:structuredClone(value)};
       // Teacher-authored rules now own the content; stale source adapters must not override it.
       delete next.classroomSource;
-      if(!await g.persistConfig(next,name.trim()||ADVENTURE_NAMES[type][0]))setFallback({adventure:structuredClone(value)});
-      setPending(false);setRevision(n=>n+1);notify('게임 설정을 적용했어요.');
+      const applied=await g.persistConfig(next,name.trim()||ADVENTURE_NAMES[type][0]);
+      if(!applied)setFallback({adventure:structuredClone(value)});
+      setPending(false);setRevision(n=>n+1);
+      if(start&&workspace&&applied)workspace.startAppliedGame(applied.id);
+      else {
+        if(start&&!workspace)setStartRevision(revision+1);
+        notify('게임 설정을 적용했어요.');
+      }
     } catch(e){notify(e instanceof Error?e.message:String(e),'error');throw e;}
-    finally{setBusy(false);}
+    finally{applying.current=false;setBusy(false);}
   }
   async function save(copy: boolean) {
     if(!g.academy || !profile || busy || adventureErrors(type,config).length)return;
@@ -61,7 +70,7 @@ export default function AdventureGamePage({ type }: { type: AdventureType }) {
   }
   const activity:GameTemplate=selected || {id:'adventure-preview',game_type:type,academy_id:g.academy?.id || '',class_id:g.classId,created_by:null,created_at:'',updated_at:'',items:[],name:ADVENTURE_NAMES[type][0],config:{adventure:config}};
   return <div className="space-y-4">
-    {!g.loading && <GameThemeFrame gameType={type} onRestart={()=>setRevision(n=>n+1)}><AdventureGame key={`${type}:${selected?.id}:${revision}:${JSON.stringify(config)}`} type={type} config={config} preparedRounds={pictureRounds} onRestart={()=>setRevision(n=>n+1)}/></GameThemeFrame>}
+    {!g.loading && <GameThemeFrame gameType={type} onRestart={()=>setRevision(n=>n+1)}><AdventureGame key={`${type}:${selected?.id}:${revision}:${JSON.stringify(config)}`} type={type} config={config} preparedRounds={pictureRounds} autoStart={!workspace&&startRevision===revision} onRestart={()=>setRevision(n=>n+1)}/></GameThemeFrame>}
     {g.isStaff && !g.presenting && <>
       {!workspace&&<section className="ad-editor"><h2>{ADVENTURE_NAMES[type][0]} · 게임 준비</h2><p>콘텐츠를 적용하고 미리 본 다음 저장하세요. 제목을 비우면 자동으로 이름이 붙어요.</p><div className="ad-edit-row"><label>저장된 게임<select value={g.selectedId || ''} onChange={e=>{setPending(false);g.setSelectedId(e.target.value || null);}}><option value="">샘플 미리보기</option>{g.templates.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></label><label>게임 제목 (선택)<input value={name} placeholder={selected?.name || ADVENTURE_NAMES[type][0]} onChange={e=>setName(e.target.value)}/></label></div><div className="ad-edit-row"><button className="ad-apply" disabled={busy || pending || !!adventureErrors(type,config).length} onClick={()=>void save(true)}>새 게임으로 저장</button>{selected && <button disabled={busy} onClick={()=>void save(false)}>제목 변경</button>}<button disabled={busy || pending || !!adventureErrors(type,config).length} onClick={()=>setAddLesson(true)}>수업에 삽입</button></div></section>}
       <AdventureEditor key={`${selected?.id}:${revision}:${JSON.stringify(config)}`} type={type} value={config} lists={g.wordLists} loading={g.wordListsLoading} busy={busy} onApply={apply} onDirty={setPending}/>

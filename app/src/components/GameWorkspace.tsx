@@ -149,10 +149,14 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     && GAME_CATALOG.some(game => game.type === info.gameType && game.path === location.pathname);
   const entryKey = `${academy?.id}:${location.pathname}:${location.key}`;
   const playScope = `${identity}:${entryKey}`;
-  const [pendingPlay, setPendingPlay] = useState<{ scope: string; templateId: string } | null>(null);
-  const playAppliedTemplate = useCallback((templateId?: string) => {
-    if (!presenting && templateId) setPendingPlay({ scope: playScope, templateId });
+  const [pendingPlay, setPendingPlay] = useState<{ scope: string; templateId: string; explicit: boolean } | null>(null);
+  const playAppliedTemplate = useCallback((templateId?: string, explicit = false) => {
+    if (!presenting && templateId) setPendingPlay({ scope: playScope, templateId, explicit });
   }, [playScope, presenting]);
+  const startAppliedGame = useCallback((templateId: string) => {
+    completePreparation();
+    playAppliedTemplate(templateId, true);
+  }, [completePreparation, playAppliedTemplate]);
   const applyListAndPlay = useCallback(async (list: WordList) => {
     playAppliedTemplate(await bridge.current?.useList(list));
   }, [playAppliedTemplate]);
@@ -180,7 +184,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
       if (info?.selected?.id !== pendingPlay.templateId) return;
       setPendingPlay(null);
     } else if (playing) return;
-    if (waitingForSampleStart) return;
+    if (waitingForSampleStart && !pendingPlay?.explicit) return;
     setPlaying(true);
     setRunning(true);
   }, [automaticEntry, canStart, identity, info, location.key, location.state, panel, pendingPlay, playing, playScope, presenting, teams, waitingForSampleStart]);
@@ -292,7 +296,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const demo = game && demoForGame(game.path);
   const defaultMaterialName = defaultActivityName('',t(sourceKind==='sentence'?'flow.defaultSentences':'flow.defaultWords'),info?.lists.map(row=>row.name));
   const defaultGameName = defaultActivityName('',game ? t(game.nameKey) : t('flow.defaultActivity'),info?.templates.filter(row=>!isActivityDraft(row.id)).map(row=>row.name));
-  const value = useMemo(() => ({ info, registerPreparation,commitPreparation,registerDetectiveListImporter,openDetectiveList,fullscreen, setFullscreen, canStart, waitingForSampleStart, validation, stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), pauseLocked, setPauseLocked, panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, applyListAndPlay, applyGuideAndPlay, exitPlay, turn }), [info, stage, running, playing, pauseLocked, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, waitingForSampleStart, validation, fullscreen, capabilities.manualTurns,registerPreparation,commitPreparation,registerDetectiveListImporter,openDetectiveList,applyListAndPlay,applyGuideAndPlay]); // eslint-disable-line react-hooks/exhaustive-deps
+  const value = useMemo(() => ({ info, registerPreparation,commitPreparation,registerDetectiveListImporter,openDetectiveList,fullscreen, setFullscreen, canStart, waitingForSampleStart, validation, stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), pauseLocked, setPauseLocked, panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, startAppliedGame, applyListAndPlay, applyGuideAndPlay, exitPlay, turn }), [info, stage, running, playing, pauseLocked, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, waitingForSampleStart, validation, fullscreen, capabilities.manualTurns,registerPreparation,commitPreparation,registerDetectiveListImporter,openDetectiveList,startAppliedGame,applyListAndPlay,applyGuideAndPlay]); // eslint-disable-line react-hooks/exhaustive-deps
   const contentName = source?.name || info?.selected?.name || t('quick.sampleTitle');
   const materialButtons = (includeLoad = true) => <div className="flex flex-wrap gap-2" data-material-actions>
     {capabilities.kinds.map(kind => <button key={kind} className={btn} disabled={busy || !info?.temporary || !!info.sharedView} onClick={() => void begin(kind)}>{t(kind === 'word' ? 'flow.createWords' : 'flow.createSentences')}</button>)}

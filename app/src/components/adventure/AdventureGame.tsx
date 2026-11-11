@@ -16,12 +16,12 @@ function englishSpeak(text:string,fallback?:()=>void){
  const utter=new SpeechSynthesisUtterance(text);utter.lang='en-US';utter.voice=voice;utter.rate=.85;utter.onerror=()=>fallback?.();speechSynthesis.cancel();speechSynthesis.speak(utter);
 }
 function Voice({text,onFallback}:{text:string;onFallback?:()=>void}){return <button className="ad-voice" aria-label="영어 듣기" onClick={()=>{englishSpeak(text,onFallback);}}>🔊</button>;}
-export default function AdventureGame({type,config:c,onRestart,preparedRounds}:{type:AdventureType;config:AdventureConfig;onRestart:()=>void;preparedRounds?: AdventureRound[]}){
+export default function AdventureGame({type,config:c,onRestart,preparedRounds,autoStart=false}:{type:AdventureType;config:AdventureConfig;onRestart:()=>void;preparedRounds?: AdventureRound[];autoStart?:boolean}){
   const workspace=useGameWorkspace();
   const e=useAdventureEngine(type,c,!!workspace&&(!workspace.running||!!workspace.panel),preparedRounds);
   const errors=preparedRounds ? (preparedRounds.length ? [] : ['그림 문제를 준비해 주세요.']) : adventureErrors(type,c);
   const {phase,start}=e;
-  useEffect(()=>{if(workspace?.running&&phase==='ready'&&!errors.length)start();},[workspace?.running,phase,start,errors.length]);
+  useEffect(()=>{if((workspace?.running||autoStart)&&phase==='ready'&&!errors.length)start();},[workspace?.running,autoStart,phase,start,errors.length]);
   return <section className={`ad-game ad-${type} ${e.paused?'ad-paused':''} ad-phase-${e.phase}`} aria-label={ADVENTURE_NAMES[type][0]}>
     <span className="ad-ambient ad-ambient-one" aria-hidden="true">✦</span><span className="ad-ambient ad-ambient-two" aria-hidden="true">✧</span>
     {(type==='balloonpop'||type==='wordclaw')&&<img className={`ad-buddy ${e.reaction}`} src={`/skins/adventure/${type==='balloonpop'?'bunny':'kitten'}.webp`} alt=""/>}

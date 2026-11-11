@@ -8,12 +8,12 @@ import WordListPicker from '../WordListPicker';
 export type DetectiveInput = {text:string; rules:string[]};
 export type DetectiveGeneratorHandle = {importWords: (rows: string[]) => void};
 
-export default function DetectiveGenerator({ref, source='sentences', initialText='', initialRules=defaultDetectiveRules, selectedForGame=false, lists, loading, onGenerate, onDraftChange, onReview}: {
+export default function DetectiveGenerator({ref, source='sentences', initialText='', initialRules=defaultDetectiveRules, busy=false, lists, loading, onGenerate, onDraftChange, onReview}: {
   ref?: Ref<DetectiveGeneratorHandle>;
   source?: 'words' | 'sentences';
   initialText?: string;
   initialRules?: readonly string[];
-  selectedForGame?: boolean;
+  busy?: boolean;
   lists: WordList[];
   loading: boolean;
   onGenerate: (input: DetectiveInput, cases: DetectiveCase[]) => void;
@@ -86,10 +86,9 @@ export default function DetectiveGenerator({ref, source='sentences', initialText
           </li>)}</ol>
         </details>}
       </>}
-      <button type="button" className="ad-apply" disabled={!cases.length} onClick={()=>{
+      <button type="button" className="ad-apply" disabled={busy||!cases.length} onClick={()=>{
         onGenerate({text:sentences,rules},cases.map(({variant,context})=>detectiveCaseFromVariant(variant,undefined,context||undefined)));
-      }}>{l('이 문제들로 바꾸기','Replace with these questions')}</button>
-      {selectedForGame&&!changed&&<p role="status">{l('이 문제들을 선택했어요. 적용을 눌러 게임에 반영하세요.', 'These questions are selected. Press Apply to use them in the game.')}</p>}
+      }}>{busy?l('적용하는 중…','Applying…'):l('이 문제로 게임 시작','Start game with these questions')}</button>
     </section>}
     {changed&&
       <button type="button" onClick={()=>{setSentences(initialText);setRules([...initialRules]);onDraftChange(null);}}>

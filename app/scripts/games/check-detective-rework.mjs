@@ -178,7 +178,6 @@ try {
   assert.equal(await editors.getByRole('status').count(),0);
   console.log('PASS collapsed authoring, one active editor, and new questions kept when switching');
   await page.goto(base+'?game=grammardetective&mode=teacher');
-  await page.getByRole('button',{name:'게임 시작',exact:true}).click();
   await page.getByRole('button',{name:/^게임\s*설정$/}).click();
   await page.locator('[data-detective-word-authoring] > summary').click();
   const wordGenerator=page.locator('[data-detective-generator="words"]');
@@ -187,10 +186,11 @@ try {
   const wordInput=wordGenerator.getByRole('textbox');
   assert.equal(await wordInput.inputValue(),'apple\nbanana\nmilk');
   await wordGenerator.getByRole('button',{name:'선택 지우기'}).click();
+  assert.equal(await wordGenerator.getByRole('button',{name:'이 문제로 게임 시작',exact:true}).isEnabled(),false);
   await wordGenerator.getByRole('checkbox',{name:'관사 a/an',exact:true}).check();
   await wordGenerator.getByText('출제 가능 2문제 · 이번 게임 2문제 · 확인 필요 1단어').waitFor();
-  await wordGenerator.getByRole('button',{name:'이 문제들로 바꾸기'}).click();
-  await page.locator('[data-preparation-submit]').getByRole('button',{name:'적용',exact:true}).click();
+  await wordGenerator.getByRole('button',{name:'이 문제로 게임 시작',exact:true}).click();
+  await page.locator('dialog.game-workspace-dialog[open]').waitFor({state:'hidden'});
   const wordEvidence=scene.locator('.ad-evidence');
   await wordEvidence.getByRole('button',{name:'apple',exact:true}).waitFor();
   console.log('PASS word-list import, selected grammar, unsupported word review and actual play');
@@ -204,7 +204,7 @@ try {
   const settings=page.locator('[data-game-existing-settings]');
   await page.locator('[data-detective-word-authoring] > summary').click();
   await wordInput.fill('apple, wait');
-  await settings.getByText('미리보기의 문제를 사용하거나 변경을 취소한 후 적용하세요.',{exact:true}).waitFor();
+  await settings.getByText('미리보기에서 ‘이 문제로 게임 시작’을 누르거나 변경을 취소하세요.',{exact:true}).waitFor();
   await settings.getByText('클래스뱅크 기본 문제로 바꾸기',{exact:true}).click();
   await settings.getByLabel('기본 문제 주제',{exact:true}).selectOption('it-is');
   await settings.getByText(`이 문법의 문제 ${topicCases.length}개를 가져왔어요.`,{exact:false}).waitFor();
@@ -229,10 +229,8 @@ try {
   await generator.getByRole('button',{name:'선택 지우기'}).click();
   await generator.getByRole('checkbox',{name:'주어·동사 일치',exact:true}).check();
   await generator.getByText('출제 가능 1문제 · 이번 게임 1문제 · 확인 필요 1문장').waitFor();
-  await generator.getByRole('button',{name:'이 문제들로 바꾸기'}).click();
-  await page.locator('[data-preparation-submit]').getByRole('button',{name:'적용',exact:true}).click();
+  await generator.getByRole('button',{name:'이 문제로 게임 시작',exact:true}).click();
   await settings.waitFor({state:'hidden'});
-  await page.getByRole('button',{name:'게임 시작',exact:true}).click();
   await topicEvidence.getByRole('button',{name:'go',exact:true}).click();
   await scene.locator('.ad-choices').getByRole('button',{name:'goes',exact:true}).click();
   await page.getByText('사건 해결!',{exact:true}).waitFor();
@@ -246,8 +244,8 @@ try {
   await generator.getByText('출제 가능 2문제 · 이번 게임 2문제 · 확인 필요 1문장').waitFor();
   await generator.getByText('비교급 · 0문제').waitFor();
   await generator.getByText('She stopped talking.',{exact:true}).waitFor();
-  await generator.getByRole('button',{name:'이 문제들로 바꾸기'}).click();
-  await page.getByRole('button',{name:'설정 적용 · 게임 다시 준비',exact:true}).click();
+  await generator.getByRole('button',{name:'이 문제로 게임 시작',exact:true}).click();
+  await scene.locator('.ad-evidence').getByRole('button',{name:'a',exact:true}).waitFor();
   await page.waitForFunction(()=>JSON.parse(sessionStorage.getItem('adventure-test-rows')||'[]').some(row=>row.game_type==='grammardetective'));
   const saved=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('adventure-test-rows')).find(row=>row.game_type==='grammardetective'));
   await page.goto(base+`?game=grammardetective&mode=embed&template=${saved.id}`);
@@ -271,7 +269,9 @@ try {
   await openAuthoring();
   const input=page.getByLabel('올바른 영어 문장 (한 줄에 하나)',{exact:true});
   await input.fill('She needs a pencil.');
-  await generator.getByRole('button',{name:'이 문제들로 바꾸기'}).click();
+  await generator.getByRole('button',{name:'이 문제로 게임 시작'}).click();
+  await scene.locator('.ad-evidence').waitFor();
+  if(!await input.isVisible()) await openAuthoring();
   await editors.first().getByRole('button',{name:'다른 오류 만들기'}).click();
   await page.getByRole('button',{name:'설정 적용 · 게임 다시 준비',exact:true}).click();
   await page.getByRole('button',{name:'게임 시작',exact:true}).click();

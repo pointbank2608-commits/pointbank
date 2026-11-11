@@ -67,6 +67,7 @@ export interface WorkspaceContextValue {
   publish: (bridge: GameWorkspaceBridge) => void;
   open: (panel: "settings" | "content" | "games" | "teacher" | "video" | "guide" | null, anchor?: HTMLElement) => void;
   start: () => void;
+  startAppliedGame: (templateId: string) => void;
   applyListAndPlay: (list: WordList) => Promise<void>;
   applyGuideAndPlay: (content: Parameters<GameWorkspaceBridge['applyGuide']>[0]) => Promise<void>;
 }
