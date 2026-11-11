@@ -9,6 +9,7 @@ import LessonSlideViewerPage from '../../src/pages/LessonSlideViewerPage';
 import CvcWorkbookPage from '../../src/pages/CvcWorkbookPage';
 import PhonicsWorkbookPage from '../../src/pages/PhonicsWorkbookPage';
 import WorksheetPrintPage from '../../src/pages/WorksheetPrintPage';
+import MaterialsPage from '../../src/pages/MaterialsPage';
 import AppLayout from '../../src/pages/AppLayout';
 import {LessonRunnerProvider} from '../../src/context/LessonRunnerContext';
 import i18n from '../../src/i18n';
@@ -29,6 +30,7 @@ createRoot(document.getElementById('root')!).render(
     <Route path="/games/:gameId" element={<PreviewGame/>}/>
     <Route path="/phonics-games/:gameId?" element={<PhonicsGamesPage/>}/>
     <Route path="/materials/worksheet" element={<WorksheetPrintPage/>}/>
+    <Route path="/materials" element={<MaterialsPage/>}/>
     <Route path="/materials/cvc-workbook" element={<CvcWorkbookPage/>}/>
     <Route path="/materials/long-vowel-workbook" element={<CvcWorkbookPage key="long" book="long"/>}/>
     <Route path="/materials/phonics-stage-1" element={<PhonicsWorkbookPage key="stage1" step={1}/>}/>

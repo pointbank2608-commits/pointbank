@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import StemFrameView from './stem/StemFrameView';
 import { useTranslation } from 'react-i18next';
 import { buildWordListSentences, grammarPoint, useGrammarCards } from '../lib/grammar';
@@ -21,6 +21,9 @@ import ReadingBoard from './ReadingBoard';
 import WebSlideView from './WebSlideView';
 import WordShowBoard from './WordShowBoard';
 import YoutubeShadowingPlayer from './YoutubeShadowingPlayer';
+import LessonPdfView from './LessonPdfView';
+
+const PhonicsLessonGame = lazy(() => import('../pages/PhonicsGamesPage').then(m => ({ default: m.PhonicsLessonGame })));
 
 /**
  * 슬라이드 한 장의 화면(2026-09-27에 LessonSlideViewerPage 에서 뺌) — 발표 화면과 학생 따라보기(/watch)가
@@ -282,6 +285,11 @@ export default function LessonSlideContent({
       </div>
     );
   }
+
+  if (slide.kind === 'pdf') return <LessonPdfView key={slide.pdfPath} slide={slide} fill={fill} />;
+  if (slide.kind === 'phonicsGame') return <div className={fill ? 'absolute inset-0 overflow-auto p-3' : 'p-3'}>
+    <Suspense fallback={t('common.loading')}><PhonicsLessonGame key={slide.id+slide.unitId} gameId={slide.gameId} unitId={slide.unitId} /></Suspense>
+  </div>;
 
   if (slide.kind === 'image') {
     // 발표 중엔 부모 전체를 채우고 이미지는 그 안에서 최대한 크게. 평소엔 부모 높이가 콘텐츠에 따라 달라서 vh 로.

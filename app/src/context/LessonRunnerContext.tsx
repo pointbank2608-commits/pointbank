@@ -8,6 +8,7 @@ import { ONBOARDING_PRESENTED_KEY } from '../components/OnboardingChecklist';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { GAME_CATALOG } from '../lib/gameCatalog';
+import { PHONICS_GAMES } from '../lib/phonicsGames';
 import { lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
 import { effectiveSlides } from '../lib/lessonSlides';
 import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
@@ -15,7 +16,7 @@ import { grammarPoint } from '../lib/grammar';
 import type { CurriculumLesson, GameType, SlideHelper, WordList } from '../lib/types';
 
 export interface RunnerStep {
-  kind: 'stem' | 'image' | 'canvas' | 'study' | 'grammar' | 'reading' | 'shadow' | 'qna' | 'drill' | 'rainbow' | 'wordshow' | 'attendance' | 'video' | 'web' | 'game' | 'material' | 'print';
+  kind: 'stem' | 'image' | 'pdf' | 'phonicsGame' | 'canvas' | 'study' | 'grammar' | 'reading' | 'shadow' | 'qna' | 'drill' | 'rainbow' | 'wordshow' | 'attendance' | 'video' | 'web' | 'game' | 'material' | 'print';
   path: string;
   label: string;
   activityTitle?: string;
@@ -169,6 +170,11 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
         currentHelpers = slide.helpers && slide.helpers.length > 0 ? slide.helpers : undefined;
         if(slide.kind==='stem'){
           push({kind:'stem',path:`/curriculum/${lesson.id}/slide/${slide.id}`,label:slide.frame.title,icon:'science'});
+        } else if (slide.kind === 'pdf' || slide.kind === 'phonicsGame') {
+          const game = slide.kind === 'phonicsGame' ? PHONICS_GAMES.find(g => g.id === slide.gameId) : undefined;
+          push({ kind: slide.kind, path: `/curriculum/${lesson.id}/slide/${slide.id}`,
+            label: slide.kind === 'pdf' ? slide.title : game?.[t('lessonUx.language') === 'en' ? 'en' : 'ko'] ?? t('gameBrowse.phonics'),
+            icon: slide.kind === 'pdf' ? 'picture_as_pdf' : 'hearing' });
         } else if (slide.kind === 'image') {
           push({
             kind: 'image',

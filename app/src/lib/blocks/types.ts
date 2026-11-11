@@ -43,6 +43,7 @@ export interface BlockSlideRef {
   kind: LessonSlide['kind'];
   /** kind 가 game 일 때 */
   gameType?: GameType;
+  phonicsGameId?: string;
   /** kind 가 material 일 때(수업 자료실 id) */
   materialId?: string;
   /** kind 가 reading·rainbow 일 때의 화면 */

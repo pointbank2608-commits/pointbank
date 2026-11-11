@@ -29,7 +29,7 @@ import { useToast } from '../context/ToastContext';
 import { createGameTemplate, fetchAllWordLists, fetchWordLists, uploadLessonSlideImage } from '../lib/api';
 import { GAME_CATALOG, GAME_MOMENTS } from '../lib/gameCatalog';
 import { buildGameContent, lessonGameTemplateName, lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
-import { prepareClassroomGame } from '../lib/gameWorkspace';
+import { isSentenceList, prepareClassroomGame } from '../lib/gameWorkspace';
 import { enrichCards, loadWordBank, useWordBankEnriched } from '../lib/wordBankCache';
 import SlideHelpersEditor from './SlideHelpersEditor';
 import BlockOptionsPanel from './BlockOptionsPanel';
@@ -85,7 +85,10 @@ import CanvasSlideEditor, { BoardThemeChips } from './CanvasSlideEditor';
 import CanvasSlideView from './CanvasSlideView';
 import WorksheetOptionsFields from './worksheets/WorksheetOptionsFields';
 import LessonPrintPreview, { dedicatedPrintMaterials, wordPrintMaterials, workbookStep } from './LessonPrintPreview';
-import { activityMaterial, canvasExample, LESSON_SAMPLE_WORDS, type CanvasExample } from './LessonActivityExample';
+import { activityMaterial, canvasExample, LessonWordThumbnail, LESSON_SAMPLE_WORDS, type CanvasExample } from './LessonActivityExample';
+import LessonPdfView, { LessonPdfThumbnail } from './LessonPdfView';
+import { gameAvailability, PHONICS_GAMES, phonicsGameUnits } from '../lib/phonicsGames';
+import { PhonicsGameCover } from './PhonicsGameArt';
 import { loadPhonicsBank } from '../lib/phonicsFill';
 import { buildPhonicsWorkbook, workbookPrintable } from '../data/phonicsWorkbook';
 import type { PhonicsBankEntry } from '../lib/types';
@@ -234,7 +237,7 @@ export default function LessonSlideSorter({
 
   async function addWordSet() {
     const list = wordLists.find((wl) => wl.id === setListId);
-    if (!list || !teacher || setBusy || setLock.current) return;
+    if (!list || isSentenceList(list) || !teacher || setBusy || setLock.current) return;
     setLock.current=true;
     const words = wordListToCards(list);
     if (words.length === 0) return;
@@ -477,6 +480,15 @@ export default function LessonSlideSorter({
         if (!ref.gameType) return;
         slide = { id, kind: 'game', gameType: ref.gameType };
         break;
+      case 'phonicsGame': {
+        const game = PHONICS_GAMES.find(candidate => candidate.id === ref.phonicsGameId);
+        if (!game) return;
+        const unit = phonicsGameUnits().find(candidate => !gameAvailability(game, candidate));
+        if (!unit) return;
+        slide = { id, kind: 'phonicsGame', gameId: game.id, unitId: unit.id };
+        break;
+      }
+      case 'pdf': return; // Added only after the file and thumbnail are stored.
       case 'material':
         slide = { ...activityMaterial(block, selected), id, helpers: undefined };
         break;
@@ -511,8 +523,9 @@ export default function LessonSlideSorter({
 
   return (
     <WordListManageContext.Provider value={onManageWordList}>
-    {pickerOpen&&<LessonActivityPicker storageKey={recentKey} cards={cards} selected={selected} sourceName={wordList?.name ?? ''} sourceKind={wordList?.kind ?? 'word'} entries={phonicsEntries} lessonName={lessonName} canAttachHelper={!!selectedId&&!replaceTargetId}
+    {pickerOpen&&<LessonActivityPicker storageKey={recentKey} cards={cards} gameCards={gameCards} selected={selected} sourceName={wordList?.name ?? ''} sourceKind={wordList&&isSentenceList(wordList)?'sentence':'word'} entries={phonicsEntries} lessonName={lessonName} academyId={academyId} canAttachHelper={!!selectedId&&!replaceTargetId}
       onClose={()=>{setPickerOpen(false);if(addMode==='library')setAddMode(null);}}
+      onPdf={asset=>{if(!inputSession.active)return;pendingActivity.current='media.pdf';addSlide({id:uid(),kind:'pdf',...asset});setPickerOpen(false);setAddMode(null);}}
       onPick={pickBlock} onBundle={()=>{pendingActivity.current='wordset';setPickerOpen(false);setAddMode('wordset');}}/>}
 
     <div className="flex flex-col gap-4 lg:flex-row">
@@ -546,6 +559,7 @@ export default function LessonSlideSorter({
               <SlideThumb
                 key={slide.id}
                 slide={slide}
+                cards={cards}
                 index={i}
                 // 새 슬라이드를 추가하는 동안에는 기존 슬라이드를 선택 표시하지 않는다(그 슬라이드를 고치는
                 // 중인 것처럼 보이지 않게).
@@ -602,14 +616,14 @@ export default function LessonSlideSorter({
                   className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary"
                 >
                   <option value="">{t('curriculum.slides.wordSet.pick')}</option>
-                  {wordLists.filter((wl) => !wl.group_name).map((wl) => (
+                  {wordLists.filter((wl) => !isSentenceList(wl) && !wl.group_name).map((wl) => (
                     <option key={wl.id} value={wl.id}>
                       {wl.name} ({wl.items.length})
                     </option>
                   ))}
-                  {[...new Set(wordLists.map((wl) => wl.group_name).filter((g): g is string => !!g))].map((g) => (
+                  {[...new Set(wordLists.filter(wl => !isSentenceList(wl)).map((wl) => wl.group_name).filter((g): g is string => !!g))].map((g) => (
                     <optgroup key={g} label={g}>
-                      {wordLists.filter((wl) => wl.group_name === g).map((wl) => (
+                      {wordLists.filter((wl) => !isSentenceList(wl) && wl.group_name === g).map((wl) => (
                         <option key={wl.id} value={wl.id}>
                           {wl.name} ({wl.items.length})
                         </option>
@@ -717,6 +731,11 @@ export default function LessonSlideSorter({
 }
 
 function slideThumbLabel(slide: LessonSlide, t: TFunction): { icon: string; label: string } {
+  if (slide.kind === 'pdf') return { icon: 'picture_as_pdf', label: slide.title };
+  if (slide.kind === 'phonicsGame') {
+    const game = PHONICS_GAMES.find(candidate => candidate.id === slide.gameId);
+    return { icon: 'hearing', label: game?.[t('lessonUx.language') === 'en' ? 'en' : 'ko'] ?? t('gameBrowse.phonics') };
+  }
   if(slide.kind==='stem')return {icon:'science',label:slide.frame.title};
   if (slide.kind === 'image') return { icon: 'image', label: t('curriculum.slides.kindImage') };
   if (slide.kind === 'study') return { icon: 'style', label: t('curriculum.slides.kindStudy') };
@@ -762,6 +781,7 @@ function slideThumbLabel(slide: LessonSlide, t: TFunction): { icon: string; labe
 
 function SlideThumb({
   slide,
+  cards,
   index,
   selected,
   onSelect,
@@ -770,6 +790,7 @@ function SlideThumb({
   needsContent,
 }: {
   slide: LessonSlide;
+  cards: FullCardItem[];
   index: number;
   selected: boolean;
   onSelect: () => void;
@@ -783,6 +804,13 @@ function SlideThumb({
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
   const { icon, label } = slideThumbLabel(slide, t);
   const videoId = slide.kind === 'video' ? extractYoutubeId(slide.videoUrl) : null;
+  const word = slide.kind === 'wordshow' || slide.kind === 'study' ? (slide.words?.length ? slide.words[0] : cards[0]) : undefined;
+  const phonicsGame = slide.kind === 'phonicsGame' ? PHONICS_GAMES.find(game => game.id === slide.gameId) : undefined;
+  const cover = slide.kind === 'material' ? MATERIALS_CATALOG.find(item => item.id === slide.materialId)?.cover : undefined;
+  const excerpt = slide.kind === 'reading' || slide.kind === 'shadow' ? slide.source
+    : slide.kind === 'drill' ? slide.sentence : slide.kind === 'qna' ? slide.questions[0]?.q : undefined;
+  const speaking = slide.kind === 'rainbow' && slide.mode === 'speak' ? pickSpeaking(slide.itemIds)[0] : undefined;
+  const structure = slide.kind === 'rainbow' && slide.mode === 'structure' ? pickStructure(slide.itemIds)[0] : undefined;
 
   return (
     <div
@@ -826,7 +854,9 @@ function SlideThumb({
         </button>
       </div>
       <div className="flex h-24 w-40 shrink-0 items-center justify-center bg-surface-container lg:w-full">
-        {slide.kind === 'stem' ? <StemFrameView frame={slide.frame} meta={slide.stemMeta} interactive={false}/> : slide.kind === 'canvas' ? (
+        {slide.kind === 'pdf' ? <LessonPdfThumbnail slide={slide} /> : phonicsGame ? <PhonicsGameCover game={phonicsGame} />
+          : word ? <LessonWordThumbnail card={word} study={slide.kind === 'study'} />
+          : slide.kind === 'stem' ? <StemFrameView frame={slide.frame} meta={slide.stemMeta} interactive={false}/> : slide.kind === 'canvas' ? (
           <CanvasSlideView slide={slide} className="pointer-events-none" />
         ) : slide.kind === 'grammar' && grammarPoint(slide.grammarId) ? (
           <GrammarBoard
@@ -841,12 +871,29 @@ function SlideThumb({
           <img src={slide.imageUrl} alt="" className="h-full w-full object-cover" />
         ) : slide.kind === 'video' && videoId ? (
           <img src={`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`} alt="" className="h-full w-full object-cover" />
+        ) : cover ? (
+          <img src={cover} alt="" loading="lazy" className="h-full w-full object-cover" />
+        ) : excerpt ? (
+          <div className="m-3 w-full rounded-lg border border-sky-200 bg-white p-2 text-center font-semibold text-deep-navy">
+            <p className="line-clamp-2 break-words">{excerpt.trim().split('\n')[0]}</p>
+          </div>
+        ) : speaking ? (
+          <LessonWordThumbnail study={false} card={{id:speaking.id,word:speaking.englishAnswer,meaning:speaking.koreanPrompt,imageUrl:speaking.imageMain}} />
+        ) : structure ? (
+          <div className="flex flex-wrap justify-center gap-1 px-2 text-sm font-bold text-deep-navy">
+            {structure.sentence.split(' ').slice(0, 6).map((part, i) => <span key={i} className={`rounded-md px-2 py-1 ${['bg-sky-200','bg-amber-200','bg-pink-200'][i%3]}`}>{part}</span>)}
+          </div>
+        ) : slide.kind === 'web' && slide.url ? (
+          <div className="m-3 w-full rounded-lg border border-sky-200 bg-white text-center font-bold text-deep-navy">
+            <span className="block rounded-t-lg bg-sky-100 px-2 py-1 text-xs">● ● ●</span>
+            <p className="line-clamp-2 break-all p-2 text-xs">{webSlideHost(slide.url)}</p>
+          </div>
         ) : (
           <span className="material-symbols-outlined text-3xl text-on-surface-variant">{icon}</span>
         )}
       </div>
       <div className="flex items-center gap-1 bg-surface-container-lowest px-2 py-1.5 text-left font-caption text-caption text-on-surface">
-        <span className="min-w-0 flex-1 truncate">{label}</span>
+        <span title={label} className="min-w-0 flex-1 truncate">{label}</span>
         {needsContent && (
           <span className="material-symbols-outlined shrink-0 text-[16px] text-error" title={t('curriculum.slides.gameContentMissing')}>
             error
@@ -891,6 +938,23 @@ function SlideDetail({
   onInsertAfter: (slide: LessonSlide) => void;
 }) {
   const { t } = useTranslation();
+
+  if (slide.kind === 'pdf') return <LessonPdfView key={slide.pdfPath} slide={slide} />;
+  if (slide.kind === 'phonicsGame') {
+    const game = PHONICS_GAMES.find(candidate => candidate.id === slide.gameId);
+    if (!game) return null;
+    return <div className="space-y-3">
+      <label className="flex flex-wrap items-center gap-2 font-bold">{t('lessonUx.needPhonicsUnit')}
+        <select className="min-h-11 rounded-xl border border-outline-variant bg-white px-3" value={slide.unitId}
+          onChange={event=>onUpdate({unitId:event.target.value})}>
+          {phonicsGameUnits().filter(unit=>!gameAvailability(game,unit)).map(unit=><option key={unit.id} value={unit.id}>
+            Level {unit.step} · Unit {unit.number} · {unit.groups.map(group=>group.label).join(' / ')}
+          </option>)}
+        </select>
+      </label>
+      <div className="mx-auto max-w-lg overflow-hidden rounded-xl"><PhonicsGameCover game={game} large /></div>
+    </div>;
+  }
 
   if (slide.kind === 'shadow') {
     return <ShadowSlideDetail key={slide.id} slide={slide} onUpdate={onUpdate} />;
@@ -1467,7 +1531,10 @@ function GameSlideEditor({
   const GamePage = game ? GAME_PAGES[game.path] : undefined;
   const cards = useWordBankEnriched(rawCards);
 
-  const content = useMemo(() => buildGameContent(slide.gameType, cards), [slide.gameType, cards]);
+  const sentenceSource = !!wordList && isSentenceList(wordList);
+  const content = useMemo(() => sentenceSource
+    ? prepareClassroomGame(slide.gameType, cards, 'sentence')
+    : buildGameContent(slide.gameType, cards), [slide.gameType, cards, sentenceSource]);
 
   /** 수업 단어장으로 이 게임의 내용을 만들어 슬라이드에 붙인다 — 슬라이드를 고르면 자동으로 한 번 하고, 단어장이 바뀌면 다시 한다. */
   async function createFromLesson(reason: 'first' | 'changed') {

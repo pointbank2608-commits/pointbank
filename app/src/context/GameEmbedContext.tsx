@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import type { GameContent } from '../lib/gameFromWords';
 
 /**
  * 게임 페이지를 "내 커리큘럼" 편집 화면 안에 그대로 띄울 때(게임 슬라이드 상세) 쓰는 컨텍스트.
@@ -12,6 +13,7 @@ export interface GameEmbed {
   classId: string | null;
   templateId?: string;
   onSelect: (templateId: string | null) => void;
+  preview?: { content: GameContent | null; title: string };
 }
 
 export const GameEmbedContext = createContext<GameEmbed | null>(null);

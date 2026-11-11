@@ -211,6 +211,28 @@ export default function PhonicsGamesPage(){
  </main></PhonicsSoundContext.Provider>;
 }
 
+export function PhonicsLessonGame({gameId,unitId}:{gameId:string;unitId:string}) {
+ const {i18n}=useTranslation();
+ const en=i18n.resolvedLanguage?.startsWith('en')??false;
+ const game=PHONICS_GAMES.find(candidate=>candidate.id===gameId);
+ const unit=useMemo(()=>phonicsGameUnits().find(candidate=>candidate.id===unitId),[unitId]);
+ const [playing,setPlaying]=useState(false);
+ const sound=usePhonicsGameSound(game??PHONICS_GAMES[0],playing);
+ if(!game||!unit)return <p>{l(en,'파닉스 유닛을 찾을 수 없어요.','This phonics unit is unavailable.')}</p>;
+ const reason=gameAvailability(game,unit,en);
+ if(reason)return <p>{reason}</p>;
+ return <PhonicsSoundContext.Provider value={sound}>
+  <div className="phonics-games pg-v2 activity-native-game">
+   {playing ? <GameSession game={game} unit={unit} en={en} rounds={6} seed={1} teams={1} level="normal"
+      autoSpeak={false} onExit={()=>setPlaying(false)} settings={null} onReward={()=>{}} rewards={[]}/>
+    : <div className="relative isolate grid min-h-60 w-full place-items-center overflow-hidden rounded-2xl">
+       <div className="pointer-events-none absolute inset-0" aria-hidden><PhonicsGameCover game={game} large/></div>
+       <GameStartCard name={gameName(game,en)} description={game.goal[en?1:0]} onStart={()=>setPlaying(true)}/>
+      </div>}
+  </div>
+ </PhonicsSoundContext.Provider>;
+}
+
 function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onReward,rewards,settings}:{game:PhonicsGame;unit:CourseUnit;en:boolean;rounds:number;seed:number;teams:number;level:PlayLevel;autoSpeak:boolean;onExit:()=>void;settings:ReactNode;onReward:(reward:VillageReward)=>void;rewards:VillageReward[]}){
  const {player}=usePhonicsSound();
  const [index,setIndex]=useState(0),[done,setDone]=useState(false),[paused,setPaused]=useState(false),[large,setLarge]=useState(false);
@@ -284,7 +306,7 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
  },[game,index,unit]);
  const milestones:Record<string,[string[],string[]]>={farm:[['씨앗 심기','물 주기','수확'],['Plant','Water','Harvest']],dino:[['발자국 찾기','알 발견','공룡 만나기'],['Tracks','Egg','Dinosaur']],space:[['연료 모으기','우주선 수리','친구 구조'],['Fuel','Repair','Rescue']],island:[['해변','숲','보물'],['Beach','Forest','Treasure']],book:[['첫 장','다음 장','책 완성'],['First page','Next page','Book complete']]};
  return <PlayWorld world={gameVisual(game).world}><div ref={panel} className={'pg-session '+(large?'pg-fullscreen':'')} data-phonics-session={game.id} data-paused={paused}>
-  <div className="pg-toolbar"><strong>{gameName(game,en)} · Unit {unit.number}</strong><button type="button" className="pg-button" onClick={()=>setSettingsOpen(true)}>{l(en,'게임 설정','Game settings')}</button><button type="button" className={paused ? 'pg-primary' : 'pg-button'} onClick={()=>setPaused(v=>!v)}>{l(en,paused?'계속하기':'잠시 멈춤',paused?'Resume':'Pause')}</button><button type="button" className="pg-button" onClick={()=>void toggleFullscreen()}>{l(en,large?'전체화면 종료':'전체화면',large?'Exit fullscreen':'Fullscreen')}</button><button type="button" className="pg-button pg-exit" onClick={()=>setLeaving(true)}>{l(en,'게임 나가기','Leave game')}</button>
+  <div className="pg-toolbar"><strong>{gameName(game,en)} · Unit {unit.number}</strong>{settings&&<button type="button" className="pg-button" onClick={()=>setSettingsOpen(true)}>{l(en,'게임 설정','Game settings')}</button>}<button type="button" className={paused ? 'pg-primary' : 'pg-button'} onClick={()=>setPaused(v=>!v)}>{l(en,paused?'계속하기':'잠시 멈춤',paused?'Resume':'Pause')}</button><button type="button" className="pg-button" onClick={()=>void toggleFullscreen()}>{l(en,large?'전체화면 종료':'전체화면',large?'Exit fullscreen':'Fullscreen')}</button><button type="button" className="pg-button pg-exit" onClick={()=>setLeaving(true)}>{l(en,'게임 나가기','Leave game')}</button>
     <GameReportButton gameName={`${gameName(game,en)} · Level ${unit.step} · Unit ${unit.number}`} className="pg-button" onOpenChange={setReportOpen} />
   </div>
   {settingsOpen&&<AccessibleDialog label={l(en,'게임 설정','Game settings')} onClose={()=>setSettingsOpen(false)}>

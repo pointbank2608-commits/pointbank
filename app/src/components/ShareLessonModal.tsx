@@ -21,6 +21,7 @@ export default function ShareLessonModal({
 }) {
   const { t } = useTranslation();
   const hasReading = effectiveSlides(lesson).some((s) => s.kind === 'reading' || s.kind === 'shadow');
+  const hasPdf = effectiveSlides(lesson).some(s => s.kind === 'pdf');
   const [dropReading, setDropReading] = useState(true);
   const [shares, setShares] = useState<LessonShareRow[] | null>(null);
   const [busy, setBusy] = useState(false);
@@ -82,6 +83,7 @@ export default function ShareLessonModal({
         <ul className="space-y-1 font-caption text-caption text-on-surface-variant">
           <li>• {t('lessonShare.includes')}</li>
           <li>• {t('lessonShare.excludes')}</li>
+          {hasPdf && <li>• {t('lessonUx.privatePdfShare')}</li>}
         </ul>
         {hasReading && (
           <label className="flex items-start gap-2 rounded-lg bg-warm-yellow/20 p-3 font-label-md text-label-md text-on-surface">

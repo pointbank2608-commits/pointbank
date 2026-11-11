@@ -39,6 +39,7 @@ import LessonHistoryModal from '../components/LessonHistoryModal';
 import MoreMenu from '../components/MoreMenu';
 import { useClasses } from '../lib/useClasses';
 import { buildGameContent, lessonGameTemplateName, lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
+import { isSentenceList, prepareClassroomGame } from '../lib/gameWorkspace';
 import { enrichCards, loadWordBank } from '../lib/wordBankCache';
 import { lessonCover } from '../lib/lessonCover';
 import { effectiveSlides } from '../lib/lessonSlides';
@@ -125,7 +126,7 @@ export default function CurriculumPage() {
     if(loadedScope.current!==scope){setWordLists([]);setLessons([]);setDeletedLessons([]);}
     try {
       const [wl, ls] = await Promise.all([
-        fetchWordLists(academy.id, staffClassId || ''),
+        fetchWordLists(academy.id, staffClassId || '', 'all'),
         fetchCurriculumLessons(academy.id, staffClassId || ''),
       ]);
       if(version!==reloadVersion.current)return;
@@ -503,7 +504,9 @@ export default function CurriculumPage() {
         out.push(slide);
         continue;
       }
-      const content = buildGameContent(slide.gameType, cards);
+      const content = wordList && isSentenceList(wordList)
+        ? prepareClassroomGame(slide.gameType, cards, 'sentence')
+        : buildGameContent(slide.gameType, cards);
       if (!content) {
         out.push(slide);
         continue;

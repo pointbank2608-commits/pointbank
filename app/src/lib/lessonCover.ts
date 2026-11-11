@@ -17,6 +17,8 @@ export type TagKey = 'vocab' | 'game' | 'grammar' | 'video' | 'material' | 'read
 const TAG_OF: Record<LessonSlide['kind'], TagKey> = {
   stem: 'custom',
   image: 'custom',
+  pdf: 'reading',
+  phonicsGame: 'game',
   canvas: 'custom',
   web: 'custom',
   video: 'video',

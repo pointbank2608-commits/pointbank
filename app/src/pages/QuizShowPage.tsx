@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 import ContestSetup from '../components/ContestSetup';
 import { useGameWorkspace } from '../context/GameWorkspaceContext';
 import { useAuth } from '../context/AuthContext';
+import { useGameEmbed } from '../context/GameEmbedContext';
 import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
 import GameImagePicker from '../components/GameImagePicker';
@@ -57,6 +58,7 @@ export default function QuizShowPage() {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const workspace = useGameWorkspace();
+  const lessonPreview = useGameEmbed()?.preview;
   const directEntry = isDirectGameEntry(useLocation().state);
   const g = useGameTemplates({ gameType: 'quizshow', listKind: 'all', defaultItems, defaultConfig: () => ({ liveQuestions: [] }) });
   const {
@@ -270,6 +272,10 @@ export default function QuizShowPage() {
   );
 
   const hostClassId = classId ?? null;
+
+  if (lessonPreview) return <GameThemeFrame gameType="quizshow" className="rounded-[28px]">
+    <QuizShowHost preview title={lessonPreview.title} questions={playable.length ? playable : demo} classId={null} templateId={null} speedBonus={speedBonus} />
+  </GameThemeFrame>;
 
   return (
     <div className="space-y-6">

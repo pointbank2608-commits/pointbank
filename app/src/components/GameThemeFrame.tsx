@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { clearBoardReturn, hasBoardReturn } from '../lib/boardMaterial';
 import { usePresenting } from '../context/LessonRunnerContext';
+import { useGameEmbed } from '../context/GameEmbedContext';
 import AccessibleDialog from './AccessibleDialog';
 import TeamOrderPanel from './TeamOrderPanel';
 import { PictureWordTurnProvider } from './PictureWordTurn';
@@ -152,6 +153,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
   // 같은 "채우기" 배치·확대 규칙(fill)을 쓰되, 브라우저 전체화면 대신 발표 영역(PresentZoomArea)을
   // absolute inset-0 으로 덮는다(2026-09-25 "수업 시작할 때 게임 화면도 전체 화면에 맞춰줘").
   const presenting = usePresenting();
+  const activityPreview = !!useGameEmbed()?.preview;
   const soundOn = useGameSoundOn();
   // 아이폰 사파리는 웹 페이지 요소의 전체화면(Fullscreen API)을 지원하지 않는다(아이패드·컴퓨터만) — 그럴 땐
   // 오류를 띄우는 대신 앱 안에서 화면 전체를 덮는 "화면 가득" 모드로 대신한다(2026-09-27).
@@ -594,7 +596,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
             }}
           />
         )}
-        {workspace ? workspace.teacherToolsTarget ? createPortal(toolbar, workspace.teacherToolsTarget) : null : toolbar}
+        {!activityPreview && (workspace ? workspace.teacherToolsTarget ? createPortal(toolbar, workspace.teacherToolsTarget) : null : toolbar)}
         {!nativeTurn && !workspace && showOrder && roster && teamOrder && teamOrder.order.length > 0 && (
           <div className="game-order-strip relative z-10 mb-3 flex shrink-0 items-center gap-2 rounded-2xl bg-surface-container-lowest/95 px-2 py-2 shadow-sm">
             <button

@@ -1,6 +1,7 @@
 import type {CSSProperties,ReactNode} from 'react';
 import type {PhonicsGame} from '../lib/phonicsGames';
 import {CLAY_PROPS,PHONICS_WORLDS,gameVisual,worldBackground,type ClayProp,type PhonicsWorld,type VillageReward} from '../lib/phonicsGameVisuals';
+import '../styles/phonics-games-v2.css';
 
 export function ClaySprite({kind,className='',style}:{kind:ClayProp;className?:string;style?:CSSProperties}){
  const n=CLAY_PROPS.indexOf(kind);

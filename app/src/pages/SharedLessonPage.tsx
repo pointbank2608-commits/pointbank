@@ -20,6 +20,8 @@ function slideInfo(s: LessonSlide, t: (k: string) => string): { icon: string; la
       return { icon: 'dashboard_customize', label: t('curriculum.slides.kindCanvas') };
     case 'image':
       return { icon: 'image', label: t('curriculum.slides.kindImage') };
+    case 'phonicsGame':
+      return { icon: 'hearing', label: t('gameBrowse.phonics') };
     case 'video':
       return { icon: 'smart_display', label: t('curriculum.slides.kindVideo') };
     case 'web':

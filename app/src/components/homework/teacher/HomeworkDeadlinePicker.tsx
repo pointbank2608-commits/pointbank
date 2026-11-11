@@ -48,7 +48,7 @@ export default function HomeworkDeadlinePicker({ value, onChange, en }: { value:
             const day=month+'-'+String(i+1).padStart(2,'0');
             return <button key={day} type="button" aria-label={day} aria-pressed={draft===day} aria-current={day===today?'date':undefined}
               disabled={day<today&&day!==value.slice(0,10)} onClick={()=>setDraft(day)}
-              className={draft===day?'hw-primary !min-w-0 !p-1':'!p-1'}>{i+1}</button>;
+              className={day===today?'hw-today !p-1':draft===day?'hw-selected-day !p-1':'!p-1'}>{i+1}</button>;
           })}
         </div>
         <div className="mt-4 flex justify-end gap-2">

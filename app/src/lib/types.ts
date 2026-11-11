@@ -769,6 +769,21 @@ export interface ImageSlide {
   imageUrl: string;
 }
 
+export interface PdfSlide {
+  id: string;
+  kind: 'pdf';
+  title: string;
+  pdfPath: string;
+  thumbnailPath: string;
+}
+
+export interface PhonicsGameSlide {
+  id: string;
+  kind: 'phonicsGame';
+  gameId: string;
+  unitId: string;
+}
+
 export interface VideoSlide {
   stemFrame?: import('./stemTypes').StemFrame;
   stemMeta?: import('./stemTypes').StemMeta;
@@ -1115,6 +1130,8 @@ export type LessonSlide = LessonSlideBase & { helpers?: SlideHelper[]; ownWordLi
 export type LessonSlideBase =
   | import('./stemTypes').StemSlide
   | ImageSlide
+  | PdfSlide
+  | PhonicsGameSlide
   | VideoSlide
   | GameSlide
   | MaterialSlide

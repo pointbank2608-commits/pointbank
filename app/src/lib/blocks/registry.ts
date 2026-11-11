@@ -2,6 +2,7 @@ import { evidenceRolesFor } from './evidenceProfiles';
 export { EVIDENCE_PROFILES } from './evidenceProfiles';
 import { GAME_CATALOG } from '../gameCatalog';
 import { MATERIALS_CATALOG } from '../materialsCatalog';
+import { PHONICS_GAMES } from '../phonicsGames';
 import { STEP_KINDS } from '../soloEdit';
 import { PRINTABLE_STEP_TYPES } from '../soloPrint';
 import type { GameType, LessonSlide } from '../types';
@@ -79,6 +80,11 @@ const printBlocks: BlockDef[] = MATERIALS_CATALOG.map((m) => ({
   slide: { kind: 'material', materialId: m.id },
 }));
 
+const phonicsGameBlocks: BlockDef[] = PHONICS_GAMES.map(game => ({
+  id: `phonicsGame.${game.id}`, role: 'main', category: 'game', icon: game.icon, uses: ['group'], status: 'ready',
+  name: { ko: game.ko, en: game.en }, slide: { kind: 'phonicsGame', phonicsGameId: game.id },
+}));
+
 /** 단체수업의 배우기 화면 — 슬라이드 종류 하나 = 블록 하나 */
 const learnBlocks: BlockDef[] = [
   {id:'learn.stem',role:'main',category:'learn',icon:'science',uses:['group','print'],status:'ready',name:{ko:'STEM 수업',en:'STEM lesson'},slide:{kind:'stem'}},
@@ -97,6 +103,7 @@ const learnBlocks: BlockDef[] = [
 
 const mediaBlocks: BlockDef[] = [
   { id: 'media.image', role: 'main', category: 'media', icon: 'image', uses: ['group'], status: 'ready', name: { ko: '그림', en: 'Image' }, slide: { kind: 'image' } },
+  { id: 'media.pdf', role: 'main', category: 'media', icon: 'picture_as_pdf', uses: ['group'], status: 'ready', name: { ko: 'PDF 추가', en: 'Add PDF' }, slide: { kind: 'pdf' } },
   { id: 'media.video', role: 'main', category: 'media', icon: 'smart_display', uses: ['group'], status: 'ready', name: { ko: '영상', en: 'Video' }, slide: { kind: 'video' }, concept: 'videoListen' },
   { id: 'media.web', role: 'main', category: 'media', icon: 'public', uses: ['group'], status: 'ready', name: { ko: '웹페이지', en: 'Web page' }, slide: { kind: 'web' } },
 ];
@@ -131,7 +138,7 @@ const soloBlocks: BlockDef[] = STEP_KINDS.filter((k) => k.t !== 'intro').map((k)
   concept: SOLO_CONCEPT[k.t],
 }));
 
-export const BLOCKS: BlockDef[] = [...gameBlocks, ...printBlocks, ...learnBlocks, ...mediaBlocks, ...freeBlocks, ...helperBlocks, ...soloBlocks];
+export const BLOCKS: BlockDef[] = [...gameBlocks, ...phonicsGameBlocks, ...printBlocks, ...learnBlocks, ...mediaBlocks, ...freeBlocks, ...helperBlocks, ...soloBlocks];
 
 const byId = new Map(BLOCKS.map((b) => [b.id, b]));
 export const findBlock = (id: string): BlockDef | null => byId.get(id) ?? null;
@@ -168,6 +175,10 @@ export function blockOfSlide(slide: LessonSlide): BlockDef | null {
       return findBlock('learn.attendance');
     case 'image':
       return findBlock('media.image');
+    case 'pdf':
+      return findBlock('media.pdf');
+    case 'phonicsGame':
+      return findBlock(`phonicsGame.${slide.gameId}`);
     case 'video':
       return findBlock('media.video');
     case 'web':

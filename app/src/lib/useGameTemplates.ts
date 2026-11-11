@@ -68,6 +68,7 @@ export function useGameTemplates(params: {
   const lessonRunner = useLessonRunner();
   /** 커리큘럼 편집 화면 안에 띄워진 경우(게임 슬라이드 상세) — 반·처음 템플릿이 슬라이드에서 온다. */
   const embed = useGameEmbed();
+  const preview = embed?.preview;
   const workspace = useGameWorkspace();
   const embedRef = useRef(embed);
   embedRef.current = embed;
@@ -83,7 +84,7 @@ export function useGameTemplates(params: {
     loading: classesLoading,
     error: classesError,
     reload: reloadClasses,
-  } = useClasses(academy?.id);
+  } = useClasses(preview ? undefined : academy?.id);
   // 반 목록을 못 불러왔으면(잠깐 끊김) 한 번 더 — 그대로 두면 "등록된 반이 없습니다"로 잘못 보인다.
   const classesRetried = useRef(false);
   useEffect(() => {
@@ -99,11 +100,11 @@ export function useGameTemplates(params: {
   const [studentClassName, setStudentClassName] = useState('');
 
   useEffect(() => {
-    if (isStaff || !session?.user.id) return;
+    if (preview || isStaff || !session?.user.id) return;
     fetchMyStudentRow(session.user.id)
       .then((s) => setStudentClassId(s?.class_id ?? null))
       .catch((err) => notify(err instanceof Error ? err.message : String(err), 'error'));
-  }, [isStaff, session?.user.id, notify]);
+  }, [preview, isStaff, session?.user.id, notify]);
 
   useEffect(() => {
     if (isStaff) return;
@@ -113,7 +114,7 @@ export function useGameTemplates(params: {
 
   const [withoutClass, setWithoutClass] = useState(true);
   const chooseClass = (id: string) => { setWithoutClass(!id); if (id) selectClass(id); };
-  const classId = !embed && !presenting && workspace && isStaff && withoutClass ? null : embed ? (embed.classId ?? staffClassId) : isStaff ? staffClassId : studentClassId;
+  const classId = preview ? null : !embed && !presenting && workspace && isStaff && withoutClass ? null : embed ? (embed.classId ?? staffClassId) : isStaff ? staffClassId : studentClassId;
 
   // 참가자를 매번 직접 입력하지 않도록, 이 반/학원 전체 학생 명단을 게임 항목 후보로 불러온다.
   const [rosterScope, setRosterScope] = useState<RosterScope>('class');
@@ -123,7 +124,7 @@ export function useGameTemplates(params: {
   useEffect(() => {
     let active = true;
     setRoster([]);
-    if (!academy?.id || !classId) {
+    if (preview || !academy?.id || !classId) {
       setRoster([]);
       return;
     }
@@ -134,7 +135,7 @@ export function useGameTemplates(params: {
       .catch((err) => notify(err instanceof Error ? err.message : String(err), 'error'))
       .finally(() => { if (active) setRosterLoading(false); });
     return () => { active = false; };
-  }, [academy?.id, classId, rosterScope, notify]);
+  }, [preview, academy?.id, classId, rosterScope, notify]);
 
   // 선생님이 이 반/학원에 만들어둔 단어장 목록 — WordListPicker 가 그대로 보여준다.
   const [wordLists, setWordLists] = useState<WordList[]>([]);
@@ -146,7 +147,7 @@ export function useGameTemplates(params: {
   const reloadWordLists = useCallback(async () => {
     const sequence = ++listSequence.current;
     setAllWordLists([]); setWordLists([]);
-    if (!academy?.id) {
+    if (preview || !academy?.id) {
       setWordLists([]);
       return;
     }
@@ -161,7 +162,7 @@ export function useGameTemplates(params: {
     } finally {
       if (sequence === listSequence.current) setWordListsLoading(false);
     }
-  }, [academy?.id, classId, notify, listKind, standalone]);
+  }, [preview, academy?.id, classId, notify, listKind, standalone]);
 
   useEffect(() => {
     void reloadWordLists();
@@ -221,7 +222,7 @@ export function useGameTemplates(params: {
   const consumedSource = useRef('');
   const load = useCallback(async () => {
     const sequence = ++loadSequence.current;
-    if (!academy?.id || (!classId && !temporary && !embedRef.current)) {
+    if (preview || !academy?.id || (!classId && !temporary && !embedRef.current)) {
       setTemplates([]);
       setLoading(false);
       return;
@@ -255,7 +256,7 @@ export function useGameTemplates(params: {
     } finally {
       if (sequence === loadSequence.current) { setLoadedWorkspaceKey(`${classId}:${gameType}`); setLoading(false); }
     }
-  }, [academy?.id, session?.user.id, classId, gameType, notify, temporary, temporaryId, location.key]);
+  }, [preview, academy?.id, session?.user.id, classId, gameType, notify, temporary, temporaryId, location.key]);
 
   useEffect(() => {
     void load();
@@ -281,14 +282,27 @@ export function useGameTemplates(params: {
   const reportedRef = useRef<string | null | undefined>(embed?.templateId);
   const initialSelectionReported=useRef(false);
   useEffect(() => {
-    if (!embedRef.current || loading) return;
+    if (!embedRef.current || preview || loading) return;
     if(!initialSelectionReported.current){initialSelectionReported.current=true;reportedRef.current=selectedId;return;}
     if (selectedId === (reportedRef.current ?? null)) return;
     reportedRef.current = selectedId;
     embedRef.current.onSelect(selectedId);
-  }, [loading, selectedId]);
+  }, [loading, preview, selectedId]);
 
-  const selected = templates.find((t) => t.id === selectedId) ?? null;
+  const previewFactory = useRef({ defaultItems, defaultConfig });
+  previewFactory.current = { defaultItems, defaultConfig };
+  const previewTemplate = useMemo<GameTemplate | null>(() => {
+    if (!preview) return null;
+    const defaults = previewFactory.current;
+    const template: GameTemplate = {
+      id: 'lesson-activity-preview', academy_id: '', class_id: null, game_type: gameType,
+      name: preview.title, created_by: null, created_at: '', updated_at: '',
+      items: defaults.defaultItems(), config: defaults.defaultConfig?.() ?? {},
+    };
+    if (preview.content) return { ...template, items: preview.content.items, config: { ...template.config, ...preview.content.config } };
+    return { ...template, ...guideSample(gameType, template) };
+  }, [gameType, preview]);
+  const selected = previewTemplate ?? templates.find((t) => t.id === selectedId) ?? null;
 
   /** Applying a new lesson game's configuration must also create its saved reference. */
   async function persistConfig(config: GameTemplateConfig, name?: string): Promise<GameTemplate | null> {
@@ -562,7 +576,7 @@ export function useGameTemplates(params: {
   // Refresh action closures each render. publish compares data identities before updating its state.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (!workspace || !isStaff) return;
+    if (preview || !workspace || !isStaff) return;
     workspace.publish({ settingsPending:!!params.hasPendingSettings?.(), gameType, classId, sharedView:!!lessonRunner.runner?.view, academyId: academy?.id || '', classes, roster, lists: allWordLists, templates, selected, loading,
       applyGuide: async (content) => {
         if (!temporary || !selected || lessonRunner.runner?.view) throw new Error('guide_not_available');
@@ -618,12 +632,12 @@ export function useGameTemplates(params: {
 
   return {
     /** 커리큘럼 "발표하기" 중 — 페이지는 편집 UI(EditOnly)를 숨기고 재생 영역만 보여준다. */
-    presenting,
+    presenting: presenting || !!preview,
     // 게임 페이지에서 isStaff 는 전부 "편집 UI를 보여줄지"(편집 패널·새로 만들기·삭제·게임판 안
     // 편집·퀴즈 편집 모드·돌림판 자동 생성)에만 쓰인다 — 발표 중엔 false 로 돌려줘서 35개 페이지를
     // 하나하나 고치지 않고도 편집이 전부 사라지게 한다. 데이터 로딩(classId 등)은 위에서 진짜
     // isStaff 로 이미 계산했으니 영향 없다.
-    isStaff: isStaff && (!presenting || !!workspace),
+    isStaff: !preview && isStaff && (!presenting || !!workspace),
     academy,
     classes,
     noClasses,
@@ -631,7 +645,10 @@ export function useGameTemplates(params: {
     selectClass: chooseClass,
     reorderClasses,
     studentClassName,
-    classId,
+    // A preview is already loaded. The legacy player gates use classId to
+    // distinguish a ready player from a student whose class is still loading.
+    // Keep the local preview ID separate from the class used by data requests.
+    classId: previewTemplate?.id ?? classId,
     roster,
     rosterScope,
     setRosterScope,
@@ -644,7 +661,7 @@ export function useGameTemplates(params: {
     selectedId,
     setSelectedId:selectTemplate,
     persistConfig,
-    loading: loading || classesLoading || (!!classId && loadedWorkspaceKey !== `${classId}:${gameType}`),
+    loading: !preview && (loading || classesLoading || (!!classId && loadedWorkspaceKey !== `${classId}:${gameType}`)),
     showCreateForm,
     setShowCreateForm,
     submitting,
