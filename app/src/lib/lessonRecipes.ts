@@ -414,7 +414,7 @@ async function buildClipLesson(ctx: RecipeContext, clip: VideoClip): Promise<Les
   const slides: LessonSlide[] = [{ id: uid(), kind: 'video', videoUrl, startSec: Number(clip.start_sec), endSec: Number(clip.end_sec) }];
   if (clip.pack?.questions?.length) slides.push({ id: uid(), kind: 'qna', title, questions: clip.pack.questions, videoUrl, boardTheme: 'green', clipId: clip.id });
   if (words.length) slides.push({ id: uid(), kind: 'wordshow', boardTheme: 'green', words, videoUrl });
-  slides.push({ id: uid(), kind: 'shadow', title, videoUrl, source: clip.script, flow: 'video', repeat: 1, speed: 1, subtitle: 'both', roleTeams: 0, clipId: clip.id });
+  slides.push({ id: uid(), kind: 'shadow', title, videoUrl, source: clip.script, flow: 'manual', repeat: 1, speed: 1, subtitle: 'both', roleTeams: 0, clipId: clip.id });
   slides.push({ id: uid(), kind: 'reading', mode: 'cloze', title, videoUrl, source: parts.clozeSource, boardTheme: 'green' });
   const g = clip.pack?.grammar;
   if (g?.grammarId && grammarPoint(g.grammarId)) slides.push({ id: uid(), kind: 'grammar', grammarId: g.grammarId, useWordList: false, boardTheme: 'green' });
@@ -448,9 +448,9 @@ export async function buildSelectedClipLesson(ctx:RecipeContext,clip:VideoClip,s
  const videoUrl=`https://www.youtube.com/watch?v=${clip.youtube_id}`,title=clip.title,slides:LessonSlide[]=[];
  const words=picks.has('words')?clipWordCards(clip,await loadWordBank()):[];
  if(picks.has('words')&&words.length)slides.push({id:uid(),kind:'wordshow',boardTheme:'green',words,videoUrl});
- if(picks.has('shadow'))slides.push({id:uid(),kind:'shadow',title,videoUrl,source:clip.script,flow:'video',repeat:1,speed:1,subtitle:'both',roleTeams:0,clipId:clip.id});
+ if(picks.has('shadow'))slides.push({id:uid(),kind:'shadow',title,videoUrl,source:clip.script,flow:'manual',repeat:1,speed:1,subtitle:'both',roleTeams:0,clipId:clip.id});
  if(picks.has('questions'))slides.push({id:uid(),kind:'qna',title,questions:clip.pack.questions!,videoUrl,boardTheme:'green',clipId:clip.id});
- if(picks.has('cloze'))slides.push({id:uid(),kind:'reading',mode:'cloze',title,videoUrl,source:markBingoWords(clip.script,clip.words),boardTheme:'green'});
+ if(picks.has('cloze')||picks.has('reading'))slides.push({id:uid(),kind:'reading',mode:'cloze',title,videoUrl,source:picks.has('cloze')?markBingoWords(clip.script,clip.words):clip.script,boardTheme:'green'});
  const g=clip.pack.grammar;if(picks.has('drill')&&g)slides.push({id:uid(),kind:'drill',title,sentence:g.sentence,sentenceKo:g.sentenceKo,point:g.point,drills:g.drills,time:g.time,videoUrl,boardTheme:'green',clipId:clip.id});
  if(picks.has('roles'))slides.push({id:uid(),kind:'shadow',title,videoUrl,source:clip.script,flow:'manual',repeat:1,speed:1,subtitle:'ko',roleTeams:2,clipId:clip.id});
  if(picks.has('bingo')){const bingo=clip.pack.bingo!;slides.push({id:uid(),kind:'material',materialId:'bingo',words:bingo.map(word=>({id:uid(),word,meaning:'',imageUrl:null})),boardTheme:'whiteboard'});}

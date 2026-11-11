@@ -8,12 +8,38 @@
  * 선생님이 직접 쓰거나, 나중에 AI 원문 분석이 같은 형식으로 채운다.
  * 가사 같은 원문은 이 선생님의 수업(슬라이드) 안에만 저장한다 — 공용 자료로 모으지 않는다(저작권).
  */
+import { parseShadowText } from './shadowLines';
+
 export interface ReadingLine {
   en: string;
   ko: string;
   /** 영상 시작 시점(초) */
   start: number | null;
   end?: number;
+}
+
+export function readingCue(start: number, end: number): string {
+  const format = (seconds: number) => {
+    const [whole, fraction] = seconds.toFixed(3).replace(/\.?0+$/, '').split('.');
+    const minutes = Math.floor(Number(whole) / 60);
+    return `${minutes}:${String(Number(whole) % 60).padStart(2, '0')}${fraction ? `.${fraction}` : ''}`;
+  };
+  return `[${format(start)}-${format(end)}]`;
+}
+
+/** Older generated cloze slides saved rounded starts. Restore a range only for an unambiguous transcript match. */
+export function restoreReadingCues(source: string, transcript: string): string {
+  const cues = parseShadowText(transcript);
+  const normalize = (text: string) => text.replaceAll('**', '').replace(/\s+/g, ' ').trim();
+  return source.split('\n').map(raw => {
+    const prefix = raw.match(/^\s*\[\d{1,2}:\d{2}\]\s*/);
+    if (!prefix) return raw;
+    const line = parseReadingText(raw)[0];
+    if (!line || line.start === null) return raw;
+    const matches = cues.filter(cue => Math.floor(cue.start) === line.start && normalize(cue.en) === normalize(line.en));
+    if (matches.length !== 1) return raw;
+    return `${readingCue(matches[0].start, matches[0].end)} ${raw.slice(prefix[0].length)}`;
+  }).join('\n');
 }
 
 export function parseReadingText(source: string): ReadingLine[] {

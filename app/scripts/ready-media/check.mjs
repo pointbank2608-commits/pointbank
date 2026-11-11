@@ -69,6 +69,24 @@ try{
   await page.getByRole('button',{name:/Synthetic fruit conversation/}).click();
   await page.getByRole('button',{name:'영상 보기',exact:true}).first().waitFor();
   await page.getByRole('button',{name:'이 영상으로 수업 만들기',exact:true}).waitFor();
+  assert.equal(await page.getByRole('checkbox',{name:/빈칸 듣기/}).isChecked(),true);
+  const generated=await page.evaluate(async()=>{
+   const {buildSelectedClipLesson,buildVideoLessonParts,parseReadingText,restoreReadingCues}=window.__models;
+   const clip={...window.__db.rows[0],script:'[0:25.6–0:26.5] Anna: I like apples. | 사과를 좋아해요.'};
+   const [shadow,reading]=await buildSelectedClipLesson({},clip,['shadow','cloze']);
+   const [withoutVocabulary]=await buildSelectedClipLesson({}, {...clip,words:[]}, ['reading']);
+   const saved='[0:25] I like **apples**. | 사과를 좋아해요.';
+   return {flow:shadow.flow,repeat:shadow.repeat,reading:parseReadingText(reading.source)[0],withoutVocabulary:parseReadingText(withoutVocabulary.source)[0],cloze:parseReadingText(buildVideoLessonParts(clip.script,[]).clozeSource)[0],legacy:parseReadingText(restoreReadingCues(saved,clip.script))[0],unrelated:restoreReadingCues(saved,'[0:25.6-0:26.5] I like bananas.')};
+  });
+  assert.equal(generated.flow,'manual');
+  assert.equal(generated.repeat,1);
+  for(const line of [generated.reading,generated.withoutVocabulary,generated.cloze,generated.legacy]){
+   assert.equal(line.start,25.6);
+   assert.equal(line.end,26.5);
+  }
+  assert.match(generated.legacy.en,/\*\*apples\*\*/);
+  assert.match(generated.unrelated,/^\[0:25\]/);
+  pass('Generated animation lessons include cloze, repeat once by default and preserve exact cues including older matching slides');
   await page.getByRole('link',{name:'활동지 인쇄',exact:true}).click();
   await page.locator('.animation-worksheet').waitFor();
   await page.getByRole('checkbox',{name:'단어',exact:true}).uncheck();
@@ -98,6 +116,15 @@ try{
    assert.equal(await page.evaluate(()=>window.__yt.plays),2);
   }
   await go('/lesson-memory');
+  await page.getByRole('button',{name:'수업 설정',exact:true}).click();
+  const settings=page.locator('[data-video-popup]');
+  await settings.getByText('재생·따라하기 방식',{exact:true}).click();
+  await settings.getByRole('button',{name:'이어서 영상 보기',exact:true}).click();
+  const repeatOnce=settings.getByRole('button',{name:'반복 1회',exact:true});
+  assert.equal(await repeatOnce.getAttribute('aria-pressed'),'false');
+  await repeatOnce.click();
+  assert.equal(await repeatOnce.getAttribute('aria-pressed'),'true');
+  await settings.getByRole('button',{name:'닫기',exact:true}).click();
   await playOnce();
   await go('/start-runner');
   await page.getByRole('button',{name:'Start actual lesson'}).click();

@@ -4,6 +4,7 @@
  * ② 그 낱말을 비운 빈칸 듣기 원문 ③ 문장 배열하기에 쓸 짧은 문장을 뽑는다. AI 없이 규칙만으로.
  */
 import { parseShadowText, type ShadowLine } from './shadowLines';
+import { readingCue } from './readingLines';
 import type { FullCardItem, WordBankEntry } from './types';
 
 /** 수업 낱말로 고르지 않는 품사 */
@@ -90,11 +91,10 @@ export function buildVideoLessonParts(source: string, bank: WordBankEntry[], max
   });
 
   const forms = new Set(picked.flatMap((k) => [...(surface.get(k) ?? [])]));
-  const mm = (sec: number) => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
   const clozeSource = lines
     .map((l) => {
       const en = l.en.replace(/\*\*/g, '').replace(/[A-Za-z']+/g, (w) => (forms.has(w.toLowerCase().replace(/'s$/, '')) ? `**${w}**` : w));
-      return `[${mm(l.start)}] ${en}${l.ko ? ` | ${l.ko}` : ''}`;
+      return `${readingCue(l.start, l.end)} ${en}${l.ko ? ` | ${l.ko}` : ''}`;
     })
     .join('\n');
 

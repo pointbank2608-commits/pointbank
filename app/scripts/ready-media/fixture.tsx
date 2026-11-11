@@ -11,6 +11,8 @@ import {readyClassPages,workbookTargets,matchOrder} from '../../src/data/readyCl
 import {popcornDeck,popcornCount} from '../../src/lib/popcorn';
 import {validatePhonicsSong} from '../../src/lib/phonicsSongs';
 import {buildSelectedClipLesson} from '../../src/lib/lessonRecipes';
+import {buildVideoLessonParts} from '../../src/lib/videoLesson';
+import {parseReadingText, restoreReadingCues} from '../../src/lib/readingLines';
 import {LessonRunnerProvider,useLessonRunner} from '../../src/context/LessonRunnerContext';
 import LessonRunnerBar from '../../src/components/LessonRunnerBar';
 import LessonSlideContent from '../../src/components/LessonSlideContent';
@@ -18,7 +20,7 @@ import {useVideoClips} from '../../src/lib/videoClips';
 import i18n from '../../src/i18n';
 import '../../src/tailwind.css';
 void i18n.changeLanguage('ko');
-Object.assign(window,{__models:{courseUnits,lessonSlides,readyClassPages,workbookTargets,matchOrder,popcornDeck,popcornCount,validatePhonicsSong,buildSelectedClipLesson}});
+Object.assign(window,{__models:{courseUnits,lessonSlides,readyClassPages,workbookTargets,matchOrder,popcornDeck,popcornCount,validatePhonicsSong,buildSelectedClipLesson,buildVideoLessonParts,parseReadingText,restoreReadingCues}});
 function Saved(){const [params]=useSearchParams();return <div data-saved-state>{JSON.stringify(params.get('dummy'))}</div>;}
 function Lesson(){const {clips}=useVideoClips();const [page,setPage]=useState(0);return <><button onClick={()=>setPage(p=>1-p)}>Switch activity</button><div style={{height:'80vh',position:'relative'}}>{page===0&&clips&&<LessonSlideContent slide={{id:'qa-video-slide',kind:'shadow',source:clips[0].script,videoUrl:'https://www.youtube.com/watch?v='+clips[0].youtube_id,flow:'manual'}} words={[]} fill lessonName="Synthetic" attendance={null}/>}</div></>;}
 function StartRunner(){const {start}=useLessonRunner();const {clips}=useVideoClips();return <button onClick={()=>{const clip=clips![0];const lesson={id:'qa-lesson',name:'Synthetic lesson',academy_id:'qa-only',class_id:null,word_list_id:null,video_url:null,playlist:[{id:'video-one',kind:'shadow',title:'Video activity',source:clip.script,videoUrl:'https://www.youtube.com/watch?v='+clip.youtube_id,flow:'manual'},{id:'questions-two',kind:'qna',title:'Questions activity',questions:clip.pack.questions,clipId:clip.id,videoUrl:'https://www.youtube.com/watch?v='+clip.youtube_id,boardTheme:'green'},{id:'reading-three',kind:'reading',mode:'cloze',title:'Reading activity',source:clip.id==='synthetic-clip'?Array.from({length:16},(_,i)=>'['+Math.floor(i*3/60)+':'+String(i*3%60).padStart(2,'0')+'.0–'+Math.floor((i*3+2)/60)+':'+String((i*3+2)%60).padStart(2,'0')+'.0] Say number '+i+'.').join('\n'):clip.script,videoUrl:'https://www.youtube.com/watch?v='+clip.youtube_id,boardTheme:'green'}],updated_at:'now'};Object.assign(window,{__qaLesson:lesson});start(lesson as never,null,null);}}>Start actual lesson</button>;}

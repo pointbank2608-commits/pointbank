@@ -147,8 +147,8 @@ export default function VideoClipLibrary({ onPick, pickLabel, tall = false }: { 
 }
 
 function ClipPreview({clip,onPick,onClose,pickLabel}:{clip:VideoClip;onPick:(activities:ClipActivity[])=>void;onClose:()=>void;pickLabel?:string}){
- const {t}=useTranslation();const choices=useMemo(()=>clipActivities(clip),[clip]);const [activities,setActivities]=useState<ClipActivity[]>(()=>choices.filter(x=>['words','shadow','questions'].includes(x)));const [learning,setLearning]=useState(false),[playerOpen,setPlayerOpen]=useState(false);
- useEffect(()=>{setLearning(false);setPlayerOpen(false);setActivities(choices.filter(x=>['words','shadow','questions'].includes(x)));},[clip.id,choices]);
+ const {t}=useTranslation();const choices=useMemo(()=>clipActivities(clip),[clip]);const defaults=useMemo(()=>choices.filter(x=>['words','shadow','questions','cloze','reading'].includes(x)),[choices]);const [activities,setActivities]=useState<ClipActivity[]>(defaults);const [learning,setLearning]=useState(false),[playerOpen,setPlayerOpen]=useState(false);
+ useEffect(()=>{setLearning(false);setPlayerOpen(false);setActivities(defaults);},[clip.id,defaults]);
  const lines=parseShadowText(clip.script);const expressions=clip.pack?.grammar?.sentence?[{en:clip.pack.grammar.sentence,ko:clip.pack.grammar.sentenceKo}]:lines.slice(0,2).map(l=>({en:l.en.replace(/\*\*/g,''),ko:l.ko}));
  const words=clip.pack.words??[];
  const closePlayer=()=>{if(document.fullscreenElement)void document.exitFullscreen().catch(()=>{});setPlayerOpen(false);};

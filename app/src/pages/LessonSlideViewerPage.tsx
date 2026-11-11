@@ -8,6 +8,7 @@ import { useToast } from '../context/ToastContext';
 import { fetchCurriculumLessonById } from '../lib/api';
 import { effectiveSlides } from '../lib/lessonSlides';
 import { wordsFromLocationState } from '../lib/materialsHandoff';
+import { restoreReadingCues } from '../lib/readingLines';
 import type { CurriculumLesson } from '../lib/types';
 
 /**
@@ -43,7 +44,8 @@ export default function LessonSlideViewerPage() {
   if (loading) {
     return <div className="font-body-md text-body-md text-on-surface-variant">{t('common.loading')}</div>;
   }
-  const slide = lesson ? effectiveSlides(lesson).find((s) => s.id === slideId) : undefined;
+  const slides = lesson ? effectiveSlides(lesson) : [];
+  const slide = slides.find((s) => s.id === slideId);
   if (!lesson || !slide || slide.kind === 'game' || slide.kind === 'material') {
     return (
       <div className="space-y-4">
@@ -55,9 +57,15 @@ export default function LessonSlideViewerPage() {
     );
   }
 
+  const transcript = slide.kind === 'reading' && slide.mode === 'cloze' && slide.videoUrl
+    ? slides.find(s => s.kind === 'shadow' && s.clipId && s.videoUrl === slide.videoUrl && s.title === slide.title)
+    : undefined;
+  const presentedSlide = slide.kind === 'reading' && transcript?.kind === 'shadow'
+    ? { ...slide, source: restoreReadingCues(slide.source, transcript.source) }
+    : slide;
   return (
     <LessonSlideContent
-      slide={slide}
+      slide={presentedSlide}
       words={stateWords}
       fill={isPresenting}
       lessonName={lesson.name}

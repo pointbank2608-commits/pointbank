@@ -277,7 +277,14 @@ export default function ShadowBoard({
   const showEn = subtitle === 'both' || subtitle === 'en';
   const showKo = subtitle === 'both' || subtitle === 'ko';
 
-  const subtitleBlock=line&&<div><div className="tv-speaker">{line.speaker&&<span style={{color:team>=0?TEAM_COLORS[team%TEAM_COLORS.length]:'#b1c5e2'}}>{team>=0?t('mediaV2.teams',{n:team+1})+' · ':''}{line.speaker} · </span>}{idx+1} / {lines.length}{repeat>1?' · '+rep+'/'+repeat:''}</div>
+  function chooseRepeat(count: number) {
+    if (flow === 'video') {
+      stop();
+      setFlow('manual');
+    }
+    setRepeat(count);
+  }
+  const subtitleBlock=line&&<div><div className="tv-speaker">{line.speaker&&<span style={{color:team>=0?TEAM_COLORS[team%TEAM_COLORS.length]:'#b1c5e2'}}>{team>=0?t('mediaV2.teams',{n:team+1})+' · ':''}{line.speaker} · </span>}{idx+1} / {lines.length}{flow!=='video'&&repeat>1?' · '+rep+'/'+repeat:''}</div>
    {subtitle==='cloze'?<div className="tv-en">{shadowCloze(line.en,idx).map((seg,i)=>seg.blank?<span key={i} style={{borderBottom:'2px solid #5ba3ff',color:'transparent'}}>{seg.text}</span>:<span key={i}>{seg.text.replace(/\*\*/g,'')}</span>)}</div>:showEn?<div className="tv-en">{line.en.replace(/\*\*/g,'')}</div>:null}
    {(showKo||subtitle==='cloze')&&line.ko&&<div className="tv-ko">{line.ko}</div>}
   </div>;
@@ -292,8 +299,8 @@ export default function ShadowBoard({
    onPlay={()=>actualPlaying||phase==='speak'||phase==='loading'?stop():playLine(idx,1,resumeAt.current)} onReplay={()=>playLine(idx,1,undefined,true)} onPrev={interactive&&!follower&&lines.length?()=>go(-1):undefined} onNext={interactive&&!follower&&lines.length?()=>go(1):undefined} previousDisabled={idx===0} nextDisabled={idx>=lines.length-1}
    progress={lines.length&&usePlayer?<><span>{fmt(position-start)}</span><input aria-label={t('mediaV2.seek')} type="range" min={start} max={end} step={.1} value={Math.min(end,Math.max(start,position))} onChange={e=>{const time=Number(e.target.value);const next=Math.max(0,lines.reduce((last,l,i)=>l.start<=time?i:last,0));const wasPlaying=actualPlaying;stop();setIdx(next);setPosition(time);playerRef.current?.seekTo(time,true);if(wasPlaying)playLine(next,1,time);}}/><span>{fmt(end-start)}</span></>:undefined}
    follow={!preparation&&interactive&&!follower?<button type="button" className={flow!=='video'?'is-active':''} aria-pressed={flow!=='video'} onClick={()=>{stop();setFlow(flow==='video'?'auto':'video');}}>{t('mediaV2.follow')}</button>:undefined}
-   summary={<>{t('mediaV2.repeat',{n:repeat})} · {t('mediaV2.speed',{n:speed})} · {t(roleTeams?'mediaV2.teams':'mediaV2.rolesOff',{n:roleTeams})}</>}
+   summary={<>{flow==='video'?t('mediaV2.videoMode'):t('mediaV2.repeat',{n:repeat})} · {t('mediaV2.speed',{n:speed})} · {t(roleTeams?'mediaV2.teams':'mediaV2.rolesOff',{n:roleTeams})}</>}
    subtitleLabel={t('videoUi.subtitleCurrent',{value:t('mediaV2.sub_'+subtitle)})}
-   settings={!preparation&&interactive&&!follower?(always,setAlways)=><><VideoSettingChoices label={t('mediaV2.repeatLabel')} values={SHADOW_REPEATS} value={repeat} onChange={setRepeat} format={n=>t('mediaV2.repeat',{n})}/><VideoSettingChoices label={t('mediaV2.speedLabel')} values={SHADOW_SPEEDS} value={speed} onChange={setSpeed} format={n=>`${n}×`}/><VideoSettingChoices label={t('mediaV2.rolesLabel')} values={[0,2,3,4]} value={roleTeams} onChange={setRoleTeams} format={n=>t(n?'mediaV2.teams':'mediaV2.rolesOff',{n})}/><label>{t('mediaV2.always')}<input type="checkbox" checked={always} onChange={e=>setAlways(e.target.checked)}/></label><details className="tv-modes"><summary>{t('videoUi.playMode')}</summary><div className="tv-mode-options">{(['video','auto','manual'] as const).map(f=><button type="button" key={f} aria-pressed={flow===f} onClick={()=>{stop();setFlow(f);}}>{t('mediaV2.'+({video:'videoMode',auto:'autoMode',manual:'manualMode'}[f]))}</button>)}</div></details></>:undefined}
+   settings={!preparation&&interactive&&!follower?(always,setAlways)=><><VideoSettingChoices label={t('mediaV2.repeatLabel')} values={SHADOW_REPEATS} value={flow === 'video' ? undefined : repeat} onChange={chooseRepeat} format={n=>t('mediaV2.repeat',{n})}/><VideoSettingChoices label={t('mediaV2.speedLabel')} values={SHADOW_SPEEDS} value={speed} onChange={setSpeed} format={n=>`${n}×`}/><VideoSettingChoices label={t('mediaV2.rolesLabel')} values={[0,2,3,4]} value={roleTeams} onChange={setRoleTeams} format={n=>t(n?'mediaV2.teams':'mediaV2.rolesOff',{n})}/><label>{t('mediaV2.always')}<input type="checkbox" checked={always} onChange={e=>setAlways(e.target.checked)}/></label><details className="tv-modes"><summary>{t('videoUi.playMode')}</summary><div className="tv-mode-options">{(['video','auto','manual'] as const).map(f=><button type="button" key={f} aria-pressed={flow===f} onClick={()=>{stop();setFlow(f);}}>{t('mediaV2.'+({video:'videoMode',auto:'autoMode',manual:'manualMode'}[f]))}</button>)}</div></details></>:undefined}
    subtitles={!preparation&&interactive&&!follower?<>{SHADOW_SUBTITLES.map(sub=><button type="button" key={sub} aria-pressed={subtitle===sub} onClick={()=>setSubtitle(sub)}>{t('mediaV2.sub_'+sub)}</button>)}</>:undefined}/></div>;
 }
