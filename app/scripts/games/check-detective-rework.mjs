@@ -49,6 +49,14 @@ try {
   const deck=grammar.previewDetectiveDraft('She eats an apple.\nShe needs a pencil.\nShe can swim.', ['articles','verb-form']);
   const manySentences=grammar.previewDetectiveDraft(Array.from({length:60},()=> 'She eats an apple.').join('\n'),['articles']);
   const manyWords=grammar.previewDetectiveDraft(Array.from({length:60},()=> 'apple').join('\n')+'\nunknownword',['articles'],'words');
+  const farmWords='dog, cat, chicken, cow, duck, hen, horse, pig, sheep, puppy';
+  const farmArticles=grammar.previewDetectiveDraft(farmWords,['articles'],'words');
+  assert.equal(farmArticles.ready.length,10);
+  assert.equal(farmArticles.review.length,0);
+  const farmNumber=grammar.previewDetectiveDraft(farmWords,['number'],'words');
+  assert.equal(farmNumber.ready.length,9);
+  assert.ok(farmNumber.ready.some(({variant})=>variant.correct==='I see two puppies.'));
+  assert.deepEqual(farmNumber.review.map(row=>row.correct),['sheep']);
   assert.equal(deck.ready.length,3);
   assert.equal(manyWords.review[0]?.correct,'unknownword');
   for(const preview of [manySentences,manyWords]){
@@ -195,6 +203,17 @@ try {
   await wordEvidence.getByRole('button',{name:'apple',exact:true}).waitFor();
   console.log('PASS word-list import, selected grammar, unsupported word review and actual play');
   await page.goto(base+'?game=grammardetective&mode=teacher');
+  await page.getByRole('button',{name:/^게임\s*설정$/}).click();
+  await page.locator('[data-detective-word-authoring] > summary').click();
+  await wordInput.fill(farmWords);
+  await wordGenerator.getByRole('button',{name:'선택 지우기'}).click();
+  await wordGenerator.getByRole('checkbox',{name:'관사 a/an',exact:true}).check();
+  await wordGenerator.getByText('출제 가능 10문제 · 이번 게임 10문제 · 확인 필요 0단어').waitFor();
+  await page.locator('[data-preparation-submit]').getByRole('button',{name:'적용',exact:true}).click();
+  await page.locator('dialog.game-workspace-dialog[open]').waitFor({state:'hidden'});
+  await wordEvidence.getByRole('button',{name:'dog',exact:true}).waitFor();
+  console.log('PASS farm words generate ten questions and footer Apply starts the preview');
+  await page.goto(base+'?game=grammardetective&mode=teacher');
   await page.getByRole('button',{name:'게임 시작',exact:true}).click();
   await page.getByRole('button',{name:/^게임\s*설정$/}).click();
   const topicCases=await page.evaluate(async()=>{
@@ -204,7 +223,7 @@ try {
   const settings=page.locator('[data-game-existing-settings]');
   await page.locator('[data-detective-word-authoring] > summary').click();
   await wordInput.fill('apple, wait');
-  await settings.getByText('미리보기에서 ‘이 문제로 게임 시작’을 누르거나 변경을 취소하세요.',{exact:true}).waitFor();
+  await wordGenerator.getByText('출제 가능 1문제 · 이번 게임 1문제 · 확인 필요 1단어').waitFor();
   await settings.getByText('클래스뱅크 기본 문제로 바꾸기',{exact:true}).click();
   await settings.getByLabel('기본 문제 주제',{exact:true}).selectOption('it-is');
   await settings.getByText(`이 문법의 문제 ${topicCases.length}개를 가져왔어요.`,{exact:false}).waitFor();

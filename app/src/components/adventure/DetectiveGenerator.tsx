@@ -27,7 +27,7 @@ export default function DetectiveGenerator({ref, source='sentences', initialText
   const [sentences,setSentences]=useState(initialText);
   const [rules,setRules]=useState<string[]>(()=>[...initialRules]);
   const changed=sentences!==initialText||rules.join()!==initialRules.join();
-  const preview=useMemo(()=>previewDetectiveDraft(words?sentences.replaceAll(',', '\n'):sentences,rules,source),[sentences,rules,source,words]);
+  const preview=useMemo(()=>previewDetectiveDraft(sentences,rules,source),[sentences,rules,source]);
   const cases=preview.ready;
   function revise(value:string){
     setSentences(value);
@@ -79,7 +79,7 @@ export default function DetectiveGenerator({ref, source='sentences', initialText
         </li>)}</ol>}
         {preview.review.length>0&&<details open>
           <summary>{words?l('출제에서 제외된 단어 확인','Review words left out'):l('출제에서 제외된 문장 확인','Review sentences left out')}</summary>
-          <p>{words?l('이 단어로는 선택한 문법의 문제를 만들기 어려워요. 단어가 들어간 문장을 직접 입력해 보세요.', 'These words could not make questions for the selected rules. Try entering sentences that use them.'):l('선택한 문법에서 오류가 분명한 문제를 찾지 못했어요. 뜻에 따라 둘 다 맞을 수 있거나 자동 출제 범위 밖인 문장입니다. 필요하면 아래에서 사건을 직접 추가하세요.', 'No clear error was found for the selected grammar. A sentence may allow more than one reading or fall outside the supported patterns. You can add a case manually below.')}</p>
+          <p>{words?l('선택한 문법의 자동 출제 규칙과 맞지 않은 단어예요. 문법을 바꿔 보거나 ‘내 문장으로 문제 만들기’에 이 단어가 들어간 문장을 넣어 보세요.', 'These words did not match the selected automatic question patterns. Try another grammar topic or enter sentences using these words.'):l('선택한 문법에서 오류가 분명한 문제를 찾지 못했어요. 뜻에 따라 둘 다 맞을 수 있거나 자동 출제 범위 밖인 문장입니다. 필요하면 아래에서 사건을 직접 추가하세요.', 'No clear error was found for the selected grammar. A sentence may allow more than one reading or fall outside the supported patterns. You can add a case manually below.')}</p>
           <ol className="ad-detective-review-list">{preview.review.map(row=><li key={row.index}>
             <span lang="en">{row.correct}</span>{row.context&&<small> · {row.context}</small>}
             {onReview&&<> <button type="button" onClick={()=>onReview(row.correct,row.context,{sentences,rules})}>{l('직접 문제 만들기','Write a question')}</button></>}

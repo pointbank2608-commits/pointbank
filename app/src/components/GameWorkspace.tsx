@@ -270,7 +270,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
       setSaveOriginal(false);
     }
     completePreparation();
-    if (info && instantStart(info.gameType)) playAppliedTemplate(bridge.current?.selected?.id);
+    if (info && instantStart(info.gameType)) playAppliedTemplate(bridge.current?.selected?.id, info.gameType==='grammardetective');
   }
   async function saveSettingsAndClose() {
     if (!bridge.current?.selected || !await commitPreparation()) return;
@@ -291,7 +291,8 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     if (await action(() => bridge.current!.beginMaterial(kind))) setPanel('settings');
   }
   useEffect(()=>{const state=location.state as {editGame?:boolean;openTemplateId?:string}|null;if(state?.editGame&&(info?.selected?.id===state.openTemplateId||info?.selected?.config.editingTemplateId===state.openTemplateId)&&editHandled.current!==location.key){editHandled.current=location.key;editContent();}},[location.key,location.state,info?.selected]);
-  const validation = info?.loading ? t('common.loading') : info?.settingsPending ? t('settingsSave.pendingHint') : info?.selected&&guideProblem(info.selected) ? t(`guide.${guideProblem(info.selected)}`) : !canStart ? t(requirement.key,{count:requirement.count}) : '';
+  const pendingSettingsMessage = info?.gameType==='grammardetective' ? '' : t('settingsSave.pendingHint');
+  const validation = info?.loading ? t('common.loading') : info?.settingsPending ? pendingSettingsMessage : info?.selected&&guideProblem(info.selected) ? t(`guide.${guideProblem(info.selected)}`) : !canStart ? t(requirement.key,{count:requirement.count}) : '';
   const game = GAME_CATALOG.find(row => row.type === info?.gameType);
   const demo = game && demoForGame(game.path);
   const defaultMaterialName = defaultActivityName('',t(sourceKind==='sentence'?'flow.defaultSentences':'flow.defaultWords'),info?.lists.map(row=>row.name));
