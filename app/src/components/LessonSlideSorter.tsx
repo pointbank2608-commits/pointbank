@@ -1527,6 +1527,8 @@ function GameSlideEditor({
   templateRef.current = slide.templateId;
   /** Both sentence-building games can use a saved sentence list. */
   const [sentenceLists, setSentenceLists] = useState<WordList[]>([]);
+  const [sentenceDraft, setSentenceDraft] = useState('');
+  const [sentenceEditorOpen, setSentenceEditorOpen] = useState(false);
   const game = GAME_CATALOG.find((g) => g.type === slide.gameType);
   const GamePage = game ? GAME_PAGES[game.path] : undefined;
   const cards = useWordBankEnriched(rawCards);
@@ -1564,7 +1566,7 @@ function GameSlideEditor({
 
   // Keep the lesson-level sentence picker consistent with both game pages.
   useEffect(() => {
-    if ((slide.gameType !== 'unscramble' && slide.gameType !== 'sentencesplash') || !academyId) {
+    if (!['unscramble', 'sentencesplash', 'lightning'].includes(slide.gameType) || !academyId) {
       setSentenceLists([]);
       return;
     }
@@ -1580,7 +1582,16 @@ function GameSlideEditor({
   async function applySentenceList(listId: string) {
     const list = sentenceLists.find((l) => l.id === listId);
     if (!list || !profile || creating) return;
-    const content=prepareClassroomGame(slide.gameType,list);
+    await applySentences(wordListToCards(list), list);
+  }
+
+  async function applySentences(cards: FullCardItem[], list?: WordList) {
+    await applySlideSource(cards, 'sentence', list);
+  }
+
+  async function applySlideSource(cards: FullCardItem[], kind: 'word' | 'sentence', list?: WordList) {
+    if (!profile || creating) return;
+    const content = prepareClassroomGame(slide.gameType, cards, kind);
     if (!content) {
       notify(t('wordLists.sentence.needSentences'), 'error');
       return;
@@ -1591,14 +1602,15 @@ function GameSlideEditor({
         academyId,
         classId,
         gameType: slide.gameType,
-        name: lessonGameTemplateName(lessonName || t('curriculum.slides.gameContentDefaultName'), list.name),
+        name: lessonGameTemplateName(lessonName || t('curriculum.slides.gameContentDefaultName'), list?.name),
         items:content.items,
-        config: {...content.config,classroomSource:{id:list.id,name:list.name,version:list.updated_at,kind:'sentence',cards:wordListToCards(list)}},
+        config: list ? {...content.config,classroomSource:{id:list.id,name:list.name,version:list.updated_at,kind,cards}} : content.config,
         teacherId: profile.id,
       });
-      onUpdate({ templateId: tpl.id, ownWordListId: list.id, autoWordListId: undefined });
+      onUpdate({ templateId: tpl.id, ownWordListId: list?.id, autoWordListId: !list && kind === 'word' ? wordListId : undefined });
       setReloadKey((k) => k + 1);
-      notify(t('curriculum.blockOptions.madeToast', { name: list.name }));
+      setSentenceEditorOpen(false);
+      notify(t('curriculum.slides.gameContentCreated'));
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
     } finally {
@@ -1639,13 +1651,29 @@ function GameSlideEditor({
         </button>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />
+          {slide.gameType === 'lightning' && <select
+            aria-label={t('curriculum.slides.gameSlideWords')} className="rounded-lg border px-2.5 py-2"
+            value={wordLists.some(list => list.id === slide.ownWordListId && !isSentenceList(list)) ? slide.ownWordListId : ''}
+            disabled={creating} onChange={event => {
+              if (event.target.value === 'lesson') {
+                if (cards.length && !sentenceSource) void applySlideSource(cards,'word');
+                return;
+              }
+              const list = wordLists.find(list => list.id === event.target.value);
+              if (list) void applySlideSource(wordListToCards(list),'word',list);
+            }}>
+            <option value="" disabled>{t('curriculum.slides.gameSlideWords')}</option>
+            <option value="lesson" disabled={!cards.length || sentenceSource}>{t('curriculum.slides.gameLessonWords')}</option>
+            {wordLists.filter(list => !isSentenceList(list) && list.items.length).map(list => <option key={list.id} value={list.id}>{list.name}</option>)}
+          </select>}
+          {slide.gameType === 'lightning' && <button type="button" aria-expanded={sentenceEditorOpen} className="rounded-lg border px-3 py-2" onClick={() => setSentenceEditorOpen(open => !open)}>{t('curriculum.slides.enterGameSentences')}</button>}
           {creating && (
             <span className="inline-flex items-center gap-1 font-caption text-caption text-on-surface-variant">
               <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
               {t('curriculum.slides.gameContentCreating')}
             </span>
           )}
-          {sentenceLists.length > 0 && (
+          {(sentenceLists.length > 0 || slide.gameType === 'lightning') && (
             <select
               value=""
               disabled={creating}
@@ -1662,6 +1690,13 @@ function GameSlideEditor({
             </select>
           )}
         </div>
+        {slide.gameType === 'lightning' && sentenceEditorOpen && <div className="w-full space-y-2">
+          <label className="block">{t('curriculum.slides.enterGameSentences')}
+            <textarea rows={4} className="mt-1 w-full rounded-lg border p-2" value={sentenceDraft} placeholder="Pete adds cheese." onChange={event => setSentenceDraft(event.target.value)} />
+          </label>
+          <button type="button" disabled={creating || !sentenceDraft.trim()} className="rounded-lg bg-primary px-4 py-2 text-white disabled:opacity-50"
+            onClick={() => void applySentences(sentenceDraft.split(/\r?\n/).map(line => line.trim()).filter(Boolean).map(word => ({id:crypto.randomUUID(),word,meaning:'',imageUrl:null})))}>{t('curriculum.slides.applyGameSentences')}</button>
+        </div>}
         {pickerOpen && (
           <div className="w-full space-y-2 border-t border-outline-variant/40 pt-3">
             {GAME_MOMENTS.map((cat) => (
@@ -1697,7 +1732,7 @@ function GameSlideEditor({
       </p>
       {content&&(!slide.templateId||(slide.autoWordListId&&slide.autoWordListId!==wordListId))&&<button type="button" className="min-h-11 rounded-xl border px-4 py-2" disabled={creating} onClick={()=>void createFromLesson(slide.templateId?'changed':'first')}>{t('curriculum.slides.gameContentCreateNow')}</button>}
       {GamePage ? (
-        <div className="game-embed rounded-xl bg-background p-3 md:p-4">
+        <div className="game-embed relative isolate rounded-xl bg-background p-3 md:p-4">
           <GameEmbedContext.Provider value={embed}>
             <GamePage key={`${slide.id}:${slide.gameType}:${reloadKey}`} />
           </GameEmbedContext.Provider>

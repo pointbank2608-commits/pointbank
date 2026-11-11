@@ -287,7 +287,7 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
       >
         {/* 폭풍 장면은 맑은 장면 위에서 서서히 짙어진다 */}
         <div
-          className="absolute inset-0"
+          className="pointer-events-none absolute inset-0"
           style={{ background: `#2b2f4a url(${LT_IMG('scene-storm')}) center / cover no-repeat`, opacity: stormy ? 1 : 0, transition: 'opacity .9s' }}
         />
 

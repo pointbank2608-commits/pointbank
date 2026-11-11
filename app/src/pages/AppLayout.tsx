@@ -181,7 +181,7 @@ function AppLayoutInner() {
   if (isPresenting) {
     return (
       // 인쇄할 때는 고정 높이·스크롤 박스를 풀어야 여러 장이 잘리지 않고 다 나온다(print:*).
-      <div className={`flex h-[100dvh] flex-col bg-background font-body-md text-on-background print:block print:h-auto print:pb-0 ${runner.steps.some(s=>s.kind==='video'||s.kind==='shadow')?'pb-14':''}`}>
+      <div data-lesson-presenter className={`flex h-[100dvh] flex-col bg-background font-body-md text-on-background print:block print:h-auto print:pb-0 ${runner.steps.some(s=>s.kind==='video'||s.kind==='shadow')?'pb-14':''}`}>
         <PrintWatermark />
         {isMaterialsPrint && <PrintBrandFooter />}
         <LessonRunnerBar />

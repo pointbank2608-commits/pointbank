@@ -1100,6 +1100,7 @@ export interface DrillSlide {
 export interface WordShowSlide {
   id: string;
   kind: 'wordshow';
+  recall?: 'word' | 'sentence' | 'check';
   shuffle?: boolean;
   /** 이 슬라이드만 쓰는 단어(2026-10-03) — 있으면 수업 단어장 대신 이것. 슬라이드를 복사해 서로 다른 단어로 쓰려고. */
   words?: FullCardItem[];

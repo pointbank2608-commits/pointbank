@@ -35,6 +35,7 @@ export default function WordShowBoard({
   shuffle = false,
   autoSpeak = true,
   videoUrl,
+  recall,
 }: {
   words: FullCardItem[];
   themeId?: string | null;
@@ -44,6 +45,7 @@ export default function WordShowBoard({
   autoSpeak?: boolean;
   /** 단어의 sceneTime(영화 예문이 나오는 시간)을 틀어 줄 영상 */
   videoUrl?: string | null;
+  recall?: 'word' | 'sentence' | 'check';
 }) {
   const { t } = useTranslation();
   const th = boardTheme(themeId ?? 'green') ?? boardTheme('green')!;
@@ -77,10 +79,13 @@ export default function WordShowBoard({
   });
   const card = list[Math.min(idx, list.length - 1)];
   const steps: Step[] = card
-    ? ([card.imageUrl ? 'image' : null, 'word', card.meaning ? 'meaning' : null, card.example ? 'example' : null].filter(Boolean) as Step[])
+    ? ((recall
+        ? [card.imageUrl ? 'image' : null, card.meaning ? 'meaning' : null, 'word', recall === 'sentence' && card.example ? 'example' : null]
+        : [card.imageUrl ? 'image' : null, 'word', card.meaning ? 'meaning' : null, card.example ? 'example' : null]).filter(Boolean) as Step[])
     : [];
   const shownStep = interactive ? step : steps.length - 1;
   const has = (s: Step) => steps.indexOf(s) >= 0 && steps.indexOf(s) <= shownStep;
+  const recallPrompt = recall === 'sentence' ? 'Say a sentence with this word.' : recall === 'check' ? 'Say or write the word on your own.' : 'Look and say the English word.';
 
   const stateRef = useRef({ idx, step, total: list.length, last: steps.length - 1 });
   stateRef.current = { idx, step, total: list.length, last: steps.length - 1 };
@@ -181,6 +186,11 @@ export default function WordShowBoard({
               {Math.min(idx, list.length - 1) + 1} / {list.length}
             </span>
           </div>
+          {recall && <p className="text-center font-bold" style={{fontSize:'3.4cqh'}}>
+            {recallPrompt}
+            {recall === 'sentence' && card.example?.toLowerCase().includes(card.word.toLowerCase()) &&
+              <span className="mt-1 block">{card.example.replace(new RegExp(card.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '_____')}</span>}
+          </p>}
           <div className={`flex min-h-0 flex-1 items-center gap-[5cqh] ${withImage ? '' : 'justify-center text-center'}`}>
             {card.imageUrl && (
               <div
@@ -191,7 +201,7 @@ export default function WordShowBoard({
               </div>
             )}
             <div className={`flex min-w-0 flex-1 flex-col gap-[3cqh] ${withImage ? '' : 'items-center'}`}>
-              <div className="flex items-center gap-[2cqh] transition-opacity duration-300" style={{ opacity: has('word') ? 1 : 0 }}>
+              <div aria-hidden={!has('word')} className="flex items-center gap-[2cqh] transition-opacity duration-300" style={{ opacity: has('word') ? 1 : 0 }}>
                 <span className="font-bold leading-none" style={{ fontSize: card.word.length > 12 ? '9cqh' : '13cqh' }}>
                   {card.patternMarked ? <PhonicsMarkedWord pattern={card.patternMarked} /> : card.word}
                 </span>

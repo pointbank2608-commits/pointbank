@@ -1,0 +1,19 @@
+.animation-worksheet-layout{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:20px;align-items:start}
+.animation-worksheet-layout aside{display:grid;gap:12px;background:white;border:1px solid #c6d5e5;padding:16px;border-radius:16px}
+.animation-worksheet-layout aside h2,.animation-group-toggle{font-weight:700}
+.animation-worksheet-layout aside section{border-bottom:1px solid #dce4ed;padding-bottom:10px}
+.animation-worksheet-layout summary{cursor:pointer;padding:6px 0;color:#405d7d}
+.animation-select-actions{display:flex;gap:6px;flex-wrap:wrap}
+.animation-select-actions button{border:1px solid #9eb5cd;border-radius:8px;padding:5px 8px}
+.animation-item-toggle{display:flex;gap:8px;align-items:baseline;margin:6px 0}
+.animation-sheet{gap:3mm;line-height:1.35;font-size:3.5mm;overflow-wrap:anywhere}
+.animation-sheet h1{font-size:7mm}
+.animation-sheet h2{padding:1.5mm 2.5mm;background:#e5f0fd;border-radius:1.4mm}
+.animation-instruction{margin:1mm 0 2mm}
+.animation-print-row{break-inside:avoid;margin:0 0 2mm}
+.animation-print-words{display:flex;align-items:baseline;gap:5mm;min-height:8mm}
+.animation-write-line{display:block;min-height:7mm;border-bottom:.25mm solid #8496a8;flex:1}
+.animation-print-questions{padding-bottom:2mm}
+.animation-answer{font-weight:700;color:#18568f;padding-left:4mm}
+@media(max-width:860px){.animation-worksheet-layout{grid-template-columns:1fr}}
+@media print{.animation-worksheet-layout{display:block}}

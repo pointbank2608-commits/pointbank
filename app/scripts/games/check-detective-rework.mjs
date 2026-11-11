@@ -182,7 +182,11 @@ try {
   await page.locator('[data-detective-word-authoring] > summary').click();
   const wordGenerator=page.locator('[data-detective-generator="words"]');
   await wordGenerator.getByRole('button',{name:/단어장에서 불러오기/}).click();
-  await wordGenerator.getByRole('button',{name:/검증 단어장/}).click();
+  const importedList = wordGenerator.getByRole('button',{name:/검증 단어장/});
+  assert.equal(await importedList.getAttribute('aria-pressed'),'false');
+  await importedList.click();
+  assert.equal(await importedList.getAttribute('aria-pressed'),'true');
+  assert.match(await importedList.innerText(),/check_circle/);
   const wordInput=wordGenerator.getByRole('textbox');
   assert.equal(await wordInput.inputValue(),'apple\nbanana\nmilk');
   await wordGenerator.getByRole('button',{name:'선택 지우기'}).click();

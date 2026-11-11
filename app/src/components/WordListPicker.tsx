@@ -13,14 +13,14 @@ type PropsBase =
   | { variant: 'label'; wordLists: WordList[]; loading: boolean; onImportLabels: (labels: string[]) => void }
   | { variant: 'pairs'; wordLists: WordList[]; loading: boolean; onImportPairs: (pairs: MatchPair[]) => void }
   | { variant: 'image'; wordLists: WordList[]; loading: boolean; onImportImage: (items: ImageQuizItem[]) => void }
-  | { variant: 'full'; wordLists: WordList[]; loading: boolean; onImportFull: (items: FullCardItem[]) => void }
+  | { variant: 'full'; wordLists: WordList[]; loading: boolean; onImportFull: (items: FullCardItem[], list: WordList) => void }
   | { variant: 'quiz'; wordLists: WordList[]; loading: boolean; onImportQuestions: (questions: QuizQuestion[]) => void }
   | { variant: 'truefalse'; wordLists: WordList[]; loading: boolean; onImportStatements: (statements: TrueFalseStatement[]) => void }
   | { variant: 'groupsort'; wordLists: WordList[]; loading: boolean; onImportGroups: (groups: GroupSortGroup[]) => void }
   | { variant: 'slots'; wordLists: WordList[]; loading: boolean; onImportSlots: (items: SlottedLabel[]) => void };
 
 /** kind 'sentence' 는 문장 게임에서 쓴다(066) — 글자만 "문장 목록"으로 바뀌고, wordLists 는 부르는 쪽이 문장 목록만 넘긴다. */
-type Props = PropsBase & { kind?: 'word' | 'sentence' };
+type Props = PropsBase & { kind?: 'word' | 'sentence'; selectedListId?: string | null };
 
 /**
  * 선생님이 미리 만들어둔 단어장(WordListsPage 에서 관리)을 게임 항목으로 그대로 불러오는 패널.
@@ -66,7 +66,7 @@ export default function WordListPicker(props: Props) {
         list.items.filter((i) => i.image_url).map((i) => ({ id: uid(), imageUrl: i.image_url as string, answer: i.word })),
       );
     } else if (props.variant === 'full') {
-      props.onImportFull(list.items.map((i) => ({ id: uid(), word: i.word, meaning: i.meaning, imageUrl: i.image_url, category: i.category ?? null })));
+      props.onImportFull(list.items.map((i) => ({ id: uid(), word: i.word, meaning: i.meaning, imageUrl: i.image_url, category: i.category ?? null })), list);
     } else if (props.variant === 'quiz') {
       props.onImportQuestions(buildQuizQuestions(list, direction));
     } else if (props.variant === 'truefalse') {
@@ -167,18 +167,22 @@ export default function WordListPicker(props: Props) {
             </div>
           ) : (
             <div className="flex flex-col gap-1.5">
-              {usable.map((list) => (
+              {usable.map((list) => {
+                const selected = props.selectedListId === list.id;
+                return (
                 <button
                   key={list.id}
                   type="button"
                   onClick={() => handlePick(list)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-lowest hover:bg-secondary-container text-on-surface hover:text-on-secondary-container font-label-md text-label-md transition-colors w-fit"
+                  aria-pressed={props.selectedListId === undefined ? undefined : selected}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-lowest hover:bg-secondary-container text-on-surface hover:text-on-secondary-container font-label-md text-label-md transition-colors w-fit aria-pressed:border-primary! aria-pressed:bg-primary-fixed! aria-pressed:text-primary!"
                 >
-                  <span className="material-symbols-outlined text-[18px]">download</span>
+                  <span aria-hidden className="material-symbols-outlined text-[18px]">{selected ? 'check_circle' : 'download'}</span>
                   {list.name}
                   <span className="font-caption text-caption opacity-70">({list.items.length})</span>
                 </button>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

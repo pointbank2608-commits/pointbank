@@ -58,11 +58,11 @@ export default function LessonRunnerBar() {
 
   return (
     <>
-    <div className="no-print sticky top-0 z-30 flex items-center gap-3 bg-deep-navy px-4 py-2.5 text-white shadow-md md:pl-[calc(1rem)]">
+    <div data-lesson-runner-bar className="no-print sticky top-0 z-30 flex items-center gap-3 bg-deep-navy px-4 py-2.5 text-white shadow-md md:pl-[calc(1rem)]">
       <span className="material-symbols-outlined text-[20px] shrink-0">{current.icon}</span>
       <div className="min-w-0 flex-1">
         <div className="truncate font-label-md text-label-md font-bold">{runner.lessonName}</div>
-        <div className="truncate font-caption text-caption text-white/75">{current.label}</div>
+        <div className="truncate font-caption text-caption text-white/75">{current.activityTitle || current.label}</div>
       </div>
       <div className="flex shrink-0 items-center gap-1">
         <button

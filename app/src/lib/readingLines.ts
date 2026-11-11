@@ -13,6 +13,7 @@ export interface ReadingLine {
   ko: string;
   /** 영상 시작 시점(초) */
   start: number | null;
+  end?: number;
 }
 
 export function parseReadingText(source: string): ReadingLine[] {
@@ -23,7 +24,7 @@ export function parseReadingText(source: string): ReadingLine[] {
     .map((raw) => {
       let rest = raw;
       let start: number | null = null;
-      const m = rest.match(/^\[(\d{1,2}):(\d{2})\]\s*/);
+      const m = rest.match(/^\[(\d{1,2}):(\d{2}(?:\.\d+)?)(?:\s*[-–—]\s*(\d{1,2}):(\d{2}(?:\.\d+)?))?\]\s*/);
       if (m) {
         start = Number(m[1]) * 60 + Number(m[2]);
         rest = rest.slice(m[0].length);
@@ -31,7 +32,7 @@ export function parseReadingText(source: string): ReadingLine[] {
       const bar = rest.indexOf('|');
       const en = (bar >= 0 ? rest.slice(0, bar) : rest).trim();
       const ko = bar >= 0 ? rest.slice(bar + 1).trim() : '';
-      return { en, ko, start };
+      return { en, ko, start, end: m?.[3] ? Number(m[3]) * 60 + Number(m[4]) : undefined };
     })
     .filter((l) => l.en);
 }

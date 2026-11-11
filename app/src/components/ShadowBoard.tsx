@@ -140,7 +140,7 @@ export default function ShadowBoard({
   useEffect(() => () => clearTimers(), []);
 
   /** i 번째 문장을 처음부터 듣기 */
-  function playLine(i: number, repNo = 1,from?:number) {
+  function playLine(i: number, repNo = 1,from?:number, replayOnly = false) {
     if(mediaError)return;
     const { lines: ls, speed: sp } = state.current;
     const line = ls[i];
@@ -152,7 +152,7 @@ export default function ShadowBoard({
     if(usePlayer&&(!player||!ready))return;
     if (!player || !ready) {
       // 영상이 없으면 바로 따라 말하기 시간으로
-      startSpeak(line, i, repNo);
+      startSpeak(line, i, repNo, replayOnly);
       return;
     }
     wantsPlayback.current=true;setPhase('loading');
@@ -161,7 +161,7 @@ export default function ShadowBoard({
     resumeAt.current=undefined;
     requestTimeout.current=window.setTimeout(()=>{if(player.getPlayerState?.()!==1){clearTimers();setActualPlaying(false);setMediaError('PLAYBACK_TIMEOUT');setPhase('wait');}},12000);
     player.playVideo();
-    if (state.current.flow === 'video') {
+    if (state.current.flow === 'video' && !replayOnly) {
       // 영상 따라하기: 멈추지 않고 흘려보내며, 지금 시간이 속한 문장으로 자막만 바꾼다
       let shown = i;
       let seeked = false;
@@ -196,23 +196,32 @@ export default function ShadowBoard({
       }, 100);
       return;
     }
+    let enteredSegment = false;
     pollRef.current = window.setInterval(() => {
+      if (player.getPlayerState?.() !== 1) return;
       const now = player.getCurrentTime();
+      if (!enteredSegment) {
+        const requested = from ?? line.start;
+        if (now < requested - .35 || now > requested + .75) return;
+        enteredSegment = true;
+      }
       if (now >= line.end - 0.05) {
+        wantsPlayback.current = false;
         player.pauseVideo();
         if (pollRef.current) window.clearInterval(pollRef.current);
         pollRef.current = null;
-        startSpeak(line, i, repNo);
+        startSpeak(line, i, repNo, replayOnly);
       }
     }, 80);
   }
 
-  function startSpeak(line: ShadowLine, i: number, repNo: number) {
+  function startSpeak(line: ShadowLine, i: number, repNo: number, replayOnly = false) {
     const { speed: sp, repeat: rp, flow: fl, lines: ls } = state.current;
     const ms = Math.round((((line.end - line.start) / sp) * 1.2 + 0.8) * 1000);
     setPhase('speak');
     timerRef.current = window.setTimeout(() => {
-      if (repNo < rp) playLine(i, repNo + 1);
+      if (replayOnly || rp === 1) setPhase('wait');
+      else if (repNo < rp) playLine(i, repNo + 1);
       else if (fl !== 'manual' && i < ls.length - 1) playLine(i + 1, 1);
       else setPhase(i >= ls.length - 1 ? 'done' : 'wait');
     }, ms);
@@ -278,9 +287,9 @@ export default function ShadowBoard({
   const start=lines[0]?.start??0,end=lines.at(-1)?.end??start+1;
   const fmt=(n:number)=>`${Math.floor(Math.max(0,n)/60)}:${String(Math.floor(Math.max(0,n)%60)).padStart(2,'0')}`;
 
-  return <div data-shadow-board className="h-full w-full"><TeachingVideoFrame expanded={expanded} title={title} playing={actualPlaying||phase==='speak'} pending={phase==='loading'} ready={usePlayer?ready:true} error={videoUrl&&!videoId?'URL':mediaError} youtube={videoUrl??undefined} retry={()=>{void retryYoutubeIframeApi();setAttempt(n=>n+1);}}
+  return <div data-shadow-board className="h-full w-full"><TeachingVideoFrame speedControl={preparation||follower?undefined:{value:speed,values:SHADOW_SPEEDS,onChange:setSpeed}} expanded={expanded} title={title} playing={actualPlaying||phase==='speak'} pending={phase==='loading'} ready={usePlayer?ready:true} error={videoUrl&&!videoId?'URL':mediaError} youtube={videoUrl??undefined} retry={()=>{void retryYoutubeIframeApi();setAttempt(n=>n+1);}}
    video={usePlayer?<div key={attempt} className="absolute inset-0"><div id={elementId}/><div className="absolute inset-0 z-[2]" aria-hidden/></div>:<div className="flex h-full items-center justify-center">{title}</div>} caption={subtitleBlock}
-   onPlay={()=>actualPlaying||phase==='speak'||phase==='loading'?stop():playLine(idx,1,resumeAt.current)} onReplay={()=>playLine(idx,1)} onPrev={interactive&&!follower&&lines.length?()=>go(-1):undefined} onNext={interactive&&!follower&&lines.length?()=>go(1):undefined} previousDisabled={idx===0} nextDisabled={idx>=lines.length-1}
+   onPlay={()=>actualPlaying||phase==='speak'||phase==='loading'?stop():playLine(idx,1,resumeAt.current)} onReplay={()=>playLine(idx,1,undefined,true)} onPrev={interactive&&!follower&&lines.length?()=>go(-1):undefined} onNext={interactive&&!follower&&lines.length?()=>go(1):undefined} previousDisabled={idx===0} nextDisabled={idx>=lines.length-1}
    progress={lines.length&&usePlayer?<><span>{fmt(position-start)}</span><input aria-label={t('mediaV2.seek')} type="range" min={start} max={end} step={.1} value={Math.min(end,Math.max(start,position))} onChange={e=>{const time=Number(e.target.value);const next=Math.max(0,lines.reduce((last,l,i)=>l.start<=time?i:last,0));const wasPlaying=actualPlaying;stop();setIdx(next);setPosition(time);playerRef.current?.seekTo(time,true);if(wasPlaying)playLine(next,1,time);}}/><span>{fmt(end-start)}</span></>:undefined}
    follow={!preparation&&interactive&&!follower?<button type="button" className={flow!=='video'?'is-active':''} aria-pressed={flow!=='video'} onClick={()=>{stop();setFlow(flow==='video'?'auto':'video');}}>{t('mediaV2.follow')}</button>:undefined}
    summary={<>{t('mediaV2.repeat',{n:repeat})} · {t('mediaV2.speed',{n:speed})} · {t(roleTeams?'mediaV2.teams':'mediaV2.rolesOff',{n:roleTeams})}</>}

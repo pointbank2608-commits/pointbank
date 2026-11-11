@@ -46,3 +46,35 @@ body:has([data-lesson-video-nav]) .tv-player[data-simple=false]{padding-bottom:8
 @media(max-width:650px){.tv-player.tv-player .tv-popup,.tv-player.tv-player .tv-setting-anchor .tv-popup{inset:50px 8px auto auto;width:calc(100% - 16px);max-width:calc(100% - 16px);max-height:calc(100% - 305px)}.tv-player.tv-player:has(.tv-popup){overflow:hidden}}
 @media(max-height:600px){.tv-player.tv-player .tv-popup,.tv-player.tv-player .tv-setting-anchor .tv-popup{inset:42px 8px auto auto;max-height:calc(100% - 85px)}.tv-player.tv-player:has(.tv-popup) .tv-video{min-height:90px}}
 .tv-player.tv-player .tv-popup,.tv-player.tv-player .tv-setting-anchor .tv-popup{top:var(--tv-popup-top,56px);max-height:var(--tv-popup-height,calc(100% - 310px))}
+
+/* During a lesson the picture uses the whole stage. Controls and captions
+   float over it so showing them never resizes or restarts the player. */
+.tv-player[data-video-presenting=true][data-simple=false]{padding:0;overflow:hidden;border-radius:0}
+.tv-player[data-video-presenting=true] .tv-title{display:none}
+.tv-player[data-video-presenting=true] .tv-video{min-height:0!important;border-radius:0}
+body:has(.tv-player[data-video-presenting=true]) [data-lesson-video-nav]{display:none}
+[data-lesson-presenter]:has(.tv-player[data-video-presenting=true]){padding-bottom:0}
+.tv-player[data-video-presenting=true] .tv-video iframe{pointer-events:none}
+.tv-player[data-video-presenting=true] .tv-controls-space{position:absolute;inset:auto 0 0;z-index:19;min-height:0}
+.tv-player[data-video-presenting=true] .tv-controls{background:#0c2340df;padding:3px clamp(8px,2vw,24px);display:flex;align-items:center;justify-content:center;flex-wrap:wrap;column-gap:10px}
+.tv-player[data-video-presenting=true] .tv-progress{flex:0 0 100%;padding:0}
+.tv-player[data-video-presenting=true] .tv-progress input{min-height:19px}
+.tv-player[data-video-presenting=true] .tv-main-controls,.tv-player[data-video-presenting=true] .tv-tool-controls{padding:0;gap:4px;flex-wrap:nowrap}
+.tv-player[data-video-presenting=true] .tv-control,.tv-player[data-video-presenting=true] .tv-tool-controls>button,.tv-player[data-video-presenting=true] .tv-setting-anchor>button,.tv-player[data-video-presenting=true] .tv-speed-control{display:flex;flex-direction:row;align-items:center;gap:5px;min-width:0;min-height:42px;font-size:12px;padding:4px 6px;white-space:nowrap}
+.tv-player[data-video-presenting=true] .tv-control .material-symbols-outlined{font-size:20px}
+.tv-player[data-video-presenting=true] .tv-control[aria-label] .material-symbols-outlined{padding:3px}
+.tv-speed-control select{color:#fff;background:#203e62;border-radius:5px;min-height:32px}
+.tv-player[data-video-presenting=true] .tv-summary{display:none}
+.tv-player[data-video-presenting=true] .tv-caption{position:absolute;inset:auto 0 66px;z-index:10;min-height:0;padding:3px 10px;pointer-events:none;text-shadow:0 1px 3px #000,0 0 6px #000}
+.tv-player[data-video-presenting=true][data-chrome-visible=false] .tv-caption{bottom:10px}
+.tv-player[data-video-presenting=true] .tv-caption>div{width:auto!important;max-width:100%;padding:3px 9px;border-radius:7px;background:#102239cc}
+.tv-player[data-video-presenting=true] .tv-setting-anchor .tv-popup{top:auto;right:8px;bottom:calc(100% + 5px);max-height:min(50dvh,390px)}
+body:has(.tv-player[data-video-presenting=true]) [data-lesson-runner-bar]{padding-block:3px}
+body:has(.tv-player[data-video-presenting=true][data-video-full=true]) [data-lesson-runner-bar]{position:fixed;inset:0 0 auto;z-index:32;background:#102239dc;transition:opacity .18s}
+body:has(.tv-player[data-video-presenting=true][data-video-full=true][data-chrome-visible=false]) [data-lesson-runner-bar]:not(:hover):not(:focus-within){opacity:0;pointer-events:none}
+@media(max-width:750px){
+ .tv-player[data-video-presenting=true] .tv-controls{display:grid;grid-template-columns:max-content max-content;justify-content:start;overflow-x:auto}
+ .tv-player[data-video-presenting=true] .tv-progress{grid-column:1/-1;width:calc(100vw - 24px)}
+ .tv-player[data-video-presenting=true] .tv-control,.tv-player[data-video-presenting=true] .tv-tool-controls>button,.tv-player[data-video-presenting=true] .tv-setting-anchor>button{font-size:11px}
+ .tv-player[data-video-presenting=true] .tv-setting-anchor .tv-popup{position:fixed;right:8px;bottom:72px}
+}

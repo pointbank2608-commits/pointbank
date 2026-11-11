@@ -6,7 +6,7 @@ import type { FullCardItem, GameType, LessonSlide, WordBankEntry, WordList } fro
 
 /** 질문 3개 수업 만들기 — 규칙 기반(AI 없음)으로 "분"에 맞는 수업 구성을 만든다. */
 export type QuickMinutes = 20 | 40 | 50;
-export type QuickSlot = 'warmup' | 'learn' | 'practice' | 'team' | 'wrapup' | 'sheet';
+export type QuickSlot = 'warmup' | 'learn' | 'practice' | 'recall' | 'sentence' | 'team' | 'wrapup' | 'sheet';
 
 export interface QuickRow {
   slot: QuickSlot;
@@ -16,46 +16,49 @@ export interface QuickRow {
 }
 
 /** 칸마다 "바꾸기"로 고를 수 있는 게임(단어장만으로 내용이 만들어지는 것) */
-export const QUICK_ALTERNATIVES: Record<'warmup' | 'practice' | 'team' | 'wrapup', GameType[]> = {
-  warmup: ['wheel', 'order', 'bomb', 'ladder'],
-  practice: ['matchup', 'whackamole', 'anagram', 'hangman', 'typeanswer', 'flashcards'],
-  team: ['tictactoe', 'connect4', 'twodice', 'baskin31'],
-  wrapup: ['quiz', 'truefalse', 'imagequiz'],
+export const QUICK_ALTERNATIVES: Partial<Record<QuickSlot, GameType[]>> = {
+  practice: ['matchup', 'quiz', 'whackamole'],
+  team: ['lightning', 'twodice', 'passball', 'popcorn'],
 };
 
-export function planQuickLesson(minutes: QuickMinutes): QuickRow[] {
+export function planQuickLesson(minutes: QuickMinutes | 10): QuickRow[] {
+  if (minutes === 10) return [
+    { slot:'learn', minutes:3, games:[] },
+    { slot:'practice', minutes:4, games:['matchup'] },
+    { slot:'wrapup', minutes:3, games:[] },
+  ];
   if (minutes === 20) {
     return [
-      { slot: 'warmup', minutes: 3, games: ['wheel'] },
-      { slot: 'learn', minutes: 5, games: [] },
-      { slot: 'practice', minutes: 7, games: ['matchup'] },
-      { slot: 'wrapup', minutes: 5, games: ['quiz'] },
+      { slot: 'learn', minutes: 8, games: [] },
+      { slot: 'recall', minutes: 7, games: [] },
+      { slot: 'wrapup', minutes: 5, games: [] },
     ];
   }
   if (minutes === 40) {
     return [
-      { slot: 'warmup', minutes: 3, games: ['wheel'] },
-      { slot: 'learn', minutes: 7, games: [] },
-      { slot: 'practice', minutes: 12, games: ['matchup', 'whackamole'] },
-      { slot: 'team', minutes: 8, games: ['tictactoe'] },
-      { slot: 'wrapup', minutes: 5, games: ['quiz'] },
-      { slot: 'sheet', minutes: 5, games: [] },
+      { slot: 'warmup', minutes: 4, games: [] },
+      { slot: 'learn', minutes: 8, games: [] },
+      { slot: 'practice', minutes: 7, games: ['matchup'] },
+      { slot: 'recall', minutes: 8, games: [] },
+      { slot: 'team', minutes: 8, games: ['lightning'] },
+      { slot: 'wrapup', minutes: 5, games: [] },
     ];
   }
   return [
-    { slot: 'warmup', minutes: 5, games: ['wheel', 'bomb'] },
-    { slot: 'learn', minutes: 8, games: [] },
-    { slot: 'practice', minutes: 15, games: ['matchup', 'whackamole', 'anagram'] },
-    { slot: 'team', minutes: 10, games: ['tictactoe', 'connect4'] },
-    { slot: 'wrapup', minutes: 7, games: ['quiz', 'truefalse'] },
-    { slot: 'sheet', minutes: 5, games: [] },
+    { slot: 'warmup', minutes: 5, games: [] },
+    { slot: 'learn', minutes: 9, games: [] },
+    { slot: 'practice', minutes: 8, games: ['matchup'] },
+    { slot: 'recall', minutes: 7, games: [] },
+    { slot: 'sentence', minutes: 8, games: [] },
+    { slot: 'team', minutes: 8, games: ['lightning'] },
+    { slot: 'wrapup', minutes: 5, games: [] },
   ];
 }
 
 /** "바꾸기" 창에 보여 줄, 이 칸에서 고를 수 있는 게임 목록 */
 export function quickGameChoices(row: QuickRow): GameType[] {
   if (row.slot === 'learn' || row.slot === 'sheet') return [];
-  return QUICK_ALTERNATIVES[row.slot].filter((g) => canBuildFromWords(g));
+  return (QUICK_ALTERNATIVES[row.slot] ?? []).filter((g) => canBuildFromWords(g));
 }
 
 /** 칸의 게임 하나를 골라 고른 게임으로 바꾼다(다른 자리에 이미 쓴 게임이면 서로 자리를 맞바꾼다) */
@@ -70,7 +73,7 @@ export function setQuickGame(row: QuickRow, index: number, game: GameType): Quic
 /** 칸의 게임 하나를 같은 칸의 다음 후보로 바꾼다(이미 쓴 게임은 건너뜀) */
 export function swapQuickGame(row: QuickRow, index: number): QuickRow {
   if (row.slot === 'learn' || row.slot === 'sheet') return row;
-  const pool = QUICK_ALTERNATIVES[row.slot].filter((g) => canBuildFromWords(g));
+  const pool = quickGameChoices(row);
   const current = row.games[index];
   const start = pool.indexOf(current);
   for (let step = 1; step <= pool.length; step += 1) {
@@ -87,15 +90,33 @@ export function swapQuickGame(row: QuickRow, index: number): QuickRow {
 const uid = () => crypto.randomUUID();
 
 /** 계획을 슬라이드로: 맨 앞 출석 → 칸 순서대로 */
-export function quickRowsToSlides(rows: QuickRow[]): LessonSlide[] {
+export function quickRowsToSlides(rows: QuickRow[], words?: FullCardItem[], review: FullCardItem[] = [], gameCards?: Map<string,FullCardItem[]>): LessonSlide[] {
   const slides: LessonSlide[] = [{ id: uid(), kind: 'attendance', boardTheme: 'green' }];
+  const recall = (mode: 'word'|'sentence'|'check', cards = words): LessonSlide => ({
+    id:uid(), kind:'wordshow', boardTheme:'green', recall:mode, autoSpeak:false, words:cards,
+  });
+  const hasSentenceRow = rows.some(row => row.slot === 'sentence');
+  const reviewOnly = rows.reduce((sum,row) => sum + row.minutes, 0) === 10;
   for (const row of rows) {
     if (row.slot === 'learn') {
-      slides.push({ id: uid(), kind: 'wordshow', boardTheme: 'green' }, { id: uid(), kind: 'study' });
+      slides.push(reviewOnly ? { id: uid(), kind: 'study', words } : { id: uid(), kind: 'wordshow', boardTheme: 'green', words });
+    } else if (row.slot === 'warmup') {
+      slides.push(recall('word',review.length ? review : words));
+    } else if (row.slot === 'recall') {
+      slides.push(recall('word'));
+      if (rows.some(other => other.slot === 'team') && !hasSentenceRow) slides.push(recall('sentence'));
+    } else if (row.slot === 'sentence') {
+      slides.push(recall('sentence'));
+    } else if (row.slot === 'wrapup') {
+      slides.push(recall('check',words?.slice(0,4)));
     } else if (row.slot === 'sheet') {
       slides.push({ id: uid(), kind: 'material', materialId: 'worksheet', worksheetTab: 'match', boardTheme: 'whiteboard' });
     } else {
-      for (const g of row.games) slides.push({ id: uid(), kind: 'game', gameType: g });
+      for (const g of row.games) {
+        const id = uid();
+        slides.push({ id, kind: 'game', gameType: g });
+        if (words) gameCards?.set(id, row.slot === 'team' ? [...words,...review] : words);
+      }
     }
   }
   return slides;
@@ -105,6 +126,7 @@ export function quickRowsToSlides(rows: QuickRow[]): LessonSlide[] {
 export async function attachQuickGames(params: {
   slides: LessonSlide[];
   cards: FullCardItem[];
+  gameCards?: Map<string,FullCardItem[]>;
   academyId: string;
   classId: string;
   teacherId: string;
@@ -117,7 +139,7 @@ export async function attachQuickGames(params: {
       out.push(slide);
       continue;
     }
-    const content = buildGameContent(slide.gameType, params.cards);
+    const content = buildGameContent(slide.gameType, params.gameCards?.get(slide.id) ?? params.cards);
     if (!content) {
       out.push(slide);
       continue;

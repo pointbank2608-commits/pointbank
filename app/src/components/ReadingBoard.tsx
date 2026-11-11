@@ -7,6 +7,7 @@ import { clozeSegments, parseReadingText } from '../lib/readingLines';
 import { speak } from '../lib/speech';
 import { extractYoutubeId } from '../lib/youtube';
 import { CanvasStageBox } from './CanvasSlideView';
+import SceneOverlay from './SceneOverlay';
 
 /**
  * "노래·지문 한 줄씩" 칠판 — 커리큘럼 reading 슬라이드.
@@ -37,7 +38,7 @@ export default function ReadingBoard({
   const [showKo, setShowKo] = useState(false);
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
   const [revealAll, setRevealAll] = useState(false);
-  const [playAt, setPlayAt] = useState<number | null>(null);
+  const [playAt, setPlayAt] = useState<{start:number;end:number|null} | null>(null);
   const [page, setPage] = useState(0);
   const videoId = videoUrl ? extractYoutubeId(videoUrl) : null;
   const idxRef = useRef(idx);
@@ -63,6 +64,7 @@ export default function ReadingBoard({
     setRevealAll(false);
     setPlayAt(null);
   }, [source, mode]);
+  useEffect(() => { setPlayAt(null); }, [idx, page]);
 
   useEffect(() => {
     if (!interactive || follower) return;
@@ -118,6 +120,13 @@ export default function ReadingBoard({
   const curPage = Math.min(page, pageCount - 1);
   const pageStart = mode === 'cloze' ? curPage * clozePerPage : 0;
   const pageLines = mode === 'cloze' ? lines.slice(pageStart, pageStart + clozePerPage) : lines;
+  const segmentLines = mode === 'cloze' ? pageLines : line ? [line] : [];
+  const start = segmentLines.find(row => row.start !== null)?.start;
+  const lastTimed = segmentLines.findLast(row => row.start !== null);
+  const nextStart = lines.slice(mode === 'cloze' ? pageStart + pageLines.length : idx + 1).find(row => row.start !== null)?.start;
+  const segment = start != null && lastTimed?.start != null
+    ? { start, end: lastTimed.end ?? (nextStart != null && nextStart > lastTimed.start ? nextStart : lastTimed.start + 3) }
+    : null;
   const clozeSize = Math.min(4.6, 58 / Math.max(1, pageLines.length * 1.5 + (showKo ? pageLines.length * 0.9 : 0)));
 
   return (
@@ -190,13 +199,7 @@ export default function ReadingBoard({
         </div>
 
         {interactive && playAt !== null && videoId && (
-          <iframe
-            key={playAt}
-            title="video"
-            className="absolute bottom-[9cqh] left-[3cqh] aspect-video w-[34%] rounded-lg shadow-lg"
-            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&start=${playAt}`}
-            allow="autoplay; encrypted-media"
-          />
+          <SceneOverlay key={playAt.start} videoId={videoId} time={playAt.start} endTime={playAt.end} compact onClose={() => setPlayAt(null)} />
         )}
 
         {interactive && lines.length > 0 && (
@@ -206,8 +209,8 @@ export default function ReadingBoard({
                 <Btn icon="chevron_left" label={t('curriculum.reading.prev')} disabled={idx === 0} onClick={() => setIdx((i) => Math.max(0, i - 1))} />
                 <Btn icon="chevron_right" label={t('curriculum.reading.next')} disabled={idx >= lines.length - 1} onClick={() => setIdx((i) => Math.min(lines.length - 1, i + 1))} />
                 <Btn icon="volume_up" label={t('grammar.readAll')} onClick={() => speak(plainText(line.en))} />
-                {videoId && line.start !== null && (
-                  <Btn icon="play_circle" label={t('curriculum.reading.playLine')} onClick={() => setPlayAt(line.start)} />
+                {videoId && segment && (
+                  <Btn icon="play_circle" label={t('curriculum.reading.playPage')} onClick={() => setPlayAt(segment)} />
                 )}
               </>
             )}
@@ -222,8 +225,8 @@ export default function ReadingBoard({
                 {videoId && (
                   <Btn
                     icon="play_circle"
-                    label={t(pageCount > 1 ? 'curriculum.reading.playPage' : 'curriculum.reading.playSong')}
-                    onClick={() => setPlayAt(pageLines[0]?.start ?? lines[0]?.start ?? 0)}
+                    label={t(segment ? 'curriculum.reading.playPage' : 'curriculum.reading.playSong')}
+                    onClick={() => setPlayAt(segment ?? {start:0,end:null})}
                   />
                 )}
                 <Btn icon="visibility" label={revealAll ? t('curriculum.reading.hideAnswers') : t('curriculum.reading.showAnswers')} onClick={() => { setRevealAll((v) => !v); setRevealed(new Set()); }} />

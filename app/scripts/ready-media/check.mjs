@@ -6,21 +6,144 @@ import {createServer} from 'vite';
 import {chromium} from '../../node_modules/homework-test-tools/node_modules/@playwright/test/index.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..'),out=resolve(root,'../output/ready-media');mkdirSync(out,{recursive:true});
 const names=[...readFileSync(resolve(root,'src/lib/api.ts'),'utf8').matchAll(/export (?:async )?function (\w+)|export const (\w+)/g)].map(m=>m[1]||m[2]);
-const syntheticClip={id:'synthetic-clip',series:'Synthetic classroom',title:'Synthetic fruit conversation',summary:'Test only',youtube_id:'abcdefghijk',channel:'Synthetic channel',start_sec:10,end_sec:40,level:2,tags:['fruit','asking politely'],script:'[0:10-0:16] Anna: I like apples. | 나는 사과를 좋아해요.\n[0:17-0:23] Ben: Do you like bananas? | 바나나를 좋아하니?\n[0:24-0:30] Anna: Yes, I do. | 응, 좋아해.',words:['apple','banana'],pack:{words:[{word:'apple',meaning:'사과',example:'I like apples.',time:10},{word:'banana',meaning:'바나나',example:'Do you like bananas?',time:17}],questions:[{q:'What fruit does Anna like?',a:'Apples.'}]},sort_order:0,hidden:false};
-const clip=process.env.READY_LIVE_VIDEO==='1'?JSON.parse(readFileSync(resolve(root,'../tmp/ready-media/public-clips.json'),'utf8'))[0]:syntheticClip;
+const syntheticClip={id:'synthetic-clip',series:'Synthetic classroom',title:'Synthetic fruit conversation',summary:'Test only',youtube_id:'abcdefghijk',channel:'Synthetic channel',start_sec:10,end_sec:40,level:2,tags:['fruit','asking politely'],script:'[0:10-0:16] Anna: I like apples. | 나는 사과를 좋아해요.\n[0:17-0:23] Ben: Do you like bananas? | 바나나를 좋아하니?\n[0:24-0:30] Anna: Yes, I do. | 응, 좋아해.',words:['apple','banana'],pack:{words:[{word:'apple',meaning:'사과',example:'I like apples.',time:10},{word:'banana',meaning:'바나나',example:'Do you like bananas?',time:17}],questions:[{q:'What fruit does Anna like?',a:'Apples.',time:10,end:16},{q:'What fruit does Ben ask about?',a:'Bananas.',time:17,end:23}]},sort_order:0,hidden:false};
+const clip=process.env.READY_LIVE_VIDEO==='1'?JSON.parse(readFileSync(resolve(root,'../tmp/ready-media/public-clips.json'),'utf8').replace(/^\uFEFF/,''))[Number(process.env.READY_CLIP_INDEX??0)]:syntheticClip;
 const api=`import {curriculumEntries} from '/src/data/phonicsCurriculum';const funcs={fetchPhonicsBank:async()=>curriculumEntries(false),fetchWordBank:async()=>[]};${names.map(n=>`export const ${n}=(...args)=>(funcs.${n}|| (async()=>[]))(...args);`).join('\n')}`;
-const db=`window.__db=window.__db||{rows:[${JSON.stringify(clip)}],writes:[],fail:false};export const supabase={rpc:async()=>({data:null,error:null}),channel:()=>({on(){return this},subscribe(){return this},unsubscribe(){}}),from(table){let mode='read',payload,filters=[];const q={select(){return q},order(){return q},eq(k,v){filters.push([k,v]);return q},maybeSingle(){return q},insert(p){mode='insert';payload=p;return q},update(p){mode='update';payload=p;return q},then(ok,bad){const db=window.__db;const rows=db.rows.filter(r=>filters.every(([k,v])=>r[k]===v));if(db.fail)return Promise.resolve({data:null,error:new Error('synthetic database failure')}).then(ok,bad);if(mode==='insert'){db.rows.push({id:crypto.randomUUID(),hidden:false,...payload});db.writes.push({mode,payload});}if(mode==='update'){rows.forEach(r=>Object.assign(r,payload));db.writes.push({mode,payload});}return Promise.resolve({data:table==='video_clips'?rows:[],error:null}).then(ok,bad)}};return q;}};`;
-const server=await createServer({root,cacheDir:'node_modules/.vite/qa-ready-media',logLevel:'error',plugins:[{name:'isolated-ready-media',enforce:'pre',load(id){const p=id.replaceAll('\\','/');if(process.env.READY_LIVE_VIDEO==='1'&&p.endsWith('/src/components/ShadowBoard.tsx'))return readFileSync(id,'utf8').replace('setReady(true);','setReady(true);window.__livePlayer=playerRef.current;');if(p.endsWith('/src/lib/api.ts'))return api;if(p.endsWith('/src/context/AuthContext.tsx'))return `export const useAuth=()=>({isAdmin:!location.search.includes('nonadmin'),isStaff:true,academy:{id:'qa-only',features:{}},profile:{id:'qa-only'}});`;if(p.endsWith('/src/lib/supabase.ts'))return db;if(p.endsWith('/src/context/ToastContext.tsx'))return `export const useToast=()=>({notify:()=>{},run:async f=>{await f();return true;}});`;}}],server:{host:'127.0.0.1',port:5371,strictPort:true,hmr:false}});
+const db=`window.__db=window.__db||{rows:[${JSON.stringify(clip)}],writes:[],fail:false};export const supabase={rpc:async()=>({data:null,error:null}),channel:()=>({on(){return this},subscribe(){return this},unsubscribe(){}}),from(table){let mode='read',payload,filters=[];const q={select(){return q},order(){return q},eq(k,v){filters.push([k,v]);return q},maybeSingle(){return q},insert(p){mode='insert';payload=p;return q},update(p){mode='update';payload=p;return q},then(ok,bad){const db=window.__db;const rows=db.rows.filter(r=>filters.every(([k,v])=>r[k]===v));if(db.fail)return Promise.resolve({data:null,error:new Error('synthetic database failure')}).then(ok,bad);if(mode==='insert'){db.rows.push({id:crypto.randomUUID(),hidden:false,...payload});db.writes.push({mode,payload});}if(mode==='update'){rows.forEach(r=>Object.assign(r,payload));db.writes.push({mode,payload});}return Promise.resolve({data:table==='video_clips'?(filters.length?rows[0]??null:rows):[],error:null}).then(ok,bad)}};return q;}};`;
+const server=await createServer({root,cacheDir:'node_modules/.vite/qa-ready-media',logLevel:'error',plugins:[{name:'isolated-ready-media',enforce:'pre',load(id){const p=id.replaceAll('\\','/');if(process.env.READY_LIVE_VIDEO==='1'&&p.endsWith('/src/components/ShadowBoard.tsx'))return readFileSync(id,'utf8').replace('setReady(true);','setReady(true);window.__livePlayer=playerRef.current;');if(process.env.READY_LIVE_VIDEO==='1'&&p.endsWith('/src/components/SceneOverlay.tsx'))return readFileSync(id,'utf8').replace('player?.seekTo(time, true);','window.__liveScene={player,start:time,end};player?.seekTo(time, true);');if(p.endsWith('/src/lib/api.ts'))return api;if(p.endsWith('/src/context/AuthContext.tsx'))return `export const useAuth=()=>({isAdmin:!location.search.includes('nonadmin'),isStaff:true,academy:{id:'qa-only',features:{}},profile:{id:'qa-only'}});`;if(p.endsWith('/src/lib/supabase.ts'))return db;if(p.endsWith('/src/context/ToastContext.tsx'))return `export const useToast=()=>({notify:()=>{},run:async f=>{await f();return true;}});`;}}],server:{host:'127.0.0.1',port:5371,strictPort:true,hmr:false}});
 const result={units:[],checks:[],errors:[]};let browser,page;
 const pass=x=>{result.checks.push(x);console.log('PASS',x);};
 const go=async path=>{await page.goto(`http://127.0.0.1:5371/scripts/ready-media/fixture.html?go=${encodeURIComponent(path)}`);await page.waitForFunction(()=>!!window.__models);};
 try{
  await server.listen();browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--no-sandbox']});page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',e=>result.errors.push(String(e)));
- if(process.env.READY_LIVE_VIDEO!=='1')await page.addInitScript(()=>{window.__yt={time:10,playing:false,speed:1,plays:0,instances:0};window.YT={PlayerState:{ENDED:0,PLAYING:1},Player:class{constructor(id,opts){window.__yt.instances++;this.opts=opts;const el=document.getElementById(id);if(el)el.textContent='Synthetic YouTube API';setTimeout(()=>opts.events?.onReady?.(),10);}getCurrentTime(){return window.__yt.time;}setPlaybackRate(s){window.__yt.speed=s;}seekTo(t){window.__yt.time=t;}playVideo(){window.__yt.playing=true;window.__yt.plays++;}pauseVideo(){window.__yt.playing=false;}destroy(){} }};});
+ if(process.env.READY_LIVE_VIDEO!=='1')await page.addInitScript(()=>{window.__yt={time:10,playing:false,speed:1,plays:0,instances:0};window.YT={PlayerState:{ENDED:0,PLAYING:1},Player:class{constructor(id,opts){window.__yt.instances++;this.opts=opts;const el=document.getElementById(id);if(el)el.textContent='Synthetic YouTube API';setTimeout(()=>opts.events?.onReady?.(),10);}getCurrentTime(){return window.__yt.time;}getPlayerState(){return window.__yt.playing?1:2;}getAvailablePlaybackRates(){return [.75,1,1.25];}setPlaybackRate(s){window.__yt.speed=s;}seekTo(t){window.__yt.time=t;}playVideo(){window.__yt.playing=true;window.__yt.plays++;this.opts.events?.onStateChange?.({data:1});}pauseVideo(){window.__yt.playing=false;this.opts.events?.onStateChange?.({data:2});}destroy(){} }};});
  if(process.env.READY_LIVE_VIDEO==='1'){
-  await go('/materials/videos');await page.getByRole('button').filter({hasText:clip.title}).first().click();let status={title:clip.title,youtubeId:clip.youtube_id,ready:false,played:false};
-  try{await page.waitForFunction(()=>!!window.__livePlayer,{timeout:25000});status.ready=true;await page.locator('[data-video-controls]').getByRole('button',{name:'재생',exact:true}).click();const start=await page.evaluate(()=>window.__livePlayer.getCurrentTime());await page.waitForFunction(t=>window.__livePlayer.getCurrentTime()>t+.5,start,{timeout:15000});status.played=true;}catch(e){status.reason=String(e);status.ui=(await page.locator('[data-shadow-board]').innerText()).slice(0,600);}
-  await page.screenshot({path:resolve(out,'live-youtube.png'),fullPage:true});writeFileSync(resolve(out,'live-youtube.json'),JSON.stringify(status,null,2));console.log(JSON.stringify(status));await browser.close();await server.close();process.exit(0);
+  const status={title:clip.title,checks:[]};
+  for(const route of ['/lesson-memory','/start-runner']){
+   await go(route);
+   if(route==='/start-runner')await page.getByRole('button',{name:'Start actual lesson'}).click();
+   const check={route,played:false,stopped:false};
+   try{
+    await page.waitForFunction(()=>!!window.__livePlayer,undefined,{timeout:16000});
+    await page.locator('[data-video-controls]').getByRole('button',{name:'재생',exact:true}).click();
+    await page.waitForFunction(()=>window.__livePlayer.getPlayerState()===1,undefined,{timeout:13000});
+    check.played=true;
+    await page.waitForFunction(()=>window.__livePlayer.getPlayerState()===2,undefined,{timeout:15000});
+    check.stopped=true;
+    const endPosition=await page.evaluate(()=>window.__livePlayer.getCurrentTime());
+    await page.waitForTimeout(3000);
+    check.stayedStopped=await page.evaluate(end=>window.__livePlayer.getPlayerState()===2&&Math.abs(window.__livePlayer.getCurrentTime()-end)<.25,endPosition);
+   }catch(e){check.reason=String(e);check.ui=(await page.locator('[data-shadow-board]').innerText()).slice(0,600);}
+   status.checks.push(check);
+  }
+  const nextSlide=()=>page.locator('[data-lesson-runner-bar]').getByRole('button',{name:/다음/}).click();
+  async function liveScene(button){
+   const check={route:button,played:false,stopped:false};
+   try{
+    await page.evaluate(()=>{delete window.__liveScene;});
+    await page.getByRole('button',{name:new RegExp(button)}).click({timeout:5000});
+    await page.waitForFunction(()=>window.__liveScene?.player.getPlayerState()===1,undefined,{timeout:12000});
+    check.played=true;
+    const segment=await page.evaluate(()=>({start:window.__liveScene.start,end:window.__liveScene.end}));
+    check.segment=segment;
+    const remaining=(segment.end-segment.start)*1000;
+    if(remaining<=45000){
+     await page.waitForFunction(()=>window.__liveScene.player.getPlayerState()!==1&&window.__liveScene.player.getCurrentTime()>=window.__liveScene.end-.4,undefined,{timeout:remaining+6500});
+     check.stopped=true;
+    }else check.reason='Segment exceeds 45 seconds; only the playback start was checked.';
+    await page.getByRole('dialog',{name:'장면 보기'}).getByRole('button',{name:'닫기',exact:true}).click();
+   }catch(e){check.reason=String(e);}
+   status.checks.push(check);
+  }
+  await nextSlide();
+  await liveScene('장면 보기');
+  await nextSlide();
+  await liveScene('이 부분 듣기');
+  console.log(JSON.stringify(status));
+  assert.ok(status.checks.every(check=>check.played&&check.stopped&&check.stayedStopped!==false), 'Live video did not complete every playback check');
+  await browser.close();await server.close();process.exit(0);
+ }
+ if(process.argv.includes('--animation-update')){
+  await go('/materials/videos');
+  await page.getByRole('heading',{name:'애니메이션 영어'}).waitFor();
+  await page.getByRole('button',{name:/Synthetic fruit conversation/}).click();
+  await page.getByRole('button',{name:'영상 보기',exact:true}).first().waitFor();
+  await page.getByRole('button',{name:'이 영상으로 수업 만들기',exact:true}).waitFor();
+  await page.getByRole('link',{name:'활동지 인쇄',exact:true}).click();
+  await page.locator('.animation-worksheet').waitFor();
+  await page.getByRole('checkbox',{name:'단어',exact:true}).uncheck();
+  assert.equal(await page.locator('.rc-sheet h2').getByText('Vocabulary',{exact:true}).count(),0);
+  const questions=page.locator('.animation-worksheet aside section').nth(1);
+  await questions.locator('summary').click();
+  await questions.getByRole('checkbox',{name:'What fruit does Anna like?',exact:true}).uncheck();
+  assert.match(await page.locator('.animation-print-questions').first().innerText(),/^1\. What fruit does Ben ask about/);
+  await page.getByRole('checkbox',{name:/교사용/}).check();
+  assert.equal(await page.locator('.animation-answer').getByText('Bananas.',{exact:true}).count(),1);
+  const count=await page.locator('.rc-sheet').count();
+  assert.ok(count>1);
+  const printed=await page.pdf({preferCSSPageSize:true,printBackground:true});
+  assert.equal((printed.toString('latin1').match(/\/Type\s*\/Page\b/g)||[]).length,count);
+  pass('Animation catalogue, individual and group selection, teacher answers, A4 PDF page count');
+
+  async function playOnce(){
+   const video=page.locator('[data-teaching-video]');
+   await video.locator('[data-video-controls]').getByRole('button',{name:'재생',exact:true}).click();
+   assert.equal(await page.evaluate(()=>window.__yt.plays),1);
+   await page.waitForTimeout(140);
+   await page.evaluate(()=>{window.__yt.time=16;});
+   await page.waitForFunction(()=>!window.__yt.playing);
+   await page.waitForTimeout(8300);
+   assert.equal(await page.evaluate(()=>window.__yt.plays),1);
+   await video.locator('[data-video-controls]').getByRole('button',{name:'다시 듣기',exact:true}).click();
+   assert.equal(await page.evaluate(()=>window.__yt.plays),2);
+  }
+  await go('/lesson-memory');
+  await playOnce();
+  await go('/start-runner');
+  await page.getByRole('button',{name:'Start actual lesson'}).click();
+  await page.locator('[data-teaching-video][data-video-presenting="true"]').waitFor();
+  const picture=page.locator('.tv-video');
+  const before=await picture.boundingBox();
+  await page.getByRole('button',{name:'수업 설정',exact:true}).click();
+  assert.deepEqual(await picture.boundingBox(),before);
+  await page.locator('[data-video-popup]').getByRole('button',{name:'닫기',exact:true}).click();
+  await playOnce();
+  const controls=page.locator('[data-video-controls]');
+  await page.mouse.move(10,10);
+  await page.waitForFunction(()=>document.querySelector('[data-video-controls]')?.classList.contains('is-hidden'));
+  await picture.hover();
+  await controls.getByRole('combobox').selectOption('0.75');
+  assert.equal(await page.evaluate(()=>window.__yt.speed),.75);
+  const playingAt=await page.evaluate(()=>window.__yt.time);
+  await controls.getByRole('button',{name:'전체화면',exact:true}).click();
+  await page.locator('[data-video-full="true"]').waitFor();
+  assert.equal(await page.evaluate(()=>window.__yt.time),playingAt);
+  await controls.getByRole('button',{name:'전체화면 종료',exact:true}).click();
+  await page.locator('[data-video-full="false"]').waitFor();
+  assert.equal(await page.evaluate(()=>window.__yt.speed),.75);
+  await controls.getByRole('button',{name:/멈춤|일시정지/}).click();
+  assert.equal(await page.evaluate(()=>window.__yt.playing),false);
+  await page.locator('[data-lesson-runner-bar]').getByRole('button',{name:/다음/}).click();
+  async function checkScene(button,start,end){
+   await page.getByRole('button',{name:new RegExp(button)}).click();
+   await page.waitForFunction(start=>window.__yt.playing&&window.__yt.time===start,start);
+   await page.evaluate(end=>{window.__yt.time=end;},end);
+   await page.waitForFunction(()=>!window.__yt.playing);
+   await page.getByRole('dialog',{name:'장면 보기'}).getByRole('button',{name:'닫기',exact:true}).click();
+  }
+  await checkScene('장면 보기',10,16);
+  await page.getByRole('button',{name:/다음 질문/}).click();
+  await checkScene('장면 보기',17,23);
+  await page.locator('[data-lesson-runner-bar]').getByRole('button',{name:/다음/}).click();
+  assert.doesNotMatch(await page.locator('body').innerText(),/\[0:00\.0/);
+  await checkScene('이 부분 듣기',0,23);
+  await page.getByRole('button',{name:/다음 쪽/}).click();
+  await checkScene('이 부분 듣기',24,47);
+  pass('Question and reading page segment bounds, close, and one repetition in preview and presentation');
+  assert.deepEqual(result.errors,[]);
+  await browser.close();
+  await server.close();
+  process.exit(0);
  }
  await go('/phonics/workbook?unit=course-2-1');
  const models=await page.evaluate(()=>{const m=window.__models;return m.courseUnits().map(u=>({id:u.id,step:u.step,number:u.number,groups:u.groups.map(g=>({label:g.label,words:g.entries.map(e=>e.word)})),entries:u.entries.map(e=>({word:e.word,image:e.image_url,target:m.workbookTargets(u,e)})),pages:m.readyClassPages(u)}));});assert.equal(models.length,42);

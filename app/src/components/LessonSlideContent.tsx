@@ -200,6 +200,7 @@ export default function LessonSlideContent({
           interactive
           shuffle={!!slide.shuffle}
           autoSpeak={slide.autoSpeak !== false}
+          recall={slide.recall}
           videoUrl={student ? undefined : slide.videoUrl}
         />
       </div>

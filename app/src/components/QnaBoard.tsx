@@ -177,14 +177,16 @@ export default function QnaBoard({
 
           {interactive && !follower && (
             <div className="flex flex-wrap items-center justify-center gap-[1.5cqh]">
+              {idx > 0 && btn('chevron_left', t('qna.prevQuestion'), () => {setIdx(idx - 1);setStep(0);setScene(null);})}
               {btn('volume_up', t('qna.listen'), () => speak(step === 0 ? item.q : item.a))}
               {shownStep === 0 ? btn('visibility', t('qna.showAnswer'), () => setStep(1)) : btn('visibility_off', t('qna.hideAnswer'), () => setStep(0))}
               {(item.qKo || item.aKo) && btn('translate', t('qna.korean'), () => setKo((k) => !k), ko)}
               {videoId && item.time !== undefined && btn('movie', t('qna.scene'), () => setScene(item.time ?? 0))}
+              {idx < questions.length - 1 && btn('chevron_right', t('qna.nextQuestion'), () => {setIdx(idx + 1);setStep(0);setScene(null);})}
             </div>
           )}
         </div>
-        {scene !== null && videoId && <SceneOverlay videoId={videoId} time={scene} onClose={() => setScene(null)} />}
+        {scene !== null && videoId && <SceneOverlay key={idx} videoId={videoId} time={scene} endTime={item?.end} onClose={() => setScene(null)} />}
       </CanvasStageBox>
     </div>
   );

@@ -216,6 +216,25 @@ try {
   await thumbs.nth(3).getByText('blue',{exact:true}).waitFor();
   console.log('PASS 3 and 4: word and flashcard thumbnails follow the lesson and slide-specific lists; print group and order match');
 
+  await form.locator('select').first().selectOption('words-a');
+  async function addLightning(group) {
+    await open();
+    await category('게임·퀴즈');
+    await picker.locator('.activity-game-filters').getByRole('button',{name:group}).click();
+    await card('game.lightning').locator('[data-activity-id]').click();
+  }
+  await addLightning(/^단어/);
+  await detail.getByRole('button',{name:'문장 직접 입력',exact:true}).click();
+  await detail.getByRole('textbox',{name:'문장 직접 입력',exact:true}).fill('Pete adds cheese.');
+  await detail.getByRole('button',{name:'이 슬라이드에 문장 적용',exact:true}).click();
+  await detail.getByText('Pete adds cheese.',{exact:true}).first().waitFor();
+  await addLightning(/^문장/);
+  await detail.getByRole('combobox',{name:'문장 모음 불러오기',exact:true}).selectOption('words-sentences');
+  await detail.getByText(/We (drive past the bridge|stop at the park)/).first().waitFor();
+  await addLightning(/^단어/);
+  await detail.getByRole('combobox',{name:'이 슬라이드 단어장',exact:true}).selectOption('words-alt');
+  await detail.getByText('blue',{exact:true}).first().waitFor();
+
   await open();
   await category('영상·이미지·웹');
   const input = picker.locator('input[type=file]');
@@ -229,8 +248,26 @@ try {
   await pdfThumb.locator('img').waitFor();
   await form.getByRole('button',{name:'저장',exact:true}).click();
   await form.waitFor({state:'hidden'});
+  const lightningSources = await page.evaluate(() => {
+    const db = window.__lessonQA;
+    return db.lessons.find(row=>row.id==='lesson-a').playlist.filter(slide=>slide.gameType==='lightning').map(slide=>({
+      id:slide.id, words:db.templates.find(t=>t.id===slide.templateId).items.map(item=>item.label),
+    }));
+  });
+  assert.deepEqual(lightningSources.map(source=>source.words),[
+    ['Pete adds cheese.'],['We drive past the bridge.','We stop at the park.'],['blue'],
+  ]);
   await page.reload();
   await edit();
+  for (const source of lightningSources) {
+    await form.locator(`[data-slide-id="${source.id}"]`).click();
+    await form.getByRole('button',{name:/이 슬라이드부터 발표/}).click();
+    await page.waitForURL(/\/games\/lightning/);
+    await page.getByText(new RegExp(source.words.map(word=>word.replace(/[.]/g,'\\.')).join('|'))).first().waitFor();
+    await page.goto(base+'/curriculum');
+    await edit();
+  }
+  console.log('PASS Lightning direct sentence, sentence list, and slide word list persist and appear during presentation');
   await pdfThumb.locator('img').waitFor();
   await pdfThumb.click();
   await form.getByRole('button',{name:/이 슬라이드부터 발표/}).click();

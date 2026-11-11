@@ -6,7 +6,7 @@ import type {WordList} from '../../lib/types';
 import WordListPicker from '../WordListPicker';
 
 export type DetectiveInput = {text:string; rules:string[]};
-export type DetectiveGeneratorHandle = {importWords: (rows: string[]) => void};
+export type DetectiveGeneratorHandle = {importWords: (rows: string[], listId: string) => void};
 
 export default function DetectiveGenerator({ref, source='sentences', initialText='', initialRules=defaultDetectiveRules, busy=false, lists, loading, onGenerate, onDraftChange, onReview}: {
   ref?: Ref<DetectiveGeneratorHandle>;
@@ -26,6 +26,7 @@ export default function DetectiveGenerator({ref, source='sentences', initialText
   const words=source==='words';
   const [sentences,setSentences]=useState(initialText);
   const [rules,setRules]=useState<string[]>(()=>[...initialRules]);
+  const [selectedListId,setSelectedListId]=useState<string|null>(null);
   const changed=sentences!==initialText||rules.join()!==initialRules.join();
   const preview=useMemo(()=>previewDetectiveDraft(words?sentences.replaceAll(',', '\n'):sentences,rules,source),[sentences,rules,source,words]);
   const cases=preview.ready;
@@ -33,7 +34,9 @@ export default function DetectiveGenerator({ref, source='sentences', initialText
     setSentences(value);
     onDraftChange(value !== initialText || rules.join() !== initialRules.join()?{text:value,rules}:null);
   }
-  function importWords(rows:string[]){
+  function importWords(rows:string[], listId:string){
+    if (!rows.some(row => row.trim())) return;
+    setSelectedListId(listId);
     revise([sentences.trim(),...rows.map(row=>row.trim())].filter(Boolean).join('\n'));
   }
   useImperativeHandle(ref,()=>({importWords}));
@@ -45,8 +48,8 @@ export default function DetectiveGenerator({ref, source='sentences', initialText
   return <div className="ad-edit-card" data-detective-generator={source}>
     <h3>{words?l('내 단어로 문제 만들기','Make questions from my words'):l('내 문장으로 문제 만들기','Make questions from my sentences')}</h3>
     <p>{words?l('단어장을 불러오거나 영어 단어를 입력하세요. 예를 들어 apple로 관사 a/an 문제를 만들 수 있어요.', 'Load a word list or enter English words. For example, apple can make an a/an question.'):l('저장한 문장을 불러오거나 직접 입력하고, 출제할 문법을 골라 미리보기를 확인하세요.', 'Load saved sentences or enter your own, then choose grammar rules and check the preview.')}</p>
-    <WordListPicker variant="full" kind={words?'word':'sentence'} wordLists={lists} loading={loading}
-      onImportFull={rows=>importWords(rows.map(row=>row.word))}/>
+    <WordListPicker variant="full" kind={words?'word':'sentence'} wordLists={lists} loading={loading} selectedListId={selectedListId}
+      onImportFull={(rows,list)=>importWords(rows.map(row=>row.word),list.id)}/>
     <label>{inputLabel}
       <textarea aria-label={inputLabel}
         rows={5} value={sentences} placeholder={words?'apple, book, swim':'She can swim.\nShe needs a pencil.\nThis bag is bigger than mine.'} onChange={event=>revise(event.target.value)}/>
@@ -91,7 +94,7 @@ export default function DetectiveGenerator({ref, source='sentences', initialText
       }}>{busy?l('적용하는 중…','Applying…'):l('이 문제로 게임 시작','Start game with these questions')}</button>
     </section>}
     {changed&&
-      <button type="button" onClick={()=>{setSentences(initialText);setRules([...initialRules]);onDraftChange(null);}}>
+      <button type="button" onClick={()=>{setSentences(initialText);setRules([...initialRules]);setSelectedListId(null);onDraftChange(null);}}>
         {l('미리보기 변경 취소','Discard preview changes')}
       </button>}
   </div>;

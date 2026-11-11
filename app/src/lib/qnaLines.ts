@@ -11,6 +11,7 @@ export interface QnaItem {
   aKo?: string;
   /** 답이 나오는 장면(영상 전체 기준 초) */
   time?: number;
+  end?: number;
 }
 
 export function parseQnaText(source: string): QnaItem[] {
@@ -19,13 +20,13 @@ export function parseQnaText(source: string): QnaItem[] {
     let rest = raw.trim();
     if (!rest) continue;
     let time: number | undefined;
-    const m = rest.match(/^\[(\d{1,2}):(\d{2}(?:\.\d+)?)\]\s*/);
+    const m = rest.match(/^\[(\d{1,2}):(\d{2}(?:\.\d+)?)(?:\s*[-–—]\s*(\d{1,2}):(\d{2}(?:\.\d+)?))?\]\s*/);
     if (m) {
       time = Number(m[1]) * 60 + Number(m[2]);
       rest = rest.slice(m[0].length);
     }
     const [q, a = '', qKo = '', aKo = ''] = rest.split('|').map((s) => s.trim());
-    if (q) out.push({ q, a, ...(qKo ? { qKo } : {}), ...(aKo ? { aKo } : {}), ...(time !== undefined ? { time } : {}) });
+    if (q) out.push({ q, a, ...(qKo ? { qKo } : {}), ...(aKo ? { aKo } : {}), ...(time !== undefined ? { time } : {}), ...(m?.[3] ? {end:Number(m[3])*60+Number(m[4])} : {}) });
   }
   return out;
 }
@@ -33,7 +34,12 @@ export function parseQnaText(source: string): QnaItem[] {
 export function qnaToText(items: QnaItem[]): string {
   return items
     .map((it) => {
-      const mm = it.time !== undefined ? `[${Math.floor(it.time / 60)}:${String(Math.floor(it.time % 60)).padStart(2, '0')}] ` : '';
+      const format = (seconds: number) => {
+        const minute = Math.floor(seconds / 60);
+        const second = seconds % 60;
+        return `${minute}:${second.toFixed(Number.isInteger(seconds) ? 0 : 2).padStart(Number.isInteger(seconds) ? 2 : 5, '0')}`;
+      };
+      const mm = it.time !== undefined ? `[${format(it.time)}${it.end === undefined ? '' : `-${format(it.end)}`}] ` : '';
       const ko = it.qKo || it.aKo ? ` | ${it.qKo ?? ''} | ${it.aKo ?? ''}` : '';
       return `${mm}${it.q} | ${it.a}${ko}`;
     })

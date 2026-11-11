@@ -51,6 +51,8 @@ const SLOT_COLOR: Record<QuickRow['slot'], string> = {
   warmup: 'bg-warm-yellow',
   learn: 'bg-sky-blue',
   practice: 'bg-secondary-fixed',
+  recall: 'bg-primary-fixed',
+  sentence: 'bg-sky-blue',
   team: 'bg-tertiary-fixed',
   wrapup: 'bg-primary-fixed',
   sheet: 'bg-surface-variant',
@@ -73,6 +75,7 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
   const [vocabStyle, setVocabStyle] = useState<VocabStyle>('normal');
   const [pasted, setPasted] = useState('');
   const [listId, setListId] = useState('');
+  const [wordRoles, setWordRoles] = useState<Record<string,'new'|'review'|'skip'>>({});
   const [setId, setSetId] = useState(LESSON_SETS.find((s) => s.kind === 'word')?.id ?? '');
   const [minutes, setMinutes] = useState<QuickMinutes>(40);
   const [rows, setRows] = useState<QuickRow[]>(() => planQuickLesson(40));
@@ -100,7 +103,10 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
   const { clips } = useVideoClips();
   const wordSets = useMemo(() => LESSON_SETS.filter((s) => s.kind === 'word').slice(0, 12), []);
   const {lists:myLists,loading:listsLoading,error:listsError,reload:reloadLists}=useClassWordLists(academyId,classId);
-  useEffect(()=>{setListId('');},[classId]);
+  const selectedList = myLists.find(list => list.id === listId);
+  const assignWords = source === 'mine' && vocabStyle === 'normal' && !!selectedList?.items.length;
+  const roleFor = (id: string) => wordRoles[id] ?? 'new';
+  useEffect(()=>{setListId('');setWordRoles({});},[classId]);
   const pastedCount = useMemo(() => parsePastedWords(pasted, []).length, [pasted]);
   const grades = useMemo(() => curriculumFor(school), [school]);
   const clipLevels = useMemo(() => [...new Set((clips ?? []).map((c) => c.level))].sort((a, b) => a - b), [clips]);
@@ -114,7 +120,9 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
     setRows(planQuickLesson(m));
   }
 
-  const wordsReady = source === 'paste' ? pastedCount >= 4 : source === 'mine' ? !listsLoading && !listsError && myLists.some(l=>l.id===listId) : !!setId;
+  const wordsReady = source === 'paste' ? pastedCount >= 4 : source === 'mine'
+    ? !listsLoading && !listsError && !!selectedList?.items.some(item => !assignWords || roleFor(item.id) === 'new')
+    : !!setId;
   const ready =
     !!classId &&
     (kind === 'vocab'
@@ -171,6 +179,7 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
         return l;
       }
 
+      const gameCards = new Map<string,FullCardItem[]>();
       if (kind === 'vocab') {
         let listName: string;
         if (source === 'mine') {
@@ -188,9 +197,12 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
           list = await listFromCards(parsed, listName);
           cards = parsed;
         }
-        if (vocabStyle === 'normal') {
-          slides = quickRowsToSlides(rows);
+        if (vocabStyle === 'normal' || vocabStyle === 'review') {
+          const newWords = assignWords ? cards.filter(card => roleFor(card.id) === 'new') : cards;
+          const reviewWords = assignWords ? cards.filter(card => roleFor(card.id) === 'review') : [];
+          slides = quickRowsToSlides(vocabStyle === 'review' ? planQuickLesson(10) : rows,newWords,reviewWords,gameCards);
           lessonName = t('quickLesson.lessonName', { list: listName });
+          if (vocabStyle === 'review') lessonName = t('quickLesson.nameReview', {list:listName});
         } else {
           slides = (await recipe(vocabStyle)!.build(ctx({ hasWords: true }))) as LessonSlide[];
           lessonName = t(vocabStyle === 'contest' ? 'quickLesson.nameContest' : 'quickLesson.nameReview', { list: listName });
@@ -263,7 +275,7 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
       if (!list && made.length > 0) list = made[made.length - 1];
       if (cards.length === 0 && list) cards = enrichCards(wordListToCards(list), bank);
 
-      slides = await attachQuickGames({ slides, cards, academyId, classId, teacherId, lessonName, listName: list?.name ?? lessonName });
+      slides = await attachQuickGames({ slides, cards, gameCards, academyId, classId, teacherId, lessonName, listName: list?.name ?? lessonName });
       const lesson = await createCurriculumLesson({
         academyId,
         classId,
@@ -283,10 +295,12 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
 
   const chip = (on: boolean) =>
     `min-h-11 rounded-full px-4 font-label-md text-label-md ${on ? 'bg-primary text-on-primary' : 'border border-outline-variant bg-surface-container-lowest text-on-surface-variant'}`;
-  const total = rows.reduce((n, r) => n + r.minutes, 0);
+  const reviewTimeline = kind === 'vocab' && vocabStyle === 'review';
+  const timelineRows = reviewTimeline ? planQuickLesson(10) : rows;
+  const total = timelineRows.reduce((n, r) => n + r.minutes, 0);
   const flowKey = kind === 'vocab' ? (vocabStyle === 'normal' ? null : vocabStyle) : kind === 'situation' ? (sit?.type === 'bank' ? 'bank' : sit ? 'role' : null) : kind;
   const approx = flowKey ? KIND_MINUTES[flowKey] : null;
-  const showTimeline = kind === 'vocab' && vocabStyle === 'normal';
+  const showTimeline = kind === 'vocab' && vocabStyle !== 'contest';
 
   return (
     <div role="dialog" aria-modal="true" aria-label={t('quickLesson.title')} className="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/50 p-4">
@@ -361,7 +375,7 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
                 (listsLoading ? <p role="status">{t('lessonUx.loading')}</p> : listsError ? <div role="alert">{t('lessonUx.failed')} <button type="button" className="min-h-11 rounded-xl border px-4 text-primary" onClick={reloadLists}>{t('lessonUx.retry')}</button></div> : myLists.length === 0 ? (
                   <p className="font-body-md text-body-md text-on-surface-variant">{t('quickLesson.noLists')}</p>
                 ) : (
-                  <select value={listId} onChange={(e) => setListId(e.target.value)} className="min-h-11 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3">
+                  <select value={listId} onChange={(e) => {setListId(e.target.value);setWordRoles({});}} className="min-h-11 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3">
                     <option value="">{t('quickLesson.pickList')}</option>
                     {myLists.map((l) => (
                       <option key={l.id} value={l.id}>
@@ -370,6 +384,17 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
                     ))}
                   </select>
                 ))}
+              {assignWords && selectedList && <details className="rounded-xl border border-outline-variant p-3">
+                <summary className="cursor-pointer font-bold">{t('quickLesson.chooseWordRoles')} · {t('quickLesson.wordRoleCounts',{fresh:selectedList.items.filter(item=>roleFor(item.id)==='new').length,review:selectedList.items.filter(item=>roleFor(item.id)==='review').length})}</summary>
+                <div className="mt-2 grid max-h-64 gap-2 overflow-y-auto">
+                  {selectedList.items.map(item => <label key={item.id} className="flex items-center justify-between gap-2">
+                    <span>{item.word}</span>
+                    <select aria-label={item.word} className="rounded-md border p-1" value={roleFor(item.id)} onChange={event=>setWordRoles(previous=>({...previous,[item.id]:event.target.value as 'new'|'review'|'skip'}))}>
+                      {(['new','review','skip'] as const).map(role=><option key={role} value={role}>{t('quickLesson.wordRole_'+role)}</option>)}
+                    </select>
+                  </label>)}
+                </div>
+              </details>}
               {source === 'topic' && (
                 <div className="flex flex-wrap gap-2">
                   {wordSets.map((s) => (
@@ -561,7 +586,7 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
 
         {showTimeline ? (
           <>
-            <section className="space-y-2">
+            {!reviewTimeline && <section className="space-y-2">
               <h3 className="font-title-md text-title-md text-on-surface">3. {t('quickLesson.q3')}</h3>
               <div className="flex flex-wrap gap-2">
                 {([20, 40, 50] as const).map((m) => (
@@ -571,27 +596,28 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
                   </button>
                 ))}
               </div>
-            </section>
+            </section>}
             <section className="space-y-2 rounded-xl bg-surface-container-low p-4">
               <h3 className="font-title-md text-title-md text-on-surface">{t('quickLesson.planTitle', { minutes: total })}</h3>
               <div className="flex h-3 overflow-hidden rounded-full" aria-hidden>
-                {rows.map((r, i) => (
+                {timelineRows.map((r, i) => (
                   <div key={i} className={SLOT_COLOR[r.slot]} style={{ flex: r.minutes }} />
                 ))}
               </div>
               <ul className="space-y-1">
-                {rows.map((r, i) => (
+                {timelineRows.map((r, i) => (
                   <li key={i} className="flex flex-wrap items-center gap-2 py-1">
                     <span className={`h-3 w-3 shrink-0 rounded-full ${SLOT_COLOR[r.slot]}`} aria-hidden />
                     <span className="w-20 shrink-0 font-label-md text-label-md text-on-surface">{t(`quickLesson.slot_${r.slot}`)}</span>
                     <span className="min-w-0 flex-1 font-body-md text-body-md text-on-surface-variant">
-                      {r.slot === 'learn' ? t('quickLesson.learnDesc') : r.slot === 'sheet' ? t('quickLesson.sheetDesc') : r.games.map((g) => t(getGameCatalogEntry(g)?.nameKey ?? '')).join(' → ')}
+                      <strong className="block">{r.games.length ? r.games.map((g) => t(getGameCatalogEntry(g)?.nameKey ?? '')).join(' → ') : t(reviewTimeline && r.slot === 'learn' ? 'curriculum.slides.kindStudy' : `quickLesson.activity_${r.slot}`)}</strong>
+                      <span className="block text-sm">{t(reviewTimeline && r.slot === 'learn' ? 'quickLesson.action_review_cards' : `quickLesson.action_${r.slot}`, {defaultValue:''})}</span>
                     </span>
                     <span className="font-caption text-caption text-on-surface-variant">
                       {r.minutes}
                       {t('quickLesson.min')}
                     </span>
-                    {r.games.length > 0 && (
+                    {!reviewTimeline && r.games.length > 0 && (
                       <button
                         type="button"
                         onClick={() => setSwapRow(i)}

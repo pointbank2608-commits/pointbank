@@ -56,7 +56,40 @@ async function verifyGameControls(){
 try{
  await server.listen();browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
  await page.addInitScript(()=>localStorage.setItem('classbank.selectedClassId','a'));
- if(process.argv.includes('--wordfishing-refresh')) {await verifyWordFishingRefresh();}
+ if(process.argv.includes('--vocab-recommendations')){
+  await page.goto(`http://127.0.0.1:${port}/curriculum`);
+  for (const duration of [20,40,50,10]) {
+    await page.getByRole('button',{name:/추천 구성으로 만들기/}).click();
+    const modal=page.getByRole('dialog');
+    await modal.getByRole('button',{name:'내 단어장',exact:true}).click();
+    await modal.locator('select').first().selectOption('words-a');
+    if(duration===10) await modal.getByRole('button',{name:'10분 복습',exact:true}).click();
+    else {
+      await modal.getByRole('button',{name:new RegExp('^'+duration+'\\s*분$')}).click();
+      await modal.getByText(/새 단어와 복습 단어 고르기/).click();
+      await modal.getByLabel('ant',{exact:true}).selectOption('review');
+      await modal.getByLabel('axe',{exact:true}).selectOption('skip');
+    }
+    await modal.getByText('마무리 확인',{exact:true}).waitFor();
+    await modal.getByRole('button',{name:'저장해 두기',exact:true}).click();
+    await modal.waitFor({state:'hidden'});
+    const stored=await page.evaluate(()=>window.__lessonQA.lessons.at(-1));
+    const actual=stored.playlist.slice(1).map(slide=>slide.recall ?? slide.gameType ?? slide.kind);
+    assert.deepEqual(actual,({
+      20:['wordshow','word','check'],
+      40:['word','wordshow','matchup','word','sentence','lightning','check'],
+      50:['word','wordshow','matchup','word','sentence','lightning','check'],
+      10:['study','matchup','check'],
+    })[duration]);
+    if(duration!==10){
+      const intro=stored.playlist.find(slide=>slide.kind==='wordshow'&&!slide.recall);
+      assert.deepEqual(intro.words.map(word=>word.word),['apple','bag','bat','bus','cap','cat','cup']);
+      if(duration!==20)assert.deepEqual(stored.playlist[1].words.map(word=>word.word),['ant']);
+    }
+    pass(`Recommended vocabulary lesson: ${duration} minutes, selected words and saved slide order`);
+  }
+ }
+ else if(process.argv.includes('--wordfishing-refresh')) {await verifyWordFishingRefresh();}
  else if(process.argv.includes('--game-controls')) {await verifyGameControls();} else {
  const go=()=>page.goto(`http://127.0.0.1:${port}/curriculum`);await go();
  await page.getByRole('heading',{name:'기존 리딩 수업',exact:true}).waitFor({state:'attached'});

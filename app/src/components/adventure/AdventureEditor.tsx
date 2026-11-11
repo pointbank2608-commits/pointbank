@@ -67,7 +67,7 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
       const authoring=sentence?detectiveAuthoring.current:detectiveWordAuthoring.current;
       const rows=list.items.map(item=>item.word.trim()).filter(Boolean);
       if(!generator||!authoring||!rows.length)return false;
-      generator.importWords(rows);
+      generator.importWords(rows,list.id);
       authoring.open=true;
       return true;
     });

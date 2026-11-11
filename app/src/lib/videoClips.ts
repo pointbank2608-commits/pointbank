@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './supabase';
+import { parseShadowText } from './shadowLines';
+import type { QnaItem } from './qnaLines';
 
 /**
  * 영상 쉐도잉 라이브러리(2026-10-03, `supabase/039_video_clips.sql`).
@@ -15,7 +17,7 @@ export interface ClipPack {
   /** Separate catalogue; existing video_clips admin permissions and RLS apply. */
   phonicsSong?: {unitIds:string[];purpose?:'warmup'|'practice'|'review';tip?:string;ruleIds?:string[];sourceTitle?:string;catalog?:string;verifiedAt?:string};
   /** 내용 질문(Q&A) */
-  questions?: { q: string; a: string; qKo?: string; aKo?: string; time?: number }[];
+  questions?: QnaItem[];
   /** 핵심 단어 — 영화 속 예문과 그 문장이 나오는 시간(단어 소개의 "장면 보기") */
   words?: { word: string; meaning: string; pos?: string; example: string; exampleKo?: string; time: number; imageUrl?:string }[];
   /** 문법 포인트 — 영화 문장 하나를 틀로 바꿔 말하기 */
@@ -108,12 +110,21 @@ export function useClipPack(clipId: string | null | undefined): ClipPack | null 
     let p = packCache.get(clipId);
     if (!p) {
       p = (async () => {
-        const { data, error } = await supabase.from('video_clips').select('pack').eq('id', clipId).maybeSingle();
+        const { data, error } = await supabase.from('video_clips').select('pack,script').eq('id', clipId).maybeSingle();
         if (error || !data) {
           packCache.delete(clipId);
           return null;
         }
-        return (data.pack ?? null) as ClipPack | null;
+        const pack = (data.pack ?? null) as ClipPack | null;
+        if (!pack?.questions) return pack;
+        const lines = parseShadowText(data.script ?? '');
+        return {...pack, questions: pack.questions.map(question => {
+          if (question.time === undefined || question.end !== undefined) return question;
+          const time = question.time;
+          const line = lines.find(line => line.start <= time && line.end > time)
+            ?? lines.find(line => line.start >= time && line.start - time < 2);
+          return line ? {...question, end: line.end} : question;
+        })};
       })();
       packCache.set(clipId, p);
     }
@@ -126,10 +137,13 @@ export function useClipPack(clipId: string | null | undefined): ClipPack | null 
 }
 
 /** 저장된 Q&A 질문에 라이브러리의 지금 장면 시간을 덮어쓴다(같은 질문 글끼리). 라이브러리에서 시간을 지웠으면 장면 보기도 뺀다. */
-export function withFreshQuestionTimes<T extends { q: string; time?: number }>(questions: T[], pack: ClipPack | null): T[] {
+export function withFreshQuestionTimes<T extends { q: string; time?: number; end?: number }>(questions: T[], pack: ClipPack | null): T[] {
   if (!pack?.questions) return questions;
-  const byQ = new Map(pack.questions.map((x) => [x.q.trim(), x.time]));
-  return questions.map((x) => (byQ.has(x.q.trim()) ? { ...x, time: byQ.get(x.q.trim()) } : x));
+  const byQ = new Map(pack.questions.map((x) => [x.q.trim(), x]));
+  return questions.map((x) => {
+    const fresh = byQ.get(x.q.trim());
+    return fresh ? { ...x, time: fresh.time, end: fresh.end ?? (fresh.time === x.time ? x.end : undefined) } : x;
+  });
 }
 
 const takenDown = new Map<string, Promise<boolean>>();

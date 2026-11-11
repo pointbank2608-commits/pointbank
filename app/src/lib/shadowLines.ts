@@ -31,7 +31,7 @@ export function parseShadowText(source: string): ShadowLine[] {
     if (!rest) continue;
     let start: number | null = null;
     let end: number | null = null;
-    const m = rest.match(new RegExp(String.raw`^\[${TIME}(?:\s*-\s*${TIME})?\]\s*`));
+    const m = rest.match(new RegExp(String.raw`^\[${TIME}(?:\s*[-–—]\s*${TIME})?\]\s*`));
     if (m) {
       start = toSec(m[1], m[2]);
       if (m[3] !== undefined) end = toSec(m[3], m[4]);
