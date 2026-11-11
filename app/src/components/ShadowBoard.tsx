@@ -156,11 +156,18 @@ export default function ShadowBoard({
       return;
     }
     wantsPlayback.current=true;setPhase('loading');
-    player.setPlaybackRate(sp);
-    player.seekTo(from??Math.max(0, line.start - 0.05), true);
+    const requested = from ?? Math.max(0, line.start - 0.05);
+    const playerState = player.getPlayerState?.();
     resumeAt.current=undefined;
     requestTimeout.current=window.setTimeout(()=>{if(player.getPlayerState?.()!==1){clearTimers();setActualPlaying(false);setMediaError('PLAYBACK_TIMEOUT');setPhase('wait');}},12000);
-    player.playVideo();
+    // YouTube can ignore a seek issued before the first video has started.
+    if (videoId && (playerState === -1 || playerState === 5)) {
+      player.loadVideoById({ videoId, startSeconds: requested });
+    } else {
+      player.seekTo(requested, true);
+      player.playVideo();
+    }
+    player.setPlaybackRate(sp);
     if (state.current.flow === 'video' && !replayOnly) {
       // 영상 따라하기: 멈추지 않고 흘려보내며, 지금 시간이 속한 문장으로 자막만 바꾼다
       let shown = i;
@@ -280,6 +287,7 @@ export default function ShadowBoard({
   function chooseRepeat(count: number) {
     if (flow === 'video') {
       stop();
+      resumeAt.current = undefined;
       setFlow('manual');
     }
     setRepeat(count);
