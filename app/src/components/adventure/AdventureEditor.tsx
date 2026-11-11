@@ -1,12 +1,11 @@
-import {detectiveCaseFromVariant, detectiveSuggestion, previewDetectiveDraft} from '../../lib/detectiveSuggestion';
+import {builtInDetectiveQuestions, defaultDetectiveRules, DETECTIVE_RULES, detectiveCaseFromVariant, detectiveSuggestion, previewDetectiveDraft} from '../../lib/detectiveSuggestion';
 import {useTranslation} from 'react-i18next';
 import DetectiveCaseEditor from './DetectiveCaseEditor';
-import DetectiveGenerator, {type DetectiveGeneratorHandle, type DetectiveInput} from './DetectiveGenerator';
-import GrammarCasePicker from './GrammarCasePicker';
-import { useEffect,useMemo,useRef,useState } from 'react';
+import DetectiveGenerator, {type DetectiveInput} from './DetectiveGenerator';
+import { useCallback,useEffect,useMemo,useRef,useState } from 'react';
 import {usePreparationCommit} from '../../lib/usePreparationCommit';
 import {isSentenceList} from '../../lib/gameWorkspace';
-import { ADVENTURE_NAMES, adventureErrors, adventureId, importedAdventureWords, PLACE_ICONS, RELATIONS, RELATION_NAMES, targetKey, wordTokens, type AdventureConfig, type AdventureType, type IslandTarget } from '../../lib/adventureGames';
+import { ADVENTURE_NAMES, adventureErrors, adventureId, detectiveRoundSize, importedAdventureWords, PLACE_ICONS, RELATIONS, RELATION_NAMES, targetKey, wordTokens, type AdventureConfig, type AdventureType, type DetectiveSource, type IslandTarget } from '../../lib/adventureGames';
 import type { WordList } from '../../lib/types';
 import WordListPicker from '../WordListPicker';
 import SentenceBankPicker from '../SentenceBankPicker';
@@ -14,7 +13,24 @@ import './editor.css';
 
 export default function AdventureEditor({type,value,lists,loading,busy,onApply,onDirty}:{type:AdventureType;value:AdventureConfig;lists:WordList[];loading:boolean;busy:boolean;onApply:(value:AdventureConfig,start?:boolean)=>Promise<void>;onDirty:(dirty:boolean)=>void}){
   const {t,i18n}=useTranslation();const root=useRef<HTMLElement>(null);
+  const en=i18n.resolvedLanguage?.startsWith('en');
   const [c,setC]=useState(()=>structuredClone(value));const [wordText,setWordText]=useState(()=>value.words.map(w=>`${w.word} / ${w.meaning} / ${w.tags.join(', ')}`).join('\n'));
+  const [nextSource,setNextSource]=useState<DetectiveSource>();
+  const source=nextSource??c.detectiveSource;
+  const selectedRules=source?.rules??defaultDetectiveRules;
+  const sourceQuestions=useMemo(()=>{
+    if(!nextSource)return [];
+    return nextSource.kind==='default'
+      ? builtInDetectiveQuestions(nextSource.rules??defaultDetectiveRules)
+      : previewDetectiveDraft(nextSource.text,nextSource.rules,nextSource.kind).ready;
+  },[nextSource]);
+  const questionCount=nextSource?sourceQuestions.length:c.cases.length;
+  const roundSize=detectiveRoundSize(questionCount,c.detectiveQuestionLimit);
+  const limitLabel=en?'Questions per game':'한 게임당 문제 수';
+  const selectSource=useCallback((next:DetectiveSource)=>{
+    setNextSource(next);
+    onDirty(true);
+  },[onDirty]);
   const [sentenceText,setSentenceText]=useState(()=>value.sentences.map(s=>s.text).join('\n'));const [place,setPlace]=useState(value.places[0]?.id||'');
   const [sentencePreview,setSentencePreview]=useState<DetectiveInput|null>(null);
   const [wordPreview,setWordPreview]=useState<DetectiveInput|null>(null);
@@ -24,8 +40,6 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
   const draftQuestions=useMemo(()=>draft?previewDetectiveDraft(draft.text,draft.rules,draftSource).ready:[],[draft,draftSource]);
   const detectiveAuthoring=useRef<HTMLDetailsElement>(null);
   const detectiveWordAuthoring=useRef<HTMLDetailsElement>(null);
-  const sentenceGenerator=useRef<DetectiveGeneratorHandle>(null);
-  const wordGenerator=useRef<DetectiveGeneratorHandle>(null);
   const [activeCaseId,setActiveCaseId]=useState<string>();
   const activeCase=c.cases.find(item=>item.id===activeCaseId)??c.cases[0];
   function edit(next:AdventureConfig){setC(next);onDirty(true);}
@@ -35,62 +49,80 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
   }
   function withCases(next:Pick<AdventureConfig,'cases'> & Partial<Pick<AdventureConfig,'detectiveDraft'|'detectiveWordDraft'>>){
     // Keep the other source's input available without applying its preview to the game.
-    return {...c,
+    return {...c, detectiveSource:undefined,
       detectiveWordDraft:wordPreview?{words:wordPreview.text,rules:wordPreview.rules}:c.detectiveWordDraft,
       detectiveDraft:sentencePreview?{sentences:sentencePreview.text,rules:sentencePreview.rules}:c.detectiveDraft,
       ...next,
     };
   }
-  function chooseCases(cases:AdventureConfig['cases']){
-    edit(withCases({cases}));
-    setWordPreview(null);
-    setSentencePreview(null);
-    setActiveCaseId(cases[0]?.id);
-  }
   const prepared=type==='grammardetective'?{...c,cases:c.cases.map(item=>{if(item.errors.length)return item;const suggestion=detectiveSuggestion(item.incorrect,item.correct);return suggestion?{...item,errors:[{id:'suggestion-'+item.id,...suggestion}]}:item;})}:c;
   async function commit(){
-    if(draft && draftQuestions.length){
+    if(type==='grammardetective'&&roundSize===null){
+      root.current?.querySelector<HTMLElement>('[data-detective-question-limit]')?.focus();
+      return false;
+    }
+    if(nextSource && !showAuthoring){
+      if(!questionCount){
+        root.current?.querySelector<HTMLElement>('[data-detective-grammar] input')?.focus();
+        return false;
+      }
+      const cases=sourceQuestions.map(({variant,context})=>detectiveCaseFromVariant(variant,undefined,context||undefined));
+      await onApply({...c,detectiveSource:nextSource,cases});
+      onDirty(false);
+      return true;
+    }
+    if(showAuthoring && draft && draftQuestions.length){
       const cases=draftQuestions.map(({variant,context})=>detectiveCaseFromVariant(variant,undefined,context||undefined));
       await onApply(withCases({cases}));
       onDirty(false);
       return true;
     }
-    if(draftDirty||adventureErrors(type,prepared).length){
+    if((showAuthoring&&draftDirty)||adventureErrors(type,prepared).length){
       const authoring=wordPreview?detectiveWordAuthoring.current:detectiveAuthoring.current;
       if(authoring)authoring.open=true;
       root.current?.querySelector<HTMLElement>('[role=alert]')?.scrollIntoView({block:'nearest'});
       (authoring?.querySelector('textarea')??root.current?.querySelector('input'))?.focus({preventScroll:true});
       return false;
     }
-    if(JSON.stringify(prepared)!==JSON.stringify(value))await onApply(prepared);
+    if(JSON.stringify(prepared)!==JSON.stringify(value)){
+      const casesEdited=type==='grammardetective'&&JSON.stringify(c.cases)!==JSON.stringify(value.cases);
+      await onApply(casesEdited?{...prepared,detectiveSource:undefined}:prepared);
+    }
     onDirty(false);
     return true;
   }
   const workspace=usePreparationCommit(commit),preparing=workspace?.panel==='guide';
+  const showAuthoring=type==='grammardetective'&&(!workspace||preparing||workspace.panel==='detective-authoring');
   const registerListImporter=workspace?.registerDetectiveListImporter;
   useEffect(()=>{
     if(type!=='grammardetective')return;
     return registerListImporter?.(list=>{
-      const sentence=isSentenceList(list);
-      const generator=sentence?sentenceGenerator.current:wordGenerator.current;
-      const authoring=sentence?detectiveAuthoring.current:detectiveWordAuthoring.current;
+      if(!list){
+        selectSource({kind:'default',rules:source?.kind==='default'?selectedRules:defaultDetectiveRules});
+        return true;
+      }
       const rows=list.items.map(item=>item.word.trim()).filter(Boolean);
-      if(!generator||!authoring||!rows.length)return false;
-      generator.importWords(rows,list.id);
-      authoring.open=true;
+      if(!rows.length)return false;
+      const kind=isSentenceList(list)?'sentences':'words';
+      const rules=source?.kind===kind?source.rules:
+        (kind==='sentences'?c.detectiveDraft?.rules:c.detectiveWordDraft?.rules)??defaultDetectiveRules;
+      selectSource({kind,listId:list.id,name:list.name,text:rows.join('\n'),rules});
       return true;
     });
-  },[registerListImporter,type]);
+  },[registerListImporter,type,source,selectedRules,c.detectiveDraft,c.detectiveWordDraft,selectSource]);
   const draftError = wordPreview && sentencePreview
     ? '단어와 문장 미리보기를 둘 다 수정했어요. 사용할 미리보기에서 ‘이 문제로 게임 시작’을 눌러 주세요.'
     : draft && !draftQuestions.length
       ? '지금 미리보기에는 적용할 문제가 없어요. 문법이나 입력 내용을 바꿔 보세요.'
       : '';
-  const errors = draftQuestions.length ? [] : [...(draftError ? [draftError] : []), ...adventureErrors(type,prepared)];
+  const errors = showAuthoring&&draftQuestions.length || !showAuthoring&&nextSource
+    ? [] : [...(showAuthoring&&draftError ? [draftError] : []), ...adventureErrors(type,prepared)];
   const vocab=['balloonpop','wordfishing','wordclaw'].includes(type);const sentence=type==='wordtrain'||type==='sentencerocket';
   function set<K extends keyof AdventureConfig>(key:K,v:AdventureConfig[K]){edit({...c,[key]:v});}
   function targetSelect(v:IslandTarget,onChange:(v:IslandTarget)=>void){return <select value={targetKey(v)} onChange={e=>{const [placeId,relation]=e.target.value.split(':');onChange({placeId,relation:relation as IslandTarget['relation']});}}>{c.places.flatMap(p=>RELATIONS.map(relation=><option key={`${p.id}:${relation}`} value={`${p.id}:${relation}`}>{p.name} · {RELATION_NAMES[relation]}</option>))}</select>;}
-  return <section ref={root} className="ad-editor"><h2>{ADVENTURE_NAMES[type][1]} · 교사 설정</h2><p>‘적용’을 누르면 입력한 내용으로 준비해요. 다시 쓸 게임은 상단 ‘저장/불러오기’에서 저장할 수 있어요. 플레이 중에는 등록한 정답만 사용해요.</p>
+  const progressSettings=<div className="ad-edit-row">{type!=='grammardetective'&&<label>최대 문제 개수<input type="number" min={1} max={50} value={c.count} onChange={e=>set('count',Number(e.target.value))}/></label>}<label>제한 시간<select aria-label="제한 시간" value={c.seconds} onChange={e=>set('seconds',Number(e.target.value))}>{[0,20,30,45,60,90].map(n=><option key={n} value={n}>{n?`${n}초`:'시간 제한 없음'}</option>)}</select></label><label><input type="checkbox" checked={c.sound} onChange={e=>set('sound',e.target.checked)}/> 효과음</label><label><input type="checkbox" checked={c.shuffle} onChange={e=>set('shuffle',e.target.checked)}/> 문제 순서 섞기</label></div>;
+  return <section ref={root} className="ad-editor"><h2>{type==='grammardetective'?(showAuthoring?(en?'Enter text or edit questions':'직접 입력 · 문제 편집'):(en?'Grammar Detective settings':'문법 탐정 · 게임설정')):`${ADVENTURE_NAMES[type][1]} · 교사 설정`}</h2>
+    {(type!=='grammardetective'||showAuthoring)&&<p>‘적용’을 누르면 입력한 내용으로 준비해요. 다시 쓸 게임은 상단 ‘저장/불러오기’에서 저장할 수 있어요. 플레이 중에는 등록한 정답만 사용해요.</p>}
     {vocab&&<><h3>단어와 뜻{type==='wordclaw'?' · 태그 직접 확인':''}</h3><p>한 줄에 영어 / 뜻 / 태그, 태그 형식으로 입력하세요. 분류 태그는 교사가 확인하며 자동 추정하지 않습니다.</p><WordListPicker variant="full" wordLists={lists} loading={loading} onImportFull={cards=>{const words=importedAdventureWords(cards);set('words',words);setWordText(words.map(w=>`${w.word} / ${w.meaning} / ${w.tags.join(', ')}`).join('\n'));}}/><textarea aria-label="단어 입력" rows={8} value={wordText} onChange={e=>{setWordText(e.target.value);set('words',e.target.value.split('\n').filter(x=>x.trim()).map(line=>{const [word='',meaning='',tags='']=line.split('/').map(x=>x.trim());return{id:adventureId(),word,meaning,tags:tags.split(',').map(x=>x.trim()).filter(Boolean)};}));}}/>
       {!preparing&&type!=='wordclaw'&&<div className="ad-edit-row"><label>보기 개수<select value={c.choices} onChange={e=>set('choices',Number(e.target.value) as AdventureConfig['choices'])}>{[3,4,5,6].map(n=><option key={n}>{n}</option>)}</select></label><label>움직임 속도<select value={c.speed} onChange={e=>set('speed',e.target.value as AdventureConfig['speed'])}><option value="slow">천천히</option><option value="normal">보통</option><option value="fast">빠르게</option></select></label>{type==='wordfishing'&&<label><input type="checkbox" checked={c.listening} onChange={e=>set('listening',e.target.checked)}/> 영어 듣기 모드 (음성이 없으면 뜻 표시)</label>}</div>}
       {!preparing&&type==='balloonpop'&&<p>풍선 제한 시간은 속도에 따라 45 / 30 / 20초입니다. 시간 종료 후 같은 문제를 다시 풀 수 있어요.</p>}
@@ -98,11 +130,11 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
     {sentence&&<><h3>영어 문장과 블록 경계</h3><p>한 줄에 문장 하나. 문장 불러오기 후 블록을 확인하세요. 축약형·대소문자·마침표를 그대로 보존합니다.</p><WordListPicker variant="label" kind="sentence" wordLists={lists.filter(l=>l.kind==='sentence')} loading={loading} onImportLabels={rows=>{setSentenceText(rows.join('\n'));set('sentences',rows.map(text=>({id:adventureId(),text,tokens:wordTokens(text)})));}}/><SentenceBankPicker withKo={false} onImportLabels={rows=>{setSentenceText(rows.join('\n'));set('sentences',rows.map(text=>({id:adventureId(),text,tokens:wordTokens(text)})));}}/><textarea aria-label="문장 입력" rows={5} value={sentenceText} onChange={e=>{setSentenceText(e.target.value);set('sentences',e.target.value.split('\n').filter(x=>x.trim()).map(text=>({id:adventureId(),text:text.trim(),tokens:wordTokens(text)})));}}/>
       {c.sentences.map((s,i)=><div className="ad-edit-card" key={s.id}><strong>{i+1}. {s.text}</strong><label>{type==='sentencerocket'?'구 블록 경계 ( | 로 구분, 교사 직접 지정)':'단어 블록 ( | 로 구분)'}<input value={s.tokens.join(' | ')} onChange={e=>set('sentences',c.sentences.map(x=>x.id===s.id?{...x,tokens:e.target.value.split('|').map(t=>t.trim())}:x))}/></label><button onClick={()=>set('sentences',c.sentences.map(x=>x.id===s.id?{...x,tokens:wordTokens(s.text)}:x))}>단어 단위로 나누기</button>{type==='sentencerocket'&&<p>권장 예: The monkey | is eating | a banana. 의미 단위는 교사가 확인해 주세요.</p>}</div>)}
     </>}
-    {type==='grammardetective'&&<>
+    {type==='grammardetective'&&<div hidden={!showAuthoring}>
       <details ref={detectiveWordAuthoring} className="ad-detective-authoring" data-detective-word-authoring>
         <summary>{i18n.resolvedLanguage?.startsWith('en')?'Make questions from my words':'내 단어로 문제 만들기'}</summary>
         <div className="ad-detective-authoring-body">
-          <DetectiveGenerator ref={wordGenerator} source="words" initialText={c.detectiveWordDraft?.words} initialRules={c.detectiveWordDraft?.rules} busy={busy}
+          <DetectiveGenerator source="words" initialText={c.detectiveWordDraft?.words} initialRules={c.detectiveWordDraft?.rules} busy={busy}
             lists={lists.filter(list=>!isSentenceList(list))} loading={loading} onDraftChange={draft=>updateDraft('words',draft)}
             onGenerate={({text:words,rules},cases)=>void onApply(withCases({detectiveWordDraft:{words,rules},cases}),true).catch(()=>{})}/>
         </div>
@@ -110,7 +142,7 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
       <details ref={detectiveAuthoring} className="ad-detective-authoring" data-detective-sentence-authoring>
         <summary>{t('launchUx.detectiveAuthoring', {count:c.cases.length})}</summary>
         <div className="ad-detective-authoring-body">
-          <DetectiveGenerator ref={sentenceGenerator} initialText={c.detectiveDraft?.sentences} initialRules={c.detectiveDraft?.rules} busy={busy} lists={lists.filter(isSentenceList)} loading={loading}
+          <DetectiveGenerator initialText={c.detectiveDraft?.sentences} initialRules={c.detectiveDraft?.rules} busy={busy} lists={lists.filter(isSentenceList)} loading={loading}
             onDraftChange={draft=>updateDraft('sentences',draft)}
             onGenerate={({text:sentences,rules},cases)=>void onApply(withCases({detectiveDraft:{sentences,rules},cases}),true).catch(()=>{})}
             onReview={(correct,context,detectiveDraft)=>{
@@ -139,13 +171,55 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
             onRemove={()=>set('cases',c.cases.filter(item=>item.id!==activeCase.id))}/>}
         </div>
       </details>
-      {!preparing&&<GrammarCasePicker selectedForGame onSelect={chooseCases}/>}
-      {!preparing&&<details><summary>{t('launchUx.advanced')}</summary><div className="ad-edit-row"><label>{t('launchUx.detectiveMode')}<select value={c.detectiveMode} onChange={e=>set('detectiveMode',e.target.value as AdventureConfig['detectiveMode'])}><option value="choice">{t('launchUx.choiceMode')}</option><option value="type">{t('launchUx.typeMode')}</option></select></label><label><input type="checkbox" checked={c.caseSensitive} onChange={e=>set('caseSensitive',e.target.checked)}/>{t('launchUx.caseSensitive')}</label><label><input type="checkbox" checked={c.punctuationSensitive} onChange={e=>set('punctuationSensitive',e.target.checked)}/>{t('launchUx.punctuationSensitive')}</label></div></details>}
+    </div>}
+    {type==='grammardetective'&&!showAuthoring&&<>
+      <section className="ad-edit-card" data-detective-grammar>
+        <p><strong>{en?'Source':'문제 출처'}</strong> · {source&&source.kind!=='default'?source.name:source?.kind==='default'?(en?'ClassBank sample sentences':'클래스뱅크 기본 문장'):(en?'Current questions':'현재 문제')}</p>
+        <fieldset className="ad-detective-rule-set">
+          <legend>{en?'Grammar topics':'적용할 문법'}</legend>
+          <div className="ad-detective-rules">
+            {DETECTIVE_RULES.map(rule=><label key={rule.id}>
+              <input type="checkbox" checked={selectedRules.includes(rule.id)} onChange={event=>selectSource({
+                ...(source??{kind:'default'}),rules:event.target.checked?[...selectedRules,rule.id]:selectedRules.filter(id=>id!==rule.id),
+              })}/>
+              <span>{en?rule.en:rule.ko}</span>
+            </label>)}
+          </div>
+        </fieldset>
+        <p role="status">{en?`${questionCount} questions`:`출제 가능 ${questionCount}문제`}</p>
+        <label>{limitLabel}
+          <input data-detective-question-limit type="number" min={1} step={1}
+            aria-label={limitLabel} aria-invalid={roundSize===null}
+            value={c.detectiveQuestionLimit??''} placeholder={en?'All questions':'전체 문제'}
+            onChange={event=>set('detectiveQuestionLimit',event.target.value===''?undefined:event.target.valueAsNumber)}/>
+        </label>
+        {roundSize===null
+          ? <p role="alert">{en?'Enter a whole number of at least 1.':'1 이상의 정수를 입력하세요.'}</p>
+          : <p role="status">{en?`${roundSize} questions in this game. Leave blank to use all questions.`:`이번 게임 ${roundSize}문제 · 비워두면 전체 문제를 사용해요.`}</p>}
+        {nextSource&&!questionCount&&<p>{!selectedRules.length
+          ? (en?'Select at least one grammar topic.':'적용할 문법을 한 가지 이상 선택하세요.')
+          : (en?'Choose a grammar topic that matches this list.':'이 자료로 만들 수 있는 문제가 없어요. 다른 문법을 골라 보세요.')}</p>}
+      </section>
     </>}
     {type==='treasurehunt'&&<><h3>지도 장소 배치</h3><p>장소를 선택하고 지도 영역을 누르면 위치가 바뀝니다. 지점은 실제 장소의 상대 위치에 표시됩니다.</p><div className="ad-map-editor" onClick={e=>{const rect=e.currentTarget.getBoundingClientRect();set('places',c.places.map(p=>p.id===place?{...p,x:Math.round(Math.max(14,Math.min(86,(e.clientX-rect.left)/rect.width*100))),y:Math.round(Math.max(18,Math.min(78,(e.clientY-rect.top)/rect.height*100)))}:p));}}>{c.places.map(p=><button key={p.id} className={place===p.id?'is-selected':''} style={{left:`${p.x}%`,top:`${p.y}%`}} onClick={e=>{e.stopPropagation();setPlace(p.id);}}>{p.name}</button>)}</div>{c.places.map(p=><div className="ad-edit-row" key={p.id}><input aria-label="장소 이름" value={p.name} onFocus={()=>setPlace(p.id)} onChange={e=>set('places',c.places.map(x=>x.id===p.id?{...x,name:e.target.value}:x))}/><select value={p.icon} onChange={e=>set('places',c.places.map(x=>x.id===p.id?{...x,icon:e.target.value as typeof p.icon}:x))}>{PLACE_ICONS.map(icon=><option key={icon}>{icon}</option>)}</select><span>{p.x}%, {p.y}%</span><button onClick={()=>set('places',c.places.filter(x=>x.id!==p.id))}>삭제</button></div>)}<button onClick={()=>{const id=adventureId();set('places',[...c.places,{id,name:'new place',icon:'tree',x:50,y:50}]);setPlace(id);}}>+ 장소 추가</button>
       {c.clues.map((clue,i)=><div className="ad-edit-card" key={clue.id}><h3>힌트 {i+1}</h3><label>영어 힌트<input value={clue.text} onChange={e=>set('clues',c.clues.map(x=>x.id===clue.id?{...x,text:e.target.value}:x))}/></label><label>정답 지점{targetSelect(clue.answer,answer=>set('clues',c.clues.map(x=>x.id===clue.id?{...x,answer}:x)))}</label><p>오답 지점 (직접 지정)</p>{clue.wrong.map((t,j)=><div className="ad-edit-row" key={j}>{targetSelect(t,next=>set('clues',c.clues.map(x=>x.id===clue.id?{...x,wrong:x.wrong.map((a,k)=>k===j?next:a)}:x)))}<button onClick={()=>set('clues',c.clues.map(x=>x.id===clue.id?{...x,wrong:x.wrong.filter((_,k)=>j!==k)}:x))}>삭제</button></div>)}<button onClick={()=>set('clues',c.clues.map(x=>x.id===clue.id?{...x,wrong:[...x.wrong,{placeId:c.places[0]?.id||'',relation:'left'}]}:x))}>+ 오답 지점</button><button onClick={()=>set('clues',c.clues.filter(x=>x.id!==clue.id))}>힌트 삭제</button>{i>0&&<button onClick={()=>{const next=[...c.clues];[next[i-1],next[i]]=[next[i],next[i-1]];set('clues',next);}}>위로 이동</button>}</div>)}<button onClick={()=>set('clues',[...c.clues,{id:adventureId(),text:'',answer:{placeId:c.places[0]?.id||'',relation:'under'},wrong:[]}])}>+ 힌트 추가</button></>}
     {type==='wordclaw'&&<>{!preparing&&<label><input type="checkbox" checked={c.simpleClaw} onChange={e=>set('simpleClaw',e.target.checked)}/> 쉬운 모드: 단어를 바로 눌러 뽑기</label>}<h3>분류 미션</h3><p>아래 정답 미리보기가 수업 의도와 맞는지 확인하세요. 태그가 일치하는 모든 단어를 모으면 완료됩니다.</p>{c.missions.map(m=><div className="ad-edit-card" key={m.id}><label>미션 문장<input value={m.text} onChange={e=>set('missions',c.missions.map(x=>x.id===m.id?{...x,text:e.target.value}:x))}/></label><label>정답 태그<input value={m.tag} onChange={e=>set('missions',c.missions.map(x=>x.id===m.id?{...x,tag:e.target.value}:x))}/></label><p>정답: {c.words.filter(w=>w.tags.some(t=>t.trim().toLowerCase()===m.tag.trim().toLowerCase())).map(w=>w.word).join(', ')||'없음'}</p><button onClick={()=>set('missions',c.missions.filter(x=>x.id!==m.id))}>미션 삭제</button></div>)}<button onClick={()=>set('missions',[...c.missions,{id:adventureId(),text:'',tag:''}])}>+ 미션 추가</button></>}
-    {!preparing&&<><h3>진행 설정</h3><div className="ad-edit-row">{type!=='grammardetective'&&<label>최대 문제 개수<input type="number" min={1} max={50} value={c.count} onChange={e=>set('count',Number(e.target.value))}/></label>}<label>제한 시간<select aria-label="제한 시간" value={c.seconds} onChange={e=>set('seconds',Number(e.target.value))}>{[0,20,30,45,60,90].map(n=><option key={n} value={n}>{n?`${n}초`:'시간 제한 없음'}</option>)}</select></label><label><input type="checkbox" checked={c.sound} onChange={e=>set('sound',e.target.checked)}/> 효과음</label><label><input type="checkbox" checked={c.shuffle} onChange={e=>set('shuffle',e.target.checked)}/> 문제 순서 섞기</label></div></>}
+    {!preparing && (type==='grammardetective'
+      ? (!showAuthoring||!workspace)&&<details>
+        <summary>{t('launchUx.advanced')}</summary>
+        <div className="ad-edit-row">
+          <label>{t('launchUx.detectiveMode')}
+            <select value={c.detectiveMode} onChange={e=>set('detectiveMode',e.target.value as AdventureConfig['detectiveMode'])}>
+              <option value="choice">{t('launchUx.choiceMode')}</option>
+              <option value="type">{t('launchUx.typeMode')}</option>
+            </select>
+          </label>
+          <label><input type="checkbox" checked={c.caseSensitive} onChange={e=>set('caseSensitive',e.target.checked)}/>{t('launchUx.caseSensitive')}</label>
+          <label><input type="checkbox" checked={c.punctuationSensitive} onChange={e=>set('punctuationSensitive',e.target.checked)}/>{t('launchUx.punctuationSensitive')}</label>
+        </div>
+        {progressSettings}
+      </details>
+      : <><h3>진행 설정</h3>{progressSettings}</>)}
     {errors.length>0&&<div className="ad-edit-errors" role="alert">{errors.map(s=><p key={s}>{s}</p>)}</div>}{!workspace&&<button className="ad-apply" disabled={busy||!!errors.length} onClick={()=>void commit().catch(()=>{})}>설정 적용 · 게임 다시 준비</button>}
   </section>;
 }
