@@ -1,4 +1,4 @@
-import {useImperativeHandle, useMemo, useState, type Ref} from 'react';
+import {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {defaultDetectiveRules, DETECTIVE_RULES, detectiveCaseFromVariant, previewDetectiveDraft} from '../../lib/detectiveSuggestion';
 import type {DetectiveCase} from '../../lib/adventureGames';
@@ -6,10 +6,8 @@ import type {WordList} from '../../lib/types';
 import WordListPicker from '../WordListPicker';
 
 export type DetectiveInput = {text:string; rules:string[]};
-export type DetectiveGeneratorHandle = {importWords: (rows: string[], listId: string) => void};
 
-export default function DetectiveGenerator({ref, source='sentences', initialText='', initialRules=defaultDetectiveRules, busy=false, lists, loading, onGenerate, onDraftChange, onReview}: {
-  ref?: Ref<DetectiveGeneratorHandle>;
+export default function DetectiveGenerator({source='sentences', initialText='', initialRules=defaultDetectiveRules, busy=false, lists, loading, onGenerate, onDraftChange, onReview}: {
   source?: 'words' | 'sentences';
   initialText?: string;
   initialRules?: readonly string[];
@@ -39,7 +37,6 @@ export default function DetectiveGenerator({ref, source='sentences', initialText
     setSelectedListId(listId);
     revise([sentences.trim(),...rows.map(row=>row.trim())].filter(Boolean).join('\n'));
   }
-  useImperativeHandle(ref,()=>({importWords}));
   function selectRules(value:string[]){
     setRules(value);
     onDraftChange(sentences !== initialText || value.join() !== initialRules.join()?{text:sentences,rules:value}:null);

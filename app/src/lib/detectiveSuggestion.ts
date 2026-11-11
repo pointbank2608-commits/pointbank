@@ -16,6 +16,28 @@ export type DetectiveRule = typeof DETECTIVE_RULES[number]['id'];
 export const defaultDetectiveRules = DETECTIVE_RULES.map(rule => rule.id);
 type Variant = {correct:string; incorrect:string; error:Omit<DetectiveError,'id'>; rule:DetectiveRule; explanation:string};
 
+const extraDetectiveExamples: Record<DetectiveRule, readonly [string, string]> = {
+  articles: ['I see an owl.', 'She has a bag.'],
+  number: ['I see three dogs.', 'We have two books.'],
+  agreement: ['They play soccer.', 'He walks to school.'],
+  questions: ['Does he play soccer?', 'She does not run.'],
+  tense: ['Yesterday, she ate lunch.', 'Last night, he drank milk.'],
+  prepositions: ['She listens to her teacher.', 'He looks at the picture.'],
+  pronouns: ['Mom helped him.', 'Dad thanked them.'],
+  'verb-form': ['He can run.', 'We should go home.'],
+  comparison: ['The dog is smaller than the horse.', 'My brother is taller than me.'],
+};
+
+export function builtInDetectiveQuestions(rules: readonly string[]) {
+  const selected = DETECTIVE_RULES.filter(rule => rules.includes(rule.id));
+  // Alternate between selected rules even when question shuffling is off.
+  return [0, 1, 2].flatMap(index => selected.flatMap(rule => {
+    const sentence = [rule.example, ...extraDetectiveExamples[rule.id]][index];
+    const [variant] = detectiveVariants(sentence, [rule.id]);
+    return variant ? [{ variant, context: '' }] : [];
+  }));
+}
+
 export function detectiveSuggestion(incorrect:string,correct:string):Omit<DetectiveError,'id'>|null {
  const a=[...incorrect.matchAll(/\S+/g)],b=[...correct.matchAll(/\S+/g)];
  if(!a.length||!b.length)return null;

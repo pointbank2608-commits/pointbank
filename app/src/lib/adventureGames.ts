@@ -21,6 +21,9 @@ export const RELATION_NAMES: Record<Relation, string> = { at: '앞', under: '아
 export interface IslandTarget { placeId: string; relation: Relation }
 export interface IslandClue { id: string; text: string; answer: IslandTarget; wrong: IslandTarget[] }
 export interface ClawMission { id: string; text: string; tag: string }
+export type DetectiveSource =
+  | { kind: 'default'; rules?: string[] }
+  | { kind: 'words' | 'sentences'; listId: string; name: string; text: string; rules: string[] };
 export interface AdventureConfig {
   version: 1;
   words: AdventureWord[];
@@ -37,6 +40,8 @@ export interface AdventureConfig {
   shuffle: boolean;
   listening: boolean;
   detectiveMode: 'choice' | 'type';
+  detectiveSource?: DetectiveSource;
+  detectiveQuestionLimit?: number;
   detectiveDraft?: { sentences: string; rules: string[] };
   detectiveWordDraft?: { words: string; rules: string[] };
   caseSensitive: boolean;
@@ -105,6 +110,11 @@ export function targetPoint(target: IslandTarget,places: IslandPlace[]): {x:numb
 export function adventureSeconds(type: AdventureType,c: AdventureConfig): number {
   return type==='balloonpop' && c.seconds ? {slow:45,normal:30,fast:20}[c.speed] : c.seconds;
 }
+export function detectiveRoundSize(available: number, limit?: number): number | null {
+  if (limit === undefined) return available;
+  return Number.isSafeInteger(limit) && limit >= 1 ? Math.min(available, limit) : null;
+}
+
 export function adventureErrors(type: AdventureType,c: AdventureConfig): string[] {
   const out:string[]=[];
   if(type!=='grammardetective'&&(!Number.isInteger(c.count)||c.count<1||c.count>50))out.push('문제 개수는 1~50개로 입력해 주세요.');
@@ -125,6 +135,7 @@ export function adventureErrors(type: AdventureType,c: AdventureConfig): string[
     c.sentences.forEach((s,i)=>{if(!s.text.trim()||s.tokens.length<2||s.tokens.some(t=>!t.trim())||normalizeStory(s.tokens.join(' '))!==normalizeStory(s.text))out.push(`${i+1}번: 블록을 순서대로 합친 문장이 원문과 일치해야 해요. 대소문자·문장부호를 확인하세요.`);});
   }
   if(type==='grammardetective'){
+    if(detectiveRoundSize(c.cases.length,c.detectiveQuestionLimit)===null)out.push('한 게임당 문제 수는 1 이상의 정수로 입력해 주세요.');
     if(!c.cases.length)out.push('틀린 문장과 올바른 문장을 한 쌍 이상 입력해 주세요.');
     c.cases.forEach((item,i)=>{
       if(!item.incorrect.trim()||!item.correct.trim()){
@@ -171,7 +182,10 @@ export function adventureRounds(type: AdventureType,c: AdventureConfig): Adventu
   else if(type==='grammardetective')rows=c.cases.map(item=>({kind:'case',id:item.id,item}));
   else if(type==='treasurehunt')rows=c.clues.map(clue=>({kind:'clue',id:clue.id,clue}));
   else rows=c.missions.map(mission=>({kind:'mission',id:mission.id,mission}));
-  if(type==='grammardetective')return c.shuffle?shuffled(rows):rows;
+  if(type==='grammardetective'){
+    const roundSize=detectiveRoundSize(rows.length,c.detectiveQuestionLimit);
+    return (c.shuffle?shuffled(rows):rows).slice(0,roundSize??0);
+  }
   return (c.shuffle?shuffled(rows):rows).slice(0,c.count);
 }
 export function sentencePieces(sentence: AdventureSentence) { return sentence.tokens.map((text,index)=>({id:`${sentence.id}:${index}`,text,index})); }

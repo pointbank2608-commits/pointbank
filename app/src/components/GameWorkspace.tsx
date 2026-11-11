@@ -5,7 +5,7 @@ import { guideProblem, preparePlayableList, NUMBER_GAMES, type GuideKind } from 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { GameWorkspaceContext, useGameWorkspace, type GameWorkspaceBridge } from '../context/GameWorkspaceContext';
+import { GameWorkspaceContext, useGameWorkspace, type GameWorkspaceBridge, type WorkspacePanel } from '../context/GameWorkspaceContext';
 import { useAuth } from '../context/AuthContext';
 import { usePresenting } from '../context/LessonRunnerContext';
 import { GAME_CATALOG, isFreeTierGame } from '../lib/gameCatalog';
@@ -28,7 +28,6 @@ import { ABSENT_EVENT, loadAbsent, saveAbsent } from '../lib/absent';
 import { instantStart, isDirectGameEntry } from '../lib/gamePreparation';
 import type { WordList } from '../lib/types';
 
-type Panel = 'settings' | 'content' | 'games' | 'teacher' | 'video' | 'guide' | null;
 const EMPTY_ROSTER: import('../lib/types').GameItem[] = [];
 const btn = 'min-h-11 rounded-xl border border-outline-variant bg-white px-4 py-2 text-base font-bold text-deep-navy focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40';
 export default function GameWorkspace({ children }: { children: ReactNode }) {
@@ -70,22 +69,18 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     }catch(error){setError(error instanceof Error?error.message:t('flow.actionFailed'));return false;}
     finally{commitLock.current=false;}
   },[t]);
-  const [panel, setPanelName] = useState<Panel>(null);
+  const [panel, setPanelName] = useState<WorkspacePanel>(null);
   const [panelAnchor, setPanelAnchor] = useState<HTMLElement | null>(null);
-  const setPanel = useCallback((name: Panel, anchor?: HTMLElement) => {
+  const setPanel = useCallback((name: WorkspacePanel, anchor?: HTMLElement) => {
     setPanelAnchor(anchor ?? null);
     setPanelName(name);
   }, []);
-  const detectiveListImporter = useRef<((list: WordList) => boolean) | null>(null);
-  const registerDetectiveListImporter = useCallback((importList: (list: WordList) => boolean) => {
+  const detectiveListImporter = useRef<((list: WordList | null) => boolean) | null>(null);
+  const registerDetectiveListImporter = useCallback((importList: (list: WordList | null) => boolean) => {
     detectiveListImporter.current = importList;
     return () => { if (detectiveListImporter.current === importList) detectiveListImporter.current = null; };
   }, []);
-  const openDetectiveList = useCallback((list: WordList, anchor?: HTMLElement) => {
-    if (!detectiveListImporter.current?.(list)) return false;
-    setPanel('settings', anchor);
-    return true;
-  }, [setPanel]);
+  const selectDetectiveList = useCallback((list: WordList | null) => detectiveListImporter.current?.(list) ?? false, []);
   const [guideNative,setGuideNative]=useState(false);
   const [editRevision,setEditRevision]=useState(0);
   function editContent(){setEditRevision(n=>n+1);setPanel('guide');}
@@ -297,7 +292,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const demo = game && demoForGame(game.path);
   const defaultMaterialName = defaultActivityName('',t(sourceKind==='sentence'?'flow.defaultSentences':'flow.defaultWords'),info?.lists.map(row=>row.name));
   const defaultGameName = defaultActivityName('',game ? t(game.nameKey) : t('flow.defaultActivity'),info?.templates.filter(row=>!isActivityDraft(row.id)).map(row=>row.name));
-  const value = useMemo(() => ({ info, registerPreparation,commitPreparation,registerDetectiveListImporter,openDetectiveList,fullscreen, setFullscreen, canStart, waitingForSampleStart, validation, stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), pauseLocked, setPauseLocked, panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, startAppliedGame, applyListAndPlay, applyGuideAndPlay, exitPlay, turn }), [info, stage, running, playing, pauseLocked, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, waitingForSampleStart, validation, fullscreen, capabilities.manualTurns,registerPreparation,commitPreparation,registerDetectiveListImporter,openDetectiveList,startAppliedGame,applyListAndPlay,applyGuideAndPlay]); // eslint-disable-line react-hooks/exhaustive-deps
+  const value = useMemo(() => ({ info, registerPreparation,commitPreparation,registerDetectiveListImporter,selectDetectiveList,fullscreen, setFullscreen, canStart, waitingForSampleStart, validation, stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), pauseLocked, setPauseLocked, panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, startAppliedGame, applyListAndPlay, applyGuideAndPlay, exitPlay, turn }), [info, stage, running, playing, pauseLocked, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, waitingForSampleStart, validation, fullscreen, capabilities.manualTurns,registerPreparation,commitPreparation,registerDetectiveListImporter,selectDetectiveList,startAppliedGame,applyListAndPlay,applyGuideAndPlay]); // eslint-disable-line react-hooks/exhaustive-deps
   const contentName = source?.name || info?.selected?.name || t('quick.sampleTitle');
   const materialButtons = (includeLoad = true) => <div className="flex flex-wrap gap-2" data-material-actions>
     {capabilities.kinds.map(kind => <button key={kind} className={btn} disabled={busy || !info?.temporary || !!info.sharedView} onClick={() => void begin(kind)}>{t(kind === 'word' ? 'flow.createWords' : 'flow.createSentences')}</button>)}
@@ -367,7 +362,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
         </div>}
         {panel === 'games' && !info?.sharedView && <div className="space-y-3 p-4">{GAME_CATALOG.filter(game=>game.type!==info?.gameType && info?.sourceCards && prepareClassroomGame(game.type,info.sourceCards,sourceKind)).map(game=><button key={game.type} className={`${btn} m-1`} disabled={busy || (!hasFullAccess&&!isFreeTierGame(game.type))} onClick={()=>void action(()=>bridge.current!.switchGame(game.type))}>{i18n.t(game.nameKey)}</button>)}</div>}
         {info && info.gameType !== 'quizshow' && <GameSetupGuide presetKind={guidePreset} onPresetUsed={() => setGuidePreset(null)} info={info} active={panel==='guide'} canStart={canStart} busy={busy} run={fn=>action(fn,false)} complete={completePreparation} editRevision={editRevision} nativeVisible={setGuideNative} />}
-        <div hidden={(panel !== 'settings' && !(panel==='guide'&&(guideNative||info?.gameType==='quizshow'))) || !!info?.sharedView} className="p-4" data-game-existing-settings>
+        <div hidden={(panel !== 'settings' && panel !== 'detective-authoring' && !(panel==='guide'&&(guideNative||info?.gameType==='quizshow'))) || !!info?.sharedView} className="p-4" data-game-existing-settings>
           {info?.selected && info.gameType !== 'quizshow' && !simpleSettings && <div className="mb-3 flex flex-wrap items-center gap-3 rounded-xl bg-surface-container-low p-3" data-activity-title>
             <span className="font-bold">{info.selected.name}</span><button className={btn} disabled={busy} onClick={()=>void action(()=>bridge.current!.renameActivity(),false)}>{t('wordLists.rename')}</button>
           </div>}
@@ -376,7 +371,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
 
         </div>
         </div>
-          <div hidden={panel!=='settings'||info?.gameType==='quizshow'||!info?.selected||!!info?.sharedView} className="game-settings-footer z-20 shrink-0 space-y-3 border-t bg-white p-4 shadow-lg" data-preparation-submit>
+          <div hidden={(panel!=='settings'&&panel!=='detective-authoring')||info?.gameType==='quizshow'||!info?.selected||!!info?.sharedView} className="game-settings-footer z-20 shrink-0 space-y-3 border-t bg-white p-4 shadow-lg" data-preparation-submit>
             {info?.temporary && !!source?.cards.length && !!capabilities.kinds.length && <><label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={saveOriginal} onChange={event=>setSaveOriginal(event.target.checked)} />{t(sourceKind==='sentence'?'flow.saveSentences':'flow.saveWords')}</label>{saveOriginal && <p className="text-sm text-on-surface-variant">{t('flow.defaultNameHint',{name:defaultMaterialName})}</p>}{saveOriginal && <label className="block">{t('flow.materialName')}<input placeholder={defaultMaterialName} className={`${btn} ml-2`} value={materialName} onChange={event=>setMaterialName(event.target.value)} /></label>}</>}
             {!simpleSettings && <p className="text-sm font-bold">{t('launchUx.scope')}: {(()=>{const row=info?.selected?.config.editingTemplateId?info.templates.find(r=>r.id===info.selected!.config.editingTemplateId):info?.selected;const id=row&&!isActivityDraft(row.id)?row.class_id:info?.classId;return id?info?.classes.find(c=>c.id===id)?.name||t('gameAdmin.scopeClass'):t('launchUx.academy');})()}</p>}
             {!simpleSettings && <p className="text-sm text-on-surface-variant">{t(info?.selected?.config.editingTemplateId?'launchUx.editingSaved':info?.selected&&isActivityDraft(info.selected.id)?'settingsSave.temporaryHint':'settingsSave.savedHint')}</p>}

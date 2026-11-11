@@ -138,6 +138,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   // 적용을 누르기 전까지 고른 값
   const [pGrammar, setPGrammar] = useState('');
   const [pList, setPList] = useState('');
+  const selectedDetectiveList = useRef<{ templateId: string | undefined; listId: string } | null>(null);
   const [pPictureMode, setPPictureMode] = useState(false);
   const [pPictureList, setPPictureList] = useState('');
   const [pSaved, setPSaved] = useState('');
@@ -218,6 +219,9 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const absentIds = useMemo(() => { void orderRev; return info?.classId ? loadAbsent(info.classId) : []; }, [info?.classId, orderRev]);
   const currentSource = info?.selected?.config.classroomSource;
   const currentSourceId = currentSource && (info?.lists ?? []).some((row) => row.id === currentSource.id) ? currentSource.id : '';
+  const detectiveSource = info?.selected?.config.adventure?.detectiveSource;
+  const detectiveListId = detectiveSource && detectiveSource.kind !== 'default'
+    && info?.lists.some(row => row.id === detectiveSource.listId) ? detectiveSource.listId : '';
   const roster = useMemo(() => fullRoster.filter((row) => !absentIds.includes(row.id)), [fullRoster, absentIds]);
   const turnScope = `${session?.user.id}:${academy?.id}`;
   const turnState = useMemo(() => { void orderRev; return roster.length > 0 ? loadTeamOrder(roster, turnScope) : null; }, [roster, turnScope, orderRev]);
@@ -285,7 +289,9 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     if (!open) return;
     const play = getGrammarPlay();
     setPGrammar(current);
-    setPList(currentSourceId);
+    const selection = selectedDetectiveList.current;
+    const chosenListId = selection && selection.templateId === info?.selected?.id ? selection.listId : detectiveListId;
+    setPList(isDetective ? chosenListId : currentSourceId);
     setPPictureMode(currentPictureMode);
     setPPictureList('');
     setPSaved('');
@@ -670,17 +676,23 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         <p className="text-sm text-on-surface-variant">{text('저장한 자료를 고르세요. 게임설정에서 출제할 문법을 정할 수 있어요.', 'Choose a saved list. You can choose the grammar rules in Game settings.')}</p>
         <label className="block font-bold">{text('내 단어장 · 문장 모음', 'My word / sentence lists')}
           <select className={field} value={pList} onChange={event=>setPList(event.target.value)}>
-            <option value="">{text('선택하세요', 'Choose')}</option>
+            <option value="">{text('없음 · 클래스뱅크 기본 문장', 'None · ClassBank sample sentences')}</option>
             {(info?.lists ?? []).filter(list=>list.items.some(item=>item.word.trim())).map(list=>(
               <option key={list.id} value={list.id}>{isSentenceList(list)?text('문장 모음','Sentences'):text('단어장','Words')} · {list.name}</option>
             ))}
           </select>
         </label>
         {panelAction(()=>{
-          const list=info?.lists.find(row=>row.id===pList);
-          if(list&&workspace.openDetectiveList?.(list,settingsButton.current??undefined))close();
-          else notify(text('자료를 불러오지 못했어요. 다시 시도해 주세요.','Could not load the list. Please try again.'),'error');
-        }, text('게임설정으로 가져오기','Import into Game settings'), !pList || !!info?.loading || !!info?.sharedView)}
+          const list=pList ? info?.lists.find(row=>row.id===pList) : null;
+          if(list!==undefined&&workspace.selectDetectiveList?.(list)){
+            selectedDetectiveList.current={templateId:info?.selected?.id,listId:pList};
+            close();
+          }else notify(text('자료를 불러오지 못했어요. 다시 시도해 주세요.','Could not load the list. Please try again.'),'error');
+        }, text('선택','Select'), !!info?.loading || !!info?.sharedView)}
+        <button type="button" className={btn} disabled={!!info?.sharedView} onClick={() => {
+          close();
+          workspace.open('detective-authoring',panelAnchor??undefined);
+        }}>{text('직접 입력 · 문제 편집','Enter text or edit questions')}</button>
       </>)}
       {open === 'content' && !isDetective && panel(<>
         <PanelHead title={isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words / sentences')} onClose={close} text={text} />

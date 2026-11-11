@@ -40,11 +40,13 @@ export interface GameWorkspaceBridge {
   switchGame: (type: GameType) => Promise<void>;
   sourceCards: FullCardItem[] | null;
 }
+export type WorkspacePanel = "settings" | "content" | "games" | "teacher" | "video" | "guide" | "detective-authoring" | null;
+
 export interface WorkspaceContextValue {
   info?: GameWorkspaceBridge | null;
   registerPreparation?: (commit:()=>Promise<boolean>)=>()=>void;
-  registerDetectiveListImporter?: (importList: (list: WordList) => boolean) => () => void;
-  openDetectiveList?: (list: WordList, anchor?: HTMLElement) => boolean;
+  registerDetectiveListImporter?: (importList: (list: WordList | null) => boolean) => () => void;
+  selectDetectiveList?: (list: WordList | null) => boolean;
   commitPreparation?: ()=>Promise<boolean>;
   fullscreen: boolean;
   setFullscreen: (value: boolean) => void;
@@ -63,9 +65,9 @@ export interface WorkspaceContextValue {
   roster: GameItem[];
   stage: HTMLElement | null;
   running: boolean;
-  panel: "settings" | "content" | "games" | "teacher" | "video" | "guide" | null;
+  panel: WorkspacePanel;
   publish: (bridge: GameWorkspaceBridge) => void;
-  open: (panel: "settings" | "content" | "games" | "teacher" | "video" | "guide" | null, anchor?: HTMLElement) => void;
+  open: (panel: WorkspacePanel, anchor?: HTMLElement) => void;
   start: () => void;
   startAppliedGame: (templateId: string) => void;
   applyListAndPlay: (list: WordList) => Promise<void>;
