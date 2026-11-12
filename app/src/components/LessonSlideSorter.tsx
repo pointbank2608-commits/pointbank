@@ -9,7 +9,9 @@ import {
 } from '@dnd-kit/core';
 import WordShowBoard from './WordShowBoard';
 import StemFrameView from './stem/StemFrameView';
-import {emptyStem} from '../lib/stem';
+import {stemPlaylist} from '../lib/stem';
+import VideoThumbnail from './VideoThumbnail';
+import AccessibleDialog from './AccessibleDialog';
 import AttendanceBoard from './AttendanceBoard';
 import { PhonicsOptionsFields, phonicsTabLabel, WordSourcePicker } from './LessonWordSources';
 import { PHONICS_SLIDE_TABS } from '../pages/PhonicsWorksheetLibraryPage';
@@ -33,7 +35,7 @@ import { isSentenceList, prepareClassroomGame } from '../lib/gameWorkspace';
 import { enrichCards, loadWordBank, useWordBankEnriched } from '../lib/wordBankCache';
 import SlideHelpersEditor from './SlideHelpersEditor';
 import BlockOptionsPanel from './BlockOptionsPanel';
-import LessonActivityPicker from './LessonActivityPicker';
+import LessonActivityPicker, { printSections, worksheetCards } from './LessonActivityPicker';
 import { rememberActivity } from '../lib/lessonActivities';
 import { blockOfSlide } from '../lib/blocks/registry';
 import type { BlockDef } from '../lib/blocks/types';
@@ -85,7 +87,7 @@ import CanvasSlideEditor, { BoardThemeChips } from './CanvasSlideEditor';
 import CanvasSlideView from './CanvasSlideView';
 import WorksheetOptionsFields from './worksheets/WorksheetOptionsFields';
 import LessonPrintPreview, { dedicatedPrintMaterials, wordPrintMaterials, workbookStep } from './LessonPrintPreview';
-import { activityMaterial, canvasExample, LessonWordThumbnail, LESSON_SAMPLE_WORDS, type CanvasExample } from './LessonActivityExample';
+import { activityMaterial, canvasExample, LessonWordThumbnail, LESSON_SAMPLE_WORDS, LESSON_BINGO_SAMPLE_WORDS, type CanvasExample } from './LessonActivityExample';
 import LessonPdfView, { LessonPdfThumbnail } from './LessonPdfView';
 import { gameAvailability, PHONICS_GAMES, phonicsGameUnits } from '../lib/phonicsGames';
 import { PhonicsGameCover } from './PhonicsGameArt';
@@ -283,7 +285,7 @@ export default function LessonSlideSorter({
   );
 
   const selected = slides.find((s) => s.id === selectedId) ?? null;
-  const needsPhonics = pickerOpen || (selected?.kind === 'material' && !!workbookStep(selected.materialId));
+  const needsPhonics = pickerOpen || selected?.kind === 'material';
   useEffect(() => {
     if (!needsPhonics || phonicsLoaded) return;
     let active = true;
@@ -469,13 +471,7 @@ export default function LessonSlideSorter({
     const id = uid();
     let slide: LessonSlide;
     switch (ref.kind) {
-      case 'stem': {
-        const source = emptyStem('');
-        source.meta.title = lessonName || 'STEM';
-        const frame = { ...source.frames[0], lines: ['What do you see?'] };
-        slide = { id: frame.id, kind: 'stem', frame, stemMeta: source.meta };
-        break;
-      }
+      case 'stem': return;
       case 'game':
         if (!ref.gameType) return;
         slide = { id, kind: 'game', gameType: ref.gameType };
@@ -525,6 +521,13 @@ export default function LessonSlideSorter({
     <WordListManageContext.Provider value={onManageWordList}>
     {pickerOpen&&<LessonActivityPicker storageKey={recentKey} cards={cards} gameCards={gameCards} selected={selected} sourceName={wordList?.name ?? ''} sourceKind={wordList&&isSentenceList(wordList)?'sentence':'word'} entries={phonicsEntries} lessonName={lessonName} academyId={academyId} canAttachHelper={!!selectedId&&!replaceTargetId}
       onClose={()=>{setPickerOpen(false);if(addMode==='library')setAddMode(null);}}
+      onStem={lesson=>{
+        pendingActivity.current='learn.stem';
+        const frames=lesson.frames.map(frame=>({...frame,id:uid()}));
+        placeSlides(stemPlaylist({...lesson,frames}));
+        setPickerOpen(false);
+        setAddMode(null);
+      }}
       onPdf={asset=>{if(!inputSession.active)return;pendingActivity.current='media.pdf';addSlide({id:uid(),kind:'pdf',...asset});setPickerOpen(false);setAddMode(null);}}
       onPick={pickBlock} onBundle={()=>{pendingActivity.current='wordset';setPickerOpen(false);setAddMode('wordset');}}/>}
 
@@ -741,12 +744,12 @@ function slideThumbLabel(slide: LessonSlide, t: TFunction): { icon: string; labe
   if (slide.kind === 'study') return { icon: 'style', label: t('curriculum.slides.kindStudy') };
   if (slide.kind === 'wordshow') return { icon: 'menu_book', label: t('curriculum.slides.kindWordShow') };
   if (slide.kind === 'attendance') return { icon: 'how_to_reg', label: t('curriculum.slides.kindAttendance') };
-  if (slide.kind === 'drill') return { icon: 'swap_horiz', label: slide.title?.trim() || t('drill.title') };
+  if (slide.kind === 'drill') return { icon: 'swap_horiz', label: t('readyMedia.drill') };
   if (slide.kind === 'rainbow') return { icon: 'palette', label: t(slide.mode === 'structure' ? 'rainbow.mode_structure' : 'rainbow.mode_speak') };
-  if (slide.kind === 'qna') return { icon: 'forum', label: slide.title?.trim() || t('qna.title') };
-  if (slide.kind === 'shadow') return { icon: 'record_voice_over', label: slide.title?.trim() || t('curriculum.shadow.defaultTitle') };
+  if (slide.kind === 'qna') return { icon: 'forum', label: t('qna.title') };
+  if (slide.kind === 'shadow') return { icon: 'record_voice_over', label: t(slide.roleTeams ? 'mediaV2.rolesLabel' : 'curriculum.slides.kindVideo') };
   if (slide.kind === 'reading')
-    return { icon: slide.mode === 'cloze' ? 'hearing' : 'lyrics', label: slide.title?.trim() || t('curriculum.reading.defaultTitle') };
+    return { icon: slide.mode === 'cloze' ? 'hearing' : 'lyrics', label: t(slide.mode === 'cloze' ? 'curriculum.reading.mode_cloze' : 'curriculum.reading.defaultTitle') };
   if (slide.kind === 'grammar') return { icon: 'rule', label: grammarPoint(slide.grammarId)?.name ?? t('curriculum.slides.kindGrammar') };
   if (slide.kind === 'canvas') {
     const firstText = slide.elements.find((el) => el.type === 'text' && el.text.trim());
@@ -803,12 +806,15 @@ function SlideThumb({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: slide.id });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
   const { icon, label } = slideThumbLabel(slide, t);
-  const videoId = slide.kind === 'video' ? extractYoutubeId(slide.videoUrl) : null;
+  const videoId = slide.kind === 'video' || slide.kind === 'shadow' ? extractYoutubeId(slide.videoUrl ?? '') : null;
   const word = slide.kind === 'wordshow' || slide.kind === 'study' ? (slide.words?.length ? slide.words[0] : cards[0]) : undefined;
   const phonicsGame = slide.kind === 'phonicsGame' ? PHONICS_GAMES.find(game => game.id === slide.gameId) : undefined;
   const cover = slide.kind === 'material' ? MATERIALS_CATALOG.find(item => item.id === slide.materialId)?.cover : undefined;
-  const excerpt = slide.kind === 'reading' || slide.kind === 'shadow' ? slide.source
+  const reading = slide.kind === 'reading' ? parseReadingText(slide.source) : [];
+  const readingLine = slide.kind === 'reading' && slide.mode === 'cloze' ? reading.find(line=>line.en.includes('**')) ?? reading[0] : reading[0];
+  const excerpt = readingLine ? readingLine.en.replace(/\*\*([^*]+)\*\*/g, slide.kind === 'reading' && slide.mode === 'cloze' ? '____' : '$1')
     : slide.kind === 'drill' ? slide.sentence : slide.kind === 'qna' ? slide.questions[0]?.q : undefined;
+  const speakers = slide.kind === 'shadow' && slide.roleTeams ? shadowSpeakers(parseShadowText(slide.source)).slice(0,3) : [];
   const speaking = slide.kind === 'rainbow' && slide.mode === 'speak' ? pickSpeaking(slide.itemIds)[0] : undefined;
   const structure = slide.kind === 'rainbow' && slide.mode === 'structure' ? pickStructure(slide.itemIds)[0] : undefined;
 
@@ -869,13 +875,25 @@ function SlideThumb({
           <img src={GAME_CATALOG.find((g) => g.type === slide.gameType)!.cover ?? undefined} alt="" className="h-full w-full object-cover" />
         ) : slide.kind === 'image' && slide.imageUrl ? (
           <img src={slide.imageUrl} alt="" className="h-full w-full object-cover" />
-        ) : slide.kind === 'video' && videoId ? (
-          <img src={`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`} alt="" className="h-full w-full object-cover" />
+        ) : speakers.length ? (
+          <div className="flex h-full w-full flex-wrap items-center justify-center gap-1 bg-sky-100 px-3">
+            {speakers.map(speaker=><strong key={speaker} className="rounded-xl rounded-bl-sm bg-white px-2 py-1 text-xs text-deep-navy">{speaker}</strong>)}
+          </div>
+        ) : slide.kind === 'video' || slide.kind === 'shadow' ? (
+          <VideoThumbnail id={videoId}/>
+        ) : slide.kind === 'material' && slide.materialId === 'bingo' && (slide.words?.length || cards.length) ? (
+          <div className="grid w-4/5 grid-cols-3 gap-px rounded border border-sky-300 bg-sky-300 text-center text-[9px] text-deep-navy">
+            {(slide.words?.length ? slide.words : cards).slice(0,9).map(word=><span className="truncate bg-white px-1 py-0.5" key={word.id}>{word.word}</span>)}
+          </div>
+        ) : slide.kind === 'material' && slide.materialId === 'worksheet' ? (
+          <div className="pointer-events-none h-full w-full overflow-hidden bg-white">
+            <LessonPrintPreview slide={slide} cards={cards.length?cards:LESSON_SAMPLE_WORDS}/>
+          </div>
         ) : cover ? (
           <img src={cover} alt="" loading="lazy" className="h-full w-full object-cover" />
         ) : excerpt ? (
-          <div className="m-3 w-full rounded-lg border border-sky-200 bg-white p-2 text-center font-semibold text-deep-navy">
-            <p className="line-clamp-2 break-words">{excerpt.trim().split('\n')[0]}</p>
+          <div className="grid h-full w-full content-center bg-emerald-900 px-4 pt-3 text-center text-sm font-semibold text-white">
+            <p className="line-clamp-2 break-words">{slide.kind === 'qna' && <b className="mr-1 text-yellow-200">Q</b>}{excerpt.trim().replace(/\*\*/g,'').split(/\r?\n|\|/)[0]}</p>
           </div>
         ) : speaking ? (
           <LessonWordThumbnail study={false} card={{id:speaking.id,word:speaking.englishAnswer,meaning:speaking.koreanPrompt,imageUrl:speaking.imageMain}} />
@@ -1169,7 +1187,7 @@ function SlideDetail({
     return (
       <div className="space-y-3">
         <PreviewFrame title={slide.title || t('curriculum.slides.kindVideo')}>
-          {videoId ? <img src={`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`} alt="" className="h-full w-full object-cover" /> : <span className="material-symbols-outlined text-6xl text-on-surface-variant">smart_display</span>}
+          <VideoThumbnail id={videoId}/>
         </PreviewFrame>
         {!videoId && <p>{t('lessonUx.needVideo')}</p>}
         <label className="block">{t('lessonUx.videoTitle')}
@@ -1180,7 +1198,7 @@ function SlideDetail({
           aria-label={t('lessonUx.videoLink')}
           placeholder={t('lessonUx.videoLink')}
           value={slide.videoUrl}
-          onChange={(e) => onUpdate({ videoUrl: e.target.value, startSec: undefined, endSec: undefined } as Partial<VideoSlide>)}
+          onChange={(e) => onUpdate({ videoUrl: e.target.value, title: undefined, startSec: undefined, endSec: undefined } as Partial<VideoSlide>)}
           className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
         <details>
@@ -1222,170 +1240,129 @@ function SlideDetail({
   if (slide.materialId === 'phonicsstage1' && slide.phonicsStage1) {
     return PHONICS_TEACHING_PREVIEW?<Stage1LessonOptions slide={slide} onUpdate={(patch) => onUpdate(patch as Partial<LessonSlide>)} />:<p>{t('phonicsTeaching.unavailable')}</p>;
   }
-  const step = workbookStep(slide.materialId);
-  if (step) {
-    const units = buildPhonicsWorkbook(phonicsEntries, step).filter(workbookPrintable);
-    return <div className="space-y-3">
-      <label className="block font-bold">{t('lessonUx.unit')}
-        <select className="ml-2 rounded-lg border bg-white p-2" value={slide.phonicsUnitIds?.[0] ?? ''}
-          onChange={e => onUpdate({ phonicsUnitIds: e.target.value ? [e.target.value] : [] })}>
-          <option value="">{t('lessonUx.needUnit')}</option>
-          {units.map(unit => <option key={unit.id} value={unit.id}>{unit.family} · {unit.words.join(' / ')}</option>)}
-        </select>
-      </label>
-      {!slide.phonicsUnitIds?.length && <p>{t('lessonUx.sample')}</p>}
-      <LessonPrintPreview key={slide.phonicsUnitIds?.join(',') ?? 'sample'} slide={slide} cards={cards} entries={phonicsEntries} large />
-    </div>;
-  }
-  if (slide.materialId === 'phonics') {
-    return <PhonicsSlideDetail slide={slide} cards={cards} onUpdate={(patch) => onUpdate(patch as Partial<LessonSlide>)} />;
-  }
-  const workbook = workbookOfMaterial(slide.materialId);
-  if (workbook) {
-    const name = t(workbook.id === 'cvc' ? 'materials.cvcWorkbookName' : 'materials.longVowelWorkbookName');
-    return (
-      <div className="space-y-4">
-        <h3 className="font-bold">{name}</h3>
-        {!resolveWorkbookSelection(workbook.id, slide).requested && <p>{t('lessonUx.needUnit')}</p>}
-        <div>
-          <div className="mb-1.5 font-label-md text-label-md text-on-surface-variant">{t('materials.cvc.pickTitle')}</div>
-          {resolveWorkbookSelection(workbook.id, slide).missing.length > 0 && <p>{t('phonicsCourse.missingRef')}</p>}
-          {resolveWorkbookSelection(workbook.id, slide).units.some(u => u.id.startsWith('legacy-')) && <p>{t('phonicsCourse.legacy')}</p>}
-          <CvcUnitPicker
-            book={workbook.id}
-            selected={slide.phonicsUnitIds ? workbookNumbers(workbook.id, slide.phonicsUnitIds) : slide.cvcUnits ?? []}
-            onChange={(cvcUnits) => onUpdate({ cvcUnits, phonicsUnitIds: stableWorkbookRefs(workbook.id, cvcUnits) } as Partial<LessonSlide>)}
-            vowelLabel={(vowel) => t(workbook.id === 'cvc' ? 'materials.cvc.vowel' : 'materials.cvc.longVowel', { vowel })}
-          />
-        </div>
-        <LessonPrintPreview key={slide.phonicsUnitIds?.join(',') ?? slide.cvcUnits?.join(',') ?? 'sample'} slide={slide} cards={cards} large />
+
+  return <MaterialSlideDetail key={slide.id} slide={slide.materialId==='library'?{...slide,materialId:'worksheet'}:slide} cards={cards} entries={phonicsEntries} onUpdate={onUpdate}/>;
+}
+
+function WorkbookUnits({slide,entries,onUpdate}:{slide:MaterialSlide;entries:PhonicsBankEntry[];onUpdate:(patch:Partial<MaterialSlide>)=>void}) {
+  const {t}=useTranslation();
+  const book=workbookOfMaterial(slide.materialId);
+  const step=workbookStep(slide.materialId);
+  if(book)return <CvcUnitPicker book={book.id}
+    selected={slide.phonicsUnitIds ? workbookNumbers(book.id,slide.phonicsUnitIds) : slide.cvcUnits??[]}
+    onChange={cvcUnits=>onUpdate({cvcUnits,phonicsUnitIds:stableWorkbookRefs(book.id,cvcUnits)})}
+    vowelLabel={vowel=>t(book.id==='cvc'?'materials.cvc.vowel':'materials.cvc.longVowel',{vowel})}/>;
+  if(!step)return null;
+  const units=buildPhonicsWorkbook(entries,step).filter(workbookPrintable);
+  return <label className="grid gap-1 font-bold">{t('lessonUx.unit')}
+    <select className="min-w-0 rounded-lg border bg-white p-2" value={slide.phonicsUnitIds?.[0]??''} onChange={event=>onUpdate({phonicsUnitIds:event.target.value?[event.target.value]:[]})}>
+      <option value="">{t('lessonUx.needUnit')}</option>
+      {units.map(unit=><option key={unit.id} value={unit.id}>{unit.family} · {unit.words.join(' / ')}</option>)}
+    </select>
+  </label>;
+}
+
+function MaterialSlideDetail({slide,cards,entries,onUpdate}:{slide:MaterialSlide;cards:FullCardItem[];entries:PhonicsBankEntry[];onUpdate:(patch:Partial<MaterialSlide>)=>void}) {
+  const {t}=useTranslation();
+  const [settings,setSettings]=useState(false);
+  const [replace,setReplace]=useState(false);
+  const [scope,setScope]=useState<'same'|'all'>('same');
+  const [query,setQuery]=useState('');
+  const [candidate,setCandidate]=useState<MaterialSlide|null>(null);
+  const title=slideThumbLabel(slide,t).label;
+  const words=slide.words?.length?slide.words:cards;
+  const printWords=words.length?words:slide.materialId==='bingo'?LESSON_BINGO_SAMPLE_WORDS:LESSON_SAMPLE_WORDS;
+  const usesWords=slide.materialId==='worksheet'||slide.materialId==='phonics'||wordPrintMaterials.includes(slide.materialId);
+  const workbook=workbookOfMaterial(slide.materialId);
+  const unitBased=!!workbook||!!workbookStep(slide.materialId);
+  const hasUnit=workbook?resolveWorkbookSelection(workbook.id,slide).units.length>0:!!slide.phonicsUnitIds?.length;
+  const tab=WORKSHEET_TAB_CATALOG.find(item=>item.tab===(slide.worksheetTab??'list'));
+  const options=optionsStateFromSlide(slide.worksheetOptions);
+  const updateOptions=(patch:Partial<WorksheetOptionsState>)=>onUpdate({worksheetOptions:slideOptionsFromState({...options,...patch})});
+  const optionFields=tab&&slide.materialId==='worksheet'&&<WorksheetOptionsFields
+    tab={tab.tab} hasWords={words.length>0}
+    listShow={options.listShow} onListShowChange={(key,value)=>updateOptions({listShow:{...options.listShow,[key]:value}})}
+    tracingShow={options.tracingShow} onTracingShowChange={(key,value)=>updateOptions({tracingShow:{...options.tracingShow,[key]:value}})}
+    showAnswerKey={options.showAnswerKey} onShowAnswerKeyChange={value=>updateOptions({showAnswerKey:value})}
+    coloring={options.coloring} onColoringChange={patch=>updateOptions({coloring:{...options.coloring,...patch}})}
+    askTemplate={options.askTemplate} onAskTemplateChange={value=>updateOptions({askTemplate:value})}
+    matchMeaning={options.matchMeaning} onMatchMeaningChange={value=>updateOptions({matchMeaning:value})}
+    includeAnswers={options.includeAnswers} onIncludeAnswersChange={value=>updateOptions({includeAnswers:value})}/>;
+  const material=MATERIALS_CATALOG.find(item=>item.id===slide.materialId);
+  const inlinePrint=unitBased||slide.materialId==='worksheet'||wordPrintMaterials.includes(slide.materialId)||dedicatedPrintMaterials.includes(slide.materialId)||slide.materialId==='elementary800-original';
+  const source=usesWords?(words.length?t(slide.words?.length?'lessonUx.slideWordSource':'lessonUx.lessonWordSource',{count:words.length}):t('lessonUx.sample')+' · '+t('lessonUx.needWords')):
+    unitBased&&!hasUnit?t('lessonUx.sample')+' · '+t('lessonUx.needUnit'):'';
+  const sections=scope==='same'?[{key:'same',blocks:worksheetCards}]:printSections;
+  const candidateBook=candidate&&workbookOfMaterial(candidate.materialId);
+  const candidateNeedsUnit=candidate&&(candidateBook||workbookStep(candidate.materialId));
+  const candidateReady=!candidateNeedsUnit||!!candidate?.phonicsUnitIds?.length||!!candidate?.cvcUnits?.length;
+
+  return <div className="space-y-3">
+    <header className="flex flex-wrap items-center gap-2 rounded-xl bg-white p-3">
+      <div className="mr-auto"><h3 className="font-bold">{title}</h3>{source&&<p className="text-sm">{source}</p>}</div>
+      <button type="button" className="rounded-lg border px-3 py-2" onClick={()=>{setCandidate(null);setScope(usesWords?'same':'all');setQuery('');setReplace(true);}}>{t('lessonUx.replaceWorksheet')}</button>
+      {(usesWords||unitBased)&&<button type="button" className="rounded-lg border px-3 py-2" aria-expanded={settings} onClick={()=>setSettings(!settings)}>{t('lessonUx.worksheetSettings')}</button>}
+    </header>
+    <div className={settings?'grid items-start gap-3 xl:grid-cols-[minmax(0,1fr)_280px]':''}>
+      <div className="min-w-0 rounded-xl bg-white p-2">
+        {inlinePrint?<LessonPrintPreview key={slide.materialId+':'+(slide.worksheetTab??'')} slide={slide} cards={printWords} entries={entries} large/>:
+          slide.materialId==='phonics'?<PhonicsSlidePreview tab={slide.phonicsTab??'phonicsBlank'} words={printWords} options={slide.phonicsOptions??{}}/>:
+          <PreviewFrame title={title}>{material?.cover?<img src={material.cover} alt="" className="h-full w-full object-contain"/>:null}</PreviewFrame>}
       </div>
-    );
-  }
-  const material = MATERIALS_CATALOG.find((m) => m.id === slide.materialId);
-  // 이 슬라이드만의 단어(주제에서 고른 것)가 있으면 그걸로 미리보기
-  const wsWords = slide.words && slide.words.length > 0 ? slide.words : cards;
-  const worksheet = slide.materialId === 'worksheet'
-    ? WORKSHEET_TAB_CATALOG.find((wt) => wt.tab === slide.worksheetTab) ?? WORKSHEET_TAB_CATALOG[0]
-    : null;
-  const worksheetOptionsState = optionsStateFromSlide(slide.worksheetOptions);
-  function updateWorksheetOptions(patch: Partial<WorksheetOptionsState>) {
-    const next = { ...worksheetOptionsState, ...patch };
-    onUpdate({ worksheetOptions: slideOptionsFromState(next) } as Partial<MaterialSlide>);
-  }
-  return (
-    <div className="space-y-4">
-      {worksheet ? (
-        <div className="rounded-xl bg-surface-container-lowest p-3 shadow-sm">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <div>
-              <div className="font-caption text-caption text-on-surface-variant">{t('curriculum.slides.previewTitle')}</div>
-              <div className="font-title-sm text-title-sm font-bold text-on-surface">{t(`materials.worksheet.${worksheet.labelKey}`)}</div>
-            </div>
-            <span className="rounded-full bg-secondary-container px-2.5 py-1 font-caption text-caption text-on-secondary-container">{t('curriculum.slides.previewWordCount', { count: wsWords.length })}</span>
-          </div>
-          <LessonPrintPreview key={worksheet.tab} slide={slide} cards={wsWords.length ? wsWords : LESSON_SAMPLE_WORDS} large />
-          {wsWords.length === 0 && <p className="mt-2 text-center font-caption text-caption text-on-surface-variant">{t('curriculum.slides.previewSampleWords')}</p>}
-          <div className="mt-3">
-            <WordSourcePicker
-              kind="topic"
-              lessonCount={cards.length}
-              words={slide.words}
-              topic={slide.topic}
-              onChange={(next) => onUpdate({ words: next.words, topic: next.topic } as Partial<MaterialSlide>)}
-            />
-          </div>
-          <div className="mt-3 space-y-1.5 border-t border-outline-variant/40 pt-3">
-            <div className="font-caption text-caption font-bold text-on-surface-variant">{t('curriculum.board.worksheetTitle')}</div>
-            <BoardThemeChips
-              value={slide.boardTheme ?? null}
-              onChange={(th) => onUpdate({ boardTheme: th?.id ?? null } as Partial<MaterialSlide>)}
-              noneLabel={t('curriculum.board.none')}
-            />
-            <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.board.worksheetHint')}</p>
-          </div>
-        </div>
-      ) : wordPrintMaterials.includes(slide.materialId) || dedicatedPrintMaterials.includes(slide.materialId) ? (
-        <LessonPrintPreview slide={slide} cards={wsWords} large />
-      ) : (
-        <PreviewFrame title={material ? t(material.nameKey) : slide.materialId}>
-          {material?.cover ? <img src={material.cover} alt="" className="h-full w-full object-cover" /> : <span className="material-symbols-outlined text-6xl text-primary">{material?.icon ?? 'print'}</span>}
-        </PreviewFrame>
-      )}
-      <div>
-        <div className="mb-1.5 font-label-md text-label-md text-on-surface-variant">{t('curriculum.slides.changeMaterial')}</div>
-        <div className="flex flex-wrap gap-1.5">
-          {MATERIALS_CATALOG.filter((m) => m.id !== 'worksheet' && m.id !== 'library').map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() =>
-                onUpdate(
-                  (m.id === 'phonics'
-                    ? { materialId: m.id, worksheetTab: undefined, phonicsTab: slide.phonicsTab ?? 'phonicsBlank', words: undefined, topic: undefined }
-                    : { materialId: m.id, worksheetTab: undefined }) as Partial<MaterialSlide>,
-                )
-              }
-              className={`flex items-center gap-1 rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${
-                slide.materialId === m.id
-                  ? 'bg-primary text-on-primary'
-                  : 'bg-surface-container-lowest text-on-surface-variant hover:bg-secondary-container/40'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[16px]">{m.icon}</span>
-              {t(m.nameKey)}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div>
-        <div className="mb-1.5 font-label-md text-label-md text-on-surface-variant">
-          {t('curriculum.slides.worksheetTabsTitle')}
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {WORKSHEET_TAB_CATALOG.map((wt) => (
-            <button
-              key={wt.tab}
-              type="button"
-              onClick={() => onUpdate({ materialId: 'worksheet', worksheetTab: wt.tab } as Partial<MaterialSlide>)}
-              className={`flex items-center gap-1 rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${
-                slide.materialId === 'worksheet' && slide.worksheetTab === wt.tab
-                  ? 'bg-primary text-on-primary'
-                  : 'bg-surface-container-lowest text-on-surface-variant hover:bg-secondary-container/40'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[16px]">{wt.icon}</span>
-              {t(`materials.worksheet.${wt.labelKey}`)}
-            </button>
-          ))}
-        </div>
-      </div>
-      {worksheet && (
-        <div className="space-y-2 rounded-xl border border-outline-variant/50 bg-surface-container-low p-3">
-          <div className="font-label-md text-label-md text-on-surface">{t('curriculum.slides.worksheetOptionsTitle')}</div>
-          <WorksheetOptionsFields
-            tab={worksheet.tab}
-            hasWords={wsWords.length > 0}
-            listShow={worksheetOptionsState.listShow}
-            onListShowChange={(key, value) => updateWorksheetOptions({ listShow: { ...worksheetOptionsState.listShow, [key]: value } })}
-            tracingShow={worksheetOptionsState.tracingShow}
-            onTracingShowChange={(key, value) => updateWorksheetOptions({ tracingShow: { ...worksheetOptionsState.tracingShow, [key]: value } })}
-            showAnswerKey={worksheetOptionsState.showAnswerKey}
-            onShowAnswerKeyChange={(value) => updateWorksheetOptions({ showAnswerKey: value })}
-            coloring={worksheetOptionsState.coloring}
-            onColoringChange={(patch) => updateWorksheetOptions({ coloring: { ...worksheetOptionsState.coloring, ...patch } })}
-            askTemplate={worksheetOptionsState.askTemplate}
-            onAskTemplateChange={(value) => updateWorksheetOptions({ askTemplate: value })}
-            matchMeaning={worksheetOptionsState.matchMeaning}
-            onMatchMeaningChange={(value) => updateWorksheetOptions({ matchMeaning: value })}
-            includeAnswers={worksheetOptionsState.includeAnswers}
-            onIncludeAnswersChange={(value) => updateWorksheetOptions({ includeAnswers: value })}
-          />
-        </div>
-      )}
-      <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />
+      {settings&&<aside className="space-y-3 rounded-xl border bg-white p-3" aria-label={t('lessonUx.worksheetSettings')}>
+        <WorkbookUnits slide={slide} entries={entries} onUpdate={onUpdate}/>
+        {slide.materialId==='phonics'?<PhonicsSlideDetail slide={slide} cards={cards} onUpdate={onUpdate} settingsOnly/>:
+          usesWords&&<WordSourcePicker kind="topic" lessonCount={cards.length} words={slide.words} topic={slide.topic} onChange={next=>onUpdate({words:next.words,topic:next.topic})}/>}
+        {optionFields}
+      </aside>}
     </div>
-  );
+    {replace&&<AccessibleDialog label={t('lessonUx.replaceWorksheet')} onClose={()=>setReplace(false)}>
+      <div className="w-[min(900px,90vw)] space-y-4 p-4">
+        <h3 className="font-bold">{t('lessonUx.replaceWorksheet')} · {title}</h3>
+        <div className="flex gap-2">
+          <button type="button" aria-pressed={scope==='same'} onClick={()=>{setScope('same');setCandidate(null);}}>{t('lessonUx.sameWorksheetWords')}</button>
+          <button type="button" aria-pressed={scope==='all'} onClick={()=>{setScope('all');setCandidate(null);}}>{t('lessonUx.allWorksheets')}</button>
+        </div>
+        <input value={query} onChange={event=>setQuery(event.target.value)} placeholder={t('lessonUx.search')} aria-label={t('lessonUx.search')} className="w-full rounded-lg border p-2"/>
+        <div className="max-h-[45dvh] space-y-3 overflow-auto">
+          {sections.map(section=>{
+            const choices=section.blocks.filter(block=>(block.nameKey?t(block.nameKey):block.name?.ko??block.id).toLowerCase().includes(query.trim().toLowerCase()));
+            return choices.length>0&&<section key={section.key}>
+              {scope==='all'&&<h4 className="mb-1 font-bold">{t(`materials.group_${section.key}`)}</h4>}
+              <div className="grid grid-cols-2 gap-2 md:grid-cols-3">{choices.map(block=>{
+                const next=activityMaterial(block,null);
+                const cover=MATERIALS_CATALOG.find(item=>item.id===next.materialId)?.cover;
+                const current=next.materialId===slide.materialId&&(next.materialId!=='worksheet'||next.worksheetTab===(slide.worksheetTab??'list'));
+                const picked=candidate?.id===next.id;
+                return <div key={block.id} className={`overflow-hidden rounded-lg border p-2 ${picked?'border-primary bg-sky-50':''}`}>
+                  <button type="button" className="w-full text-left font-semibold" aria-pressed={picked}
+                    onClick={()=>setCandidate(current?{...slide,id:next.id}:next)}>
+                    {slideThumbLabel(next,t).label}{current&&<small className="block text-primary">{t('lessonUx.currentWorksheet')}</small>}
+                  </button>
+                  <div className="pointer-events-none mt-1 h-[118px] overflow-hidden bg-white">
+                    {next.materialId==='worksheet'||wordPrintMaterials.includes(next.materialId)?
+                      <LessonPrintPreview slide={next} cards={printWords} entries={entries}/>:cover&&
+                      <img className="h-full w-full object-contain" src={cover} alt=""/>}
+                  </div>
+                </div>;
+              })}</div>
+            </section>;
+          })}
+        </div>
+        {candidate&&<WorkbookUnits slide={candidate} entries={entries} onUpdate={patch=>setCandidate({...candidate,...patch})}/>}
+        <div className="flex justify-end gap-2">
+          <button type="button" className="rounded-lg border px-3 py-2" onClick={()=>setReplace(false)}>{t('common.cancel')}</button>
+          <button type="button" disabled={!candidate||!candidateReady} className="rounded-lg bg-primary px-3 py-2 text-white disabled:opacity-40" onClick={()=>{
+            if(!candidate||!candidateReady)return;
+            onUpdate({materialId:candidate.materialId,worksheetTab:candidate.worksheetTab,worksheetOptions:candidate.worksheetOptions,
+              phonicsStage1:candidate.phonicsStage1,phonicsTab:candidate.phonicsTab,phonicsOptions:candidate.phonicsOptions,cvcUnits:candidate.cvcUnits,
+              phonicsUnitIds:candidate.phonicsUnitIds,words:slide.words,topic:slide.topic,boardTheme:null});
+            setReplace(false);setSettings(false);
+          }}>{t('lessonUx.confirmWorksheet')}</button>
+        </div>
+      </div>
+    </AccessibleDialog>}
+  </div>;
 }
 
 /** 슬라이드 안에 띄우기 / 새 창으로 열기 선택 — 선생님이 결과를 보고 바꿀 수 있게. */
@@ -2569,10 +2546,12 @@ function PhonicsSlideDetail({
   slide,
   cards,
   onUpdate,
+  settingsOnly = false,
 }: {
   slide: MaterialSlide;
   cards: FullCardItem[];
   onUpdate: (patch: Partial<MaterialSlide>) => void;
+  settingsOnly?: boolean;
 }) {
   const { t } = useTranslation();
   const tab = slide.phonicsTab ?? 'phonicsBlank';
@@ -2580,9 +2559,9 @@ function PhonicsSlideDetail({
   const lessonPhonics = cards.filter((c) => c.patternMarked).length;
   return (
     <div className="space-y-4">
-      <PreviewFrame title={`${t('materials.phonicsLibraryName')} · ${phonicsTabLabel(tab, t)}`}>
+      {!settingsOnly&&<PreviewFrame title={`${t('materials.phonicsLibraryName')} · ${phonicsTabLabel(tab, t)}`}>
         <PhonicsSlidePreview tab={tab} words={own ? slide.words! : cards} options={slide.phonicsOptions ?? {}} />
-      </PreviewFrame>
+      </PreviewFrame>}
       <div>
         <div className="mb-1.5 font-label-md text-label-md text-on-surface-variant">{t('curriculum.wordSource.phonicsType')}</div>
         <div className="flex flex-wrap gap-1.5">

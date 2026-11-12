@@ -235,6 +235,64 @@ try {
   await detail.getByRole('combobox',{name:'이 슬라이드 단어장',exact:true}).selectOption('words-alt');
   await detail.getByText('blue',{exact:true}).first().waitFor();
 
+  await page.route('https://i.ytimg.com/**', route=>route.abort());
+  await open();
+  await category('영상·이미지·웹');
+  const videoCard=card('media.video');
+  await videoCard.getByText('Sample classroom film',{exact:true}).waitFor();
+  assert.match(await videoCard.innerText(),/샘플.*영상 선택 필요/s);
+  await videoCard.locator('.activity-preview-button').click();
+  await picker.locator('[data-teaching-video]').getByText('Sample classroom film',{exact:true}).waitFor({state:'attached'});
+  await picker.getByRole('button',{name:/활동 목록으로/}).click();
+  await videoCard.locator('[data-activity-id]').click();
+  const videoLink=detail.getByRole('textbox',{name:'유튜브 주소',exact:true});
+  for(const [id,title] of [['abcdefghijk','Selected film A'],['12345678901','Selected film B']]){
+    await videoLink.fill('https://youtu.be/'+id);
+    await detail.getByRole('textbox',{name:'영상 제목',exact:true}).fill(title);
+    await open();
+    await category('영상·이미지·웹');
+    await videoCard.getByText(title,{exact:true}).waitFor();
+    assert.match(await videoCard.innerText(),/내 자료 적용/);
+    await videoCard.locator('img').waitFor({state:'detached'});
+    assert.match(await videoCard.innerText(),/play_arrow/);
+    await close();
+  }
+
+  await open();
+  await category('단어·문장 학습');
+  assert.equal(await picker.locator('[data-activity-id^="learn.rainbow"]').count(),0);
+  await picker.getByRole('textbox',{name:/활동을 찾/}).fill('무지개 문법');
+  assert.equal(await picker.locator('[data-activity-id^="learn.rainbow"]').count(),0);
+  await category('단어·문장 학습');
+  await card('learn.stem').locator('[data-activity-id]').click();
+  await picker.getByText('Why Does Water Stick Together?',{exact:true}).waitFor();
+  await picker.getByText(/Elementary Grade 3.*Elementary English/).waitFor();
+  await picker.getByRole('button',{name:'미리보기',exact:true}).click();
+  await picker.getByText('1 / 17',{exact:true}).waitFor();
+  await picker.getByRole('button',{name:'다음',exact:true}).click();
+  await picker.getByText('2 / 17',{exact:true}).waitFor();
+  await picker.getByRole('button',{name:'내 수업에 추가',exact:true}).click();
+  await detail.getByText('SCIENCE LAB · Surface Tension',{exact:true}).first().waitFor({state:'attached'});
+
+  await open();
+  await category('활동지');
+  await card('worksheet.fillBlank').locator('[data-activity-id]').click();
+  await detail.getByText('Missing Letters',{exact:true}).first().waitFor();
+  await detail.getByRole('button',{name:'다음 쪽',exact:true}).click();
+  await detail.getByText(/^2 \/ \d+$/).waitFor();
+  await detail.getByRole('button',{name:'활동지 바꾸기',exact:true}).click();
+  const change=page.getByRole('dialog',{name:'활동지 바꾸기'});
+  await change.getByRole('button',{name:/선 잇기/}).first().click();
+  await change.getByRole('button',{name:'취소',exact:true}).click();
+  await detail.getByText('Missing Letters',{exact:true}).first().waitFor();
+  await detail.getByRole('button',{name:'활동지 바꾸기',exact:true}).click();
+  await change.getByRole('button',{name:/선 잇기/}).first().click();
+  await change.getByRole('button',{name:'이 활동지로 바꾸기',exact:true}).click();
+  await detail.getByRole('button',{name:'활동지 설정',exact:true}).click();
+  await detail.getByRole('complementary',{name:'활동지 설정'}).waitFor();
+  const worksheetId=await thumbs.filter({hasText:/선 잇기/}).first().getAttribute('data-slide-id');
+  console.log('PASS video sample and fallback, release activity filter, Ready STEM preview and add, worksheet first page and replacement');
+
   await open();
   await category('영상·이미지·웹');
   const input = picker.locator('input[type=file]');
@@ -258,6 +316,25 @@ try {
     ['Pete adds cheese.'],['We drive past the bridge.','We stop at the park.'],['blue'],
   ]);
   await page.reload();
+  await edit();
+  const savedSlides=await page.evaluate(()=>window.__lessonQA.lessons.find(row=>row.id==='lesson-a').playlist);
+  const stemSlides=savedSlides.filter(slide=>slide.stemMeta?.sourceId==='surface-tension-v1');
+  assert.equal(stemSlides.length,17);
+  assert.equal(savedSlides.find(slide=>slide.id===worksheetId).worksheetTab,'match');
+  await form.locator(`[data-slide-id="${worksheetId}"]`).click();
+  await detail.getByText(/수업 단어장 · 9개/).waitFor();
+  await form.getByRole('button',{name:/이 슬라이드부터 발표/}).click();
+  await page.waitForURL(/\/materials\/worksheet/);
+  await page.getByText(/Match/i).first().waitFor();
+  await page.goto(base+'/curriculum');
+  await edit();
+  await form.locator(`[data-slide-id="${stemSlides[0].id}"]`).click();
+  await form.getByRole('button',{name:/이 슬라이드부터 발표/}).click();
+  await page.waitForURL(new RegExp(stemSlides[0].id));
+  await page.locator('[data-lesson-runner-bar]').getByRole('button',{name:'다음 활동',exact:true}).click();
+  await page.waitForURL(new RegExp(stemSlides[1].id));
+  console.log('PASS Ready STEM and replaced worksheet save, reopen and present');
+  await page.goto(base+'/curriculum');
   await edit();
   for (const source of lightningSources) {
     await form.locator(`[data-slide-id="${source.id}"]`).click();

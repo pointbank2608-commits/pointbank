@@ -1,4 +1,7 @@
 export const lessonUxKo = {
+  replaceWorksheet: '활동지 바꾸기', worksheetSettings: '활동지 설정', sameWorksheetWords: '같은 단어장', allWorksheets: '전체 활동지',
+  currentWorksheet: '현재 활동지', confirmWorksheet: '이 활동지로 바꾸기', lessonWordSource: '수업 단어장 · {{count}}개', slideWordSource: '이 슬라이드의 단어 · {{count}}개',
+  lessonMenu: '수업 메뉴', backFive: '5초 뒤로', forwardFive: '5초 앞으로',
   create:'새 수업 만들기', edit:'수정', homework:'숙제 내기', more:'더보기', add:'활동 추가', search:'어떤 활동을 찾으세요?', close:'닫기',
   recent:'최근 사용', defaults:'기본 활동', learn:'단어·문장 학습', games:'게임·퀴즈', media:'영상·이미지·웹', print:'활동지', free:'직접 만들기',
   results:'검색 결과', empty:'찾는 활동이 없어요. 다른 검색어를 입력해 보세요.', bundle:'단어 수업 묶음 추가', bundleFlow:'단어 소개 → 카드로 외우기 → 매치업 → 퀴즈', bundleCount:'활동 4개', configure:'구성 보기',
@@ -21,6 +24,9 @@ export const lessonUxKo = {
   unsaved: '저장 전 변경사항이 있어요', saved: '수업을 저장했어요',
 };
 export const lessonUxEn = {
+  replaceWorksheet: 'Change worksheet', worksheetSettings: 'Worksheet settings', sameWorksheetWords: 'Same word list', allWorksheets: 'All worksheets',
+  currentWorksheet: 'Current worksheet', confirmWorksheet: 'Use this worksheet', lessonWordSource: 'Lesson word list · {{count}} words', slideWordSource: 'Slide word list · {{count}} words',
+  lessonMenu: 'Lesson menu', backFive: 'Back 5 seconds', forwardFive: 'Forward 5 seconds',
   create:'Create a new lesson', edit:'Edit', homework:'Set homework', more:'More', add:'Add activity', search:'Find an activity', close:'Close',
   recent:'Recently added', defaults:'Default activities', learn:'Words and sentences', games:'Games and quizzes', media:'Video, image and web', print:'Worksheets', free:'Create your own',
   results:'Search results', empty:'No matching activities. Try another search.', bundle:'Add a word lesson set', bundleFlow:'Word introduction → Study cards → Matchup → Quiz', bundleCount:'4 activities', configure:'View set',

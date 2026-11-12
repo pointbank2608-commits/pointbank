@@ -96,8 +96,8 @@ const learnBlocks: BlockDef[] = [
   { id: 'learn.shadow', role: 'main', category: 'learn', icon: 'record_voice_over', uses: ['group'], status: 'ready', name: { ko: '쉐도잉', en: 'Shadowing' }, slide: { kind: 'shadow' }, concept: 'shadowLine' },
   { id: 'learn.qna', role: 'main', category: 'learn', icon: 'help', uses: ['group'], status: 'ready', name: { ko: '내용 질문(Q&A)', en: 'Q&A' }, slide: { kind: 'qna' } },
   { id: 'learn.drill', role: 'main', category: 'learn', icon: 'repeat', uses: ['group'], status: 'ready', name: { ko: '바꿔 말하기', en: 'Substitution drill' }, slide: { kind: 'drill' } },
-  { id: 'learn.rainbow.speak', role: 'main', category: 'learn', icon: 'palette', uses: ['group'], status: 'ready', name: { ko: '무지개 문법: 그림 보고 말하기', en: 'Rainbow grammar: speak from a picture' }, slide: { kind: 'rainbow', mode: 'speak' }, concept: 'rainbowSpeak' },
-  { id: 'learn.rainbow.structure', role: 'main', category: 'learn', icon: 'account_tree', uses: ['group'], status: 'ready', name: { ko: '무지개 문법: 구조 보기', en: 'Rainbow grammar: structure' }, slide: { kind: 'rainbow', mode: 'structure' }, concept: 'rainbowStructure' },
+  { id: 'learn.rainbow.speak', role: 'main', category: 'learn', icon: 'palette', uses: ['group'], status: 'planned', name: { ko: '무지개 문법: 그림 보고 말하기', en: 'Rainbow grammar: speak from a picture' }, slide: { kind: 'rainbow', mode: 'speak' }, concept: 'rainbowSpeak' },
+  { id: 'learn.rainbow.structure', role: 'main', category: 'learn', icon: 'account_tree', uses: ['group'], status: 'planned', name: { ko: '무지개 문법: 구조 보기', en: 'Rainbow grammar: structure' }, slide: { kind: 'rainbow', mode: 'structure' }, concept: 'rainbowStructure' },
   { id: 'learn.attendance', role: 'main', category: 'learn', icon: 'how_to_reg', uses: ['group'], status: 'ready', name: { ko: '출석 체크', en: 'Attendance' }, slide: { kind: 'attendance' } },
 ];
 

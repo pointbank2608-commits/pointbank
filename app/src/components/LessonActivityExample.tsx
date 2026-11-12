@@ -10,6 +10,9 @@ import { gameAvailability, PHONICS_GAMES, phonicsGameUnits } from '../lib/phonic
 import { PhonicsGameCover } from './PhonicsGameArt';
 import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
 import { extractYoutubeId } from '../lib/youtube';
+import VideoThumbnail from './VideoThumbnail';
+import PlainTeachingVideo from './PlainTeachingVideo';
+import type { VideoClip } from '../lib/videoClips';
 import { workbookOfMaterial } from '../data/cvcWorkbook';
 import type { BlockDef } from '../lib/blocks/types';
 import type { FullCardItem, GameTemplateConfig, LessonSlide, MaterialSlide, PhonicsBankEntry } from '../lib/types';
@@ -63,13 +66,13 @@ export function activityMaterial(block: BlockDef, selected: LessonSlide | null):
   }
   return {
     id: block.id, kind: 'material', materialId,
-    ...(materialId === 'worksheet' ? { worksheetTab: block.id.startsWith('worksheet.') ? block.id.slice(10) : 'list', boardTheme: 'whiteboard' } : {}),
+    ...(materialId === 'worksheet' ? { worksheetTab: block.id.startsWith('worksheet.') ? block.id.slice(10) : 'list' } : {}),
     ...(block.id === 'worksheet.tracing' ? { worksheetOptions: { tracingShow: { meaning: false, image: true } } } : {}),
     ...(materialId === 'phonics' ? { phonicsTab: 'phonicsBlank' } : {}),
   };
 }
 
-export function LessonActivityExample({ block, cards, sourceKind, prepared, selected, entries, layout, theme, title, large = false }: {
+export function LessonActivityExample({ block, cards, sourceKind, prepared, selected, entries, layout, theme, title, sampleVideo, large = false }: {
   block: BlockDef;
   cards: FullCardItem[];
   sourceKind: 'word' | 'sentence';
@@ -79,6 +82,7 @@ export function LessonActivityExample({ block, cards, sourceKind, prepared, sele
   layout?: CanvasExample;
   theme: string | null;
   title: string;
+  sampleVideo?: VideoClip;
   large?: boolean;
 }) {
   const { t } = useTranslation();
@@ -111,8 +115,11 @@ export function LessonActivityExample({ block, cards, sourceKind, prepared, sele
     const id = extractYoutubeId(video?.videoUrl ?? '');
     actual = !!id;
     next = id ? undefined : 'needVideo';
-    picture = <><img src={id ? `https://i.ytimg.com/vi/${id}/mqdefault.jpg` : '/worksheets/samples/alphabet.webp'} alt="" />
-      <span className="activity-media-title">{id ? video?.title || t('curriculum.slides.kindVideo') : t('lessonUx.sampleVideo')}</span></>;
+    const displayId = id ?? sampleVideo?.youtube_id;
+    const displayTitle = (id ? video?.title : sampleVideo?.title) || t('curriculum.slides.kindVideo');
+    picture = large && displayId
+      ? <PlainTeachingVideo key={displayId} videoUrl={displayId} title={displayTitle} start={id ? video?.startSec : sampleVideo?.start_sec} end={id ? video?.endSec : sampleVideo?.end_sec} simple />
+      : <><VideoThumbnail id={displayId}/><span className="activity-media-title">{displayTitle}</span></>;
   } else if (kind === 'image') {
     const url = selected?.kind === 'image' ? selected.imageUrl : '';
     actual = !!url;
@@ -187,7 +194,7 @@ export function LessonActivityExample({ block, cards, sourceKind, prepared, sele
     </div>;
   }
   return <>
-    <div className={`activity-example ${large ? 'activity-example-large' : ''} ${kind === 'material' ? 'activity-example-print' : ''}`}>{picture}</div>
+    <div className={`activity-example ${large ? 'activity-example-large' : ''} ${kind === 'material' ? 'activity-example-print' : ''} ${kind === 'video' && large ? 'activity-example-video' : ''}`}>{picture}</div>
     {kind !== 'pdf' && <div className="activity-example-tags">
       <span className={actual ? 'is-linked' : ''}>{t(actual ? 'lessonUx.linked' : 'lessonUx.sample')}</span>
       {next && <span className="is-needed">{t(`lessonUx.${next}`)}</span>}

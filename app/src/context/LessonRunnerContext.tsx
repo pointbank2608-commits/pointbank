@@ -297,7 +297,6 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
           const navState: Record<string, unknown> = {};
           if (slide.worksheetTab) navState.materialsTab = slide.worksheetTab;
           if (slide.worksheetOptions) navState.materialsWorksheetOptions = slide.worksheetOptions;
-          if (slide.boardTheme) navState.materialsBoardTheme = slide.boardTheme;
           // 슬라이드만의 단어(주제·파닉스 단계에서 고른 것)가 있으면 수업 단어장 대신
           const slideWords = slide.words && slide.words.length > 0 ? slide.words : materialsWords;
           if (slideWords.length > 0) navState.materialsWords = slideWords;

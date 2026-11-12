@@ -300,12 +300,25 @@ export default function ShadowBoard({
   useEffect(()=>{if(ready)playerRef.current?.setPlaybackRate(speed);},[speed,ready]);
   useEffect(()=>{if(!ready)return;const poll=window.setInterval(()=>{const now=playerRef.current?.getCurrentTime();if(typeof now==='number')setPosition(now);},200);return()=>clearInterval(poll);},[ready]);
   const start=lines[0]?.start??0,end=lines.at(-1)?.end??start+1;
+  function seek(time: number) {
+    const target=Math.min(end,Math.max(start,time));
+    const index=lines.reduce((last,line,i)=>line.start<=target?i:last,0);
+    if(actualPlaying) playLine(index,1,target);
+    else {
+      stop();
+      setIdx(index);
+      setPosition(target);
+      playerRef.current?.seekTo(target,true);
+      resumeAt.current=target;
+    }
+  }
   const fmt=(n:number)=>`${Math.floor(Math.max(0,n)/60)}:${String(Math.floor(Math.max(0,n)%60)).padStart(2,'0')}`;
 
   return <div data-shadow-board className="h-full w-full"><TeachingVideoFrame speedControl={preparation||follower?undefined:{value:speed,values:SHADOW_SPEEDS,onChange:setSpeed}} expanded={expanded} title={title} playing={actualPlaying||phase==='speak'} pending={phase==='loading'} ready={usePlayer?ready:true} error={videoUrl&&!videoId?'URL':mediaError} youtube={videoUrl??undefined} retry={()=>{void retryYoutubeIframeApi();setAttempt(n=>n+1);}}
    video={usePlayer?<div key={attempt} className="absolute inset-0"><div id={elementId}/><div className="absolute inset-0 z-[2]" aria-hidden/></div>:<div className="flex h-full items-center justify-center">{title}</div>} caption={subtitleBlock}
-   onPlay={()=>actualPlaying||phase==='speak'||phase==='loading'?stop():playLine(idx,1,resumeAt.current)} onReplay={()=>playLine(idx,1,undefined,true)} onPrev={interactive&&!follower&&lines.length?()=>go(-1):undefined} onNext={interactive&&!follower&&lines.length?()=>go(1):undefined} previousDisabled={idx===0} nextDisabled={idx>=lines.length-1}
-   progress={lines.length&&usePlayer?<><span>{fmt(position-start)}</span><input aria-label={t('mediaV2.seek')} type="range" min={start} max={end} step={.1} value={Math.min(end,Math.max(start,position))} onChange={e=>{const time=Number(e.target.value);const next=Math.max(0,lines.reduce((last,l,i)=>l.start<=time?i:last,0));const wasPlaying=actualPlaying;stop();setIdx(next);setPosition(time);playerRef.current?.seekTo(time,true);if(wasPlaying)playLine(next,1,time);}}/><span>{fmt(end-start)}</span></>:undefined}
+   onPlay={()=>actualPlaying||phase==='speak'||phase==='loading'?stop():playLine(idx,1,resumeAt.current)} onReplay={()=>flow==='video'?playLine(0):playLine(idx,1,undefined,true)} onPrev={interactive&&!follower&&lines.length?()=>go(-1):undefined} onNext={interactive&&!follower&&lines.length?()=>go(1):undefined} previousDisabled={idx===0} nextDisabled={idx>=lines.length-1}
+   onSkip={flow==='video'&&usePlayer&&interactive&&!follower?seconds=>seek(position+seconds):undefined}
+   progress={lines.length&&usePlayer?<><span>{fmt(position-start)}</span><input aria-label={t('mediaV2.seek')} type="range" min={start} max={end} step={.1} value={Math.min(end,Math.max(start,position))} onChange={e=>seek(Number(e.target.value))}/><span>{fmt(end-start)}</span></>:undefined}
    follow={!preparation&&interactive&&!follower?<button type="button" className={flow!=='video'?'is-active':''} aria-pressed={flow!=='video'} onClick={()=>{stop();setFlow(flow==='video'?'auto':'video');}}>{t('mediaV2.follow')}</button>:undefined}
    summary={<>{flow==='video'?t('mediaV2.videoMode'):t('mediaV2.repeat',{n:repeat})} · {t('mediaV2.speed',{n:speed})} · {t(roleTeams?'mediaV2.teams':'mediaV2.rolesOff',{n:roleTeams})}</>}
    subtitleLabel={t('videoUi.subtitleCurrent',{value:t('mediaV2.sub_'+subtitle)})}

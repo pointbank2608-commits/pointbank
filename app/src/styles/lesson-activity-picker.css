@@ -43,6 +43,8 @@
 .activity-game-balloonpop .activity-game-choices > span:nth-child(2) { background:#ffd2e7; }
 .activity-game-balloonpop .activity-game-choices > span:nth-child(3) { background:#e6dcff; }
 .activity-media-title { position:absolute; inset:auto 0 0; padding:5px 8px; background:#142f53e8; color:white; font-size:13px; }
+.activity-example-video .tv-player[data-simple=true] .tv-title { justify-content:space-between; }
+.activity-example-video .tv-player[data-simple=true] .tv-title strong { display:block; }
 .lesson-paper-preview { min-width:0; width:100%; background:#e9eff8; padding:6px; border-radius:8px; }
 .lesson-paper-viewport { overflow:hidden; width:100%; background:#e9eff8; }
 .lesson-paper-viewport .print-sheet, .lesson-paper-viewport .print-board { box-sizing:border-box; background:white; }
