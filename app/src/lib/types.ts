@@ -785,6 +785,7 @@ export interface PhonicsGameSlide {
 }
 
 export interface VideoSlide {
+  clipId?: string;
   stemFrame?: import('./stemTypes').StemFrame;
   stemMeta?: import('./stemTypes').StemMeta;
   title?: string;
@@ -1126,7 +1127,7 @@ export type SlideHelper =
   | { id: string; type: 'scoreboard'; teams: number; position: HelperPosition };
 
 /** helpers: 보조 블록. ownWordListId: "이 블록만 다른 단어장"으로 고른 단어장(없으면 수업 단어장을 같이 쓴다). */
-export type LessonSlide = LessonSlideBase & { helpers?: SlideHelper[]; ownWordListId?: string };
+export type LessonSlide = LessonSlideBase & { helpers?: SlideHelper[]; ownWordListId?: string; animationGuide?: {clipId:string;minutes:number;question:string;expected:string;hint:string;next:string} };
 
 export type LessonSlideBase =
   | import('./stemTypes').StemSlide

@@ -53,7 +53,7 @@ export default function LessonSlideContent({
   const grammarCards = useGrammarCards(words);
   const studyWords = usePhonicsFilled(words);
   const clipPack = useClipPack(slide.kind === 'qna' || slide.kind === 'drill' ? slide.clipId : null);
-  const clipDown = useClipTakenDown(slide.kind === 'shadow' || slide.kind === 'qna' || slide.kind === 'drill' ? slide.clipId : null);
+  const clipDown = useClipTakenDown(slide.kind === 'shadow' || slide.kind === 'qna' || slide.kind === 'drill' || slide.kind === 'video' ? slide.clipId : null);
   // 새 배열을 매 렌더 넘기면 FlashcardStudy 가 처음 카드로 되돌아가므로 단어가 바뀔 때만 만든다.
   const studyCards = useMemo(
     () =>
@@ -74,7 +74,7 @@ export default function LessonSlideContent({
 
   if(slide.kind==='stem')return <div className={fill?'stem-lesson-content':''}><StemFrameView key={slide.id} frame={slide.frame} meta={slide.stemMeta} interactive={!student}/></div>;
 
-  if ((slide.kind === 'shadow' || slide.kind === 'qna' || slide.kind === 'drill') && clipDown) {
+  if (clipDown) {
     return (
       <div className="flex h-full min-h-[50vh] flex-col items-center justify-center gap-3 p-6 text-center">
         <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '56px' }}>

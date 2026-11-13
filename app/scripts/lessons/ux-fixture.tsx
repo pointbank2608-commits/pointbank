@@ -11,6 +11,7 @@ import PhonicsWorkbookPage from '../../src/pages/PhonicsWorkbookPage';
 import WorksheetPrintPage from '../../src/pages/WorksheetPrintPage';
 import MaterialsPage from '../../src/pages/MaterialsPage';
 import WordListsPage from '../../src/pages/WordListsPage';
+import VideoLibraryPage from '../../src/pages/VideoLibraryPage';
 import AppLayout from '../../src/pages/AppLayout';
 import {LessonRunnerProvider} from '../../src/context/LessonRunnerContext';
 import i18n from '../../src/i18n';
@@ -27,6 +28,7 @@ createRoot(document.getElementById('root')!).render(
   <BrowserRouter><LessonRunnerProvider><Routes><Route element={<AppLayout/>}>
     <Route path="/curriculum" element={<CurriculumPage/>}/>
     <Route path="/wordlists" element={<WordListsPage/>}/>
+    <Route path="/materials/videos" element={<VideoLibraryPage/>}/>
     <Route path="/curriculum/:id/slide/:slideId" element={<LessonSlideViewerPage/>}/>
     <Route path="/games" element={<GamesPage/>}/>
     <Route path="/games/:gameId" element={<PreviewGame/>}/>

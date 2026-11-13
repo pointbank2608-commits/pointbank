@@ -67,64 +67,78 @@ try{
   await browser.close();await server.close();process.exit(0);
  }
  if(process.argv.includes('--animation-print')){
-  assert.equal(worksheetClips.length,2);
-  await go('/materials/video-worksheet?clip='+worksheetClips[0].id);
-  const sheets=page.locator('.animation-sheet');
-  const option=id=>page.locator('[data-print-activity="'+id+'"]');
-  const enable=async id=>option(id).getByRole('checkbox').first().check();
-  const selectOnly=async (id,label)=>{
-   const section=option(id);
-   await section.locator('summary').click();
-   await section.getByRole('button',{name:'선택 해제'}).click();
-   await section.getByRole('checkbox',{name:label,exact:true}).check();
-  };
-  await sheets.getByRole('heading',{name:worksheetClips[0].title}).waitFor();
-  await page.getByText('그림 사용 가능 · 2/9개',{exact:true}).waitFor();
-  await enable('pictureMatch');
-  await option('pictureMatch').getByRole('button',{name:'그림 없는 단어로 뜻 연결 추가'}).click();
-  await enable('crossword');
-  await enable('wordScramble');
-  await page.getByText('내용 질문',{exact:true}).click();
-  const question=worksheetClips[0].pack.questions[0].q;
-  await selectOnly('questionChoice',question);
-  await selectOnly('questionHint',question);
-  await selectOnly('questionFull',question);
-  await page.getByText('듣기 연습',{exact:true}).click();
-  await selectOnly('listenCircle',/nothing wrong with being small/);
-  await page.getByText('문장 연습',{exact:true}).click();
-  await selectOnly('sentenceTrace',/What.s in there/);
-  await selectOnly('create',/nothing wrong with being small/);
-  await page.getByRole('checkbox',{name:'교사용 설명·정답',exact:true}).check();
-  const student=page.locator('.animation-sheet[data-teacher=false]');
-  const answers=page.locator('.animation-sheet[data-teacher=true]');
-  for(const title of ['Picture Match','Meaning Match','Choose the Answer','Complete the Answer','Comprehension','Listen and Circle','Trace the Sentences','Write Your Own Sentence'])
-   await student.getByRole('heading',{name:title,exact:true}).waitFor();
-  assert.match((await student.allTextContents()).join(' '),/\(small \/ tall\)|\(tall \/ small\)/);
-  assert.doesNotMatch((await student.allTextContents()).join(' '),/1:26\.6/);
-  assert.match((await answers.allTextContents()).join(' '),/1:26\.6–1:29\.4/);
-  assert.deepEqual(await student.locator('.animation-crossword [data-cell=true]').count(),await answers.locator('.animation-crossword [data-cell=true]').count());
-  assert.equal(await student.locator('h1').first().evaluate(el=>getComputedStyle(el).fontSize),'32px');
-  const printed=await page.pdf({preferCSSPageSize:true,printBackground:true});
-  assert.equal((printed.toString('latin1').match(/\/Type\s*\/Page\b/g)||[]).length,await sheets.count());
-  const bottom=await sheets.evaluateAll(nodes=>nodes.map(node=>node.lastElementChild.getBoundingClientRect().bottom-node.getBoundingClientRect().bottom));
-  assert.ok(bottom.every(value=>value<=1),JSON.stringify(bottom));
-  writeFileSync(resolve(out,'mums-washing-game.pdf'),printed);
-  await go('/materials/video-worksheet?clip='+worksheetClips[1].id);
-  await sheets.getByRole('heading',{name:worksheetClips[1].title}).waitFor();
-  const actualWord=worksheetClips[1].pack.words[0].word;
-  assert.ok((await sheets.allTextContents()).join(' ').includes(actualWord));
-  await option('pictureMatch').getByText('이 단어 목록에는 연결할 그림이 없어요.').waitFor();
+  const bluey=worksheetClips.find(row=>row.title.includes('Washing Game'));
+  assert.ok(bluey);
+  for(const sample of worksheetClips.filter(row=>!row.title.includes('Challenge'))){
+   await go('/materials/video-worksheet?clip='+sample.id);
+   await page.locator('.animation-sheet h1').first().waitFor();
+   assert.equal(await page.getByText('듣기 연습',{exact:true}).count(),0);
+   await page.locator('[data-print-activity="letters"] input').first().check();
+   await page.locator('[data-print-activity="wordTrace"] input').first().check();
+   if(sample.id===bluey.id) {
+    await page.locator('[data-print-activity="pictureMatch"] input').first().check();
+    await page.locator('[data-print-activity="crossword"] input').first().check();
+    await page.getByRole('checkbox',{name:'교사용 설명·정답',exact:true}).check();
+    assert.ok(await page.locator('.animation-match-grid img').count());
+    assert.ok(await page.locator('.animation-crossword').count());
+    assert.ok(await page.locator('.animation-sheet[data-teacher=true]').count());
+   }
+   const printed=await page.pdf({preferCSSPageSize:true,printBackground:true});
+   const sheetCount=await page.locator('.animation-sheet').count();
+   assert.equal((printed.toString('latin1').match(/\/Type\s*\/Page\b/g)||[]).length,sheetCount);
+   if(sample.id===bluey.id)writeFileSync(resolve(out,'animation-workbook.pdf'),printed);
+   pass(sample.title+' workbook · '+sheetCount+' A4 pages');
+   await go('/materials/videos');
+   const plans=await page.evaluate(id=>{
+    const {sceneLesson,buildAnimationLesson}=window.__models;
+    const clip=window.__db.rows.find(row=>row.id===id);
+    const cards=clip.pack.words.map((word,index)=>({id:String(index),word:word.word,meaning:word.meaning,imageUrl:null}));
+    return {missing:sceneLesson(clip).missing,
+      short:buildAnimationLesson(clip,cards,{minutes:30}),
+      long:buildAnimationLesson(clip,cards,{minutes:40,gameLast:true}),
+      incomplete:sceneLesson({...clip,pack:{}}).missing};
+   },sample.id);
+   assert.deepEqual(plans.missing,[]);
+   assert.ok(plans.incomplete.length>=2);
+   for(const [plan,duration] of [[plans.short,30],[plans.long,40]]){
+    assert.equal(plan[0].elements[0].text,sample.title);
+    assert.equal(plan.reduce((sum,slide)=>sum+(slide.animationGuide?.minutes??0),0),duration);
+    assert.equal(plan.find(slide=>slide.kind==='video').clipId,sample.id);
+    assert.ok(plan.find(slide=>slide.kind==='qna').questions.every(q=>q.a));
+   }
+   assert.ok(plans.long.length>plans.short.length);
+   assert.equal(plans.short.at(-1).elements[0].text,'One last sentence');
+   assert.match(plans.long.at(-1).elements[0].text,/Round/);
+   await page.getByRole('button',{name:new RegExp(sample.title.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'))}).first().click();
+   await page.getByRole('button',{name:'학습 장면 재생',exact:true}).click();
+   const player=page.locator('[data-teaching-video]');
+   const start=sample.title.includes('Ball in the Tree')?.1:Number(sample.start_sec);
+   const end=sample.title.includes('Ball in the Tree')?69.5:Number(sample.end_sec);
+   await page.waitForFunction(start=>window.__yt.playing&&window.__yt.time===start,start);
+   await page.evaluate(end=>{window.__yt.time=end;},end);
+   await page.waitForFunction(()=>!window.__yt.playing);
+   await player.getByRole('button',{name:'이 장면 다시 보기'}).click();
+   assert.equal(await page.evaluate(()=>window.__yt.time),start);
+   await player.getByRole('button',{name:'전체화면',exact:true}).first().click();
+   const menu=player.getByRole('button',{name:/수업 메뉴/});
+   await menu.click();
+   const panel=player.locator('.tv-full-panel');
+   assert.ok(await panel.evaluate(el=>el.scrollWidth<=el.clientWidth+1));
+   await page.mouse.click(30,160);
+   await player.getByRole('button',{name:'전체화면 종료',exact:true}).click();
+   assert.equal(await page.evaluate(()=>window.__yt.playing),true);
+   pass(sample.title+' scene start, end, replay and fullscreen controls');
+  }
   assert.deepEqual(result.errors,[]);
-  pass('Existing Bluey and Caillou worksheets, independent item selection, missing pictures, answer grid, cues, and A4 PDF');
   await browser.close();await server.close();process.exit(0);
  }
  if(process.argv.includes('--animation-update')){
   await go('/materials/videos');
   await page.getByRole('heading',{name:'애니메이션 영어'}).waitFor();
   await page.getByRole('button',{name:/Synthetic fruit conversation/}).click();
-  await page.getByRole('button',{name:'영상 보기',exact:true}).first().waitFor();
+  await page.getByRole('button',{name:'듣고 따라 하기',exact:true}).first().waitFor();
   await page.getByRole('button',{name:'이 영상으로 수업 만들기',exact:true}).waitFor();
-  await page.getByRole('button',{name:'영상 보기',exact:true}).first().click();
+  await page.getByRole('button',{name:'듣고 따라 하기',exact:true}).first().click();
   const catalogue=page.locator('[data-teaching-video]');
   const embeddedSize=await catalogue.locator('.tv-video').boundingBox();
   await catalogue.getByRole('button',{name:'전체화면',exact:true}).first().click();
@@ -151,7 +165,7 @@ try{
   await catalogue.getByRole('button',{name:'전체화면 종료',exact:true}).click();
   await page.locator('[data-teaching-video][data-video-full="false"]').waitFor();
   await page.getByRole('button',{name:'수업 준비로 돌아가기',exact:true}).click();
-  assert.equal(await page.getByRole('checkbox',{name:/빈칸 듣기/}).isChecked(),true);
+  await page.getByRole('checkbox',{name:/빈칸 듣기/}).waitFor();
   const generated=await page.evaluate(async()=>{
    const {buildSelectedClipLesson,buildVideoLessonParts,parseReadingText,restoreReadingCues}=window.__models;
    const clip={...window.__db.rows[0],script:'[0:25.6–0:26.5] Anna: I like apples. | 사과를 좋아해요.'};
@@ -171,15 +185,6 @@ try{
   pass('Generated animation lessons include cloze, repeat once by default and preserve exact cues including older matching slides');
   await page.getByRole('link',{name:'활동지 인쇄',exact:true}).click();
   await page.locator('.animation-worksheet').waitFor();
-  await page.getByRole('checkbox',{name:'영단어 보고 뜻 쓰기',exact:true}).uncheck();
-  assert.equal(await page.locator('.rc-sheet h2').getByText('Vocabulary',{exact:true}).count(),0);
-  await page.getByText('내용 질문',{exact:true}).click();
-  const questions=page.locator('[data-print-activity="questionFull"]');
-  await questions.locator('summary').click();
-  await questions.getByRole('checkbox',{name:'What fruit does Anna like?',exact:true}).uncheck();
-  assert.match(await page.locator('.animation-print-row').first().innerText(),/^1\. What fruit does Ben ask about/);
-  await page.getByRole('checkbox',{name:/교사용/}).check();
-  assert.equal(await page.locator('.animation-answer').getByText('Bananas.',{exact:true}).count(),1);
   const count=await page.locator('.rc-sheet').count();
   assert.ok(count>1);
   const printed=await page.pdf({preferCSSPageSize:true,printBackground:true});

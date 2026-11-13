@@ -5,6 +5,7 @@
  *  - 질문 | 답 | 질문 해석 | 답 해석 (해석은 선택)
  */
 export interface QnaItem {
+  choices?: string[];
   q: string;
   a: string;
   qKo?: string;

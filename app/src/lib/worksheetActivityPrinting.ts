@@ -4,7 +4,7 @@ import { phonemeParts, routeCells, soundGroups, type StudioTask, type StudioWord
 
 export interface PrintCrossword {grid:(string|null)[][]; entries:{word:StudioWord;row:number;col:number;dir:'across'|'down';number:number}[];}
 /** All input words are retained. Unconnected words get their own separated row. */
-export function printableCrossword(words:StudioWord[]):PrintCrossword {
+export function printableCrossword(words:StudioWord[], preserveOrder=false):PrintCrossword {
  const cells=new Map<string,string>(),entries:PrintCrossword['entries']=[];
  const key=(r:number,c:number)=>`${r},${c}`;
  const at=(r:number,c:number)=>cells.get(key(r,c));
@@ -19,7 +19,7 @@ export function printableCrossword(words:StudioWord[]):PrintCrossword {
   }
   return crosses>0&&crosses<text.length;
  };
- for(const w of [...words].sort((a,b)=>b.word.length-a.word.length)){
+ for(const w of preserveOrder?words:[...words].sort((a,b)=>b.word.length-a.word.length)){
   const text=w.word.toUpperCase();let pos:{r:number;c:number;dir:'across'|'down'}|null=null;
   for(const e of entries){if(pos)break;const old=e.word.word.toUpperCase();for(let i=0;i<old.length&&!pos;i++)for(let j=0;j<text.length&&!pos;j++)if(old[i]===text[j]){
    const dir=e.dir==='across'?'down':'across',r=e.row+(e.dir==='down'?i:0)-(dir==='down'?j:0),c=e.col+(e.dir==='across'?i:0)-(dir==='across'?j:0);

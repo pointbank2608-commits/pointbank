@@ -5,6 +5,9 @@ import { loadWordBank } from './wordBankCache';
 import { buildVideoLessonParts, markBingoWords } from './videoLesson';
 import type { FullCardItem, GameType, LessonSlide, SlideHelper, WordBankEntry } from './types';
 import type { VideoClip } from './videoClips';
+import type { AnimationLessonPlan } from './animationScene';
+import { sceneWordPicture } from './animationScene';
+import { buildAnimationLesson } from './animationLesson';
 import type { LessonLevel } from './lessonLevel';
 import { newHelper } from './slideHelpers';
 import { buildGrammarLessonSlides, type GrammarGames } from './grammarLesson';
@@ -25,7 +28,7 @@ export interface RecipeContext {
   grammarId?: string;
   reading?: { source: string; title?: string; videoUrl?: string | null };
   /** 영상 레시피: 유튜브 주소 + 쉐도잉 대사표 */
-  video?: { source: string; title?: string; videoUrl: string; clip?: VideoClip | null;activities?:import('./clipActivities').ClipActivity[] };
+  video?: { source: string; title?: string; videoUrl: string; clip?: VideoClip | null;activities?:import('./clipActivities').ClipActivity[]; plan?:AnimationLessonPlan };
   /** 영상 레시피: 대사에서 고른 낱말로 수업 단어장을 만들어 고른다(이미 단어장이 있으면 부르지 않는다) */
   makeWordList?: (words: FullCardItem[], name: string) => Promise<boolean>;
   /** 영상 레시피: 대사 문장으로 "문장 배열하기" 게임 내용을 만든다 */
@@ -387,7 +390,7 @@ export function clipWordCards(clip: VideoClip, bank: WordBankEntry[]): FullCardI
       id: uid(),
       word: w.word,
       meaning: w.meaning,
-      imageUrl: hit?.image_url ?? null,
+      imageUrl: w.imageUrl ?? sceneWordPicture(clip,w.word,w.meaning) ?? hit?.image_url ?? null,
       category: hit?.category ?? null,
       partOfSpeech: w.pos ?? hit?.part_of_speech ?? null,
       example: w.example,
@@ -402,6 +405,14 @@ export function clipWordCards(clip: VideoClip, bank: WordBankEntry[]): FullCardI
  * 쉐도잉 → 빈칸 듣기 → 문법 칠판 → 문장 배열하기 → 퀴즈 → 배역 나눠 따라하기.
  */
 async function buildClipLesson(ctx: RecipeContext, clip: VideoClip): Promise<LessonSlide[]> {
+  if(ctx.video?.plan){
+    const bank=await loadWordBank();
+    const words=clipWordCards(clip,bank.filter(entry=>clip.pack.words?.some(word=>word.word.toLowerCase()===entry.word.toLowerCase()&&word.meaning.trim()===entry.meaning.trim())));
+    const plan=buildAnimationLesson(clip,words,ctx.video.plan);
+    const extras=await buildSelectedClipLesson(ctx,clip,(ctx.video.activities??[]).filter(activity=>!['words','questions'].includes(activity)));
+    if(plan.length && extras.length)plan.splice(plan.findIndex(slide=>slide.kind==='qna')+1,0,...extras);
+    return plan;
+  }
   if(ctx.video?.activities)return buildSelectedClipLesson(ctx,clip,ctx.video.activities);
   const videoUrl = `https://www.youtube.com/watch?v=${clip.youtube_id}`;
   const title = clip.title;

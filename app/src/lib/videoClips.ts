@@ -3,6 +3,7 @@ import { supabase } from './supabase';
 import { parseShadowText } from './shadowLines';
 import type { QnaItem } from './qnaLines';
 import type { AnimationPrintContent } from './animationPrint';
+import type { SceneTeaching } from './animationScene';
 
 /**
  * 영상 쉐도잉 라이브러리(2026-10-03, `supabase/039_video_clips.sql`).
@@ -15,6 +16,7 @@ import type { AnimationPrintContent } from './animationPrint';
  * time 은 영상 전체 기준 초.
  */
 export interface ClipPack {
+  scene?: SceneTeaching;
   animationPrint?: AnimationPrintContent;
   /** Separate catalogue; existing video_clips admin permissions and RLS apply. */
   phonicsSong?: {unitIds:string[];purpose?:'warmup'|'practice'|'review';tip?:string;ruleIds?:string[];sourceTitle?:string;catalog?:string;verifiedAt?:string};

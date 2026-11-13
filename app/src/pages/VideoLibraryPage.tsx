@@ -16,7 +16,7 @@ export default function VideoLibraryPage() {
         <p className="mt-1 font-body-md text-body-md text-on-surface-variant">{t('readyMedia.videoIntro')}</p>
       </div>
       <div className="rounded-xl bg-surface-container-lowest p-4 shadow-sm">
-        <VideoClipLibrary tall pickLabel={t('readyMedia.makeLesson')} onPick={(clip,activities) => navigate('/curriculum', { state: { createFromClipId: clip.id,clipActivities:activities } })} />
+        <VideoClipLibrary tall pickLabel={t('readyMedia.makeLesson')} onPick={(clip,activities,plan) => navigate('/curriculum', { state: { createFromClipId: clip.id,clipActivities:activities,clipPlan:plan } })} />
       </div>
     </div>
   );

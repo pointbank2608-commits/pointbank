@@ -39,6 +39,7 @@ export default function LessonRecipePicker({
   onApply,
   autoClip,
   autoClipActivities,
+  autoClipPlan,
   autoSample,
 }: {
   hasWords: boolean;
@@ -56,6 +57,7 @@ export default function LessonRecipePicker({
   /** 영상 라이브러리 메뉴에서 "이 장면으로 수업 만들기"로 왔을 때 — 열리자마자 그 장면으로 영상 레시피를 채운다 */
   autoClip?: VideoClip | null;
   autoClipActivities?:import('../lib/clipActivities').ClipActivity[];
+  autoClipPlan?:import('../lib/animationScene').AnimationLessonPlan;
   /** 오늘 화면의 "샘플로 1분 체험하기"로 왔을 때 — 열리자마자 샘플 단어 수업을 채운다 */
   autoSample?: boolean;
 }) {
@@ -96,7 +98,7 @@ export default function LessonRecipePicker({
         makeUnscramble,
         makeGrammarGames,
         video: clip
-          ? { source: clip.script, title: clip.title, videoUrl: `https://www.youtube.com/watch?v=${clip.youtube_id}`, clip, activities:autoClip?.id===clip.id?autoClipActivities:undefined }
+          ? { source: clip.script, title: clip.title, videoUrl: `https://www.youtube.com/watch?v=${clip.youtube_id}`, clip, activities:autoClip?.id===clip.id?autoClipActivities:undefined, plan:autoClip?.id===clip.id?autoClipPlan:undefined }
           : { source: video.source, title: video.title.trim() || undefined, videoUrl: video.videoUrl.trim() },
         makeWordList,
         makeUnscrambleFromSentences,

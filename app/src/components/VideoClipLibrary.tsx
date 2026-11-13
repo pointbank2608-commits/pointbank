@@ -8,13 +8,14 @@ import AccessibleDialog from './AccessibleDialog';
 import ClipThumbnail from './ClipThumbnail';
 import {clipActivities,clipSearchText,clipTopics,estimateClipMinutes,type ClipActivity} from '../lib/clipActivities';
 import {Link} from 'react-router-dom';
+import { learningRange, sceneLesson, sceneTeaching, type AnimationLessonPlan } from '../lib/animationScene';
 import '../styles/video-library-v2.css';
 
 /**
  * 영상 라이브러리 고르기(2026-10-03) — 쉐도잉 슬라이드 추가 패널·"영상 하나로 수업" 레시피에서 쓴다.
  * 시리즈·레벨·검색으로 거르고, 장면을 누르면 위에 미리보기(쉐도잉 칠판)와 "이 장면 넣기" 버튼이 뜬다.
  */
-export default function VideoClipLibrary({ onPick, pickLabel, tall = false }: { onPick: (clip: VideoClip, activities?:ClipActivity[]) => void; pickLabel?: string; /** 메뉴 페이지: 목록을 화면 높이만큼 */ tall?: boolean }) {
+export default function VideoClipLibrary({ onPick, pickLabel, tall = false }: { onPick: (clip: VideoClip, activities?:ClipActivity[], plan?:AnimationLessonPlan) => void; pickLabel?: string; /** 메뉴 페이지: 목록을 화면 높이만큼 */ tall?: boolean }) {
   const { t } = useTranslation();
   const { clips: allClips, error } = useVideoClips();
   const clips=useMemo(()=>allClips?.filter(c=>!c.pack?.phonicsSong)??null,[allClips]);
@@ -70,7 +71,7 @@ export default function VideoClipLibrary({ onPick, pickLabel, tall = false }: { 
         )}
       </div>
       <label>{t('readyMedia.topics')} <select value={topic} onChange={e=>setTopic(e.target.value)} className="rounded-lg border bg-white p-2"><option value="">{t('readyMedia.allTopics')}</option>{clipTopics(clips).map(tag=><option key={tag}>{tag}</option>)}</select></label>
-      {selected && <ClipPreview clip={selected} onPick={(activities)=>onPick(selected,activities)} onClose={() => setSelectedId(null)} pickLabel={pickLabel} />}
+      {selected && <ClipPreview clip={selected} planned={tall} onPick={(activities,plan)=>onPick(selected,activities,plan)} onClose={() => setSelectedId(null)} pickLabel={pickLabel} />}
       {/* 좁은 화면: 시리즈 칩 한 줄 */}
       <div className="flex gap-1.5 overflow-x-auto pb-1 md:hidden">
         <button type="button" className={chip(!series)} onClick={() => setSeries('')}>
@@ -115,7 +116,8 @@ export default function VideoClipLibrary({ onPick, pickLabel, tall = false }: { 
 
         <div className={`grid ${tall ? 'max-h-[calc(100vh-260px)] min-h-[420px]' : 'max-h-[560px]'} min-w-0 auto-rows-max grid-cols-2 content-start gap-3 overflow-y-auto pr-1 sm:grid-cols-3 xl:grid-cols-4`}>
           {shown.map((c) => {
-
+            const range = learningRange(c);
+            const duration = range ? formatClipTime(range.end-range.start) : null;
             const on = c.id === selectedId;
             return (
               <button
@@ -125,15 +127,15 @@ export default function VideoClipLibrary({ onPick, pickLabel, tall = false }: { 
                 className={`overflow-hidden rounded-xl border-2 bg-surface-container-lowest text-left shadow-sm transition-colors ${on ? 'border-primary' : 'border-transparent hover:border-primary/40'}`}
               >
                 <div className="relative aspect-video bg-surface-container-high">
-                  <ClipThumbnail id={c.youtube_id} className="h-full w-full object-cover"/>
-                  <span className="absolute bottom-1 right-1 rounded bg-black/75 px-1.5 py-0.5 text-[11px] font-bold text-white tabular-nums">{formatClipTime(clipLength(c))}</span>
+                  {sceneTeaching(c).image ? <img src={sceneTeaching(c).image} className="h-full w-full object-cover" alt=""/> : <ClipThumbnail id={c.youtube_id} className="h-full w-full object-cover"/>}
+                  {duration&&<span className="absolute bottom-1 right-1 rounded bg-black/75 px-1.5 py-0.5 text-[11px] font-bold text-white tabular-nums">{duration}</span>}
                   <span className="absolute left-1 top-1 rounded bg-white/90 px-1.5 py-0.5 text-[11px] font-bold text-deep-navy">Lv.{c.level}</span>
                 </div>
                 <div className="space-y-0.5 p-2">
                   <div className="truncate font-caption text-caption text-on-surface-variant">{c.series}</div>
                   <div className="line-clamp-2 font-label-md text-label-md text-on-surface">{c.title}</div>
-                  <div className="line-clamp-2 text-xs text-on-surface-variant">{c.words.slice(0,5).join(' · ')}</div><div className="line-clamp-1 text-xs">{c.pack?.grammar?.sentence??parseShadowText(c.script)[0]?.en.replace(/\*\*/g,'')}</div>
-                  <div className="font-caption text-caption text-on-surface-variant">{t('readyMedia.time',{time:formatClipTime(clipLength(c))})} · {t('readyMedia.estimate',estimateClipMinutes(c))}</div>
+                  <p className="text-sm text-on-surface-variant">{c.summary}</p>
+                  <div className="font-caption text-caption text-on-surface-variant">{duration ? '학습 구간 '+duration : '원본 영상'}</div>
                 </div>
               </button>
             );
@@ -146,18 +148,23 @@ export default function VideoClipLibrary({ onPick, pickLabel, tall = false }: { 
   );
 }
 
-function ClipPreview({clip,onPick,onClose,pickLabel}:{clip:VideoClip;onPick:(activities:ClipActivity[])=>void;onClose:()=>void;pickLabel?:string}){
- const {t}=useTranslation();const choices=useMemo(()=>clipActivities(clip),[clip]);const defaults=useMemo(()=>choices.filter(x=>['words','shadow','questions','cloze','reading'].includes(x)),[choices]);const [activities,setActivities]=useState<ClipActivity[]>(defaults);const [learning,setLearning]=useState(false),[playerOpen,setPlayerOpen]=useState(false);
+function ClipPreview({clip,onPick,onClose,pickLabel,planned}:{clip:VideoClip;planned:boolean;onPick:(activities:ClipActivity[],plan?:AnimationLessonPlan)=>void;onClose:()=>void;pickLabel?:string}){
+ const {t}=useTranslation();const choices=useMemo(()=>clipActivities(clip),[clip]);const defaults=useMemo(()=>planned?[]:choices.filter(x=>['words','shadow','questions','cloze','reading'].includes(x)),[choices,planned]);const [activities,setActivities]=useState<ClipActivity[]>(defaults);const [learning,setLearning]=useState(false),[playerOpen,setPlayerOpen]=useState(false);
  useEffect(()=>{setLearning(false);setPlayerOpen(false);setActivities(defaults);},[clip.id,defaults]);
  const lines=parseShadowText(clip.script);const expressions=clip.pack?.grammar?.sentence?[{en:clip.pack.grammar.sentence,ko:clip.pack.grammar.sentenceKo}]:lines.slice(0,2).map(l=>({en:l.en.replace(/\*\*/g,''),ko:l.ko}));
  const words=clip.pack.words??[];
- const closePlayer=()=>{if(document.fullscreenElement)void document.exitFullscreen().catch(()=>{});setPlayerOpen(false);};
+ const scene=sceneLesson(clip), range=scene.range;
+ const [plan,setPlan]=useState<AnimationLessonPlan>({minutes:30});
+ const [sceneRun,setSceneRun]=useState(false);
+ const closePlayer=()=>{if(document.fullscreenElement)void document.exitFullscreen().catch(()=>{});setPlayerOpen(false);setSceneRun(false);};
  return <article className="vl-detail" data-video-preparation><header className="vl-detail-heading"><div><div className="vl-badges"><span>{clip.series}</span><span>Lv.{clip.level}</span>{clip.tags.filter(x=>!x.startsWith('classbank:')).slice(0,2).map(tag=><span key={tag}>{tag}</span>)}</div><h2>{clip.title}</h2><p>{clip.summary}</p></div><button type="button" aria-label={t('mediaV2.close')} onClick={onClose}>×</button></header>
   <div className="vl-meta"><span>{t('readyMedia.time',{time:formatClipTime(clipLength(clip))})}</span><span>{t('readyMedia.estimate',estimateClipMinutes(clip,activities))}</span></div>
-  <div className="vl-detail-grid"><div><button type="button" className="vl-thumbnail" aria-label={t('readyMedia.watch')} onClick={()=>setPlayerOpen(true)}><ClipThumbnail id={clip.youtube_id}/><span className="vl-thumbnail-play" aria-hidden>▶</span></button><p className="vl-preview-hint">{t('videoUi.previewHint')}</p></div><aside className="vl-learning-card">{expressions.length>0&&<section><h3>{t('videoUi.expressions')}</h3><p className="vl-expression-hint">{t('videoUi.expressionHint')}</p><div className="vl-expression-list">{expressions.map((line,i)=><div key={i}><strong>{line.en}</strong>{line.ko&&<span>{line.ko}</span>}</div>)}</div></section>}{words.length>0&&<section><h3>{t('videoUi.coreWords')}</h3><div className="vl-core-words">{words.slice(0,4).map(w=><div key={w.word}>{w.imageUrl&&<img src={w.imageUrl} alt="" onError={e=>{e.currentTarget.hidden=true;}}/>}<strong>{w.word}</strong><span>{w.meaning}</span></div>)}</div></section>}<button type="button" aria-expanded={learning} onClick={()=>setLearning(v=>!v)}>{t(learning?'mediaV2.hidePreview':'mediaV2.preview')} →</button></aside></div>
+  <div className="vl-detail-grid"><div><button type="button" className="vl-thumbnail" aria-label={t('readyMedia.watch')} onClick={()=>{setSceneRun(planned&&!!range);setPlayerOpen(true);}}>{sceneTeaching(clip).image ? <img src={sceneTeaching(clip).image} alt=""/> : <ClipThumbnail id={clip.youtube_id}/>}<span className="vl-thumbnail-play" aria-hidden>▶</span></button><p className="vl-preview-hint">{t('videoUi.previewHint')}</p></div><aside className="vl-learning-card">{expressions.length>0&&<section><h3>{t('videoUi.expressions')}</h3><p className="vl-expression-hint">{t('videoUi.expressionHint')}</p><div className="vl-expression-list">{expressions.map((line,i)=><div key={i}><strong>{line.en}</strong>{line.ko&&<span>{line.ko}</span>}</div>)}</div></section>}{words.length>0&&<section><h3>{t('videoUi.coreWords')}</h3><div className="vl-core-words">{words.slice(0,4).map(w=><div key={w.word}>{w.imageUrl&&<img src={w.imageUrl} alt="" onError={e=>{e.currentTarget.hidden=true;}}/>}<strong>{w.word}</strong><span>{w.meaning}</span></div>)}</div></section>}<button type="button" aria-expanded={learning} onClick={()=>setLearning(v=>!v)}>{t(learning?'mediaV2.hidePreview':'mediaV2.preview')} →</button></aside></div>
   {learning&&<section className="vl-full-learning" data-learning-preview><h3>{t('mediaV2.preview')}</h3><p>{words.length?words.map(w=>w.word+' — '+w.meaning).join(' · '):clip.words.join(' · ')}</p>{clip.pack.questions?.map((q,i)=><p key={i}>{i+1}. {q.q}</p>)}</section>}
-  <fieldset className="vl-activity-order"><legend>{t('readyMedia.recommend')}</legend>{choices.map((activity,i)=><label key={activity} className={activities.includes(activity)?'is-selected':''}><input type="checkbox" checked={activities.includes(activity)} onChange={e=>setActivities(prev=>e.target.checked?[...prev,activity]:prev.filter(x=>x!==activity))}/><b>{i+1}</b><span>{t('readyMedia.'+activity)}</span></label>)}</fieldset>
-  <div className="vl-action-bar"><button type="button" onClick={()=>setPlayerOpen(true)}>{t('readyMedia.watch')}</button>{(clip.script.trim()||clip.pack.questions?.length||clip.pack.words?.length)&&<Link to={`/materials/video-worksheet?clip=${clip.id}`}>{t('readyMedia.printSheet')}</Link>}<button type="button" className="is-primary" disabled={!activities.length} aria-label={pickLabel??t('readyMedia.makeLesson')} onClick={()=>onPick(choices.filter(x=>activities.includes(x)))}>{pickLabel??t('readyMedia.makeLesson')}</button></div><p className="vl-time-note">{t('videoUi.selectionHint')}</p>
-  {playerOpen&&<AccessibleDialog label={t('videoUi.player')} onClose={closePlayer}><div className="vl-player-surface"><header><strong>{clip.title}</strong><button type="button" onClick={closePlayer}>{t('videoUi.back')}</button></header><div className="vl-player-content">{lines.length?<ShadowBoard key={clip.id} flow="video" rememberKey={`clip:${clip.id}`} source={clip.script} title={clip.title} videoUrl={`https://www.youtube.com/watch?v=${clip.youtube_id}`} expanded/>:<PlainTeachingVideo videoUrl={`https://www.youtube.com/watch?v=${clip.youtube_id}`} title={clip.title} start={Number(clip.start_sec)} end={Number(clip.end_sec)} rememberKey={`clip:${clip.id}`}/>}</div></div></AccessibleDialog>}
+  <fieldset className="vl-activity-order"><legend>{planned?'추가할 활동':t('readyMedia.recommend')}</legend>{choices.map((activity,i)=><label key={activity} className={activities.includes(activity)?'is-selected':''}><input type="checkbox" checked={activities.includes(activity)} onChange={e=>setActivities(prev=>e.target.checked?[...prev,activity]:prev.filter(x=>x!==activity))}/><b>{i+1}</b><span>{t('readyMedia.'+activity)}</span></label>)}</fieldset>
+  {planned&&<fieldset className="vl-activity-order"><legend>수업 시간</legend>{([30,40] as const).map(minutes=><label key={minutes}><input type="radio" name="animation-lesson-duration" checked={plan.minutes===minutes} onChange={()=>setPlan({...plan,minutes})}/>{minutes}분</label>)}<label><input type="checkbox" checked={!!plan.gameLast} onChange={event=>setPlan({...plan,gameLast:event.target.checked})}/>게임으로 마무리</label></fieldset>}
+{planned&&scene.missing.length>0&&<p role="status">수업 생성에 필요한 자료 · {scene.missing.join(" · ")}</p>}
+<div className="vl-action-bar">{planned ? (range ? <button type="button" onClick={()=>{setSceneRun(true);setPlayerOpen(true);}}>학습 장면 재생</button> : <a href={`https://www.youtube.com/watch?v=${clip.youtube_id}`} target="_blank" rel="noopener noreferrer">원본 영상 보기</a>) : <button type="button" onClick={()=>setPlayerOpen(true)}>{t('readyMedia.watch')}</button>}{planned&&lines.length>0&&<button type="button" onClick={()=>{setSceneRun(false);setPlayerOpen(true);}}>듣고 따라 하기</button>}{(clip.script.trim()||clip.pack.questions?.length||clip.pack.words?.length)&&<Link to={`/materials/video-worksheet?clip=${clip.id}`}>{t('readyMedia.printSheet')}</Link>}<button type="button" className="is-primary" disabled={planned ? !!scene.missing.length : !activities.length} aria-label={pickLabel??t('readyMedia.makeLesson')} onClick={()=>onPick(choices.filter(x=>activities.includes(x)),planned?plan:undefined)}>{pickLabel??t('readyMedia.makeLesson')}</button></div><p className="vl-time-note">{t('videoUi.selectionHint')}</p>
+  {playerOpen&&<AccessibleDialog label={t('videoUi.player')} onClose={closePlayer}><div className="vl-player-surface"><header><strong>{clip.title}</strong><button type="button" onClick={closePlayer}>{t('videoUi.back')}</button></header><div className="vl-player-content">{sceneRun&&range?<PlainTeachingVideo videoUrl={`https://www.youtube.com/watch?v=${clip.youtube_id}`} title={clip.title} start={range.start} end={range.end} scene/>:lines.length?<ShadowBoard key={clip.id} flow={planned?"manual":"video"} rememberKey={`clip:${clip.id}`} source={clip.script} title={clip.title} videoUrl={`https://www.youtube.com/watch?v=${clip.youtube_id}`} expanded/>:<PlainTeachingVideo videoUrl={`https://www.youtube.com/watch?v=${clip.youtube_id}`} title={clip.title} start={Number(clip.start_sec)} end={Number(clip.end_sec)} rememberKey={`clip:${clip.id}`}/>}</div></div></AccessibleDialog>}
  </article>;
 }

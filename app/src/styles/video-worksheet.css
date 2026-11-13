@@ -36,3 +36,20 @@
 .animation-picture-choices>div{display:flex;align-items:center;gap:2mm}
 @media(max-width:860px){.animation-worksheet-layout{grid-template-columns:1fr}}
 @media print{.animation-worksheet-layout{display:block}}
+.animation-sheet .animation-workbook-title{display:flex;min-height:18mm;align-items:center;justify-content:space-between;gap:4mm;border-radius:3mm;background:#fff0b9;padding:3mm 4mm;color:#10284a}
+.animation-workbook-title h1,.animation-task h2{font-family:'Fredoka','Noto Sans KR',sans-serif}
+.animation-workbook-title strong{font-size:12pt}
+.animation-task{border-inline:.3mm solid #9bbada;padding:0 3mm;break-inside:avoid}
+.animation-task:has(>h2){border-top:.3mm solid #9bbada;border-radius:3mm 3mm 0 0;margin-top:2mm;padding-top:2mm}
+.animation-task:has(+ section > h2),.animation-task:has(+ footer){border-bottom:.3mm solid #9bbada;border-radius:0 0 3mm 3mm}
+.animation-study-card,.animation-word-trace,.animation-missing{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:3mm;align-items:center}
+.animation-study-card{border:.3mm solid #d2b960;border-radius:3mm;overflow:hidden}
+.animation-study-card>div{padding:2mm 3mm}
+.animation-study-card>div:first-child{background:#fff0b9}
+.animation-study-card strong,.animation-word-trace strong{font-size:18pt}
+.animation-study-card small,.animation-match-grid small{display:block;font:400 12pt 'Noto Sans KR',sans-serif}
+.animation-missing{grid-template-columns:1fr 45mm;min-height:14mm}
+.animation-missing p{font-size:18pt;letter-spacing:.08em}
+.animation-word-trace img{width:13mm;height:13mm;object-fit:contain}
+.animation-match-grid:has(img)>div>div{height:29mm}
+.animation-choices{padding:1mm 0 0 7mm;display:grid;gap:1mm}

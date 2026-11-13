@@ -111,3 +111,13 @@ body:has(.tv-player[data-video-presenting=true][data-video-full=true][data-chrom
  .tv-player.tv-player[data-video-full=true] .tv-control,.tv-player.tv-player[data-video-full=true] .tv-tool-controls>button{padding-inline:3px;font-size:11px}
  .tv-player.tv-player[data-video-full=true] .tv-caption{bottom:78px}
 }
+.tv-full-menu{display:flex;gap:6px}
+.tv-full-menu>button{position:relative;z-index:1;white-space:nowrap}
+.tv-menu-dismiss{position:fixed;inset:0}
+.tv-player.tv-player .tv-full-menu .tv-full-panel{z-index:2;width:min(550px,calc(100vw - 24px));max-width:none;max-height:calc(100dvh - 215px);overflow:hidden auto;align-content:start;gap:8px}
+.tv-full-panel>header{display:flex;align-items:center;justify-content:space-between}
+.tv-full-panel .tv-choice-row{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;min-inline-size:0}
+.tv-full-panel .tv-choice-row legend{width:auto;min-width:85px}
+.tv-full-panel .tv-choice-row button{white-space:nowrap}
+.tv-full-panel select{width:min(100%,280px)}
+@media(max-height:480px){.tv-player.tv-player .tv-full-menu .tv-full-panel{max-height:calc(100dvh - 160px)}}

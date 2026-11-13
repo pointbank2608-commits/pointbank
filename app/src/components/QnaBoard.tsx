@@ -156,9 +156,10 @@ export default function QnaBoard({
                     {item.qKo}
                   </div>
                 )}
+                {item.choices?.length ? <ol className="mt-2 list-[upper-alpha] space-y-1 pl-8 text-[3.5cqh]">{item.choices.map(choice=><li key={choice}>{choice}</li>)}</ol> : null}
               </div>
             </div>
-            <div className="flex items-start gap-[2cqh] transition-opacity duration-300" style={{ opacity: shownStep >= 1 ? 1 : 0 }}>
+            <div className="flex items-start gap-[2cqh] transition-opacity duration-300" aria-hidden={shownStep===0} style={{ opacity: shownStep >= 1 ? 1 : 0 }}>
               <span className="shrink-0 rounded-[1.5cqh] px-[1.6cqh] font-bold" style={{ fontSize: long ? '5cqh' : '6.5cqh', background: th.chip, color: th.accent }}>
                 A
               </span>

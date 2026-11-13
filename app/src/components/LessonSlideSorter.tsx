@@ -719,6 +719,13 @@ export default function LessonSlideSorter({
                 setSelectedId(slide.id);
               }}
             />
+            {selected.animationGuide&&<details className="mt-4 rounded-xl border bg-white p-3">
+              <summary>교사용 진행 안내 · {selected.animationGuide.minutes}분</summary>
+              <dl className="mt-2 space-y-1"><div><dt className="font-bold">첫 질문</dt><dd>{selected.animationGuide.question}</dd></div>
+              <div><dt className="font-bold">예상 답</dt><dd>{selected.animationGuide.expected}</dd></div>
+              <div><dt className="font-bold">힌트</dt><dd>{selected.animationGuide.hint}</dd></div>
+              <div><dt className="font-bold">다음 단계</dt><dd>{selected.animationGuide.next}</dd></div></dl>
+            </details>}
             <div className="mt-4 space-y-3">
               {!(selected.kind === 'material' && selected.materialId === 'phonicsstage1') && <BlockOptionsPanel
                 slide={selected}
