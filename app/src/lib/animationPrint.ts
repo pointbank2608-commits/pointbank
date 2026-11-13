@@ -43,6 +43,7 @@ export function animationPrintActivities(clip: VideoClip, bank: WordBankEntry[],
   }));
   const questions = sceneQuestions(clip).map((item,index) => ({...item,id:String(index),label:item.q}));
   const curated = {...teaching.print,...clip.pack.animationPrint};
+  const scrambleSentences = [...new Set(teaching.scrambleSentences?.map(clean) ?? [])];
   const grammar = clip.pack.grammar;
   const practice=sceneLesson(clip).expression;
   const wordRows = (fn: (entry: typeof vocabulary[number]) => Partial<PaperItem> | null) =>
@@ -103,13 +104,13 @@ export function animationPrintActivities(clip: VideoClip, bank: WordBankEntry[],
       {id:'sentenceTrace',label:'문장 따라쓰기',title:'Trace the Sentences',instruction:'Trace the sentence. Then write it on your own.',items:lineRows(script,line=>({trace:line.text,lines:1,answer:line.text}))},
       {id:'readCircle',label:'읽고 괄호에서 고르기',title:'Read and Circle',instruction:'Read and circle.',items:lineRows(script,basicChoice)},
       {id:'sentenceGap',label:'문장 빈칸 채우기',title:'Complete the Sentence',instruction:'Read and complete the sentence.',items:lineRows(script,line=>{const row=markedGap(line);return row&&(line.ko||options.bank)?{...row,prompt:(line.ko?line.ko+'\n':'')+row.prompt}:null;})},
-      {id:'sentenceScramble',label:'문장 스크램블 · 순서 맞추기',title:'Unscramble the Sentence',instruction:'Keep the first part. Put the other parts in order, then write the sentence.',items:lineRows(script,line=>{
-        const parts=words(line.text.replace(/[.?!]$/,''));
-        if (parts.length<4) return null;
+      {id:'sentenceScramble',label:'문장 스크램블 · 순서 맞추기',title:'Unscramble the Sentence',instruction:'Keep the first part. Put the other parts in order, then write the sentence.',items:scrambleSentences.flatMap((sentence,index)=>{
+        const parts=words(sentence.replace(/[.?!]$/,''));
+        if (parts.length<4 || !/[.?!]$/.test(sentence)) return [];
         const first=parts.shift()!;
         const chunks=options.chunks?parts.reduce<string[]>((out,part,index)=>{if(index%2===0)out.push(part);else out[out.length-1]+=' '+part;return out;},[]):parts;
-        return {prompt:first+'  |  '+mix(chunks.length<2?parts:chunks).join(' / '),answer:line.text,lines:2,example:true};
-      })},
+        return [{id:String(index),label:sentence,prompt:first+'  |  '+mix(chunks.length<2?parts:chunks).join(' / '),answer:sentence,lines:2}];
+      }),reason:'문장 순서 맞추기에 쓸 완전한 문장이 아직 검토되지 않았어요.'},
       {id:'grammarPractice',label:'대표 문법과 응용',title:'Use the Pattern',instruction:'Read the pattern. Try it in a new situation.',items:(practice?.examples??[]).slice(0,5).map((example,index)=>{
         const parts=words(example.answer);
         const missing=parts.pop()??'';

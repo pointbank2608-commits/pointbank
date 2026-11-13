@@ -38,7 +38,8 @@
 @media print{.animation-worksheet-layout{display:block}}
 .animation-sheet .animation-workbook-title{display:flex;min-height:18mm;align-items:center;justify-content:space-between;gap:4mm;border-radius:3mm;background:#fff0b9;padding:3mm 4mm;color:#10284a}
 .animation-workbook-title h1,.animation-task h2{font-family:'Fredoka','Noto Sans KR',sans-serif}
-.animation-workbook-title strong{font-size:12pt}
+.animation-workbook-title h1{min-width:0;overflow-wrap:anywhere;text-wrap:balance}
+.animation-workbook-title strong{flex:none;white-space:nowrap;font-size:12pt}
 .animation-task{border-inline:.3mm solid #9bbada;padding:0 3mm;break-inside:avoid}
 .animation-task:has(>h2){border-top:.3mm solid #9bbada;border-radius:3mm 3mm 0 0;margin-top:2mm;padding-top:2mm}
 .animation-task:has(+ section > h2),.animation-task:has(+ footer){border-bottom:.3mm solid #9bbada;border-radius:0 0 3mm 3mm}

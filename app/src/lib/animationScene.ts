@@ -9,6 +9,9 @@ export interface AnimationLessonPlan {
 }
 
 export interface SceneTeaching {
+  /** Complete, reviewed lines suitable for word-order questions. */
+  scrambleSentences?: string[];
+  questionEvidence?: Record<string, { time: number; end: number }>;
   image?: string;
   range?: { start: number; end: number };
   expression?: { text: string; explanation: string; original?: string; examples: { situation: string; answer: string }[] };
@@ -39,8 +42,10 @@ export function sceneRange(clip: VideoClip) {
 
 export function sceneQuestions(clip: VideoClip, range = sceneRange(clip)): QnaItem[] {
   const script = parseShadowText(clip.script);
+  const evidence = sceneTeaching(clip).questionEvidence;
   return (clip.pack.questions ?? []).filter(item=>item.q.trim() && item.a.trim()).flatMap(item=>{
-    const {time,end,...question}=item;
+    const {time: recordedStart,end: recordedEnd,...question}=item;
+    const {time, end} = evidence?.[question.q] ?? {time:recordedStart,end:recordedEnd};
     if (time === undefined) return range === null || range.start === Number(clip.start_sec) && range.end === Number(clip.end_sec) ? [question] : [];
     if (!range || time < range.start || time >= range.end) return range ? [] : [question];
     const line = script.find(line=>line.start <= time && line.end > time);

@@ -11,7 +11,40 @@ const washingActivities: NonNullable<SceneTeaching["print"]> = {
 };
 
 export const animationScenes: Record<string,SceneTeaching> = {
+  '26cb84c1-88d2-464d-bfb6-1e2919fd787b': {
+    range:{start:34.7,end:153.6},
+    questionEvidence:{
+      "What did Madame Gazelle forget?":{time:60.2,end:62.8},
+      "What do the children make for Madame Gazelle?":{time:135.4,end:141.8},
+    },
+    choices:{
+      "What happened to Pedro's yogurt?":['It fell on the floor.','He left it at home.'],
+      'What did Madame Gazelle forget?':['She forgot her book.','She forgot her water bottle.'],
+      'What do the children make for Madame Gazelle?':['They make a birthday cake.','They make a bowl of soup.'],
+    },
+    expression:{
+      text:"Why don't we + base verb?",
+      original:"Why don't we take a small bit of our lunches and make one big lunch for Madame Gazelle?",
+      explanation:'Use “Why don’t we …?” to suggest something you can do together.',
+      examples:[
+        {situation:'Your friends have bread and cheese. Suggest making sandwiches together.',answer:"Why don't we make sandwiches?"},
+        {situation:'Your friend has no snack. Suggest sharing your apples.',answer:"Why don't we share our apples?"},
+        {situation:'It is raining. Suggest reading a book together.',answer:"Why don't we read a book?"},
+        {situation:'Your classroom floor is messy. Suggest cleaning it together.',answer:"Why don't we clean the floor?"},
+        {situation:'Your class has a ball and some free time. Suggest something to do together.',answer:"Why don't we play a game?"},
+      ],
+    },
+    scrambleSentences:[
+      'Today, Peppa and her friends are eating lunch at playgroup.',
+      'What are you having for lunch, Madame Gazelle?',
+      "Madame Gazelle can't miss lunch.",
+      'She can have one of my sandwiches.',
+      "There's only one tiny bite left.",
+      'She likes crunchy things.',
+    ],
+  },
   'c09c4db9-ba29-4543-bf65-a7b8abc93b72': {
+    scrambleSentences:["I've got an idea.", "We'll seesaw him off."],
     expression: {
       text:'Can you help me …?',
       explanation:'Use Can you help me + a verb to ask someone for help.',
@@ -31,6 +64,12 @@ export const animationScenes: Record<string,SceneTeaching> = {
     definitions:{play:'to do something for fun',off:'away from a surface or place',help:'to make something easier for someone',grab:'to take hold of something quickly',idea:'a thought about what to do'},
   },
   'f27bf371-9c13-4975-9869-6d8c233b1980': {
+    scrambleSentences:[
+      'My washing is hung out.',
+      "The wind's blowing my washing off the line!",
+      'I have to get it back!',
+      "There's nothing wrong with being small, honey.",
+    ],
     wordPictures:washingPictures,
     print:washingActivities,
     expression:{
@@ -54,6 +93,25 @@ export const animationScenes: Record<string,SceneTeaching> = {
   },
   '449a762b-4c92-4bb0-a911-6165d9f95de1': {
     range:{start:.1,end:69.5},
+    expression:{
+      text:"It's + in / on / under + place.",
+      original:"It's in the tree.",
+      explanation:'Use in for inside, on for touching the top, and under for below.',
+      examples:[
+        {situation:'Your toy is inside an open box. Where is it?',answer:"It's in the box."},
+        {situation:'Your book is resting on top of the table. Where is it?',answer:"It's on the table."},
+        {situation:'A ball rolled beneath your chair. Where is it?',answer:"It's under the chair."},
+        {situation:'Your hat is inside your bag. Where is it?',answer:"It's in the bag."},
+        {situation:'Your cat is hiding beneath the bed. Where is it?',answer:"It's under the bed."},
+      ],
+    },
+    scrambleSentences:[
+      'Caillou, Leo and Clementine were having lots of fun playing in the garden.',
+      'They were having a competition to see who could throw the ball the highest.',
+      'It almost touched the roof of the house.',
+      'Mine is gonna touch the clouds.',
+      "It's in the tree.",
+    ],
     choices:{
       'What were Caillou and his friends doing in the garden?':['They were watering the plants.','They were having a picnic.'],
       "Where did Leo's ball go?":['It went under a bench.','It went over the fence.'],
