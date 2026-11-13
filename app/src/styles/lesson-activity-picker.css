@@ -73,3 +73,15 @@
 .activity-sentence-wordtrain span{border-bottom:5px double #946736;background:#fff2cf}
 .activity-sentence-sentencerocket span{border-color:#8382e5;background:#f0edff}
 .activity-example>.pg-scene-cover{height:100%;border-radius:inherit}
+
+.classroom-dialog:has(.worksheet-replacement){width:min(760px,calc(100vw - 24px));max-width:calc(100vw - 24px);overflow:hidden}
+body:has(.worksheet-replacement){overflow:hidden}
+.worksheet-replacement{display:flex;flex-direction:column;max-height:calc(100dvh - 32px);min-width:0}
+.worksheet-replacement>header,.worksheet-replacement>footer{flex:none;display:grid;gap:10px;padding:12px 16px;background:white}
+.worksheet-replacement>header{border-bottom:1px solid #dce7f4}
+.worksheet-replacement>footer{border-top:1px solid #dce7f4}
+.worksheet-replacement [aria-pressed="true"]{color:var(--color-primary)}
+.worksheet-replacement-scroll{min-height:0;min-width:0;overflow:auto;overflow-x:hidden;overscroll-behavior:contain;container-type:inline-size;padding:12px 16px}
+.worksheet-replacement-scroll>section+section{margin-top:12px}
+.worksheet-replacement-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+@container (min-width:420px){.worksheet-replacement-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}

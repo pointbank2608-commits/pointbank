@@ -381,6 +381,7 @@ export default function LessonSlideSorter({
    * 슬라이드 상세의 "종류 바꾸기" → 추가 패널을 "바꾸기"로 연다. 고른 슬라이드가 새로 붙지 않고 그 자리에
    * 들어간다(워크시트 → 게임처럼, 지우고 다시 만들 필요 없이). 잘못 바꿨으면 되돌리기. */
   const [replaceTargetId, setReplaceTargetId] = useState<string | null>(null);
+  const [worksheetReplacementId, setWorksheetReplacementId] = useState<string | null>(null);
   useEffect(() => {
     if (!addMode) setReplaceTargetId(null);
   }, [addMode]);
@@ -669,6 +670,10 @@ export default function LessonSlideSorter({
               <button
                 type="button"
                 onClick={() => {
+                  if (selected.kind === 'material' && !selected.phonicsStage1) {
+                    setWorksheetReplacementId(selected.id);
+                    return;
+                  }
                   setReplaceTargetId(selected.id);
                   setAddMode('library');
                   setPickerOpen(true);
@@ -706,6 +711,8 @@ export default function LessonSlideSorter({
               onWordListChange={onWordListChange}
               onSaveWordsAsList={onSaveWordsAsList}
               onUpdate={(patch) => updateSlide(selected.id, patch)}
+              worksheetReplacementOpen={worksheetReplacementId === selected.id}
+              onWorksheetReplacementChange={open => setWorksheetReplacementId(open ? selected.id : null)}
               onInsertAfter={(slide) => {
                 const idx = slides.findIndex((s) => s.id === selected.id);
                 onChange([...slides.slice(0, idx + 1), slide, ...slides.slice(idx + 1)]);
@@ -937,6 +944,8 @@ function SlideDetail({
   onSaveWordsAsList,
   onUpdate,
   onInsertAfter,
+  worksheetReplacementOpen,
+  onWorksheetReplacementChange,
 }: {
   phonicsEntries: PhonicsBankEntry[];
   slide: LessonSlide;
@@ -954,6 +963,8 @@ function SlideDetail({
   onUpdate: (patch: Partial<LessonSlide>) => void;
   /** 이 슬라이드 바로 뒤에 새 슬라이드를 넣는다(문법 → 문장 배열하기 게임). */
   onInsertAfter: (slide: LessonSlide) => void;
+  worksheetReplacementOpen: boolean;
+  onWorksheetReplacementChange: (open: boolean) => void;
 }) {
   const { t } = useTranslation();
 
@@ -1241,7 +1252,7 @@ function SlideDetail({
     return PHONICS_TEACHING_PREVIEW?<Stage1LessonOptions slide={slide} onUpdate={(patch) => onUpdate(patch as Partial<LessonSlide>)} />:<p>{t('phonicsTeaching.unavailable')}</p>;
   }
 
-  return <MaterialSlideDetail key={slide.id} slide={slide.materialId==='library'?{...slide,materialId:'worksheet'}:slide} cards={cards} entries={phonicsEntries} onUpdate={onUpdate}/>;
+  return <MaterialSlideDetail key={slide.id} slide={slide.materialId==='library'?{...slide,materialId:'worksheet'}:slide} cards={cards} entries={phonicsEntries} onUpdate={onUpdate} replace={worksheetReplacementOpen} setReplace={onWorksheetReplacementChange}/>;
 }
 
 function WorkbookUnits({slide,entries,onUpdate}:{slide:MaterialSlide;entries:PhonicsBankEntry[];onUpdate:(patch:Partial<MaterialSlide>)=>void}) {
@@ -1262,10 +1273,9 @@ function WorkbookUnits({slide,entries,onUpdate}:{slide:MaterialSlide;entries:Pho
   </label>;
 }
 
-function MaterialSlideDetail({slide,cards,entries,onUpdate}:{slide:MaterialSlide;cards:FullCardItem[];entries:PhonicsBankEntry[];onUpdate:(patch:Partial<MaterialSlide>)=>void}) {
+function MaterialSlideDetail({slide,cards,entries,onUpdate,replace,setReplace}:{slide:MaterialSlide;cards:FullCardItem[];entries:PhonicsBankEntry[];onUpdate:(patch:Partial<MaterialSlide>)=>void;replace:boolean;setReplace:(open:boolean)=>void}) {
   const {t}=useTranslation();
   const [settings,setSettings]=useState(false);
-  const [replace,setReplace]=useState(false);
   const [scope,setScope]=useState<'same'|'all'>('same');
   const [query,setQuery]=useState('');
   const [candidate,setCandidate]=useState<MaterialSlide|null>(null);
@@ -1296,11 +1306,17 @@ function MaterialSlideDetail({slide,cards,entries,onUpdate}:{slide:MaterialSlide
   const candidateBook=candidate&&workbookOfMaterial(candidate.materialId);
   const candidateNeedsUnit=candidate&&(candidateBook||workbookStep(candidate.materialId));
   const candidateReady=!candidateNeedsUnit||!!candidate?.phonicsUnitIds?.length||!!candidate?.cvcUnits?.length;
+  const closeReplacement=()=>{
+    setReplace(false);
+    setCandidate(null);
+    setScope('same');
+    setQuery('');
+  };
 
   return <div className="space-y-3">
     <header className="flex flex-wrap items-center gap-2 rounded-xl bg-white p-3">
       <div className="mr-auto"><h3 className="font-bold">{title}</h3>{source&&<p className="text-sm">{source}</p>}</div>
-      <button type="button" className="rounded-lg border px-3 py-2" onClick={()=>{setCandidate(null);setScope(usesWords?'same':'all');setQuery('');setReplace(true);}}>{t('lessonUx.replaceWorksheet')}</button>
+      <button type="button" className="rounded-lg border px-3 py-2" onClick={()=>setReplace(true)}>{t('lessonUx.replaceWorksheet')}</button>
       {(usesWords||unitBased)&&<button type="button" className="rounded-lg border px-3 py-2" aria-expanded={settings} onClick={()=>setSettings(!settings)}>{t('lessonUx.worksheetSettings')}</button>}
     </header>
     <div className={settings?'grid items-start gap-3 xl:grid-cols-[minmax(0,1fr)_280px]':''}>
@@ -1316,50 +1332,55 @@ function MaterialSlideDetail({slide,cards,entries,onUpdate}:{slide:MaterialSlide
         {optionFields}
       </aside>}
     </div>
-    {replace&&<AccessibleDialog label={t('lessonUx.replaceWorksheet')} onClose={()=>setReplace(false)}>
-      <div className="w-[min(900px,90vw)] space-y-4 p-4">
-        <h3 className="font-bold">{t('lessonUx.replaceWorksheet')} · {title}</h3>
+    {replace&&<AccessibleDialog label={t('lessonUx.replaceWorksheet')} onClose={closeReplacement}>
+      <div className="worksheet-replacement">
+        <header>
+        <div className="flex items-start justify-between gap-2">
+          <div><h3 className="text-lg font-bold">{t('lessonUx.replaceWorksheet')}</h3><p>{t('lessonUx.currentWorksheet')} · {title}</p></div>
+          <button type="button" className="rounded-lg border px-3 py-2" onClick={closeReplacement}>× {t('mediaV2.close')}</button>
+        </div>
         <div className="flex gap-2">
           <button type="button" aria-pressed={scope==='same'} onClick={()=>{setScope('same');setCandidate(null);}}>{t('lessonUx.sameWorksheetWords')}</button>
           <button type="button" aria-pressed={scope==='all'} onClick={()=>{setScope('all');setCandidate(null);}}>{t('lessonUx.allWorksheets')}</button>
         </div>
-        <input value={query} onChange={event=>setQuery(event.target.value)} placeholder={t('lessonUx.search')} aria-label={t('lessonUx.search')} className="w-full rounded-lg border p-2"/>
-        <div className="max-h-[45dvh] space-y-3 overflow-auto">
+        <input value={query} onChange={event=>setQuery(event.target.value)} placeholder={t('lessonUx.search')} aria-label={t('lessonUx.search')} className="w-full min-w-0 rounded-lg border p-2"/>
+        </header>
+        <div className="worksheet-replacement-scroll">
           {sections.map(section=>{
             const choices=section.blocks.filter(block=>(block.nameKey?t(block.nameKey):block.name?.ko??block.id).toLowerCase().includes(query.trim().toLowerCase()));
             return choices.length>0&&<section key={section.key}>
               {scope==='all'&&<h4 className="mb-1 font-bold">{t(`materials.group_${section.key}`)}</h4>}
-              <div className="grid grid-cols-2 gap-2 md:grid-cols-3">{choices.map(block=>{
+              <div className="worksheet-replacement-grid">{choices.map(block=>{
                 const next=activityMaterial(block,null);
                 const cover=MATERIALS_CATALOG.find(item=>item.id===next.materialId)?.cover;
                 const current=next.materialId===slide.materialId&&(next.materialId!=='worksheet'||next.worksheetTab===(slide.worksheetTab??'list'));
                 const picked=candidate?.id===next.id;
-                return <div key={block.id} className={`overflow-hidden rounded-lg border p-2 ${picked?'border-primary bg-sky-50':''}`}>
-                  <button type="button" className="w-full text-left font-semibold" aria-pressed={picked}
-                    onClick={()=>setCandidate(current?{...slide,id:next.id}:next)}>
+                return <button key={block.id} type="button" className={`min-w-0 overflow-hidden rounded-lg border p-2 text-left font-semibold ${picked?'border-primary bg-sky-50 ring-1 ring-inset ring-primary':''}`} aria-pressed={picked}
+                    onClick={()=>setCandidate(current?null:next)}>
                     {slideThumbLabel(next,t).label}{current&&<small className="block text-primary">{t('lessonUx.currentWorksheet')}</small>}
-                  </button>
-                  <div className="pointer-events-none mt-1 h-[118px] overflow-hidden bg-white">
+                  <div aria-hidden="true" className="mt-1 h-[118px] overflow-hidden bg-white">
                     {next.materialId==='worksheet'||wordPrintMaterials.includes(next.materialId)?
                       <LessonPrintPreview slide={next} cards={printWords} entries={entries}/>:cover&&
                       <img className="h-full w-full object-contain" src={cover} alt=""/>}
                   </div>
-                </div>;
+                </button>;
               })}</div>
             </section>;
           })}
         </div>
+        <footer>
         {candidate&&<WorkbookUnits slide={candidate} entries={entries} onUpdate={patch=>setCandidate({...candidate,...patch})}/>}
-        <div className="flex justify-end gap-2">
-          <button type="button" className="rounded-lg border px-3 py-2" onClick={()=>setReplace(false)}>{t('common.cancel')}</button>
+        <div className="flex flex-wrap justify-end gap-2">
+          <button type="button" className="rounded-lg border px-3 py-2" onClick={closeReplacement}>{t('common.cancel')}</button>
           <button type="button" disabled={!candidate||!candidateReady} className="rounded-lg bg-primary px-3 py-2 text-white disabled:opacity-40" onClick={()=>{
             if(!candidate||!candidateReady)return;
             onUpdate({materialId:candidate.materialId,worksheetTab:candidate.worksheetTab,worksheetOptions:candidate.worksheetOptions,
               phonicsStage1:candidate.phonicsStage1,phonicsTab:candidate.phonicsTab,phonicsOptions:candidate.phonicsOptions,cvcUnits:candidate.cvcUnits,
               phonicsUnitIds:candidate.phonicsUnitIds,words:slide.words,topic:slide.topic,boardTheme:null});
-            setReplace(false);setSettings(false);
+            closeReplacement();setSettings(false);
           }}>{t('lessonUx.confirmWorksheet')}</button>
         </div>
+        </footer>
       </div>
     </AccessibleDialog>}
   </div>;

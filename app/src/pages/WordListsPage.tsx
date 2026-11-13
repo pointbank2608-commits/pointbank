@@ -346,21 +346,21 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
       <div className="flex flex-wrap max-w-full bg-surface-container-lowest rounded-lg p-1 mb-3 w-fit">
         <button
           type="button"
-          onClick={() => setTab('manual')}
-          className={`px-3 py-1 rounded-md font-label-md text-label-md transition-all ${
-            tab === 'manual' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
-          }`}
-        >
-          {t('wordLists.tabManual')}
-        </button>
-        <button
-          type="button"
           onClick={() => setTab('dictionary')}
           className={`px-3 py-1 rounded-md font-label-md text-label-md transition-all ${
             tab === 'dictionary' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
           }`}
         >
           {t('wordLists.tabDictionary')}
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('manual')}
+          className={`px-3 py-1 rounded-md font-label-md text-label-md transition-all ${
+            tab === 'manual' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant'
+          }`}
+        >
+          {t('wordLists.tabManual')}
         </button>
         <button
           type="button"

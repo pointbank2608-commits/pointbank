@@ -99,6 +99,19 @@ try {
     title:section.querySelector('h2').childNodes[0].textContent,
     names:[...section.querySelectorAll('h3')].map(node=>node.textContent),
   })));
+  await page.goto(base+'/wordlists');
+  await page.getByRole('button',{name:/공용 단어장/}).first().click();
+  const tabs = await page.locator('button').filter({hasText:/사전에서 선택|직접 입력|카테고리로 선택하기|노래 가사로 단어장 만들기/}).allTextContents();
+  assert.deepEqual(tabs.map(label=>label.trim().replace(/^music_note\s*/,'')),['사전에서 선택','직접 입력','카테고리로 선택하기','노래 가사로 단어장 만들기']);
+  await page.getByRole('textbox',{name:'단어',exact:true}).fill('pear');
+  await page.getByRole('textbox',{name:'뜻',exact:true}).fill('배');
+  await page.getByRole('button',{name:'추가',exact:true}).click();
+  await page.getByRole('button',{name:'사전에서 선택',exact:true}).click();
+  await page.getByRole('textbox',{name:/단어나 뜻을 검색/}).fill('apple');
+  await page.getByRole('button',{name:/apple 사과/}).click();
+  await page.waitForFunction(()=>window.__lessonQA.lists.find(list=>list.id==='shared').items.some(item=>item.word==='apple'));
+  assert.equal(await page.evaluate(()=>window.__lessonQA.lists.find(list=>list.id==='shared').items.some(item=>item.word==='pear')),true);
+  console.log('PASS word list input tab order, existing manual default, and both add paths');
   await page.goto(base+'/curriculum');
   await page.evaluate(()=>{
     window.__lessonQA.lists.push({...window.__lessonQA.lists[0],id:'words-alt',name:'두 번째 단어장',items:[{id:'blue',word:'blue',meaning:'파랑',image_url:null}]});
@@ -276,12 +289,41 @@ try {
 
   await open();
   await category('활동지');
+  await card('worksheet.list').locator('[data-activity-id]').click();
+  const listThumb=thumbs.filter({hasText:'단어 리스트'}).first();
+  const replacementId=await listThumb.getAttribute('data-slide-id');
+  const changeKind=form.getByRole('button',{name:'종류 바꾸기'});
+  await changeKind.click();
+  const change=page.getByRole('dialog',{name:'활동지 바꾸기'});
+  const replacementGrid=change.locator('.worksheet-replacement-grid').first();
+  assert.equal(await replacementGrid.evaluate(grid=>getComputedStyle(grid).gridTemplateColumns.split(' ').length),2);
+  const pictureCard=change.getByRole('button',{name:/그림 단어카드/}).first();
+  await pictureCard.locator('div[aria-hidden]').click();
+  assert.equal(await pictureCard.getAttribute('aria-pressed'),'true');
+  await change.getByRole('button',{name:'× 닫기'}).click();
+  assert.ok(await changeKind.evaluate(button=>document.activeElement===button));
+  await changeKind.click();
+  await change.getByRole('button',{name:'전체 활동지'}).click();
+  const scroll=change.locator('.worksheet-replacement-scroll');
+  await scroll.evaluate(node=>{node.scrollTop=node.scrollHeight;});
+  await change.getByRole('button',{name:'× 닫기'}).waitFor();
+  await change.getByRole('button',{name:'같은 단어장'}).click();
+  await page.setViewportSize({width:390,height:760});
+  assert.equal(await replacementGrid.evaluate(grid=>getComputedStyle(grid).gridTemplateColumns.split(' ').length),1);
+  assert.equal(await scroll.evaluate(node=>node.scrollWidth<=node.clientWidth+1),true);
+  await scroll.evaluate(node=>{node.scrollTop=node.scrollHeight;});
+  await change.getByRole('button',{name:'취소',exact:true}).waitFor();
+  await page.setViewportSize({width:1440,height:1000});
+  await pictureCard.click();
+  await change.getByRole('button',{name:'이 활동지로 바꾸기',exact:true}).click();
+  await form.locator(`[data-slide-id="${replacementId}"]`).getByText('그림 단어카드').waitFor();
+  await open();
+  await category('활동지');
   await card('worksheet.fillBlank').locator('[data-activity-id]').click();
   await detail.getByText('Missing Letters',{exact:true}).first().waitFor();
   await detail.getByRole('button',{name:'다음 쪽',exact:true}).click();
   await detail.getByText(/^2 \/ \d+$/).waitFor();
   await detail.getByRole('button',{name:'활동지 바꾸기',exact:true}).click();
-  const change=page.getByRole('dialog',{name:'활동지 바꾸기'});
   await change.getByRole('button',{name:/선 잇기/}).first().click();
   await change.getByRole('button',{name:'취소',exact:true}).click();
   await detail.getByText('Missing Letters',{exact:true}).first().waitFor();
@@ -321,6 +363,7 @@ try {
   const stemSlides=savedSlides.filter(slide=>slide.stemMeta?.sourceId==='surface-tension-v1');
   assert.equal(stemSlides.length,17);
   assert.equal(savedSlides.find(slide=>slide.id===worksheetId).worksheetTab,'match');
+  assert.equal(savedSlides.find(slide=>slide.id===replacementId).worksheetTab,'card');
   await form.locator(`[data-slide-id="${worksheetId}"]`).click();
   await detail.getByText(/수업 단어장 · 9개/).waitFor();
   await form.getByRole('button',{name:/이 슬라이드부터 발표/}).click();

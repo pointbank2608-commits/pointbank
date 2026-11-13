@@ -8,8 +8,11 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..'),out=resolve(
 const names=[...readFileSync(resolve(root,'src/lib/api.ts'),'utf8').matchAll(/export (?:async )?function (\w+)|export const (\w+)/g)].map(m=>m[1]||m[2]);
 const syntheticClip={id:'synthetic-clip',series:'Synthetic classroom',title:'Synthetic fruit conversation',summary:'Test only',youtube_id:'abcdefghijk',channel:'Synthetic channel',start_sec:10,end_sec:40,level:2,tags:['fruit','asking politely'],script:'[0:10-0:16] Anna: I like apples. | 나는 사과를 좋아해요.\n[0:17-0:23] Ben: Do you like bananas? | 바나나를 좋아하니?\n[0:24-0:30] Anna: Yes, I do. | 응, 좋아해.',words:['apple','banana'],pack:{words:[{word:'apple',meaning:'사과',example:'I like apples.',time:10},{word:'banana',meaning:'바나나',example:'Do you like bananas?',time:17}],questions:[{q:'What fruit does Anna like?',a:'Apples.',time:10,end:16},{q:'What fruit does Ben ask about?',a:'Bananas.',time:17,end:23}]},sort_order:0,hidden:false};
 const clip=process.env.READY_LIVE_VIDEO==='1'?JSON.parse(readFileSync(resolve(root,'../tmp/ready-media/public-clips.json'),'utf8').replace(/^\uFEFF/,''))[Number(process.env.READY_CLIP_INDEX??0)]:syntheticClip;
+const worksheetClips = process.env.ANIMATION_PRINT_FIXTURE
+  ? JSON.parse(readFileSync(process.env.ANIMATION_PRINT_FIXTURE,'utf8').replace(/^\uFEFF/, ''))
+  : [];
 const api=`import {curriculumEntries} from '/src/data/phonicsCurriculum';const funcs={fetchPhonicsBank:async()=>curriculumEntries(false),fetchWordBank:async()=>[]};${names.map(n=>`export const ${n}=(...args)=>(funcs.${n}|| (async()=>[]))(...args);`).join('\n')}`;
-const db=`window.__db=window.__db||{rows:[${JSON.stringify(clip)}],writes:[],fail:false};export const supabase={rpc:async()=>({data:null,error:null}),channel:()=>({on(){return this},subscribe(){return this},unsubscribe(){}}),from(table){let mode='read',payload,filters=[];const q={select(){return q},order(){return q},eq(k,v){filters.push([k,v]);return q},maybeSingle(){return q},insert(p){mode='insert';payload=p;return q},update(p){mode='update';payload=p;return q},then(ok,bad){const db=window.__db;const rows=db.rows.filter(r=>filters.every(([k,v])=>r[k]===v));if(db.fail)return Promise.resolve({data:null,error:new Error('synthetic database failure')}).then(ok,bad);if(mode==='insert'){db.rows.push({id:crypto.randomUUID(),hidden:false,...payload});db.writes.push({mode,payload});}if(mode==='update'){rows.forEach(r=>Object.assign(r,payload));db.writes.push({mode,payload});}return Promise.resolve({data:table==='video_clips'?(filters.length?rows[0]??null:rows):[],error:null}).then(ok,bad)}};return q;}};`;
+const db=`window.__db=window.__db||{rows:[${JSON.stringify(clip)},...${JSON.stringify(worksheetClips)}],writes:[],fail:false};export const supabase={rpc:async()=>({data:null,error:null}),channel:()=>({on(){return this},subscribe(){return this},unsubscribe(){}}),from(table){let mode='read',payload,filters=[];const q={select(){return q},order(){return q},eq(k,v){filters.push([k,v]);return q},maybeSingle(){return q},insert(p){mode='insert';payload=p;return q},update(p){mode='update';payload=p;return q},then(ok,bad){const db=window.__db;const rows=db.rows.filter(r=>filters.every(([k,v])=>r[k]===v));if(db.fail)return Promise.resolve({data:null,error:new Error('synthetic database failure')}).then(ok,bad);if(mode==='insert'){db.rows.push({id:crypto.randomUUID(),hidden:false,...payload});db.writes.push({mode,payload});}if(mode==='update'){rows.forEach(r=>Object.assign(r,payload));db.writes.push({mode,payload});}return Promise.resolve({data:table==='video_clips'?(filters.length?rows[0]??null:rows):[],error:null}).then(ok,bad)}};return q;}};`;
 const server=await createServer({root,cacheDir:'node_modules/.vite/qa-ready-media',logLevel:'error',plugins:[{name:'isolated-ready-media',enforce:'pre',load(id){const p=id.replaceAll('\\','/');if(process.env.READY_LIVE_VIDEO==='1'&&p.endsWith('/src/components/ShadowBoard.tsx'))return readFileSync(id,'utf8').replace('setReady(true);','setReady(true);window.__livePlayer=playerRef.current;');if(process.env.READY_LIVE_VIDEO==='1'&&p.endsWith('/src/components/SceneOverlay.tsx'))return readFileSync(id,'utf8').replace('player?.seekTo(time, true);','window.__liveScene={player,start:time,end};player?.seekTo(time, true);');if(p.endsWith('/src/lib/api.ts'))return api;if(p.endsWith('/src/context/AuthContext.tsx'))return `export const useAuth=()=>({isAdmin:!location.search.includes('nonadmin'),isStaff:true,academy:{id:'qa-only',features:{}},profile:{id:'qa-only'}});`;if(p.endsWith('/src/lib/supabase.ts'))return db;if(p.endsWith('/src/context/ToastContext.tsx'))return `export const useToast=()=>({notify:()=>{},run:async f=>{await f();return true;}});`;}}],server:{host:'127.0.0.1',port:5371,strictPort:true,hmr:false}});
 const result={units:[],checks:[],errors:[]};let browser,page;
 const pass=x=>{result.checks.push(x);console.log('PASS',x);};
@@ -61,6 +64,58 @@ try{
   await liveScene('이 부분 듣기');
   console.log(JSON.stringify(status));
   assert.ok(status.checks.every(check=>check.played&&check.stopped&&check.stayedStopped!==false), 'Live video did not complete every playback check');
+  await browser.close();await server.close();process.exit(0);
+ }
+ if(process.argv.includes('--animation-print')){
+  assert.equal(worksheetClips.length,2);
+  await go('/materials/video-worksheet?clip='+worksheetClips[0].id);
+  const sheets=page.locator('.animation-sheet');
+  const option=id=>page.locator('[data-print-activity="'+id+'"]');
+  const enable=async id=>option(id).getByRole('checkbox').first().check();
+  const selectOnly=async (id,label)=>{
+   const section=option(id);
+   await section.locator('summary').click();
+   await section.getByRole('button',{name:'선택 해제'}).click();
+   await section.getByRole('checkbox',{name:label,exact:true}).check();
+  };
+  await sheets.getByRole('heading',{name:worksheetClips[0].title}).waitFor();
+  await page.getByText('그림 사용 가능 · 2/9개',{exact:true}).waitFor();
+  await enable('pictureMatch');
+  await option('pictureMatch').getByRole('button',{name:'그림 없는 단어로 뜻 연결 추가'}).click();
+  await enable('crossword');
+  await enable('wordScramble');
+  await page.getByText('내용 질문',{exact:true}).click();
+  const question=worksheetClips[0].pack.questions[0].q;
+  await selectOnly('questionChoice',question);
+  await selectOnly('questionHint',question);
+  await selectOnly('questionFull',question);
+  await page.getByText('듣기 연습',{exact:true}).click();
+  await selectOnly('listenCircle',/nothing wrong with being small/);
+  await page.getByText('문장 연습',{exact:true}).click();
+  await selectOnly('sentenceTrace',/What.s in there/);
+  await selectOnly('create',/nothing wrong with being small/);
+  await page.getByRole('checkbox',{name:'교사용 설명·정답',exact:true}).check();
+  const student=page.locator('.animation-sheet[data-teacher=false]');
+  const answers=page.locator('.animation-sheet[data-teacher=true]');
+  for(const title of ['Picture Match','Meaning Match','Choose the Answer','Complete the Answer','Comprehension','Listen and Circle','Trace the Sentences','Write Your Own Sentence'])
+   await student.getByRole('heading',{name:title,exact:true}).waitFor();
+  assert.match((await student.allTextContents()).join(' '),/\(small \/ tall\)|\(tall \/ small\)/);
+  assert.doesNotMatch((await student.allTextContents()).join(' '),/1:26\.6/);
+  assert.match((await answers.allTextContents()).join(' '),/1:26\.6–1:29\.4/);
+  assert.deepEqual(await student.locator('.animation-crossword [data-cell=true]').count(),await answers.locator('.animation-crossword [data-cell=true]').count());
+  assert.equal(await student.locator('h1').first().evaluate(el=>getComputedStyle(el).fontSize),'32px');
+  const printed=await page.pdf({preferCSSPageSize:true,printBackground:true});
+  assert.equal((printed.toString('latin1').match(/\/Type\s*\/Page\b/g)||[]).length,await sheets.count());
+  const bottom=await sheets.evaluateAll(nodes=>nodes.map(node=>node.lastElementChild.getBoundingClientRect().bottom-node.getBoundingClientRect().bottom));
+  assert.ok(bottom.every(value=>value<=1),JSON.stringify(bottom));
+  writeFileSync(resolve(out,'mums-washing-game.pdf'),printed);
+  await go('/materials/video-worksheet?clip='+worksheetClips[1].id);
+  await sheets.getByRole('heading',{name:worksheetClips[1].title}).waitFor();
+  const actualWord=worksheetClips[1].pack.words[0].word;
+  assert.ok((await sheets.allTextContents()).join(' ').includes(actualWord));
+  await option('pictureMatch').getByText('이 단어 목록에는 연결할 그림이 없어요.').waitFor();
+  assert.deepEqual(result.errors,[]);
+  pass('Existing Bluey and Caillou worksheets, independent item selection, missing pictures, answer grid, cues, and A4 PDF');
   await browser.close();await server.close();process.exit(0);
  }
  if(process.argv.includes('--animation-update')){
@@ -116,12 +171,13 @@ try{
   pass('Generated animation lessons include cloze, repeat once by default and preserve exact cues including older matching slides');
   await page.getByRole('link',{name:'활동지 인쇄',exact:true}).click();
   await page.locator('.animation-worksheet').waitFor();
-  await page.getByRole('checkbox',{name:'단어',exact:true}).uncheck();
+  await page.getByRole('checkbox',{name:'영단어 보고 뜻 쓰기',exact:true}).uncheck();
   assert.equal(await page.locator('.rc-sheet h2').getByText('Vocabulary',{exact:true}).count(),0);
-  const questions=page.locator('.animation-worksheet aside section').nth(1);
+  await page.getByText('내용 질문',{exact:true}).click();
+  const questions=page.locator('[data-print-activity="questionFull"]');
   await questions.locator('summary').click();
   await questions.getByRole('checkbox',{name:'What fruit does Anna like?',exact:true}).uncheck();
-  assert.match(await page.locator('.animation-print-questions').first().innerText(),/^1\. What fruit does Ben ask about/);
+  assert.match(await page.locator('.animation-print-row').first().innerText(),/^1\. What fruit does Ben ask about/);
   await page.getByRole('checkbox',{name:/교사용/}).check();
   assert.equal(await page.locator('.animation-answer').getByText('Bananas.',{exact:true}).count(),1);
   const count=await page.locator('.rc-sheet').count();

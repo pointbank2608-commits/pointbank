@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from './supabase';
 import { parseShadowText } from './shadowLines';
 import type { QnaItem } from './qnaLines';
+import type { AnimationPrintContent } from './animationPrint';
 
 /**
  * 영상 쉐도잉 라이브러리(2026-10-03, `supabase/039_video_clips.sql`).
@@ -14,6 +15,7 @@ import type { QnaItem } from './qnaLines';
  * time 은 영상 전체 기준 초.
  */
 export interface ClipPack {
+  animationPrint?: AnimationPrintContent;
   /** Separate catalogue; existing video_clips admin permissions and RLS apply. */
   phonicsSong?: {unitIds:string[];purpose?:'warmup'|'practice'|'review';tip?:string;ruleIds?:string[];sourceTitle?:string;catalog?:string;verifiedAt?:string};
   /** 내용 질문(Q&A) */
