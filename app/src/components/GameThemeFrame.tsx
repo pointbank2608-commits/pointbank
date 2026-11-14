@@ -160,7 +160,8 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
   const [pseudoFs, setPseudoFs] = useState(false);
   const fullOn = isFullscreen || pseudoFs;
   const fill = fullOn || presenting || !!workspace?.playing;
-  const responsiveScene = gameType === 'grammardetective' || gameType === 'balloonpop' || gameType === 'wordtrain';
+  const responsiveScene = gameType === 'grammardetective' || gameType === 'balloonpop'
+    || gameType === 'wordtrain' || gameType === 'wordfishing';
   const reportFullscreen=workspace?.setFullscreen;
   useEffect(()=>{reportFullscreen?.(fullOn);return ()=>reportFullscreen?.(false);},[fullOn,reportFullscreen]);
   const [scrollContent, setScrollContent] = useState(false);

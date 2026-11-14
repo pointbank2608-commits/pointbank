@@ -77,17 +77,26 @@
   will-change: auto;
 }
 
-.ad-game:is(.ad-balloonpop, .ad-wordtrain) {
+.ad-game:is(.ad-balloonpop, .ad-wordtrain, .ad-wordfishing) {
   width: min(100%, 108rem);
   min-height: 34rem;
   aspect-ratio: 3 / 2;
   margin-inline: auto;
 }
-.game-fs-stage .ad-game:is(.ad-balloonpop, .ad-wordtrain) {
+.game-fs-stage .ad-game:is(.ad-balloonpop, .ad-wordtrain, .ad-wordfishing) {
   width: min(100%, 108rem, max(44rem, 150cqh));
 }
 :is(.ad-balloonpop, .ad-wordtrain) .ad-world { object-position: center bottom; }
 .ad-game.ad-wordtrain { min-height: auto; overflow: clip; }
+.ad-game.ad-wordfishing { overflow: clip; }
+.ad-wordfishing .ad-sea { width: min(100%, 50rem); min-height: 0; }
+.ad-wordfishing .ad-vocab-slot { min-height: 0; }
+.ad-wordfishing .ad-fish { width: min(100%, 248px, 27dvh); }
+@media (max-height: 850px) {
+  .ad-wordfishing .ad-play { gap: .65rem; }
+  .ad-wordfishing .ad-sea { padding-top: 1rem; }
+  .ad-wordfishing .ad-prompt img { max-height: 11dvh; }
+}
 .ad-wordtrain .ad-assembly { max-width: 70rem; }
 .ad-wordtrain .ad-control-help { width: fit-content; margin-block: .65rem .5rem; }
 .ad-wordtrain .ad-piece { max-width: 100%; overflow-wrap: anywhere; }
@@ -133,6 +142,7 @@
 @media (max-width: 600px) {
   .ad-game.ad-balloonpop { min-height: 32rem; }
   .ad-game.ad-wordtrain { aspect-ratio: auto; }
+  .ad-game.ad-wordfishing { aspect-ratio: auto; min-height: 36rem; }
   .ad-wordtrain .ad-engine { width: 6rem; height: 5rem; }
   .ad-wordtrain .ad-carriages { max-width: 100%; }
   .ad-wordtrain .ad-piece { padding: .95rem .65rem; min-height: 3.75rem; min-width: 3.75rem; }
