@@ -6,6 +6,7 @@ import type { TrueFalseStatement } from '../lib/types';
 import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 interface Props {
+  onContinue?: () => void;
   statements: TrueFalseStatement[];
 }
 
@@ -22,7 +23,7 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export default function TrueFalse({ statements: sourceStatements }: Props) {
+export default function TrueFalse({ statements: sourceStatements, onContinue }: Props) {
   const { t } = useTranslation();
   const deck = usePictureWordDeck();
   const questions = useMemo(() => deck.map(row => ({ ...row, decoy: (row.correctIndex + 1) % row.choices.length })), [deck]);
@@ -104,8 +105,8 @@ export default function TrueFalse({ statements: sourceStatements }: Props) {
             </div>
           </div>
         </div>
-        <button onClick={restart} className={pill}>
-          {t('gameTrueFalse.restartButton')}
+        <button onClick={onContinue ?? restart} className={pill}>
+          {t(onContinue ? 'solo.next' : 'gameTrueFalse.restartButton')}
         </button>
       </div>
     );

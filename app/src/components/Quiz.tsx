@@ -5,6 +5,7 @@ import type { QuizQuestion } from '../lib/types';
 import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
 
 interface Props {
+  onContinue?: () => void;
   questions: QuizQuestion[];
 }
 
@@ -21,7 +22,7 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export default function Quiz({ questions }: Props) {
+export default function Quiz({ questions, onContinue }: Props) {
   const { t } = useTranslation();
   const [order, setOrder] = useState<number[]>(() => shuffle(questions.map((_, i) => i)));
   const [pos, setPos] = useState(0);
@@ -98,8 +99,8 @@ export default function Quiz({ questions }: Props) {
             </div>
           </div>
         </div>
-        <button onClick={restart} className={pill}>
-          {t('gameQuiz.restartButton')}
+        <button onClick={onContinue ?? restart} className={pill}>
+          {t(onContinue ? 'solo.next' : 'gameQuiz.restartButton')}
         </button>
       </div>
     );

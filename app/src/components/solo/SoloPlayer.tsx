@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import SoloGameStep from './SoloGameStep';
+import SoloReviewGame from './SoloReviewGame';
 import type { SensorContext } from '../../lib/learningSensors/core';
 import { useLearningActivity } from '../../lib/learningSensors/useLearningActivity';
 import type { GameCheckState, GameCheckAnswer, GameCheckSummary } from '../../lib/gameLearning';
@@ -19,6 +20,7 @@ import { applyFixEdits, fixTokens } from '../../lib/grammarBlocks';
 import { checkCondition, looseNorm } from '../../lib/soloLessons';
 import SoloTestRunner from './SoloTestRunner';
 import SoloPracticeGame from './SoloPracticeGame';
+import SoloSourceVideo from './SoloSourceVideo';
 
 /**
  * 개별수업 플레이어 — 화면이 선생님이 되어 한 단계씩 이끈다. 학생 화면(/s/lesson)과 선생님 미리보기가 같이 쓴다.
@@ -188,13 +190,20 @@ export default function SoloPlayer({
   const videoId = useMemo(() => {
     for (const st of steps) {
       const c = (st as { clip?: SoloClip }).clip;
-      if (c) return c.videoId;
+      if (c?.videoId && !c.captions && !(st.t === 'lyricBlank' && st.audioQuestion) && !(st.t === 'lineSing' && st.originalOnly)) return c.videoId;
     }
     return null;
   }, [steps]);
   const yt = useYoutubeSegment(videoId);
   const clip = (step as { clip?: SoloClip } | undefined)?.clip ?? null;
   const [clipPlaying, setClipPlaying] = useState(false);
+  const [sourceError, setSourceError] = useState(false);
+  const audioQuestion = step?.t === 'lyricBlank' ? step.audioQuestion : undefined;
+  const pronunciationPractice = step?.t === 'lineSing' ? step.practice : undefined;
+  const afterDialogue = step?.t === 'lyricBlank' && !!audioQuestion && !!step.afterDialogue;
+  const replayingEvidence = afterDialogue && phase === 'wrong1';
+  const needsEvidence = !!audioQuestion && (!afterDialogue || replayingEvidence) && !heard;
+  const sourceVideo = !!(clip?.mediaUrl || clip?.captions || audioQuestion || (step?.t === 'lineSing' && step.originalOnly));
 
   async function playClip(c: SoloClip, fallback?: string) {
     setClipPlaying(true);
@@ -315,6 +324,7 @@ export default function SoloPlayer({
     setTyped([]);
     setText('');
     setHeard(false);
+    setSourceError(false);
     setShowKo(false);
     setAdvanced(false);
     setError(false);
@@ -478,7 +488,11 @@ export default function SoloPlayer({
     onWrong?.();
     markMissed(idx);
     if (attempts.current >= 2) await showAnswer();
-    else { sensor('hint'); setPhase('wrong1'); }
+    else {
+      if (afterDialogue) setHeard(false);
+      sensor('hint');
+      setPhase('wrong1');
+    }
   }
 
   async function showAnswer() {
@@ -490,6 +504,7 @@ export default function SoloPlayer({
   }
 
   async function choose(i: number) {
+    if (needsEvidence) return;
     if (busy || phase === 'right' || phase === 'shown' || wrong.includes(i)) return;
     await submit(String(i), () => setWrong((w) => [...w, i]));
   }
@@ -711,7 +726,7 @@ export default function SoloPlayer({
       {activity && (
         <div className="-mt-1 flex justify-center px-4 pb-1">
           <span className="rounded-full bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-1 text-base font-bold text-[#5b6580]">
-            {t(`soloEdit.stepType_${step.t}`)}
+            {audioQuestion ? '원음 듣고 고르기' : pronunciationPractice === 'shadow' ? '자막 없이 쉐도잉' : sourceVideo && step.t === 'lineSing' ? '따라 말하기' : t(`soloEdit.stepType_${step.t}`)}
             {activity.of > 1 ? ` · ${activity.n}/${activity.of}` : ''}
           </span>
         </div>
@@ -735,10 +750,23 @@ export default function SoloPlayer({
         }}
       >
         {/* 노래·영상 플레이어: 수업 안에서 계속 켜 두고, 영상이 필요한 단계에서만 보여 준다 */}
+        {pronunciationPractice === 'shadow' && (
+          <p className="text-center text-lg">영상 속 목소리를 들으면서 한 박자 뒤에 따라 말해요.</p>
+        )}
+        {sourceVideo && clip && (!afterDialogue || replayingEvidence) && (
+          <SoloSourceVideo key={idx + ':' + nonce} clip={clip} audioOnly={!!audioQuestion}
+            playLabel={replayingEvidence ? '근거 한 문장 다시 듣기' : pronunciationPractice === 'shadow' ? '쉐도잉 시작' : pronunciationPractice === 'repeat' ? '이 부분 듣기' : undefined}
+            onCaptionShown={() => sensor('hint')}
+            onPlay={() => { setSourceError(false); sensor('audio'); }}
+            onHeard={() => setHeard(true)} onError={() => setSourceError(true)} />
+        )}
+        {sourceVideo && sourceError && (
+          <p role="alert" className="rounded-xl bg-white p-3 text-center">원음을 재생하지 못했어요. 화면을 다시 열어 주세요.</p>
+        )}
         {videoId && (
           <div
             className={
-              clip
+              clip && !sourceVideo
                 ? `relative aspect-video w-full overflow-hidden rounded-2xl bg-black ${yt.failed ? 'hidden' : ''}`
                 : 'pointer-events-none fixed -left-[9999px] top-0 h-48 w-80'
             }
@@ -746,22 +774,28 @@ export default function SoloPlayer({
             <div id={yt.elementId} className="absolute inset-0 h-full w-full" />
           </div>
         )}
-        {clip && yt.failed && <p className="rounded-xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-3 text-center text-sm text-[#5b6580]">{t('solo.videoFallback')}</p>}
+        {clip && !sourceVideo && yt.failed && <p className="rounded-xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-3 text-center text-sm text-[#5b6580]">{t('solo.videoFallback')}</p>}
 
         {step.t === 'watch' && (
           <>
-            <p className="text-xl font-bold">{step.mode === 'listen' ? t('solo.watchListen') : t('solo.watchSing')}</p>
+            <p className="text-xl font-bold">{sourceVideo ? '대화를 들어 봐요' : step.mode === 'listen' ? t('solo.watchListen') : t('solo.watchSing')}</p>
             <h2 className="text-center text-2xl font-bold text-[#3b5bdb]">{step.title}</h2>
-            <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip)} className={`${btn} w-full bg-[#efe8d4] text-[#1c2742]`}>
+            {!sourceVideo && <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip)} className={`${btn} w-full bg-[#efe8d4] text-[#1c2742]`}>
               {clipPlaying ? t('solo.playing') : t('solo.play')}
-            </button>
-            <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} w-full bg-[#3b5bdb] text-white`}>
+            </button>}
+            <button type="button" disabled={busy || (sourceVideo && !heard)} onClick={() => void next()} className={`${btn} w-full bg-[#3b5bdb] text-white`}>
               {step.mode === 'listen' ? t('solo.heardAll') : t('solo.sangAll')}
             </button>
           </>
         )}
 
-        {step.t === 'lyricBlank' && (
+        {step.t === 'lyricBlank' && audioQuestion && (
+          <>
+            <p className="text-xl font-bold">{audioQuestion}</p>
+            <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} disabled={needsEvidence || busy} />
+          </>
+        )}
+        {step.t === 'lyricBlank' && !audioQuestion && (
           <>
             <p className="text-xl font-bold">{t('solo.lyricQ')}</p>
             <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip, step.sentence.replace('_____', ' '))} className="flex items-center gap-2 rounded-full bg-[#3b5bdb] px-6 py-3 text-xl font-bold text-white disabled:opacity-60">
@@ -774,20 +808,34 @@ export default function SoloPlayer({
           </>
         )}
 
-        {step.t === 'lineSing' && (
+        {step.t === 'lineSing' && pronunciationPractice && (
+          <>
+            {pronunciationPractice === 'repeat' && (
+              <>
+                <p className="text-lg text-[#5b6580]">원음이 끝나면 따라 말해요.</p>
+                {heard && <p className="rounded-2xl bg-white px-4 py-4 text-center text-3xl font-bold">{step.en}</p>}
+                {heard && step.ko && <p className="text-center text-lg text-[#5b6580]">{step.ko}</p>}
+              </>
+            )}
+            <button type="button" disabled={busy || !heard} onClick={() => void next()} className={`${btn} w-full bg-[#3b5bdb] text-white`}>
+              {pronunciationPractice === 'shadow' ? '쉐도잉을 마쳤어요' : '따라 말했어요'}
+            </button>
+          </>
+        )}
+        {step.t === 'lineSing' && !pronunciationPractice && (
           <>
             <p className="text-lg text-[#5b6580]">{t('solo.singPrompt')}</p>
-            <p className="rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-4 text-center text-3xl font-bold leading-snug">{step.en}</p>
-            {step.ko && (showKo ? (
+            {(!sourceVideo || heard) && <p className="rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-4 text-center text-3xl font-bold leading-snug">{step.en}</p>}
+            {(!sourceVideo || heard) && step.ko && (showKo ? (
               <p className="text-xl text-[#5b6580]">{step.ko}</p>
             ) : (
               <button type="button" onClick={() => { sensor('hint'); setShowKo(true); }} className="rounded-full border border-[#d9d3c3] px-4 py-1.5 text-base text-[#5b6580]">
                 {t('solo.showKo')}
               </button>
             ))}
-            <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip, step.en)} className={`${btn} w-full bg-[#efe8d4] text-[#1c2742]`}>
+            {!sourceVideo && <button type="button" disabled={clipPlaying} onClick={() => void playClip(step.clip, step.en)} className={`${btn} w-full bg-[#efe8d4] text-[#1c2742]`}>
               {clipPlaying ? t('solo.playing') : t('solo.listenLine')}
-            </button>
+            </button>}
             {mic === 'unknown' && (
               <div className="w-full rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-3 text-sm text-[#5b6580]">
                 <p>{t('solo.micExplain')}</p>
@@ -803,8 +851,8 @@ export default function SoloPlayer({
             )}
             {mic === 'denied' && <p className="text-center text-base text-[#5b6580]">{t('solo.micDenied')}</p>}
             {mic === 'ready' && (
-              <button type="button" onClick={() => toggleRecord(step.clip.end - step.clip.start)} className={`${btn} w-full ${recording ? 'bg-rose-600' : 'bg-[#efe8d4]'} text-white`}>
-                <span className="material-symbols-outlined align-middle">{recording ? 'stop_circle' : 'mic'}</span> {recording ? t('solo.stopRecording') : t('solo.recordMe')}
+              <button type="button" disabled={sourceVideo && !heard} onClick={() => toggleRecord(step.clip.end - step.clip.start)} className={`${btn} w-full ${recording ? 'bg-rose-600' : 'bg-[#efe8d4]'} text-white`}>
+                <span aria-hidden="true" className="material-symbols-outlined align-middle">{recording ? 'stop_circle' : 'mic'}</span> {recording ? t('solo.stopRecording') : t('solo.recordMe')}
               </button>
             )}
             {clipUrl && (
@@ -817,11 +865,11 @@ export default function SoloPlayer({
             {canRecord && mic === 'ready' && <p className="text-center text-xs text-[#5b6580]">{t('solo.recordSavedNote')}</p>}
             <button
               type="button"
-              disabled={busy || recording || (mic === 'ready' && !clipUrl)}
+              disabled={busy || recording || (sourceVideo && !heard) || (mic === 'ready' && !clipUrl)}
               onClick={() => void finishSing()}
               className={`${btn} w-full bg-[#3b5bdb] text-white`}
             >
-              {t('solo.sangIt')}
+              {sourceVideo ? '따라 말했어요' : t('solo.sangIt')}
             </button>
           </>
         )}
@@ -936,7 +984,9 @@ export default function SoloPlayer({
           const lines = step.lines;
           const line = lines[rpTurn];
           const mine = line?.who === 'me';
-          const hideMine = rpPass === 2 && mine && !rpPeek;
+          const independent = step.speakFirst;
+          const speakingPass = independent || rpPass === 2;
+          const hideMine = speakingPass && mine && !rpPeek;
           const advanceTurn = async () => {
             if (rpTurn + 1 < lines.length) {
               setRpTurn(rpTurn + 1);
@@ -945,7 +995,7 @@ export default function SoloPlayer({
               blobRef.current = null;
               return;
             }
-            if (rpPass === 1) {
+            if (!independent && rpPass === 1) {
               setRpPass(2);
               setRpTurn(0);
               setRpPeek(false);
@@ -956,11 +1006,11 @@ export default function SoloPlayer({
           return (
             <>
               <Picture url={step.imageUrl ?? null} />
-              <p className="text-lg text-[#5b6580]">{rpPass === 1 ? t('solo.rpPass1') : t('solo.rpPass2')}</p>
+              <p className="text-lg text-[#5b6580]">{independent ? step.title : rpPass === 1 ? t('solo.rpPass1') : t('solo.rpPass2')}</p>
               <div className="flex w-full flex-col gap-2">
                 {lines.slice(0, rpTurn + 1).map((l, i) => {
                   const isCur = i === rpTurn;
-                  const hide = rpPass === 2 && l.who === 'me' && (!isCur || !rpPeek);
+                  const hide = speakingPass && l.who === 'me' && (!isCur || !rpPeek);
                   return (
                     <div key={i} className={`flex ${l.who === 'me' ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[88%] rounded-2xl px-4 py-3 ${l.who === 'me' ? 'bg-warm-yellow text-deep-navy' : 'bg-[#efe8d4]'} ${isCur ? 'ring-2 ring-[#3b5bdb]' : 'opacity-80'}`}>
@@ -982,18 +1032,18 @@ export default function SoloPlayer({
                   )}
                   {mine && (
                     <>
-                      {rpPass === 1 && (
+                      {!speakingPass && (
                         <button type="button" onClick={() => speak(line.en)} className="flex items-center justify-center gap-2 rounded-full bg-[#efe8d4] px-5 py-2 text-lg font-bold">
                           <span className="material-symbols-outlined">volume_up</span>
                           {t('solo.listenAgain')}
                         </button>
                       )}
-                      {rpPass === 2 && hideMine && (
-                        <button type="button" onClick={() => setRpPeek(true)} className="rounded-full border border-[#d9d3c3] px-5 py-2 text-lg text-[#5b6580]">
-                          {t('solo.showAnswer')}
+                      {hideMine && (!independent || clipUrl) && (
+                        <button type="button" onClick={() => { if (independent) sensor('revealed'); setRpPeek(true); }} className="rounded-full border border-[#d9d3c3] px-5 py-2 text-lg text-[#5b6580]">
+                          {independent ? '예시 답변 보기' : t('solo.showAnswer')}
                         </button>
                       )}
-                      {rpPass === 2 && mic === 'unknown' && (
+                      {speakingPass && mic === 'unknown' && (
                         <div className="w-full rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-3 text-sm text-[#5b6580]">
                           <p>{t('solo.micExplain')}</p>
                           <div className="mt-2 flex gap-2">
@@ -1006,27 +1056,27 @@ export default function SoloPlayer({
                           </div>
                         </div>
                       )}
-                      {rpPass === 2 && mic === 'ready' && (
+                      {speakingPass && mic === 'ready' && (
                         <button type="button" onClick={() => toggleRecord(Math.max(4, line.en.split(/\s+/).length))} className={`${btn} w-full ${recording ? 'bg-rose-600' : 'bg-[#efe8d4]'} text-white`}>
-                          <span className="material-symbols-outlined align-middle">{recording ? 'stop_circle' : 'mic'}</span> {recording ? t('solo.stopRecording') : t('solo.recordMe')}
+                          <span aria-hidden="true" className="material-symbols-outlined align-middle">{recording ? 'stop_circle' : 'mic'}</span> {recording ? t('solo.stopRecording') : t('solo.recordMe')}
                         </button>
                       )}
-                      {rpPass === 2 && clipUrl && <audio src={clipUrl} controls className="w-full" />}
+                      {speakingPass && clipUrl && <audio src={clipUrl} controls className="w-full" />}
                     </>
                   )}
                   <button
                     type="button"
-                    disabled={busy || recording}
+                    disabled={busy || recording || (independent && mine && (mic === 'unknown' || mic === 'asking' || (mic === 'ready' && !clipUrl)))}
                     onClick={async () => {
-                      if (rpPass === 2 && mine) await uploadRecording(rpTurn);
-                      if (mine && rpPass === 1) speak(line.en);
+                      if (speakingPass && mine) await uploadRecording(rpTurn);
+                      if (mine && !speakingPass) speak(line.en);
                       await advanceTurn();
                     }}
                     className={`${btn} w-full bg-[#3b5bdb] text-white`}
                   >
-                    {mine ? t('solo.saidIt') : t('solo.next')}
+                    {mine ? (independent ? '말했어요' : t('solo.saidIt')) : t('solo.next')}
                   </button>
-                  {mic === 'ready' && canRecord && rpPass === 2 && mine && <p className="text-center text-xs text-[#5b6580]">{t('solo.recordSavedNote')}</p>}
+                  {mic === 'ready' && canRecord && speakingPass && mine && <p className="text-center text-xs text-[#5b6580]">{t('solo.recordSavedNote')}</p>}
                 </div>
               )}
             </>
@@ -1062,9 +1112,11 @@ export default function SoloPlayer({
           </div>
         )}
 
-        {step.t === 'game' && (
+        {step.t === 'game' && (step.review ? (
+          <SoloReviewGame key={idx} step={step} busy={busy} onDone={() => void next()} />
+        ) : (
           <SoloGameStep key={`${idx}-${step.templateId}`} step={step} load={api.gameTemplate} busy={busy} api={api} stepIndex={idx} preview={preview} onDone={(summary) => {if(summary){setGameResults(old=>({...old,[idx]:summary}));summary.missed.forEach(word=>markMissedWord({word}));}void next();}} />
-        )}
+        ))}
 
         {step.t === 'meet' && (
           <>
@@ -1638,7 +1690,7 @@ export default function SoloPlayer({
         )}
 
         {/* 결과 말풍선 */}
-        {isQuestion && phase === 'wrong1' && <Banner tone="try">{hintFirst ? t('solo.tryAgainHint') : t('solo.tryAgain')}</Banner>}
+        {isQuestion && phase === 'wrong1' && <Banner tone="try">{replayingEvidence && !heard ? '답의 단서가 되는 문장만 다시 들어 봐요.' : hintFirst ? t('solo.tryAgainHint') : t('solo.tryAgain')}</Banner>}
         {isQuestion && phase === 'right' && <Banner tone="ok">{t('solo.great')}</Banner>}
         {isQuestion && phase === 'shown' && (
           <Banner tone="show">
@@ -1659,7 +1711,7 @@ export default function SoloPlayer({
           </button>
         )}
 
-        {step.t !== 'intro' && step.t !== 'test' && step.t !== 'watch' && step.t !== 'lineSing' && step.t !== 'fadeRead' && step.t !== 'roleplay' && step.t !== 'rainbowSpeak' && step.t !== 'rainbowStructure' && !answered && (
+        {step.t !== 'intro' && step.t !== 'test' && step.t !== 'watch' && step.t !== 'lineSing' && step.t !== 'fadeRead' && step.t !== 'roleplay' && step.t !== 'rainbowSpeak' && step.t !== 'rainbowStructure' && !answered && !needsEvidence && (
           <button
             type="button"
             disabled={busy}
@@ -1763,14 +1815,14 @@ function Picture({ url, wide = false }: { url: string | null; wide?: boolean }) 
   );
 }
 
-function Options({ options, wrong, phase, onPick }: { options: string[]; wrong: number[]; phase: Phase; onPick: (i: number) => void }) {
+function Options({ options, wrong, phase, onPick, disabled }: { options: string[]; wrong: number[]; phase: Phase; onPick: (i: number) => void; disabled?: boolean }) {
   return (
     <div className="grid w-full gap-3">
       {options.map((o, i) => (
         <button
           key={i}
           type="button"
-          disabled={wrong.includes(i) || phase === 'right' || phase === 'shown'}
+          disabled={disabled || wrong.includes(i) || phase === 'right' || phase === 'shown'}
           onClick={() => onPick(i)}
           className={`min-h-16 rounded-2xl px-4 py-2 text-xl font-bold leading-snug [touch-action:manipulation] sm:text-2xl ${wrong.includes(i) ? 'bg-white shadow-sm ring-1 ring-[#eadfc5] text-[#5b6580] line-through' : 'bg-white text-deep-navy shadow-[0_4px_0_#9aa3b5] active:translate-y-0.5 active:shadow-none'}`}
         >

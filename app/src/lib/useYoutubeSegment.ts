@@ -8,11 +8,12 @@ import { loadYoutubeIframeApi, type YoutubePlayer } from './youtube';
  *
  * 영상을 못 불러오면(퍼가기 막힘·인터넷) `failed` 가 true — 부르는 쪽이 읽어 주기(TTS)로 대신한다.
  */
-export function useYoutubeSegment(videoId: string | null | undefined) {
+export function useYoutubeSegment(videoId: string | null | undefined, initialStart?: number) {
   const [elementId] = useState(() => `hw-yt-${crypto.randomUUID()}`);
   const playerRef = useRef<YoutubePlayer | null>(null);
   const pollRef = useRef<number | null>(null);
-  const doneRef = useRef<(() => void) | null>(null);
+  const doneRef = useRef<((completed: boolean) => void) | null>(null);
+  const segmentVideoId = useRef<string | null>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [playing, setPlaying] = useState(false);
@@ -31,10 +32,18 @@ export function useYoutubeSegment(videoId: string | null | undefined) {
         if (cancelled || !window.YT) return;
         playerRef.current = new window.YT.Player(elementId, {
           videoId,
-          playerVars: { rel: 0, modestbranding: 1, playsinline: 1, controls: 0, disablekb: 1, iv_load_policy: 3, fs: 0 },
+          playerVars: { rel: 0, modestbranding: 1, playsinline: 1, controls: initialStart === undefined ? 0 : 1, disablekb: initialStart === undefined ? 1 : 0, iv_load_policy: 3, fs: 0,
+            ...(initialStart !== undefined && { start: Math.floor(initialStart), origin: window.location.origin }) },
           events: {
-            onReady: () => setReady(true),
-            onError: () => setFailed(true),
+            onReady: () => { window.clearTimeout(timeout); setReady(true); },
+            onError: () => {
+              setFailed(true);
+              stopPoll();
+              setPlaying(false);
+              doneRef.current?.(false);
+              doneRef.current = null;
+              segmentVideoId.current = null;
+            },
           },
         });
       })
@@ -43,42 +52,66 @@ export function useYoutubeSegment(videoId: string | null | undefined) {
       cancelled = true;
       window.clearTimeout(timeout);
       stopPoll();
+      doneRef.current?.(false);
+      doneRef.current = null;
+      segmentVideoId.current = null;
       playerRef.current?.destroy();
       playerRef.current = null;
       setReady(false);
+      setPlaying(false);
+      setFailed(false);
     };
-  }, [videoId, elementId, stopPoll]);
+  }, [videoId, elementId, initialStart, stopPoll]);
 
   useEffect(() => () => stopPoll(), [stopPoll]);
 
   /** start~end 초를 틀고 끝나면 멈춘다. 끝나면 resolve. */
   const playSegment = useCallback(
-    (start: number, end: number, rate = 1) =>
-      new Promise<void>((resolve) => {
+    (start: number, end: number, rate = 1, onTime?: (seconds: number) => void) =>
+      new Promise<boolean>((resolve) => {
         const p = playerRef.current;
         if (!p || !ready) {
-          resolve();
+          resolve(false);
           return;
         }
         stopPoll();
-        doneRef.current?.();
+        doneRef.current?.(false);
         doneRef.current = resolve;
         p.setPlaybackRate(rate);
-        p.seekTo(Math.max(0, start - 0.05), true);
-        p.playVideo();
+        if (onTime && videoId && segmentVideoId.current !== videoId) {
+          // Loading with an explicit start prevents the first play from reverting to time zero.
+          p.loadVideoById({ videoId, startSeconds: start });
+          segmentVideoId.current = videoId;
+        } else {
+          p.seekTo(Math.max(0, start - (onTime ? 0 : 0.05)), true);
+          p.playVideo();
+        }
         setPlaying(true);
+        let reached = false;
+        let movedAt = performance.now();
+        let previous = -1;
         pollRef.current = window.setInterval(() => {
-          if (p.getCurrentTime() >= end - 0.05) {
+          const time = p.getCurrentTime();
+          if (onTime && p.getPlayerState?.() === 1 && time >= start - 0.15 && time < end && time !== previous) {
+            reached = true;
+            previous = time;
+            movedAt = performance.now();
+          }
+          const duration = p.getDuration?.();
+          const atSourceEnd = p.getPlayerState?.() === 0 && !!duration && end >= duration - 0.15 && time >= duration - 0.3;
+          const complete = onTime ? reached && (time >= end || atSourceEnd) : time >= end - 0.05;
+          if (onTime && reached) onTime(time);
+          if (complete || (onTime && performance.now() - movedAt > 10000)) {
             p.pauseVideo();
             stopPoll();
             setPlaying(false);
             const done = doneRef.current;
             doneRef.current = null;
-            done?.();
+            done?.(complete);
           }
-        }, 80);
+        }, onTime ? 25 : 80);
       }),
-    [ready, stopPoll],
+    [ready, stopPoll, videoId],
   );
 
   const stop = useCallback(() => {
@@ -87,7 +120,7 @@ export function useYoutubeSegment(videoId: string | null | undefined) {
     setPlaying(false);
     const done = doneRef.current;
     doneRef.current = null;
-    done?.();
+    done?.(false);
   }, [stopPoll]);
 
   return { elementId, ready, failed, playing, playSegment, stop };

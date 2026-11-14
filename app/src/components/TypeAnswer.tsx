@@ -7,6 +7,7 @@ import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
 export type TypeAnswerStyle = 'notebook' | 'bubble';
 
 interface Props {
+  onContinue?: () => void;
   entries: TypeAnswerEntry[];
   mode: 'question' | 'cloze';
   boardStyle?: TypeAnswerStyle;
@@ -29,7 +30,7 @@ function normalize(s: string): string {
   return s.trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
-export default function TypeAnswer({ entries: textEntries, mode, boardStyle = 'notebook' }: Props) {
+export default function TypeAnswer({ entries: textEntries, mode, boardStyle = 'notebook', onContinue }: Props) {
   const { t } = useTranslation();
   const deck = usePictureWordDeck();
   const entries = useMemo(() => deck.length ? deck.map(row => ({ id: row.id, prompt: '', answer: row.choices[row.correctIndex] })) : textEntries, [deck, textEntries]);
@@ -111,8 +112,8 @@ export default function TypeAnswer({ entries: textEntries, mode, boardStyle = 'n
             </div>
           </div>
         </div>
-        <button onClick={restart} className={pill}>
-          {t('gameTypeAnswer.restartButton')}
+        <button onClick={onContinue ?? restart} className={pill}>
+          {t(onContinue ? 'solo.next' : 'gameTypeAnswer.restartButton')}
         </button>
       </div>
     );

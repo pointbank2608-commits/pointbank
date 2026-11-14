@@ -2,7 +2,7 @@ import { GRAMMAR_POINTS, grammarLevelTag, plainText, sentencesForUnscramble, typ
 import { LESSON_SETS, pickSetWords } from './lessonSets';
 import { parseShadowText } from './shadowLines';
 import { posOptionLabel, SPEAKING_ITEMS, STRUCTURE_ITEMS } from './rainbow';
-import type { FullCardItem, WordBankEntry } from './types';
+import type { FullCardItem, GameItem, GameTemplateConfig, MatchPair, WordBankEntry } from './types';
 
 /**
  * 개별수업("오늘의 수업") — 화면이 선생님이 되어 학생이 혼자 한다. 단체수업의 슬라이드(선생님이 보여 주는 자료)와 달리
@@ -70,12 +70,12 @@ export type SoloStep =
   | SoloRuleStep
   | { t: 'example'; sentence: string; ko: string }
   /** 게임 점수 대신 게임 뒤 서버 확인 문제를 스탯에 반영한다. measure=false면 완료만 기록. */
-  | { t: 'game'; gameType: SoloGameType; templateId: string; title: string; measure?: boolean }
+  | SoloGameStep
   | { t: 'watch'; title: string; clip: SoloClip; mode: 'listen' | 'sing' }
-  | { t: 'lyricBlank'; clip: SoloClip; sentence: string; ko: string; options: string[]; answer: number }
-  | { t: 'lineSing'; clip: SoloClip; en: string; ko: string }
+  | { t: 'lyricBlank'; clip: SoloClip; sentence: string; ko: string; options: string[]; answer: number; audioQuestion?: string; afterDialogue?: boolean }
+  | { t: 'lineSing'; clip: SoloClip; en: string; ko: string; originalOnly?: boolean; practice?: 'repeat' | 'shadow' }
   | { t: 'fadeRead'; sentence: string; ko: string; imageUrl?: string }
-  | { t: 'roleplay'; title: string; imageUrl?: string; lines: RoleplayLine[] }
+  | { t: 'roleplay'; title: string; imageUrl?: string; lines: RoleplayLine[]; speakFirst?: boolean }
   | { t: 'rainbowSpeak'; itemId: string }
   | { t: 'rainbowStructure'; itemId: string }
   /** 가사·대사 빈칸 쓰기 — 문장 속 빈칸에 들어갈 낱말을 직접 쓴다(어려운 판). 영상 구간이 있으면 그 줄을 들려 준다. */
@@ -110,15 +110,23 @@ export interface RoleplayLine {
   ko: string;
 }
 
-/** 노래·영상 단계가 틀어 줄 유튜브 구간 */
+/** 노래·영상 단계가 틀어 줄 구간 */
 export interface SoloClip {
   videoId: string;
   start: number;
   end: number;
+  mediaUrl?: string;
+  captions?: { start: number; end: number; text: string }[];
 }
 
 /** 개별수업에서 혼자 할 수 있는 게임 종류(템플릿을 그대로 읽어 온다) */
 export type SoloGameType = 'matchup' | 'anagram' | 'whackamole' | 'wordsearch' | 'hangman';
+export type SoloReviewGameType = 'anagram' | 'hangman' | 'wordsearch' | 'quiz' | 'truefalse' | 'typeanswer'
+  | 'balloonpop' | 'wordfishing' | 'wordtrain' | 'sentencesplash' | 'grammardetective';
+type SoloGameStep = { t: 'game'; templateId: string; title: string } & (
+  | { gameType: SoloGameType; measure?: boolean; pairs?: MatchPair[]; review?: undefined }
+  | { gameType: SoloReviewGameType; measure: false; pairs?: undefined; review: { items: GameItem[]; config: GameTemplateConfig } }
+);
 
 /** 개별수업 게임 단계에서 고를 수 있는 종류(편집 칸의 선택 목록) */
 export const SOLO_GAME_TYPES: SoloGameType[] = ['matchup', 'anagram', 'whackamole', 'wordsearch', 'hangman'];
@@ -148,12 +156,12 @@ export type SoloPublicStep =
   | { t: 'meet'; word: string; meaning: string; imageUrl: string | null; example: string | null; pos?: string | null }
   | SoloRuleStep
   | { t: 'example'; sentence: string; ko: string }
-  | { t: 'game'; gameType: SoloGameType; templateId: string; title: string; measure?: boolean }
+  | SoloGameStep
   | { t: 'watch'; title: string; clip: SoloClip; mode: 'listen' | 'sing' }
-  | { t: 'lyricBlank'; clip: SoloClip; sentence: string; ko: string; options: string[] }
-  | { t: 'lineSing'; clip: SoloClip; en: string; ko: string }
+  | { t: 'lyricBlank'; clip: SoloClip; sentence: string; ko: string; options: string[]; audioQuestion?: string; afterDialogue?: boolean }
+  | { t: 'lineSing'; clip: SoloClip; en: string; ko: string; originalOnly?: boolean; practice?: 'repeat' | 'shadow' }
   | { t: 'fadeRead'; sentence: string; ko: string; imageUrl?: string }
-  | { t: 'roleplay'; title: string; imageUrl?: string; lines: RoleplayLine[] }
+  | { t: 'roleplay'; title: string; imageUrl?: string; lines: RoleplayLine[]; speakFirst?: boolean }
   | { t: 'rainbowSpeak'; itemId: string }
   | { t: 'rainbowStructure'; itemId: string }
   | { t: 'gapType'; sentence: string; ko: string; length: number; first: string; clip?: SoloClip }
@@ -731,7 +739,8 @@ function toPublicStepBase(step: SoloStep): SoloPublicStep {
         items: step.items.map((it) => ({ ...(toPublicStep(it) as SoloPublicQuestion), area: it.area, sec: it.sec })),
       };
     case 'lyricBlank':
-      return { t: step.t, clip: step.clip, sentence: step.sentence, ko: step.ko, options: step.options };
+      return { t: step.t, clip: step.clip, sentence: step.sentence, ko: step.ko, options: step.options,
+        ...(step.audioQuestion && { audioQuestion: step.audioQuestion }), ...(step.afterDialogue && { afterDialogue: true }) };
     case 'gapType':
       return { t: step.t, sentence: step.sentence, ko: step.ko, length: step.length, first: step.first, clip: step.clip };
     case 'lineOrder':

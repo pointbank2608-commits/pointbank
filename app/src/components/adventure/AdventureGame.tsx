@@ -18,13 +18,14 @@ function englishSpeak(text:string,fallback?:()=>void){
  const utter=new SpeechSynthesisUtterance(text);utter.lang='en-US';utter.voice=voice;utter.rate=.85;utter.onerror=()=>fallback?.();speechSynthesis.cancel();speechSynthesis.speak(utter);
 }
 function Voice({text,onFallback}:{text:string;onFallback?:()=>void}){return <button className="ad-voice" aria-label="영어 듣기" onClick={()=>{englishSpeak(text,onFallback);}}>🔊</button>;}
-export default function AdventureGame({type,config:c,onRestart,preparedRounds,autoStart=false}:{type:AdventureType;config:AdventureConfig;onRestart:()=>void;preparedRounds?: AdventureRound[];autoStart?:boolean}){
+export default function AdventureGame({type,config:c,onRestart,onContinue,preparedRounds,autoStart=false}:{type:AdventureType;config:AdventureConfig;onRestart?:()=>void;onContinue?:()=>void;preparedRounds?: AdventureRound[];autoStart?:boolean}){
+  const { t } = useTranslation();
   const workspace=useGameWorkspace();
   const e=useAdventureEngine(type,c,!!workspace&&(!workspace.running||!!workspace.panel),preparedRounds);
   const errors=preparedRounds ? (preparedRounds.length ? [] : ['그림 문제를 준비해 주세요.']) : adventureErrors(type,c);
   const {phase,start}=e;
   useEffect(()=>{if((workspace?.running||autoStart)&&phase==='ready'&&!errors.length)start();},[workspace?.running,autoStart,phase,start,errors.length]);
-  return <section className={`ad-game ad-${type} ${e.paused?'ad-paused':''} ad-phase-${e.phase}`} aria-label={ADVENTURE_NAMES[type][0]}>
+  return <section className={`ad-game ad-${type} ${onContinue ? 'ad-in-lesson' : ''} ${e.paused?'ad-paused':''} ad-phase-${e.phase}`} aria-label={ADVENTURE_NAMES[type][0]}>
     <span className="ad-ambient ad-ambient-one" aria-hidden="true">✦</span><span className="ad-ambient ad-ambient-two" aria-hidden="true">✧</span>
     {(type==='balloonpop'||type==='wordclaw')&&<img className={`ad-buddy ${e.reaction}`} src={`/skins/adventure/${type==='balloonpop'?'bunny':'kitten'}.webp`} alt=""/>}
     <img className="ad-world" src={`/skins/adventure/${worlds[type]}.webp`} alt=""/>
@@ -37,7 +38,7 @@ export default function AdventureGame({type,config:c,onRestart,preparedRounds,au
       {e.phase==='ready'&&!workspace&&<div className="ad-overlay"><h2>{ADVENTURE_NAMES[type][1]}</h2><p>클릭·터치·키보드로 함께 배워요.</p><button className="ad-primary" onClick={e.start}>게임 시작</button></div>}
       {e.phase==='review'&&<div className="ad-overlay ad-review" role="status"><span className="ad-medal">★</span><h2>{type==='grammardetective'?'사건 해결!':'잘했어요!'}</h2><p className="ad-learned">{e.records.at(-1)?.answer}</p>{e.current.kind==='case'&&<p>{e.current.item.explanation}</p>}<Voice text={e.records.at(-1)?.answer||''}/><button className="ad-primary" onClick={e.next}>{e.index+1===e.total?(type==='sentencerocket'?'로켓 발사':'결과 보기'):'다음 문제 →'}</button></div>}
       {e.phase==='finale'&&<RocketFinale finish={e.finish} sound={e.sound}/>}
-      {e.phase==='finished'&&<div className="ad-overlay ad-results"><span className="ad-medal">🏆</span><h2>모험 완료!</h2><p>{e.total}개 미션 완료 · 다시 도전한 횟수 {e.mistakes}회</p>{type==='grammardetective'&&<p>한 번에 오류를 찾은 문제 {e.records.filter(record=>record.detective?.foundOnFirstTry).length}개 · 한 번에 고친 문제 {e.records.filter(record=>record.detective?.repairedOnFirstTry).length}개</p>}<ol>{e.records.map((r,i)=><li key={i}>{r.answer}</li>)}</ol><button className="ad-primary" onClick={onRestart}>다시 플레이</button></div>}
+      {e.phase==='finished'&&<div className="ad-overlay ad-results"><span className="ad-medal">🏆</span><h2>모험 완료!</h2><p>{e.total}개 미션 완료 · 다시 도전한 횟수 {e.mistakes}회</p>{type==='grammardetective'&&<p>한 번에 오류를 찾은 문제 {e.records.filter(record=>record.detective?.foundOnFirstTry).length}개 · 한 번에 고친 문제 {e.records.filter(record=>record.detective?.repairedOnFirstTry).length}개</p>}<ol>{e.records.map((r,i)=><li key={i}>{r.answer}</li>)}</ol><button className="ad-primary" onClick={onContinue ?? onRestart}>{onContinue ? t('solo.next') : '다시 플레이'}</button></div>}
       {e.expired&&<div className="ad-overlay"><h2>잠깐 쉬었다 다시 도전해요!</h2><p>아직 같은 문제예요. 단어를 다시 살펴봐요.</p><button className="ad-primary" onClick={e.retry}>같은 문제 다시 도전</button></div>}
       {e.phase==='playing'&&<p className={`ad-notice ${e.reaction}`} role="status" aria-live="polite">{e.notice||'천천히 살펴보고 도전해요.'}</p>}
     </>}

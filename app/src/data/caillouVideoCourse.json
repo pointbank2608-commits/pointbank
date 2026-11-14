@@ -1,0 +1,2089 @@
+{
+  "coverage": {
+    "duration": 3387,
+    "libraryScriptUntil": 391.5
+  },
+  "stories": [
+    {
+      "title": "처음 타는 스케이트",
+      "scenes": [
+        {
+          "title": "아빠가 조심하라고 해요",
+          "start": 12.8,
+          "end": 19.55,
+          "words": [],
+          "lines": [],
+          "before": [
+            {
+              "title": "스케이트장 이야기의 시작",
+              "start": 0,
+              "end": 12.8
+            }
+          ]
+        },
+        {
+          "title": "카이유가 혼자 해 보겠다고 해요",
+          "start": 31.45,
+          "end": 44.6,
+          "words": [],
+          "lines": [],
+          "before": [
+            {
+              "title": "로지가 펭귄을 꼭 잡아요",
+              "start": 19.55,
+              "end": 31.45,
+              "lines": [
+                {
+                  "start": 22.3,
+                  "end": 25.3,
+                  "text": "Rosie, hold on tight to your penguin, okay?"
+                }
+              ],
+              "words": [
+                {
+                  "phrase": "hold on tight",
+                  "meaning": "꼭 잡아"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "카이유가 도움을 받아요",
+          "start": 89.7,
+          "end": 146.4,
+          "words": [
+            {
+              "phrase": "a little help",
+              "meaning": "약간의 도움"
+            },
+            {
+              "phrase": "let go",
+              "meaning": "손을 놓다"
+            },
+            {
+              "phrase": "get started",
+              "meaning": "시작하다"
+            }
+          ],
+          "lines": [
+            {
+              "start": 103.1,
+              "end": 106.2,
+              "text": "I guess I could use a little help."
+            },
+            {
+              "start": 111.7,
+              "end": 115.7,
+              "text": "All right. Are you ready to let go of the edge, Caillou?"
+            }
+          ],
+          "question": {
+            "prompt": "카이유는 무엇이 필요할 것 같다고 했나요?",
+            "options": [
+              "약간의 도움",
+              "새 스케이트",
+              "따뜻한 옷"
+            ],
+            "answer": 0,
+            "evidenceStart": 103.1
+          },
+          "before": [
+            {
+              "title": "혼자 스케이트를 타다가 도움을 청해요",
+              "start": 44.6,
+              "end": 89.7,
+              "lines": [
+                {
+                  "start": 83.6,
+                  "end": 85.9,
+                  "text": "Mommy, help!"
+                }
+              ],
+              "words": [
+                {
+                  "phrase": "help",
+                  "meaning": "도와주다"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "스케이트에 성공하고 핫초코를 마시러 가요",
+          "start": 146.4,
+          "end": 223.6,
+          "words": [
+            {
+              "phrase": "You got it!",
+              "meaning": "해냈어!"
+            },
+            {
+              "phrase": "hot chocolate",
+              "meaning": "핫초코"
+            },
+            {
+              "phrase": "amazing",
+              "meaning": "정말 멋진"
+            }
+          ],
+          "lines": [
+            {
+              "start": 150,
+              "end": 152.8,
+              "text": "That's it! You got it, Caillou!"
+            },
+            {
+              "start": 155.5,
+              "end": 157.3,
+              "text": "This is amazing!"
+            },
+            {
+              "start": 215.3,
+              "end": 220,
+              "text": "Brrr, I'm getting cold. How's about some nice hot chocolate?"
+            }
+          ],
+          "question": {
+            "prompt": "아빠는 무엇을 마시자고 제안했나요?",
+            "options": [
+              "우유",
+              "핫초코",
+              "사과 주스"
+            ],
+            "answer": 1,
+            "evidenceStart": 215.3
+          }
+        }
+      ]
+    },
+    {
+      "title": "눈사람 게임과 부활절 달걀",
+      "scenes": [
+        {
+          "title": "눈사람 게임을 발견해요",
+          "start": 234.3,
+          "end": 259,
+          "words": [
+            {
+              "phrase": "Can I play, please?",
+              "meaning": "저도 놀아도 될까요?"
+            },
+            {
+              "phrase": "knock down",
+              "meaning": "쓰러뜨리다"
+            },
+            {
+              "phrase": "snowman",
+              "meaning": "눈사람"
+            }
+          ],
+          "lines": [
+            {
+              "start": 235.9,
+              "end": 237.8,
+              "text": "A snowman game!"
+            },
+            {
+              "start": 246,
+              "end": 248.7,
+              "text": "Hello? Can I play, please?"
+            },
+            {
+              "start": 254.7,
+              "end": 258.5,
+              "text": "All right, Caillou. See how many snowmen you can knock down."
+            }
+          ],
+          "question": {
+            "prompt": "카이유가 발견한 것은 무슨 게임인가요?",
+            "options": [
+              "눈사람 게임",
+              "카드 게임",
+              "달걀 찾기"
+            ],
+            "answer": 0,
+            "evidenceStart": 235.9
+          },
+          "before": [
+            {
+              "title": "스케이트를 마치고 다음 장면으로",
+              "start": 223.6,
+              "end": 234.3
+            }
+          ]
+        },
+        {
+          "title": "로지의 차례와 마지막 눈덩이",
+          "start": 263.9,
+          "end": 299,
+          "words": [
+            {
+              "phrase": "turn",
+              "meaning": "차례"
+            },
+            {
+              "phrase": "You can do it",
+              "meaning": "넌 할 수 있어"
+            },
+            {
+              "phrase": "snowball",
+              "meaning": "눈덩이"
+            }
+          ],
+          "lines": [
+            {
+              "start": 264.4,
+              "end": 268.2,
+              "text": "That's unlucky, Caillou. Now it's Rosie's turn."
+            },
+            {
+              "start": 285.3,
+              "end": 286.9,
+              "text": "You can do it."
+            },
+            {
+              "start": 294.4,
+              "end": 296.3,
+              "text": "We did it, Rosie!"
+            }
+          ],
+          "question": {
+            "prompt": "엄마는 이제 누구 차례라고 했나요?",
+            "options": [
+              "카이유",
+              "로지",
+              "아빠"
+            ],
+            "answer": 1,
+            "evidenceStart": 264.4
+          },
+          "before": [
+            {
+              "title": "눈사람을 맞혀 봐요",
+              "start": 259,
+              "end": 263.9
+            }
+          ]
+        },
+        {
+          "title": "어떤 붓이 달걀을 칠하기 좋을까요?",
+          "start": 306.6,
+          "end": 326.05,
+          "words": [
+            {
+              "phrase": "brush",
+              "meaning": "붓"
+            },
+            {
+              "phrase": "soft",
+              "meaning": "부드러운"
+            },
+            {
+              "phrase": "crack",
+              "meaning": "깨지다"
+            }
+          ],
+          "lines": [
+            {
+              "start": 315.1,
+              "end": 318.2,
+              "text": "See? This brush is too hard."
+            },
+            {
+              "start": 318.2,
+              "end": 320.8,
+              "text": "But this one is nice and soft."
+            },
+            {
+              "start": 323.5,
+              "end": 326,
+              "text": "Do you like painting eggs, Mommy?"
+            }
+          ],
+          "question": {
+            "prompt": "카이유는 두 번째 붓을 어떻게 설명했나요?",
+            "options": [
+              "부드럽다",
+              "너무 단단하다",
+              "너무 작다"
+            ],
+            "answer": 0,
+            "evidenceStart": 318.2
+          },
+          "before": [
+            {
+              "title": "눈사람 게임에서 달걀 꾸미기로",
+              "start": 299,
+              "end": 306.6
+            }
+          ]
+        },
+        {
+          "title": "정원에 숨은 초콜릿 달걀",
+          "start": 326.05,
+          "end": 391.5,
+          "words": [
+            {
+              "phrase": "hide",
+              "meaning": "숨기다"
+            },
+            {
+              "phrase": "made of",
+              "meaning": "~로 만들어진"
+            },
+            {
+              "phrase": "egg hunt",
+              "meaning": "달걀 찾기"
+            }
+          ],
+          "lines": [
+            {
+              "start": 360.5,
+              "end": 364.8,
+              "text": "These eggs are made of chocolate."
+            },
+            {
+              "start": 372.6,
+              "end": 378.3,
+              "text": "Yes, he's going to hop around the garden and hide Easter eggs for you to find."
+            },
+            {
+              "start": 378.6,
+              "end": 383.4,
+              "text": "The Easter Bunny is going to hide chocolate eggs in our garden?"
+            }
+          ],
+          "question": {
+            "prompt": "엄마가 말한 달걀은 무엇으로 만들었나요?",
+            "options": [
+              "빵",
+              "과일",
+              "초콜릿"
+            ],
+            "answer": 2,
+            "evidenceStart": 360.5
+          }
+        }
+      ]
+    },
+    {
+      "title": "부활절 토끼를 만나요",
+      "scenes": [
+        {
+          "title": "부활절 토끼와 풍선을 찾아요",
+          "start": 442.12,
+          "end": 492.45,
+          "lines": [
+            {
+              "start": 442.32,
+              "end": 444.52,
+              "text": "The Easter Bunny!"
+            },
+            {
+              "start": 491.29,
+              "end": 492.2,
+              "text": "Where's the balloon?"
+            }
+          ],
+          "words": [
+            {
+              "phrase": "Easter Bunny",
+              "meaning": "부활절 토끼"
+            },
+            {
+              "phrase": "balloon",
+              "meaning": "풍선"
+            }
+          ],
+          "before": [
+            {
+              "title": "달걀 찾기 이야기의 다음 장면",
+              "start": 391.5,
+              "end": 442.12
+            }
+          ]
+        },
+        {
+          "title": "밤에 밖에 나온 카이유",
+          "start": 585.39,
+          "end": 589.76,
+          "lines": [
+            {
+              "start": 585.59,
+              "end": 589.51,
+              "text": "Hi you! What are you doing outside at this time of night?"
+            }
+          ],
+          "words": [
+            {
+              "phrase": "outside",
+              "meaning": "밖에"
+            },
+            {
+              "phrase": "at this time of night",
+              "meaning": "이렇게 늦은 밤에"
+            }
+          ],
+          "before": [
+            {
+              "title": "부활절 토끼 이야기의 다음 장면 · 8:12",
+              "start": 492.45,
+              "end": 537.45
+            },
+            {
+              "title": "부활절 토끼 이야기의 다음 장면 · 8:57",
+              "start": 537.45,
+              "end": 585.39
+            }
+          ]
+        },
+        {
+          "title": "부활절 토끼와 작별 인사",
+          "start": 617.41,
+          "end": 621.91,
+          "lines": [
+            {
+              "start": 617.61,
+              "end": 621.66,
+              "text": "Bye bye, Easter Bunny! See you again next year!"
+            }
+          ],
+          "words": [
+            {
+              "phrase": "next year",
+              "meaning": "내년에"
+            },
+            {
+              "phrase": "see you again",
+              "meaning": "또 만나요"
+            }
+          ],
+          "before": [
+            {
+              "title": "부활절 토끼를 만나요 · 앞뒤 장면 이어 보기",
+              "start": 589.76,
+              "end": 617.41
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "새해 파티와 소원",
+      "scenes": [
+        {
+          "title": "새해 전날 파티에 초대받아요",
+          "start": 627.01,
+          "end": 633.49,
+          "lines": [
+            {
+              "start": 627.21,
+              "end": 631.15,
+              "text": "You ready for your first fancy New Year's Eve party, Kaju?"
+            },
+            {
+              "start": 631.81,
+              "end": 633.24,
+              "text": "Why, yes sir!"
+            }
+          ],
+          "words": [
+            {
+              "phrase": "New Year's Eve",
+              "meaning": "새해 전날"
+            },
+            {
+              "phrase": "fancy",
+              "meaning": "근사한"
+            }
+          ],
+          "before": [
+            {
+              "title": "새해 파티와 소원 · 앞뒤 장면 이어 보기",
+              "start": 621.91,
+              "end": 627.01
+            }
+          ]
+        },
+        {
+          "title": "분수에 동전을 던지고 소원을 빌어요",
+          "start": 665.13,
+          "end": 681.12,
+          "lines": [
+            {
+              "start": 665.33,
+              "end": 667.57,
+              "text": "Can you believe they have a fountain inside?"
+            },
+            {
+              "start": 670.75,
+              "end": 673.39,
+              "text": "My mom gave us pennies to make wishes."
+            },
+            {
+              "start": 678.63,
+              "end": 680.87,
+              "text": "I wish for my very own treehouse."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "fountain",
+              "meaning": "분수"
+            },
+            {
+              "phrase": "make wishes",
+              "meaning": "소원을 빌다"
+            },
+            {
+              "phrase": "treehouse",
+              "meaning": "나무 위 집"
+            }
+          ],
+          "question": {
+            "prompt": "어떤 집을 갖고 싶다고 소원을 빌었나요?",
+            "options": [
+              "나무 위 집",
+              "바닷가 집",
+              "눈으로 만든 집"
+            ],
+            "answer": 0,
+            "evidenceStart": 678.63
+          },
+          "before": [
+            {
+              "title": "친구들과 파티에 모여요",
+              "start": 633.49,
+              "end": 665.13,
+              "lines": [
+                {
+                  "start": 651.09,
+                  "end": 653.69,
+                  "text": "Are you over here?"
+                }
+              ],
+              "words": [
+                {
+                  "phrase": "over here",
+                  "meaning": "여기에"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "자정까지 깨어 있으려 해요",
+          "start": 723.1999999999999,
+          "end": 739.5,
+          "lines": [
+            {
+              "start": 723.4,
+              "end": 725.81,
+              "text": "Midnight is really far away."
+            },
+            {
+              "start": 726.39,
+              "end": 728.41,
+              "text": "Oh, Leo, we can do it."
+            },
+            {
+              "start": 737.86,
+              "end": 739.25,
+              "text": "Dancing will keep us awake."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "midnight",
+              "meaning": "자정"
+            },
+            {
+              "phrase": "keep us awake",
+              "meaning": "우리가 깨어 있게 하다"
+            }
+          ],
+          "before": [
+            {
+              "title": "친구들도 차례로 소원을 빌어요",
+              "start": 681.12,
+              "end": 723.1999999999999
+            }
+          ]
+        },
+        {
+          "title": "계획을 다시 생각해요",
+          "start": 766.63,
+          "end": 776.64,
+          "lines": [
+            {
+              "start": 766.83,
+              "end": 769.07,
+              "text": "I don't think my plan worked."
+            },
+            {
+              "start": 769.55,
+              "end": 772.09,
+              "text": "I'm more tired now than when we started."
+            },
+            {
+              "start": 773.13,
+              "end": 776.39,
+              "text": "You know what always gives me too much energy?"
+            }
+          ],
+          "words": [
+            {
+              "phrase": "more tired",
+              "meaning": "더 피곤한"
+            },
+            {
+              "phrase": "energy",
+              "meaning": "힘, 에너지"
+            }
+          ],
+          "before": [
+            {
+              "title": "춤을 추며 자정까지 기다려요",
+              "start": 739.5,
+              "end": 766.63
+            }
+          ]
+        },
+        {
+          "title": "새해 카운트다운이 시작돼요",
+          "start": 895.4499999999999,
+          "end": 898.12,
+          "lines": [
+            {
+              "start": 895.65,
+              "end": 897.87,
+              "text": "Come on! We're about to count down!"
+            }
+          ],
+          "words": [
+            {
+              "phrase": "count down",
+              "meaning": "남은 숫자를 거꾸로 세다"
+            },
+            {
+              "phrase": "be about to",
+              "meaning": "막 ~하려 하다"
+            }
+          ],
+          "before": [
+            {
+              "title": "늦은 밤에 먹을 간식을 이야기해요 · 12:56",
+              "start": 776.64,
+              "end": 826.01,
+              "lines": [
+                {
+                  "start": 791.67,
+                  "end": 795.53,
+                  "text": "But my daddy says we're not supposed to have sugar so late."
+                }
+              ],
+              "words": [
+                {
+                  "phrase": "be supposed to",
+                  "meaning": "~하기로 되어 있다"
+                }
+              ]
+            },
+            {
+              "title": "늦은 밤에 먹을 간식을 이야기해요 · 13:46",
+              "start": 826.01,
+              "end": 869.5
+            },
+            {
+              "title": "늦은 밤에 먹을 간식을 이야기해요 · 14:29",
+              "start": 869.5,
+              "end": 895.4499999999999
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "아빠와 요새 만들기",
+      "scenes": [
+        {
+          "title": "요새를 지을 준비를 해요",
+          "start": 949.9699999999999,
+          "end": 970.8,
+          "lines": [
+            {
+              "start": 950.17,
+              "end": 952.15,
+              "text": "Thanks for building me a fort daddy."
+            },
+            {
+              "start": 966.45,
+              "end": 967.65,
+              "text": "I think we have everything."
+            },
+            {
+              "start": 968.81,
+              "end": 970.55,
+              "text": "Where do you think we should build it, Kaiju?"
+            }
+          ],
+          "words": [
+            {
+              "phrase": "fort",
+              "meaning": "요새, 아지트"
+            },
+            {
+              "phrase": "build",
+              "meaning": "짓다"
+            }
+          ],
+          "before": [
+            {
+              "title": "새해 카운트다운을 마쳐요",
+              "start": 898.12,
+              "end": 949.9699999999999
+            }
+          ]
+        },
+        {
+          "title": "요새를 지을 자리를 찾아요",
+          "start": 980.39,
+          "end": 1001.42,
+          "lines": [
+            {
+              "start": 980.59,
+              "end": 982.97,
+              "text": "Too many bugs in that bush."
+            },
+            {
+              "start": 987.27,
+              "end": 989.45,
+              "text": "It's too dark there."
+            },
+            {
+              "start": 999.97,
+              "end": 1001.17,
+              "text": "This is a great spot."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "bush",
+              "meaning": "덤불"
+            },
+            {
+              "phrase": "spot",
+              "meaning": "장소"
+            }
+          ],
+          "question": {
+            "prompt": "덤불이 있는 장소가 좋지 않았던 이유는?",
+            "options": [
+              "너무 어두워서",
+              "벌레가 많아서",
+              "바닥이 미끄러워서"
+            ],
+            "answer": 1,
+            "evidenceStart": 980.59
+          },
+          "before": [
+            {
+              "title": "아빠와 요새 만들기 · 앞뒤 장면 이어 보기",
+              "start": 970.8,
+              "end": 980.39
+            }
+          ]
+        },
+        {
+          "title": "도구를 쓸 때는 안전이 먼저예요",
+          "start": 1039.57,
+          "end": 1044,
+          "lines": [
+            {
+              "start": 1039.77,
+              "end": 1043.75,
+              "text": "Safety first. We'll need to be careful with everything we use today."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "Safety first",
+              "meaning": "안전이 먼저야"
+            },
+            {
+              "phrase": "be careful",
+              "meaning": "조심하다"
+            }
+          ],
+          "before": [
+            {
+              "title": "아빠와 함께 길이를 재요",
+              "start": 1001.42,
+              "end": 1039.57,
+              "lines": [
+                {
+                  "start": 1010.15,
+                  "end": 1013.99,
+                  "text": "Okay, now pull it out that way until I say stop."
+                }
+              ],
+              "words": [
+                {
+                  "phrase": "until",
+                  "meaning": "~할 때까지"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "성의 비밀과 마법 상상",
+      "scenes": [
+        {
+          "title": "궁수를 위한 창을 살펴봐요",
+          "start": 1289.43,
+          "end": 1302.38,
+          "lines": [
+            {
+              "start": 1289.63,
+              "end": 1291.55,
+              "text": "It's a window for an archer."
+            },
+            {
+              "start": 1296.76,
+              "end": 1300.05,
+              "text": "But on the outside, it's very hard to get an arrow in,"
+            },
+            {
+              "start": 1300.51,
+              "end": 1302.13,
+              "text": "so it keeps the archer safe."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "archer",
+              "meaning": "궁수"
+            },
+            {
+              "phrase": "arrow",
+              "meaning": "화살"
+            }
+          ],
+          "question": {
+            "prompt": "이 창은 누구를 위한 창인가요?",
+            "options": [
+              "요리사",
+              "궁수",
+              "정원사"
+            ],
+            "answer": 1,
+            "evidenceStart": 1289.63
+          },
+          "before": [
+            {
+              "title": "아빠와 힘을 합쳐 요새를 지어요 · 17:24",
+              "start": 1044,
+              "end": 1094.75
+            },
+            {
+              "title": "아빠와 힘을 합쳐 요새를 지어요 · 18:14",
+              "start": 1094.75,
+              "end": 1128.71,
+              "lines": [
+                {
+                  "start": 1094.75,
+                  "end": 1098.27,
+                  "text": "That was great teamwork."
+                }
+              ],
+              "words": [
+                {
+                  "phrase": "teamwork",
+                  "meaning": "협동"
+                }
+              ]
+            },
+            {
+              "title": "아빠와 힘을 합쳐 요새를 지어요 · 18:48",
+              "start": 1128.71,
+              "end": 1173.71
+            },
+            {
+              "title": "아빠와 힘을 합쳐 요새를 지어요 · 19:33",
+              "start": 1173.71,
+              "end": 1218.71
+            },
+            {
+              "title": "아빠와 힘을 합쳐 요새를 지어요 · 20:18",
+              "start": 1218.71,
+              "end": 1263.71
+            },
+            {
+              "title": "아빠와 힘을 합쳐 요새를 지어요 · 21:03",
+              "start": 1263.71,
+              "end": 1289.43
+            }
+          ]
+        },
+        {
+          "title": "어떤 계획인지 물어봐요",
+          "start": 1360.1599999999999,
+          "end": 1362.44,
+          "lines": [
+            {
+              "start": 1360.36,
+              "end": 1362.19,
+              "text": "What kind of projects?"
+            }
+          ],
+          "words": [
+            {
+              "phrase": "project",
+              "meaning": "계획, 작업"
+            },
+            {
+              "phrase": "What kind of …?",
+              "meaning": "어떤 종류의 …?"
+            }
+          ],
+          "before": [
+            {
+              "title": "성 안에서 상상 속 이야기가 이어져요",
+              "start": 1302.38,
+              "end": 1360.1599999999999
+            }
+          ]
+        },
+        {
+          "title": "마법사였다고 이야기해요",
+          "start": 1529.8999999999999,
+          "end": 1535.31,
+          "lines": [
+            {
+              "start": 1530.1,
+              "end": 1532.52,
+              "text": "I was. I was a wizard."
+            },
+            {
+              "start": 1532.88,
+              "end": 1533.66,
+              "text": "Doing a spell."
+            },
+            {
+              "start": 1534.18,
+              "end": 1535.06,
+              "text": "And then there's a giant."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "wizard",
+              "meaning": "마법사"
+            },
+            {
+              "phrase": "spell",
+              "meaning": "마법 주문"
+            }
+          ],
+          "before": [
+            {
+              "title": "마법을 부리는 상상을 해요 · 22:42",
+              "start": 1362.44,
+              "end": 1410.29
+            },
+            {
+              "title": "마법을 부리는 상상을 해요 · 23:30",
+              "start": 1410.29,
+              "end": 1455.29
+            },
+            {
+              "title": "마법을 부리는 상상을 해요 · 24:15",
+              "start": 1455.29,
+              "end": 1491.3
+            },
+            {
+              "title": "마법을 부리는 상상을 해요 · 24:51",
+              "start": 1491.3,
+              "end": 1529.8999999999999
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "테디와 할머니",
+      "scenes": [
+        {
+          "title": "테디와 놀았던 일을 떠올려요",
+          "start": 1709.32,
+          "end": 1725.07,
+          "lines": [
+            {
+              "start": 1709.52,
+              "end": 1712.33,
+              "text": "Keep thinking. Where did you go next?"
+            },
+            {
+              "start": 1715.65,
+              "end": 1717.6,
+              "text": "I just played with Teddy."
+            },
+            {
+              "start": 1722.23,
+              "end": 1724.82,
+              "text": "We had a lot of fun."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "keep thinking",
+              "meaning": "계속 생각해 봐"
+            },
+            {
+              "phrase": "have a lot of fun",
+              "meaning": "아주 재미있게 놀다"
+            }
+          ],
+          "question": {
+            "prompt": "누구와 놀았다고 했나요?",
+            "options": [
+              "테디",
+              "로지",
+              "할머니"
+            ],
+            "answer": 0,
+            "evidenceStart": 1715.65
+          },
+          "before": [
+            {
+              "title": "마법 이야기를 마치고 다음 이야기로 · 25:35",
+              "start": 1535.31,
+              "end": 1580.31
+            },
+            {
+              "title": "마법 이야기를 마치고 다음 이야기로 · 26:20",
+              "start": 1580.31,
+              "end": 1625.31
+            },
+            {
+              "title": "마법 이야기를 마치고 다음 이야기로 · 27:05",
+              "start": 1625.31,
+              "end": 1670.31
+            },
+            {
+              "title": "마법 이야기를 마치고 다음 이야기로 · 27:50",
+              "start": 1670.31,
+              "end": 1709.32
+            }
+          ]
+        },
+        {
+          "title": "테디를 구한 이야기를 해요",
+          "start": 1743.6499999999999,
+          "end": 1746.77,
+          "lines": [
+            {
+              "start": 1743.85,
+              "end": 1746.52,
+              "text": "But it was okay because I rescued him."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "rescue",
+              "meaning": "구하다"
+            },
+            {
+              "phrase": "it was okay",
+              "meaning": "괜찮았어"
+            }
+          ],
+          "before": [
+            {
+              "title": "테디와 할머니 · 앞뒤 장면 이어 보기",
+              "start": 1725.07,
+              "end": 1743.6499999999999
+            }
+          ]
+        },
+        {
+          "title": "할머니를 만나러 갈 수 있는지 물어요",
+          "start": 1832.45,
+          "end": 1836.89,
+          "lines": [
+            {
+              "start": 1832.65,
+              "end": 1835.15,
+              "text": "So can we go and see Grandma now?"
+            },
+            {
+              "start": 1835.52,
+              "end": 1836.64,
+              "text": "She won't get sick."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "go and see",
+              "meaning": "보러 가다"
+            },
+            {
+              "phrase": "get sick",
+              "meaning": "아프게 되다"
+            }
+          ],
+          "before": [
+            {
+              "title": "테디 이야기의 다음 장면 · 29:06",
+              "start": 1746.77,
+              "end": 1788
+            },
+            {
+              "title": "테디 이야기의 다음 장면 · 29:48",
+              "start": 1788,
+              "end": 1832.45
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "박물관의 공룡",
+      "scenes": [
+        {
+          "title": "박물관에서는 짝과 함께 다녀요",
+          "start": 1864.69,
+          "end": 1872.41,
+          "lines": [
+            {
+              "start": 1864.89,
+              "end": 1872.16,
+              "text": "Okay, class, when we tour the museum, or remember to stay with your trip buddy, that way no one will get lost."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "trip buddy",
+              "meaning": "견학 짝"
+            },
+            {
+              "phrase": "get lost",
+              "meaning": "길을 잃다"
+            }
+          ],
+          "before": [
+            {
+              "title": "할머니 이야기에서 박물관 견학으로",
+              "start": 1836.89,
+              "end": 1864.69
+            }
+          ]
+        },
+        {
+          "title": "공룡 뼈가 얼마나 오래됐는지 배워요",
+          "start": 1976.24,
+          "end": 1993.72,
+          "lines": [
+            {
+              "start": 1976.44,
+              "end": 1982.25,
+              "text": "The dinosaur bones are millions of years old, so they can break very easily."
+            },
+            {
+              "start": 1984.72,
+              "end": 1986.88,
+              "text": "A very long time ago."
+            },
+            {
+              "start": 1989.25,
+              "end": 1993.47,
+              "text": "So these bones are older than daddy?"
+            }
+          ],
+          "words": [
+            {
+              "phrase": "dinosaur bones",
+              "meaning": "공룡 뼈"
+            },
+            {
+              "phrase": "break easily",
+              "meaning": "쉽게 부서지다"
+            }
+          ],
+          "before": [
+            {
+              "title": "짝과 함께 박물관을 둘러봐요 · 31:12",
+              "start": 1872.41,
+              "end": 1917.41
+            },
+            {
+              "title": "짝과 함께 박물관을 둘러봐요 · 31:57",
+              "start": 1917.41,
+              "end": 1962.41
+            },
+            {
+              "title": "짝과 함께 박물관을 둘러봐요 · 32:42",
+              "start": 1962.41,
+              "end": 1976.24
+            }
+          ]
+        },
+        {
+          "title": "옛날 사람들의 옷을 살펴봐요",
+          "start": 2007.99,
+          "end": 2015.42,
+          "lines": [
+            {
+              "start": 2008.19,
+              "end": 2010.97,
+              "text": "See how they didn't wear t-shirts or shoes?"
+            },
+            {
+              "start": 2011.77,
+              "end": 2015.17,
+              "text": "They wore things like animal fur and grass."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "animal fur",
+              "meaning": "동물 털"
+            },
+            {
+              "phrase": "wear",
+              "meaning": "입다"
+            }
+          ],
+          "before": [
+            {
+              "title": "공룡 뼈 이야기에서 옛날 사람들 이야기로",
+              "start": 1993.72,
+              "end": 2007.99
+            }
+          ]
+        },
+        {
+          "title": "거대한 공룡 발자국을 발견해요",
+          "start": 2078.4500000000003,
+          "end": 2085.8,
+          "lines": [
+            {
+              "start": 2078.65,
+              "end": 2085.55,
+              "text": "This is a cast of one of the biggest dinosaur footprints ever found."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "footprint",
+              "meaning": "발자국"
+            },
+            {
+              "phrase": "cast",
+              "meaning": "본을 떠 만든 모형"
+            }
+          ],
+          "question": {
+            "prompt": "무엇을 본떠 만든 모형인가요?",
+            "options": [
+              "알",
+              "이빨",
+              "발자국"
+            ],
+            "answer": 2,
+            "evidenceStart": 2078.65
+          },
+          "before": [
+            {
+              "title": "박물관에서 다음 전시를 살펴봐요 · 33:35",
+              "start": 2015.42,
+              "end": 2063.99
+            },
+            {
+              "title": "박물관에서 다음 전시를 살펴봐요 · 34:23",
+              "start": 2063.99,
+              "end": 2078.4500000000003
+            }
+          ]
+        },
+        {
+          "title": "공룡이 살아날 수 있는지 물어요",
+          "start": 2130.9900000000002,
+          "end": 2143.06,
+          "lines": [
+            {
+              "start": 2131.19,
+              "end": 2136.23,
+              "text": "Jasmine, do the dinosaurs ever come alive?"
+            },
+            {
+              "start": 2140.55,
+              "end": 2142.81,
+              "text": "That's a very creative idea,"
+            }
+          ],
+          "words": [
+            {
+              "phrase": "come alive",
+              "meaning": "살아나다"
+            },
+            {
+              "phrase": "creative",
+              "meaning": "창의적인"
+            }
+          ],
+          "before": [
+            {
+              "title": "박물관의 공룡 · 앞뒤 장면 이어 보기",
+              "start": 2085.8,
+              "end": 2130.9900000000002
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "친구를 도와줘요",
+      "scenes": [
+        {
+          "title": "화재 경보를 듣고 교실 밖으로 나가요",
+          "start": 2202.0600000000004,
+          "end": 2208.02,
+          "lines": [
+            {
+              "start": 2202.26,
+              "end": 2207.77,
+              "text": "Okay class, this is a fire alarm, so we all have to leave the classroom."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "fire alarm",
+              "meaning": "화재 경보기"
+            },
+            {
+              "phrase": "leave the classroom",
+              "meaning": "교실을 나가다"
+            }
+          ],
+          "question": {
+            "prompt": "화재 경보가 울리자 무엇을 하라고 했나요?",
+            "options": [
+              "교실을 나가요",
+              "불을 꺼요",
+              "책상 아래로 들어가요"
+            ],
+            "answer": 0,
+            "evidenceStart": 2202.26
+          },
+          "before": [
+            {
+              "title": "공룡 상상에서 교실 이야기로 · 35:43",
+              "start": 2143.06,
+              "end": 2187.5
+            },
+            {
+              "title": "공룡 상상에서 교실 이야기로 · 36:27",
+              "start": 2187.5,
+              "end": 2202.0600000000004
+            }
+          ]
+        },
+        {
+          "title": "친구가 왜 놀랐는지 이야기해요",
+          "start": 2333.29,
+          "end": 2344.88,
+          "lines": [
+            {
+              "start": 2333.49,
+              "end": 2340.2,
+              "text": "and he really doesn't like loud noises, so that fire alarm was extra scary for him."
+            },
+            {
+              "start": 2340.83,
+              "end": 2344.63,
+              "text": "Yeah, I get scared too sometimes when it's dark."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "loud noises",
+              "meaning": "큰 소리"
+            },
+            {
+              "phrase": "get scared",
+              "meaning": "겁이 나다"
+            }
+          ],
+          "before": [
+            {
+              "title": "친구들과 함께 경보에 대처해요 · 36:48",
+              "start": 2208.02,
+              "end": 2253.05,
+              "lines": [
+                {
+                  "start": 2242.57,
+                  "end": 2243.63,
+                  "text": "Great job, everyone!"
+                }
+              ],
+              "words": [
+                {
+                  "phrase": "great job",
+                  "meaning": "잘했어요"
+                }
+              ]
+            },
+            {
+              "title": "친구들과 함께 경보에 대처해요 · 37:33",
+              "start": 2253.05,
+              "end": 2280.69
+            },
+            {
+              "title": "친구들과 함께 경보에 대처해요 · 38:00",
+              "start": 2280.69,
+              "end": 2333.29
+            }
+          ]
+        },
+        {
+          "title": "달팽이를 보고 놀란 친구를 안심시켜요",
+          "start": 2362.6600000000003,
+          "end": 2379.54,
+          "lines": [
+            {
+              "start": 2362.86,
+              "end": 2363.99,
+              "text": "It's a snail!"
+            },
+            {
+              "start": 2370.47,
+              "end": 2373.23,
+              "text": "Snails are slimy and scary."
+            },
+            {
+              "start": 2375.58,
+              "end": 2377.03,
+              "text": "It's perfectly harmless."
+            },
+            {
+              "start": 2377.67,
+              "end": 2379.29,
+              "text": "We'll move it out of the way for you now."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "slimy",
+              "meaning": "미끈거리는"
+            },
+            {
+              "phrase": "harmless",
+              "meaning": "해가 없는"
+            },
+            {
+              "phrase": "out of the way",
+              "meaning": "방해되지 않는 곳으로"
+            }
+          ],
+          "before": [
+            {
+              "title": "놀란 친구의 마음을 이야기해요",
+              "start": 2344.88,
+              "end": 2362.6600000000003
+            }
+          ]
+        },
+        {
+          "title": "친구의 빠른 판단을 칭찬해요",
+          "start": 2415.09,
+          "end": 2424.87,
+          "lines": [
+            {
+              "start": 2415.29,
+              "end": 2417.62,
+              "text": "Wow, that was amazing, Andy."
+            },
+            {
+              "start": 2418.42,
+              "end": 2420.02,
+              "text": "Yeah, you saved me."
+            },
+            {
+              "start": 2420.75,
+              "end": 2422.79,
+              "text": "Yes, well done, Andy."
+            },
+            {
+              "start": 2423.44,
+              "end": 2424.62,
+              "text": "That was quick thinking."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "well done",
+              "meaning": "잘했어"
+            },
+            {
+              "phrase": "quick thinking",
+              "meaning": "빠른 판단"
+            }
+          ],
+          "before": [
+            {
+              "title": "친구를 도와줘요 · 앞뒤 장면 이어 보기",
+              "start": 2379.54,
+              "end": 2415.09
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "세계 여러 명절과 학교 공연",
+      "scenes": [
+        {
+          "title": "학교 공연을 준비해요",
+          "start": 2549.15,
+          "end": 2561.11,
+          "lines": [
+            {
+              "start": 2549.35,
+              "end": 2552.14,
+              "text": "There's gonna be a school show all about it!"
+            },
+            {
+              "start": 2552.52,
+              "end": 2557.07,
+              "text": "How exciting! There are so many different holidays from all around the world!"
+            },
+            {
+              "start": 2557.57,
+              "end": 2560.86,
+              "text": "Hey, why don't we all learn about the holidays and practice for the show?"
+            }
+          ],
+          "words": [
+            {
+              "phrase": "school show",
+              "meaning": "학교 공연"
+            },
+            {
+              "phrase": "practice for",
+              "meaning": "~을 위해 연습하다"
+            }
+          ],
+          "before": [
+            {
+              "title": "서로 힘든 점을 도와줘요 · 40:24",
+              "start": 2424.87,
+              "end": 2470.02
+            },
+            {
+              "title": "서로 힘든 점을 도와줘요 · 41:10",
+              "start": 2470.02,
+              "end": 2515.02
+            },
+            {
+              "title": "서로 힘든 점을 도와줘요 · 41:55",
+              "start": 2515.02,
+              "end": 2549.15
+            }
+          ]
+        },
+        {
+          "title": "공연 직전에 서로 응원해요",
+          "start": 2636.55,
+          "end": 2640.07,
+          "lines": [
+            {
+              "start": 2636.75,
+              "end": 2637.93,
+              "text": "It's nearly time."
+            },
+            {
+              "start": 2638.7,
+              "end": 2639.82,
+              "text": "Don't be nervous."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "nearly",
+              "meaning": "거의"
+            },
+            {
+              "phrase": "Don't be nervous",
+              "meaning": "긴장하지 마"
+            }
+          ],
+          "before": [
+            {
+              "title": "학교 공연을 준비하는 다음 장면 · 42:41",
+              "start": 2561.11,
+              "end": 2606.11
+            },
+            {
+              "title": "학교 공연을 준비하는 다음 장면 · 43:26",
+              "start": 2606.11,
+              "end": 2636.55
+            }
+          ]
+        },
+        {
+          "title": "명절에 선물을 주고받는 이유",
+          "start": 2705.5800000000004,
+          "end": 2715.41,
+          "lines": [
+            {
+              "start": 2705.78,
+              "end": 2709.55,
+              "text": "At Christmas, we celebrate when Jesus was born."
+            },
+            {
+              "start": 2710.53,
+              "end": 2715.16,
+              "text": "We give each other gifts and feel grateful for the friends' family we have."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "give each other gifts",
+              "meaning": "서로 선물을 주다"
+            },
+            {
+              "phrase": "grateful",
+              "meaning": "고마워하는"
+            }
+          ],
+          "before": [
+            {
+              "title": "학교 공연에서 명절을 소개해요 · 44:00",
+              "start": 2640.07,
+              "end": 2691.83
+            },
+            {
+              "title": "학교 공연에서 명절을 소개해요 · 44:51",
+              "start": 2691.83,
+              "end": 2705.5800000000004
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "공룡 게임과 용돈",
+      "scenes": [
+        {
+          "title": "새 게임과 용돈을 이야기해요",
+          "start": 2792.01,
+          "end": 2801.7,
+          "lines": [
+            {
+              "start": 2792.21,
+              "end": 2793.27,
+              "text": "It's awesome."
+            },
+            {
+              "start": 2793.95,
+              "end": 2798.41,
+              "text": "My mommy's taking me to get this afternoon with my allowance. I can't wait."
+            },
+            {
+              "start": 2799.18,
+              "end": 2801.45,
+              "text": "Mine too. Maybe we can go together."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "allowance",
+              "meaning": "용돈"
+            },
+            {
+              "phrase": "I can't wait",
+              "meaning": "기대돼"
+            },
+            {
+              "phrase": "go together",
+              "meaning": "함께 가다"
+            }
+          ],
+          "before": [
+            {
+              "title": "학교 공연을 마치고 다음 이야기로 · 45:15",
+              "start": 2715.41,
+              "end": 2750.61
+            },
+            {
+              "title": "학교 공연을 마치고 다음 이야기로 · 45:50",
+              "start": 2750.61,
+              "end": 2792.01
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "게임을 사기 위해 용돈을 모아요",
+      "scenes": [
+        {
+          "title": "게임을 살 돈이 필요하다고 말해요",
+          "start": 2819.8,
+          "end": 2822.85,
+          "lines": [
+            {
+              "start": 2820,
+              "end": 2822.6,
+              "text": "Mommy? Daddy? I need some money to buy a game."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "buy a game",
+              "meaning": "게임을 사다"
+            },
+            {
+              "phrase": "need some money",
+              "meaning": "돈이 좀 필요하다"
+            }
+          ],
+          "before": [
+            {
+              "title": "게임을 사기 위해 용돈을 모아요 · 앞뒤 장면 이어 보기",
+              "start": 2801.7,
+              "end": 2819.8
+            }
+          ]
+        },
+        {
+          "title": "어떤 일을 도울지 물어요",
+          "start": 2843.13,
+          "end": 2846.43,
+          "lines": [
+            {
+              "start": 2843.33,
+              "end": 2846.18,
+              "text": "Okay. What do I have to do?"
+            }
+          ],
+          "words": [
+            {
+              "phrase": "have to",
+              "meaning": "~해야 하다"
+            },
+            {
+              "phrase": "What do I have to do?",
+              "meaning": "제가 뭘 해야 해요?"
+            }
+          ],
+          "before": [
+            {
+              "title": "용돈을 받으려면 어떻게 해야 할까요?",
+              "start": 2822.85,
+              "end": 2843.13,
+              "lines": [
+                {
+                  "start": 2830.39,
+                  "end": 2831.41,
+                  "text": "What do you mean?"
+                }
+              ],
+              "words": [
+                {
+                  "phrase": "What do you mean?",
+                  "meaning": "무슨 뜻이에요?"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "해냈다고 말해요",
+          "start": 3078.6,
+          "end": 3080.99,
+          "lines": [
+            {
+              "start": 3078.8,
+              "end": 3080.74,
+              "text": "I did it!"
+            }
+          ],
+          "words": [
+            {
+              "phrase": "I did it!",
+              "meaning": "해냈어!"
+            }
+          ],
+          "before": [
+            {
+              "title": "게임을 사기 위한 일이 이어져요 · 47:26",
+              "start": 2846.43,
+              "end": 2891.43
+            },
+            {
+              "title": "게임을 사기 위한 일이 이어져요 · 48:11",
+              "start": 2891.43,
+              "end": 2936.43
+            },
+            {
+              "title": "게임을 사기 위한 일이 이어져요 · 48:56",
+              "start": 2936.43,
+              "end": 2981.43
+            },
+            {
+              "title": "게임을 사기 위한 일이 이어져요 · 49:41",
+              "start": 2981.43,
+              "end": 3026.43
+            },
+            {
+              "title": "게임을 사기 위한 일이 이어져요 · 50:26",
+              "start": 3026.43,
+              "end": 3078.6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "제이슨의 배낭",
+      "scenes": [
+        {
+          "title": "잠깐 기다려 달라고 해요",
+          "start": 3229.53,
+          "end": 3240.46,
+          "lines": [
+            {
+              "start": 3229.73,
+              "end": 3232.01,
+              "text": "Hold on a second."
+            },
+            {
+              "start": 3238.69,
+              "end": 3240.21,
+              "text": "It's open now."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "hold on a second",
+              "meaning": "잠깐 기다려"
+            },
+            {
+              "phrase": "open",
+              "meaning": "열려 있는"
+            }
+          ],
+          "before": [
+            {
+              "title": "용돈 이야기에서 다음 이야기로 · 51:20",
+              "start": 3080.99,
+              "end": 3124.31
+            },
+            {
+              "title": "용돈 이야기에서 다음 이야기로 · 52:04",
+              "start": 3124.31,
+              "end": 3169.55
+            },
+            {
+              "title": "용돈 이야기에서 다음 이야기로 · 52:49",
+              "start": 3169.55,
+              "end": 3215.37
+            },
+            {
+              "title": "용돈 이야기에서 다음 이야기로 · 53:35",
+              "start": 3215.37,
+              "end": 3229.53
+            }
+          ]
+        },
+        {
+          "title": "배낭을 잠깐 맡아 달라고 부탁해요",
+          "start": 3256.9100000000003,
+          "end": 3263.88,
+          "lines": [
+            {
+              "start": 3257.11,
+              "end": 3262.25,
+              "text": "Daddy, can you look after Jason's backpack while we go to the bathroom?"
+            },
+            {
+              "start": 3263,
+              "end": 3263.63,
+              "text": "Of course."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "look after",
+              "meaning": "돌봐 주다, 맡아 주다"
+            },
+            {
+              "phrase": "backpack",
+              "meaning": "배낭"
+            }
+          ],
+          "question": {
+            "prompt": "아빠에게 무엇을 맡아 달라고 했나요?",
+            "options": [
+              "책",
+              "우산",
+              "배낭"
+            ],
+            "answer": 2,
+            "evidenceStart": 3257.11
+          },
+          "before": [
+            {
+              "title": "제이슨의 배낭 · 앞뒤 장면 이어 보기",
+              "start": 3240.46,
+              "end": 3256.9100000000003
+            }
+          ]
+        },
+        {
+          "title": "배낭을 맡아 준 데 감사해요",
+          "start": 3276.09,
+          "end": 3283.63,
+          "lines": [
+            {
+              "start": 3276.29,
+              "end": 3278.23,
+              "text": "Thanks for looking after my backpack."
+            },
+            {
+              "start": 3279.07,
+              "end": 3280.39,
+              "text": "That was quick."
+            },
+            {
+              "start": 3281.91,
+              "end": 3283.38,
+              "text": "No problem, Jason."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "That was quick",
+              "meaning": "정말 빨랐네"
+            },
+            {
+              "phrase": "No problem",
+              "meaning": "괜찮아"
+            }
+          ],
+          "before": [
+            {
+              "title": "제이슨의 배낭 · 앞뒤 장면 이어 보기",
+              "start": 3263.88,
+              "end": 3276.09
+            }
+          ]
+        },
+        {
+          "title": "배낭을 돌려받으러 와요",
+          "start": 3296.1000000000004,
+          "end": 3304.86,
+          "lines": [
+            {
+              "start": 3296.3,
+              "end": 3297.99,
+              "text": "Thanks for looking after my backpack."
+            },
+            {
+              "start": 3299.59,
+              "end": 3301.14,
+              "text": "Can I get it back now?"
+            },
+            {
+              "start": 3302.57,
+              "end": 3304.61,
+              "text": "Didn't I just give you your backpack?"
+            }
+          ],
+          "words": [
+            {
+              "phrase": "get it back",
+              "meaning": "돌려받다"
+            },
+            {
+              "phrase": "give back",
+              "meaning": "돌려주다"
+            }
+          ],
+          "before": [
+            {
+              "title": "배낭을 맡긴 뒤의 상황을 살펴봐요",
+              "start": 3283.63,
+              "end": 3296.1000000000004
+            }
+          ]
+        },
+        {
+          "title": "쌍둥이가 닮았다는 걸 알아차려요",
+          "start": 3362.63,
+          "end": 3374.6,
+          "lines": [
+            {
+              "start": 3362.83,
+              "end": 3365.73,
+              "text": "Don't cry, Rosie. They're twins."
+            },
+            {
+              "start": 3366.18,
+              "end": 3369.29,
+              "text": "They just look the same."
+            },
+            {
+              "start": 3372.58,
+              "end": 3374.35,
+              "text": "My name's Jeffrey."
+            }
+          ],
+          "words": [
+            {
+              "phrase": "twins",
+              "meaning": "쌍둥이"
+            },
+            {
+              "phrase": "look the same",
+              "meaning": "똑같이 생기다"
+            }
+          ],
+          "before": [
+            {
+              "title": "배낭이 어디로 갔는지 알아봐요",
+              "start": 3304.86,
+              "end": 3362.63,
+              "lines": [
+                {
+                  "start": 3310.04,
+                  "end": 3314.71,
+                  "text": "I'm so sorry, Jason. I don't know who I gave it to."
+                }
+              ],
+              "words": [
+                {
+                  "phrase": "I’m so sorry",
+                  "meaning": "정말 미안해"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "closing": [
+    {
+      "title": "배낭 이야기 마무리",
+      "start": 3374.6,
+      "end": 3387
+    }
+  ]
+}

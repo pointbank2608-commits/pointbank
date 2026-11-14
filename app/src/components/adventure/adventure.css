@@ -224,3 +224,6 @@
 .ad-grammardetective .ad-detective-tokens button.ad-detective-gap { border: 0; background: transparent; min-width: 1em; color: #655846; }
 .ad-grammardetective .ad-detective-tokens button.ad-detective-gap.is-selected { background: #ffdd9b; }
 .ad-detective-tokens .is-fixed { color: #176748; }
+
+/* Lesson embedding has no fullscreen stage to size the train’s absolute overlays. */
+.ad-game.ad-wordtrain.ad-in-lesson { min-height: 34rem; }

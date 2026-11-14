@@ -21,6 +21,8 @@ type GameStep = Extract<SoloStep, { t: 'game' }>;
 export default function SoloGameStep({ step, load, busy, onDone, api, stepIndex, preview }: { step: GameStep; load: SoloPlayerApi['gameTemplate']; busy: boolean; onDone: (summary?:GameCheckSummary) => void; api: SoloPlayerApi; stepIndex: number; preview?: boolean }) {
   const { t } = useTranslation();
   const checkOpen=api.gameCheckOpen;
+  const lessonPairs = step.gameType === 'matchup' || step.gameType === 'whackamole' ? step.pairs : undefined;
+  const measure = !lessonPairs && step.measure !== false;
   const [state, setState] = useState<'loading' | 'ready' | 'failed'>('loading');
   const [checking, setChecking] = useState(false);
   const [pairs, setPairs] = useState<MatchPair[]>([]);
@@ -38,6 +40,11 @@ export default function SoloGameStep({ step, load, busy, onDone, api, stepIndex,
     let alive = true;
     setState('loading');
     setResult(null);
+    if (lessonPairs) {
+      setPairs(lessonPairs);
+      setState(lessonPairs.length >= 2 ? 'ready' : 'failed');
+      return;
+    }
     if (!load || !step.templateId) {
       setState('failed');
       return;
@@ -73,11 +80,11 @@ export default function SoloGameStep({ step, load, busy, onDone, api, stepIndex,
       })
       .catch(() => alive && setState('failed'));
     // 게임 시작 시 확인 문제를 고정한다. 준비 실패는 게임을 막지 않고 확인 화면에서 재시도한다.
-    if(step.measure !== false)void checkOpen?.(stepIndex).catch(()=>undefined);
+    if(measure)void checkOpen?.(stepIndex).catch(()=>undefined);
     return () => {
       alive = false;
     };
-  }, [load, step.templateId, step.gameType,step.measure,checkOpen,stepIndex]);
+  }, [load, step.templateId, step.gameType, lessonPairs, measure, checkOpen, stepIndex]);
 
   const btn = 'min-h-14 rounded-2xl px-5 text-xl font-bold [touch-action:manipulation] disabled:opacity-40';
   if (checking) return <GameLearningCheck api={api} step={stepIndex} onDone={onDone} preview={preview} />;
@@ -119,8 +126,8 @@ export default function SoloGameStep({ step, load, busy, onDone, api, stepIndex,
                   ? t(step.gameType === 'hangman' ? 'solo.gameDoneHangman' : 'solo.gameDoneScore', { score: result.score, total: result.total })
                   : t('solo.gameDone', { count: result.wrong ?? 0 })}
           </p>
-          <button type="button" disabled={busy} onClick={() => step.measure === false ? onDone() : setChecking(true)} className={`${btn} w-full bg-[#3b5bdb] text-white`}>
-            {step.measure === false ? t('solo.next') : t('solo.gameCheckStart', {defaultValue:'혼자 확인하고 마치기'})}
+          <button type="button" disabled={busy} onClick={() => measure ? setChecking(true) : onDone()} className={`${btn} w-full bg-[#3b5bdb] text-white`}>
+            {measure ? t('solo.gameCheckStart', {defaultValue:'혼자 확인하고 마치기'}) : t('solo.next')}
           </button>
         </>
       )}

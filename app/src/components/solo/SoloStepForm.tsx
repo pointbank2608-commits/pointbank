@@ -153,7 +153,7 @@ function ClipField({ clip, onChange }: { clip: SoloClip; onChange: (c: SoloClip)
   const [url, setUrl] = useState(clip.videoId ? `https://www.youtube.com/watch?v=${clip.videoId}` : '');
   return (
     <div className="space-y-2">
-      <Field title={t('soloEdit.youtubeUrl')}>
+      {clip.mediaUrl ? <p className="text-sm text-on-surface-variant">수업 원본 영상 · {clip.mediaUrl.split('/').pop()}</p> : <Field title={t('soloEdit.youtubeUrl')}>
         <input
           value={url}
           onChange={(e) => {
@@ -164,7 +164,7 @@ function ClipField({ clip, onChange }: { clip: SoloClip; onChange: (c: SoloClip)
           className={input}
           placeholder="https://www.youtube.com/watch?v=…"
         />
-      </Field>
+      </Field>}
       <div className="grid grid-cols-2 gap-2">
         <Field title={t('soloEdit.clipStart')}>
           <input type="number" min={0} step={0.1} value={clip.start} onChange={(e) => onChange({ ...clip, start: Number(e.target.value) })} className={input} />
@@ -183,7 +183,9 @@ function ClipField({ clip, onChange }: { clip: SoloClip; onChange: (c: SoloClip)
 function GameTemplateField({ academyId, classId, step, onChange }: { academyId: string; classId: string | null; step: Extract<SoloStep, { t: 'game' }>; onChange: (s: SoloStep) => void }) {
   const { t } = useTranslation();
   const [list, setList] = useState<{ id: string; name: string; class_id: string | null; pairs: number }[] | null>(null);
+  const fromLesson = !!step.review || (!!step.pairs && !step.templateId);
   useEffect(() => {
+    if (fromLesson) return;
     let alive = true;
     void supabase
       .from('game_templates')
@@ -204,7 +206,12 @@ function GameTemplateField({ academyId, classId, step, onChange }: { academyId: 
     return () => {
       alive = false;
     };
-  }, [academyId, classId, step.gameType]);
+  }, [academyId, classId, step.gameType, fromLesson]);
+  if (step.review || fromLesson) return (
+    <Field title={t('soloEdit.gameTitle')} hint="이 게임은 영상 수업에서 고른 자료로 만들었어요.">
+      <input value={step.title} onChange={e => onChange({ ...step, title: e.target.value })} className={input} />
+    </Field>
+  );
   return (
     <div className="space-y-4">
       <Field title={t('soloEdit.gameKind')}>
@@ -301,6 +308,9 @@ export default function SoloStepForm({ step, academyId, classId = null, onChange
         </div>
       );
     case 'game':
+      if (step.pairs) {
+        return <ul className="list-disc space-y-1 pl-5">{step.pairs.map(pair => <li key={pair.id}>{pair.left} · {pair.right}</li>)}</ul>;
+      }
       return <GameTemplateField academyId={academyId} classId={classId} step={step} onChange={onChange} />;
     case 'pickWord':
       return (
@@ -551,8 +561,10 @@ export default function SoloStepForm({ step, academyId, classId = null, onChange
     case 'lyricBlank':
       return (
         <div className="space-y-4">
-          {text(t('soloEdit.sentenceBlank'), step.sentence, 'sentence', { area: true, hint: t('soloEdit.blankHint') })}
-          {text(t('soloEdit.ko'), step.ko, 'ko')}
+          {step.audioQuestion !== undefined
+            ? text('듣기 질문', step.audioQuestion, 'audioQuestion')
+            : <>{text(t('soloEdit.sentenceBlank'), step.sentence, 'sentence', { area: true, hint: t('soloEdit.blankHint') })}
+              {text(t('soloEdit.ko'), step.ko, 'ko')}</>}
           <Field title={t('soloEdit.options')}>
             <OptionsField options={step.options} answer={step.answer} onChange={(options, answer) => set({ options, answer })} />
           </Field>

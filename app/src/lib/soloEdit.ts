@@ -291,7 +291,7 @@ export function stepSummary(step: SoloStep): string {
     case 'fadeRead':
       return step.sentence;
     case 'lyricBlank':
-      return step.sentence;
+      return step.audioQuestion || step.sentence;
     case 'lineSing':
       return step.en;
     case 'rule':
@@ -338,7 +338,7 @@ export function stepProblems(step: SoloStep): string[] {
       if (blank(step.word) || blank(step.meaning)) p.push('wordMeaning');
       break;
     case 'game':
-      if (blank(step.templateId)) p.push('gameTemplateEmpty');
+      if (blank(step.templateId) && !step.review && !(step.pairs && step.pairs.length >= 2)) p.push('gameTemplateEmpty');
       break;
     case 'pickWord':
       if (blank(step.meaning) && !step.imageUrl) p.push('promptEmpty');
@@ -369,8 +369,8 @@ export function stepProblems(step: SoloStep): string[] {
       choice(step.options, step.answer);
       break;
     case 'lyricBlank':
-      if (!step.sentence.includes('_____')) p.push('blankMissing');
-      if (!step.clip.videoId.trim()) p.push('clipEmpty');
+      if (!step.audioQuestion?.trim() && !step.sentence.includes('_____')) p.push('blankMissing');
+      if (!step.clip.videoId.trim() && !step.clip.mediaUrl) p.push('clipEmpty');
       choice(step.options, step.answer);
       break;
     case 'translatePick':
@@ -395,12 +395,12 @@ export function stepProblems(step: SoloStep): string[] {
       if (step.sentence.trim().split(/\s+/).filter(Boolean).length < 3) p.push('sentenceShort');
       break;
     case 'watch':
-      if (!step.clip.videoId.trim()) p.push('clipEmpty');
+      if (!step.clip.videoId.trim() && !step.clip.mediaUrl) p.push('clipEmpty');
       if (step.clip.end <= step.clip.start) p.push('clipRange');
       break;
     case 'lineSing':
       if (blank(step.en)) p.push('sentenceEmpty');
-      if (!step.clip.videoId.trim()) p.push('clipEmpty');
+      if (!step.clip.videoId.trim() && !step.clip.mediaUrl) p.push('clipEmpty');
       if (step.clip.end <= step.clip.start) p.push('clipRange');
       break;
     case 'rainbowSpeak':

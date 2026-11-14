@@ -31,6 +31,11 @@ import SoloBlockAssembler from './SoloBlockAssembler';
 import { extractYoutubeId } from '../../lib/youtube';
 import { SONG_LESSONS } from '../../lib/songLessons';
 import { buildSoloPopSongLesson } from '../../lib/soloPopSongs';
+import { buildLibrarySoloVideoTemplate, buildLibraryVideoPractice, videoDraftSteps, videoSelectedSteps, type SoloVideoDraft } from '../../lib/soloVideoTemplate';
+import { videoReviewChoices, videoReviewSteps, type VideoReviewGames } from '../../lib/videoReviewGames';
+import { buildCaillouCourseDraft, caillouCourseCoverage, caillouCourseParts, caillouPracticeMinutes, VIDEO_LESSON_MINUTES, type VideoLessonMinutes } from '../../lib/caillouVideoCourse';
+import SoloPreview from './SoloPreview';
+import SoloSourceVideo from './SoloSourceVideo';
 
 /**
  * 새 개별수업 만들기 — 세 갈래로 시작한다(2026-10-11 정돈).
@@ -85,12 +90,14 @@ const PURPOSES: { id: Purpose; icon: string }[] = [
 export default function SoloCatalogModal({
   academyId,
   classId,
+  initialVideoDraft,
   onClose,
   onBatch,
   onScratch,
 }: {
   academyId: string;
   classId?: string | null;
+  initialVideoDraft?: { draft: SoloVideoDraft; source: string; caillouCourse?: boolean };
   onClose: () => void;
   onBatch: (lessons: BatchLesson[], level: string, source: string) => Promise<void>;
   /** 빈 수업으로 시작(편집기가 바로 열린다) */
@@ -133,6 +140,17 @@ export default function SoloCatalogModal({
   const stagedOpts = { games: gameSlots, pass: stagePass };
   /** 만들 수업 묶음 — 블록 조립기에서 켜고 끄고 만든다 */
   const [pending, setPending] = useState<{ title: string; lessons: BatchLesson[]; level: string; source: string } | null>(null);
+  const [videoDraft, setVideoDraft] = useState<SoloVideoDraft | null>(initialVideoDraft?.draft ?? null);
+  const [videoGames, setVideoGames] = useState<VideoReviewGames>({});
+  const [excludedVideoSteps, setExcludedVideoSteps] = useState<number[]>(() =>
+    (initialVideoDraft?.caillouCourse ? buildCaillouCourseDraft(10, 0, initialVideoDraft.draft)?.defaultExcluded : undefined)
+      ?? initialVideoDraft?.draft.defaultExcluded ?? []);
+  const [videoDraftSource, setVideoDraftSource] = useState(initialVideoDraft?.source ?? '');
+  const [courseSource, setCourseSource] = useState(initialVideoDraft?.caillouCourse ? initialVideoDraft.draft : null);
+  const [courseMinutes, setCourseMinutes] = useState<VideoLessonMinutes>(10);
+  const [coursePart, setCoursePart] = useState(0);
+  const [videoPreview, setVideoPreview] = useState(false);
+  const [evidenceError, setEvidenceError] = useState(false);
 
   /* ---------- 수업 항목(검색·주제·목적이 같은 목록을 쓴다) ---------- */
   const entries = useMemo<Entry[]>(() => {
@@ -346,8 +364,21 @@ export default function SoloCatalogModal({
   const [scratchName, setScratchName] = useState('');
   const [scratchStart, setScratchStart] = useState<'blank' | 'paste'>('blank');
 
-  /* ---------- 영상 라이브러리 장면으로 50분 수업 ---------- */
+  /* ---------- 영상 라이브러리 장면으로 수업 만들기 ---------- */
   async function makeFromClip(clip: VideoClip) {
+    const reviewed = buildLibrarySoloVideoTemplate(clip);
+    const draft = reviewed ?? buildLibraryVideoPractice(clip);
+    if (draft) {
+      setVideoGames({});
+      setCourseSource(reviewed);
+      setCourseMinutes(10);
+      setCoursePart(0);
+      setEvidenceError(false);
+      setVideoDraftSource(reviewed ? `verified-video-${clip.id}-v7` : `video-practice-${clip.id}-v1`);
+      setExcludedVideoSteps((reviewed && buildCaillouCourseDraft(10, 0, reviewed))?.defaultExcluded ?? draft.defaultExcluded);
+      setVideoDraft(draft);
+      return;
+    }
     setBusy('clip');
     try {
       const lesson = buildStandardVideoLesson(clip, await loadWordBank());
@@ -407,7 +438,129 @@ export default function SoloCatalogModal({
   const results = q ? visible.filter((e) => `${e.title} ${e.haystack}`.toLowerCase().includes(q)) : [];
 
   let body: ReactNode;
-  if (pending) {
+  if (videoDraft) {
+    const courseParts = courseSource ? caillouCourseParts(courseMinutes) : [];
+    const lessonDraft = (courseSource && buildCaillouCourseDraft(courseMinutes, coursePart, courseSource)) || videoDraft;
+    const selectedSteps = videoSelectedSteps(lessonDraft, excludedVideoSteps);
+    const reviewChoices = videoReviewChoices(selectedSteps);
+    const steps = videoDraftSteps(lessonDraft, excludedVideoSteps, videoReviewSteps(reviewChoices, videoGames, key => t(key)));
+    const wordsCount = selectedSteps.filter(step => step.t === 'meet').length;
+    const shadowCount = selectedSteps.filter(step => step.t === 'lineSing' && step.practice === 'shadow').length;
+    const sceneCount = courseParts[coursePart]?.scenes.length ?? 0;
+    const choiceGroups = [
+      { title: '단어·표현', count: wordsCount, entries: lessonDraft.steps.flatMap((step, index) =>
+        step.t === 'meet' ? [{ index, label: step.word, detail: step.meaning }] : []) },
+      { title: '자막 없이 쉐도잉', count: shadowCount, entries: lessonDraft.steps.flatMap((step, index) =>
+        step.t === 'lineSing' && step.practice === 'shadow' ? [{ index, label: step.en, detail: `${step.clip.start.toFixed(2)}–${step.clip.end.toFixed(2)}초` }] : []) },
+    ];
+    const videoSeconds = steps.reduce((sum, step) => step.t === 'watch' ? sum + step.clip.end - step.clip.start : sum, 0);
+    const gameMinutes = Math.ceil(reviewChoices.reduce((total, game) =>
+      total + (game.count && videoGames[game.type] ? game.seconds : 0), 0) / 60);
+    const minutes = (courseSource ? caillouPracticeMinutes(selectedSteps) :
+      Math.max(lessonDraft.minutes, Math.ceil((videoSeconds + wordsCount * 20 + shadowCount * 45 + 75) / 60))) + gameMinutes;
+    body = (
+      <div className="space-y-4">
+        <h3 className="text-lg font-bold">{videoDraft.name}</h3>
+        {courseSource && courseParts.length > 0 && (
+          <div className="space-y-3">
+            <fieldset className="flex flex-wrap gap-2">
+              <legend className="mb-2 font-bold">수업 시간</legend>
+              {VIDEO_LESSON_MINUTES.map(value => <label key={value} className="flex min-h-11 items-center gap-2 rounded-xl border border-outline-variant px-4">
+                <input type="radio" name="videoLessonMinutes" checked={courseMinutes === value} onChange={() => {
+                  setCourseMinutes(value);
+                  setCoursePart(0);
+                  setExcludedVideoSteps(buildCaillouCourseDraft(value, 0, courseSource)?.defaultExcluded ?? []);
+                }} />{value}분
+              </label>)}
+            </fieldset>
+            <label className="block">이야기와 차시
+              <select className={`${field} mt-1 block w-full`} value={coursePart} onChange={event => {
+                const index = Number(event.target.value);
+                setCoursePart(index);
+                setExcludedVideoSteps(buildCaillouCourseDraft(courseMinutes, index, courseSource)?.defaultExcluded ?? []);
+              }}>
+                {courseParts.map(({ title }, index) => <option key={index} value={index}>{title}</option>)}
+              </select>
+            </label>
+            <p>장면 {sceneCount}개 · 목표 {courseMinutes}분 · 선택한 활동 약 {minutes}분 · 마지막에 오늘 배운 내용 총정리</p>
+            <ol className="list-decimal space-y-1 pl-6">{courseParts[coursePart]?.scenes.map(scene => <li key={scene.start}>
+              {scene.title}{scene.before?.length ? <span className="text-sm text-on-surface-variant"> · 앞 장면 {scene.before.length}개 포함</span> : null}
+            </li>)}</ol>
+            <p className="text-sm text-on-surface-variant">
+              앞뒤 장면을 포함해 원본 {Math.floor(caillouCourseCoverage.selectedSeconds / 60)}분 {caillouCourseCoverage.selectedSeconds % 60}초를 차시로 나눴어요.
+              {courseParts[coursePart]?.scenes.some(scene => scene.end > caillouCourseCoverage.libraryScriptUntil) &&
+                ' 이 차시에 자동 전사 초안이 있어요. 학생 미리보기에서 원음과 대사를 확인해 주세요.'}
+            </p>
+          </div>
+        )}
+        {choiceGroups.some(group => group.entries.length > 0) && (
+          <div className="space-y-3">
+            <div className="flex flex-wrap gap-2">
+              <button type="button" className="rounded-xl border border-outline-variant px-4 py-2" onClick={() => setExcludedVideoSteps(lessonDraft.defaultExcluded)}>기본 분량</button>
+              <button type="button" className="rounded-xl border border-outline-variant px-4 py-2" onClick={() => setExcludedVideoSteps([])}>전체 선택</button>
+            </div>
+            {choiceGroups.map(({ title, count, entries }) => (
+                <fieldset key={title} className="max-h-60 space-y-1 overflow-y-auto rounded-xl border border-outline-variant p-3">
+                <legend className="px-1 font-bold">{title} · {count}/{entries.length}</legend>
+                {entries.length === 0 && <p>선택할 자료가 없어요.</p>}
+                {entries.map(({ index, label, detail }) => (
+                  <label key={index} className="flex min-h-11 items-center gap-3 rounded-lg px-2 py-1 hover:bg-surface-container-low">
+                    <input type="checkbox" checked={!excludedVideoSteps.includes(index)} onChange={event => {
+                      const checked = event.target.checked;
+                      setExcludedVideoSteps(current => checked ? current.filter(value => value !== index) : [...current, index]);
+                    }} />
+                    <span>{label} <span className="text-sm text-on-surface-variant">· {detail}</span></span>
+                  </label>
+                ))}
+              </fieldset>
+            ))}
+            <fieldset className="space-y-3 rounded-xl border border-outline-variant px-3 py-2">
+              <legend className="px-1 font-bold">복습 게임</legend>
+              <p className="text-sm text-on-surface-variant">위에서 고른 단어·표현과 쉐도잉 문장으로 게임이 만들어져요.</p>
+              {(['word', 'sentence'] as const).map(kind => (
+                <fieldset key={kind} className="grid gap-2 sm:grid-cols-2">
+                  <legend className="mb-2 text-sm font-bold">{kind === 'word' ? '단어 게임' : '문장 게임'}</legend>
+                  {reviewChoices.filter(game => game.kind === kind).map(({ type, nameKey, count, requirement }) => (
+                    <label key={type} className="flex min-h-12 items-center gap-2 rounded-lg border border-outline-variant px-3 py-2">
+                      <input type="checkbox" checked={count > 0 && !!videoGames[type]} disabled={count === 0}
+                        onChange={event => setVideoGames(current => ({ ...current, [type]: event.target.checked }))} />
+                      <span>{type === 'unscramble' ? '문장 단어 순서 맞추기' : t(nameKey)} <span className="block text-xs text-on-surface-variant">
+                        {count ? `${count}${kind === 'word' ? '개' : '문장'}` : requirement}
+                      </span></span>
+                    </label>
+                  ))}
+                </fieldset>
+              ))}
+            </fieldset>
+          </div>
+        )}
+        {lessonDraft.checks.length > 0
+          ? <p>듣기 {lessonDraft.checks.length}문항{steps.some(step => step.t === 'roleplay') && ' · 새 상황에서 말하기 1개'}</p>
+          : <p>학생 미리보기에서 대사와 원음의 타이밍을 확인해 주세요.</p>}
+        {lessonDraft.checks.map(({ evidence, clip, prompt, answer }) => (
+          <details key={evidence.start} className="rounded-xl border border-outline-variant p-3">
+            <summary className="cursor-pointer font-bold">{prompt}</summary>
+            <p className="my-2">{evidence.text} · 정답 {answer} · {evidence.start.toFixed(2)}–{evidence.end.toFixed(2)}초</p>
+            <SoloSourceVideo clip={clip}
+              audioOnly onPlay={() => setEvidenceError(false)} onHeard={() => {}} onError={() => setEvidenceError(true)} />
+          </details>
+        ))}
+        {evidenceError && <p role="alert">근거 원음을 재생하지 못했어요.</p>}
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="rounded-xl border border-outline-variant px-4 py-2" onClick={() => setVideoPreview(true)}>학생 화면 미리보기</button>
+          {!initialVideoDraft && <button type="button" disabled={busy === 'make'} className="rounded-xl bg-primary px-4 py-2 font-bold text-white disabled:opacity-50" onClick={async () => {
+            setBusy('make');
+            try {
+              await onBatch([{ name: lessonDraft.name, steps, minutes }], t('solo.clipLevel'), courseSource ? `${videoDraftSource}-${courseMinutes}-${coursePart + 1}` : videoDraftSource);
+            } finally {
+              setBusy(null);
+            }
+          }}>이 초안으로 수업 만들기</button>}
+        </div>
+        {videoPreview && <SoloPreview steps={steps} onClose={() => setVideoPreview(false)} />}
+      </div>
+    );
+  } else if (pending) {
     body = (
       <SoloBlockAssembler
         academyId={academyId}
@@ -716,9 +869,11 @@ export default function SoloCatalogModal({
               ? t('solo.cat_byTopic')
               : t('solo.cat_scratch');
 
-  const canBack = !!pending || (!q && view.id !== 'home');
+  const canBack = !!videoDraft || !!pending || (!q && view.id !== 'home');
+  const showCatalogFilters = !pending && !(videoDraft && courseSource);
   const goBack = () => {
-    if (pending) setPending(null);
+    if (videoDraft) setVideoDraft(null);
+    else if (pending) setPending(null);
     else setView(view.id === 'purpose' ? { id: 'purposes' } : { id: 'home' });
   };
 
@@ -742,7 +897,7 @@ export default function SoloCatalogModal({
           </button>
         </div>
 
-        {!pending && (
+        {showCatalogFilters && (
           <div className="space-y-1 rounded-xl border border-outline-variant/50 bg-surface-container-low p-2.5" role="radiogroup" aria-label={t('recipes.levelLabel')}>
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-label-md text-label-md font-bold text-on-surface">{t('recipes.levelLabel')}</span>
@@ -756,7 +911,7 @@ export default function SoloCatalogModal({
           </div>
         )}
 
-        {!pending && (
+        {showCatalogFilters && (
           <div className="space-y-1 rounded-xl border border-outline-variant/50 bg-surface-container-low p-2.5" role="radiogroup" aria-label={t('solo.lengthTitle')}>
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-label-md text-label-md font-bold text-on-surface">{t('solo.lengthTitle')}</span>
@@ -769,8 +924,8 @@ export default function SoloCatalogModal({
             <p className="font-caption text-caption text-on-surface-variant">{t(`solo.lengthHint_${mode}`)}</p>
           </div>
         )}
-        {!pending && stages && <StagedGameSlots academyId={academyId} classId={classId ?? null} slots={gameSlots} onChange={setGameSlots} />}
-        {!pending && stages && (
+        {showCatalogFilters && stages && <StagedGameSlots academyId={academyId} classId={classId ?? null} slots={gameSlots} onChange={setGameSlots} />}
+        {showCatalogFilters && stages && (
           <div className="space-y-1 rounded-xl border border-outline-variant/50 bg-surface-container-low p-2.5" role="radiogroup" aria-label={t('solo.stagePassTitle')}>
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-label-md text-label-md font-bold text-on-surface">{t('solo.stagePassTitle')}</span>
