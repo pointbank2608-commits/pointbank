@@ -48,6 +48,8 @@ export interface AdventureConfig {
   punctuationSensitive: boolean;
   simpleClaw: boolean;
 }
+export const DEFAULT_ADVENTURE_QUESTIONS = 5;
+export const MAX_ADVENTURE_QUESTIONS = 50;
 export const adventureId = () => crypto.randomUUID();
 export const wordKey = (value: string) => normalizeStory(value).normalize('NFKC').toLowerCase();
 export function wordTokens(text: string): string[] { return text.trim().split(/\s+/u).filter(Boolean); }
@@ -80,7 +82,7 @@ export function sampleAdventure(type: AdventureType): AdventureConfig {
       {id:'case-2',incorrect:'They is happy.',correct:'They are happy.',errors:[{id:'error-2',start:5,end:7,replacement:'are',choices:['is','are','am']}],accepted:[],explanation:'They에는 are를 사용해요.'},
       {id:'case-3',incorrect:'He like apples and she like bananas.',correct:'He likes apples and she likes bananas.',errors:[{id:'error-3a',start:3,end:7,replacement:'likes',choices:['like','likes','liking']},{id:'error-3b',start:23,end:27,replacement:'likes',choices:['like','likes','liking']}],accepted:[],explanation:'반복되는 like를 각각 찾아 고쳐요.'},
     ], places, clues, missions:[{id:'verbs',text:'Find the verbs!',tag:'verb'}],
-    count: type === 'wordclaw' ? 1 : 5, choices:4, speed:'slow',seconds:0,sound:true,shuffle:false,listening:false,
+    count: type === 'wordclaw' ? 1 : DEFAULT_ADVENTURE_QUESTIONS, choices:4, speed:'slow',seconds:0,sound:true,shuffle:false,listening:false,
     detectiveMode:'choice',caseSensitive:true,punctuationSensitive:true,simpleClaw:false,
   };
 }
@@ -117,7 +119,7 @@ export function detectiveRoundSize(available: number, limit?: number): number | 
 
 export function adventureErrors(type: AdventureType,c: AdventureConfig): string[] {
   const out:string[]=[];
-  if(type!=='grammardetective'&&(!Number.isInteger(c.count)||c.count<1||c.count>50))out.push('문제 개수는 1~50개로 입력해 주세요.');
+  if(type!=='grammardetective'&&(!Number.isInteger(c.count)||c.count<1||c.count>MAX_ADVENTURE_QUESTIONS))out.push(`문제 개수는 1~${MAX_ADVENTURE_QUESTIONS}개로 입력해 주세요.`);
   if(![0,20,30,45,60,90].includes(c.seconds))out.push('제한 시간을 다시 선택해 주세요.');
   if(type==='balloonpop'||type==='wordfishing'||type==='wordclaw'){
     const unique=new Set(c.words.map(w=>wordKey(w.word)));

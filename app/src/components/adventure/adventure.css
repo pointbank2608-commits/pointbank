@@ -65,7 +65,7 @@
 }
 @media(max-width:600px){.ad-vocab-board{gap:22px 18px;padding:16px 8px}.ad-word{width:100%;min-width:0}.ad-balloon{min-height:140px}}
 
-/* Grammar Detective evidence desk */
+/* Responsive adventure scenes size themselves within the available stage. */
 .game-fs-stage[data-game-fit="responsive"] {
   container-type: size;
   overflow: auto;
@@ -76,6 +76,39 @@
   flex-shrink: 0;
   will-change: auto;
 }
+
+.ad-game.ad-balloonpop {
+  width: min(100%, 108rem);
+  min-height: 34rem;
+  aspect-ratio: 3 / 2;
+  margin-inline: auto;
+}
+.game-fs-stage .ad-game.ad-balloonpop {
+  width: min(100%, 108rem, max(44rem, 150cqh));
+}
+.ad-balloonpop .ad-world { object-position: center bottom; }
+.ad-balloonpop .ad-sky {
+  width: min(100%, 44rem);
+  min-height: 0;
+  gap: 1.25rem;
+  padding: .5rem .5rem 2rem;
+}
+.ad-balloonpop .ad-vocab-slot { min-height: 0; }
+.ad-balloonpop .ad-balloon {
+  --balloon-height: clamp(7.5rem, 18dvh, 12rem);
+  width: min(100%, calc(var(--balloon-height) * .85));
+  min-height: var(--balloon-height);
+  padding: .75rem;
+}
+.ad-balloonpop .ad-string { height: 1.65rem; }
+@media (max-width: 600px) {
+  .ad-game.ad-balloonpop { min-height: 32rem; }
+  .ad-balloonpop .ad-sky { gap: 1rem .5rem; }
+  .ad-balloonpop .ad-balloon { --balloon-height: clamp(6.5rem, 16dvh, 9rem); }
+  .ad-balloonpop .ad-buddy { width: 3rem; height: 4rem; }
+}
+
+/* Grammar Detective evidence desk */
 .ad-game.ad-grammardetective {
   width: min(100%, 100rem);
   min-height: clamp(26rem, 58dvh, 34rem);
