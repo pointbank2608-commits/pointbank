@@ -159,7 +159,7 @@ try {
    if(type==='wordfishing' || type==='balloonpop' || type==='wordclaw') {
     await stage.locator(`[data-word="${answer}"]`).press('Enter');
     if(type==='wordclaw') await stage.getByRole('button',{name:'집게 내리기',exact:true}).click();
-    await stage.locator(type==='wordfishing'?'.ad-fish-correct':type==='wordclaw'?'.ad-capsule.is-lifting':'.ad-balloon.correct').waitFor();
+    await stage.locator(type==='wordfishing'?'.ad-fish-correct':type==='wordclaw'?'[data-pick="catch"] .claw-carried':'.ad-balloon.correct').waitFor();
    }
    if(type==='treasuredig'){
     await stage.getByRole('button',{name:answer,exact:true}).click();

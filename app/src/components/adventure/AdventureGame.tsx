@@ -7,7 +7,9 @@ import { ADVENTURE_NAMES, adventureErrors, correctionAccepted, detectiveGaps, de
 import { useAdventureEngine, type AdventureEngine } from '../../lib/useAdventureEngine';
 import ArrangePieces from './ArrangePieces';
 import { FishArt, FishingTackle, type FishingCast } from './FishingArt';
+import ClawMachine from './ClawMachine';
 import './adventure.css';
+import './claw-machine.css';
 
 const worlds:Record<AdventureType,string>={balloonpop:'balloon',wordtrain:'train',wordfishing:'fishing',sentencerocket:'rocket',grammardetective:'detective',treasurehunt:'island',wordclaw:'arcade'};
 function englishSpeak(text:string,fallback?:()=>void){
@@ -46,7 +48,7 @@ function Round({type,c,e,round:r}:{type:AdventureType;c:AdventureConfig;e:Advent
   if(r.kind==='sentence')return <Sentence type={type} e={e} r={r}/>;
   if(r.kind==='case')return <Detective c={c} e={e} r={r}/>;
   if(r.kind==='clue')return <Hunt c={c} e={e} r={r}/>;
-  return <Claw c={c} e={e} r={r}/>;
+  return <ClawMachine c={c} e={e} r={r}/>;
 }
 function Vocabulary({type,c,e,r}:{type:AdventureType;c:AdventureConfig;e:AdventureEngine;r:Extract<AdventureRound,{kind:'vocab'}>}){
   const {t}=useTranslation();
@@ -177,16 +179,6 @@ function Hunt({c,e,r}:{c:AdventureConfig;e:AdventureEngine;r:Extract<AdventureRo
     {targets.map((t,i)=>{const point=targetPoint(t,c.places);const correct=targetKey(t)===targetKey(r.clue.answer);return <button key={targetKey(t)} className={`ad-map-target ${opened&&correct?'is-open':''}`} data-target={targetKey(t)} aria-label={`${c.places.find(p=>p.id===t.placeId)?.name} ${t.relation} 지점`} title={`지도 지점 ${i+1}`} disabled={e.busy} style={{left:`${point.x}%`,top:`${point.y}%`}} onClick={()=>{if(e.judge(correct,r.clue.text,r.clue.text,{duration:2100})&&correct){setLocation(point);setOpened(true);}}}>{opened&&correct?'🪙':'✦'}</button>;})}
     <span className="ad-pirate" style={{left:`${location.x}%`,top:`${location.y}%`}}><img src="/skins/adventure/pirate.webp" alt="해적 탐험가"/></span>{opened&&e.index+1===e.total&&<span className="ad-open-chest" style={{left:`${location.x}%`,top:`${location.y}%`}}><svg viewBox="0 0 100 90" aria-label="열린 보물 상자"><rect x="10" y="43" width="80" height="40" rx="7" fill="#b97b42" stroke="#f6d987" strokeWidth="5"/><path d="M25 45v35m50-35v35" stroke="#f6d987" strokeWidth="7"/><g className="ad-chest-lid"><path d="M10 43V25Q50-5 90 25v18Z" fill="#c68c51" stroke="#ffe4a0" strokeWidth="5"/></g><circle cx="50" cy="56" r="8" fill="#ffd664"/></svg></span>}{opened&&<span className="ad-coins">✦ 🪙 ✨</span>}
   </div><p className="ad-control-help">힌트를 읽고 장소의 앞·뒤·위·아래에 있는 빛나는 지점을 선택해요.</p></>;
-}
-function Claw({c,e,r}:{c:AdventureConfig;e:AdventureEngine;r:Extract<AdventureRound,{kind:'mission'}>}){
-  const [words]=useState(()=>shuffled(r.picture?.words ?? c.words));const [selected,setSelected]=useState(0),[collected,setCollected]=useState<string[]>([]),[picked,setPicked]=useState('');const root=useRef<HTMLDivElement>(null);const [hook,setHook]=useState({x:50,y:20});
-  const matches=words.filter(w=>r.picture ? w.word === r.picture.answer : w.tags.some(t=>wordKey(t)===wordKey(r.mission.tag)));const locked=e.busy;
-  function drop(){const w=words[selected];if(!w||collected.includes(w.id))return;const correct=matches.some(m=>m.id===w.id);const done=correct&&collected.length+1===matches.length;const node=root.current?.querySelector<HTMLElement>(`[data-capsule="${w.id}"]`);if(node&&root.current){const a=root.current.getBoundingClientRect(),b=node.getBoundingClientRect();setHook({x:(b.x+b.width/2-a.x)/a.width*100,y:(b.y+b.height/2-a.y)/a.height*100});node.style.setProperty('--delivery-x',`${a.width*.85-(b.x-a.x)-b.width/2}px`);node.style.setProperty('--delivery-y',`${a.height*.96-(b.y-a.y)-b.height/2}px`);}if(e.judge(correct,r.mission.text,done?matches.map(x=>x.word).join(' · '):w.word,{complete:done,duration:2200})){setPicked(w.id);if(correct)setCollected(old=>[...old,w.id]);}}
-  function move(delta:number){if(locked)return;setSelected(v=>(v+delta+words.length)%words.length);e.sound('move');}
-  return <><div className="ad-prompt">{r.picture ? <img data-picture-word src={r.picture.imageUrl} alt={r.mission.text} className="mx-auto h-20 max-w-full object-contain" /> : r.mission.text}<span>{collected.length} / {matches.length}</span></div><div ref={root} className="ad-machine" tabIndex={0} aria-label="집게 조종: 방향키와 스페이스" onKeyDown={event=>{if(event.target!==event.currentTarget)return;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' ','Enter'].includes(event.key)){event.preventDefault();if(event.key==='ArrowLeft')move(-1);else if(event.key==='ArrowRight')move(1);else if(event.key==='ArrowUp')move(-3);else if(event.key==='ArrowDown')move(3);else drop();}}}>
-    <span className={`ad-claw-head ${locked?'is-dropping':''}`} style={{left:`${locked?hook.x:((selected%3)+.5)/3*100}%`,top:`${locked?hook.y:8}%`}}><svg viewBox="0 0 80 85" aria-hidden="true"><path d="M40 0v22M27 33L11 53l8 22M53 33l16 20-8 22" fill="none" stroke="#8b75aa" strokeWidth="8" strokeLinecap="round"/><circle cx="40" cy="30" r="17" fill="#badcea" stroke="white" strokeWidth="4"/><circle cx="35" cy="28" r="2"/><circle cx="46" cy="28" r="2"/><path d="M36 35q5 5 9 0" fill="none" stroke="#41597c" strokeWidth="2"/></svg></span>
-    <div className="ad-capsules">{words.map((w,i)=><button key={w.id} data-capsule={w.id} data-word={w.word} className={`ad-capsule ${selected===i?'is-selected':''} ${collected.includes(w.id)?picked===w.id&&locked?'is-lifting':'is-collected':''} ${picked===w.id&&e.reaction==='wrong'?'wrong':''}`} disabled={locked||collected.includes(w.id)} onClick={()=>{setSelected(i);if(!c.simpleClaw)e.sound('pick');if(c.simpleClaw){/* Direct choice still uses the same deterministic mission rule. */const correct=matches.some(m=>m.id===w.id),done=correct&&collected.length+1===matches.length;if(e.judge(correct,r.mission.text,done?matches.map(x=>x.word).join(' · '):w.word,{complete:done,duration:1600})){setPicked(w.id);if(correct)setCollected(v=>[...v,w.id]);}}}}><small>★</small>{w.word}</button>)}</div><span className="ad-outlet" aria-hidden="true">획득함</span>
-  </div><div className="ad-claw-controls"><button disabled={locked} onClick={()=>move(-1)} aria-label="집게 왼쪽">←</button><button className="ad-primary" disabled={locked||collected.includes(words[selected].id)} onClick={drop}>집게 내리기</button><button disabled={locked} onClick={()=>move(1)} aria-label="집게 오른쪽">→</button></div><div className="ad-collected" aria-live="polite">모은 단어: {words.filter(w=>collected.includes(w.id)).map(w=>w.word).join(' · ')||'미션에 맞는 단어를 모두 모아요.'}</div><p className="ad-control-help">단어를 눌러 집게 위치 선택 → 내리기. 조종판에서는 방향키와 Space/Enter도 가능해요.</p></>;
 }
 function RocketFinale({finish,sound}:{finish:()=>void;sound:AdventureEngine['sound']}){
   const [count,setCount]=useState(3);
