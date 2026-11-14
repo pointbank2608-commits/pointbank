@@ -131,9 +131,14 @@ export default function HomeworkPage() {
   const headerBtn = 'flex min-h-11 items-center gap-1.5 rounded-full px-4 font-label-md text-label-md';
   // 내 수업 카드의 "숙제 내기"에서 넘어온 경우: 그 수업으로 마법사를 한 번만 연다
   useEffect(() => {
-    const st = location.state as { fromLessonId?: string; fromClassId?: string; pickedCards?: FullCardItem[]; pickedTitle?: string; personalGame?:{cards:FullCardItem[];name:string} } | null;
+    const st = location.state as { fromLessonId?: string; fromClassId?: string; pickedCards?: FullCardItem[]; pickedTitle?: string; personalGame?:{cards:FullCardItem[];name:string}; recordingLesson?:{title:string;items:HwItemDraft[]} } | null;
     if (!classId) return;
     if (st?.fromClassId && classId !== st.fromClassId) { select(st.fromClassId); return; }
+    if (st?.recordingLesson?.items.length) {
+      setPanel({k:'editor',items:st.recordingLesson.items,title:st.recordingLesson.title});
+      navigate(location.pathname,{replace:true,state:null});
+      return;
+    }
     if(st?.personalGame?.cards?.length){
       if(loadedClass!==classId)return;
       if(!students.length){notify(t('studentHw.noStudentsTeacher'),'error');navigate(location.pathname,{replace:true,state:null});return;}

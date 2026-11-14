@@ -1,5 +1,6 @@
 import { BOARD_FONTS, boardTheme as findBoardTheme, type BoardTheme } from '../lib/boardThemes';
 import type { FullCardItem } from '../lib/types';
+import TracingRow from './worksheets/TracingRow';
 
 interface Props {
   tab: string;
@@ -42,7 +43,7 @@ export default function WorksheetTypePreview({ tab, words, title, compact = fals
       content = <div className="grid h-full grid-cols-2 gap-2">{sample.map((item) => <div key={item.id} className="flex flex-col overflow-hidden rounded-md border border-primary/20 bg-white"><div className="flex min-h-0 flex-1 items-center justify-center bg-secondary-container/25"><PreviewPicture word={item} /></div><div className="py-1 text-center font-bold">{item.word}</div></div>)}</div>;
       break;
     case 'tracing':
-      content = <div className="space-y-3">{sample.map((item) => <div key={item.id}><div className="border-b border-dashed border-outline-variant pb-1"><b>{item.word}</b> <span className="ml-3 text-on-surface/20">{item.word}　{item.word}</span></div><div className="mt-1 border-b border-dotted border-outline-variant/70">&nbsp;</div></div>)}</div>;
+      content = <div className="space-y-2">{sample.slice(0,compact?2:4).map(item=><div key={item.id}><b>{item.word}</b><TracingRow word={item.word} trace last rowMm={9} emMm={Math.min(8,48/item.word.length)}/></div>)}</div>;
       break;
     case 'quiz':
     case 'multipleChoice':
@@ -53,7 +54,12 @@ export default function WorksheetTypePreview({ tab, words, title, compact = fals
       break;
     case 'match':
     case 'readMatch':
-      content = <div className="grid h-full grid-cols-[1fr_auto_1fr] items-center gap-3"><div className="space-y-2">{sample.map((item) => <div key={item.id} className="rounded border border-outline-variant bg-white px-2 py-1 font-bold">{item.word}</div>)}</div><div className="space-y-3 text-primary/45">{sample.map((item) => <div key={item.id}>······</div>)}</div><div className="space-y-2">{[...sample].reverse().map((item) => <div key={item.id} className="rounded border border-outline-variant bg-white px-2 py-1 text-right">{tab === 'readMatch' ? <span className="inline-flex items-center gap-1"><span className="material-symbols-outlined text-sm">image</span>{item.meaning}</span> : item.meaning}</div>)}</div></div>;
+      content = <div className="space-y-2">{sample.slice(0,compact?2:4).map((item,i)=>{
+        const picture=sample[(i+1)%Math.min(sample.length,compact?2:4)];
+        return <div key={item.id} className="grid grid-cols-[1fr_auto_36px] items-center gap-2">
+          <b>{tab==='readMatch'?item.example||item.word:item.word}</b><span aria-hidden className="text-[8px] tracking-[8px]">●　●</span><span className="block h-9 w-9 overflow-hidden rounded"><PreviewPicture word={picture}/></span>
+        </div>;
+      })}</div>;
       break;
     case 'wordSearch':
       content = <div className="mx-auto grid max-w-64 grid-cols-7 overflow-hidden rounded border border-outline-variant bg-white">{chars.slice(0, 49).split('').map((char, i) => <span key={i} className="flex aspect-square items-center justify-center border border-outline-variant/30 font-mono font-bold">{char}</span>)}</div>;
@@ -62,7 +68,7 @@ export default function WorksheetTypePreview({ tab, words, title, compact = fals
       content = <div className="space-y-3">{sample.map((item, i) => <div key={item.id} className="flex items-center gap-3"><span className="w-5">{i + 1}.</span><span className="rounded-md bg-secondary-container/50 px-3 py-1 font-bold tracking-[0.18em]">{scramble(item.word)}</span><span className="flex-1 border-b border-outline">&nbsp;</span></div>)}</div>;
       break;
     case 'fillBlank':
-      content = <div className="space-y-4">{sample.map((item, i) => <div key={item.id}>{i + 1}. <span className="inline-block min-w-24 border-b-2 border-outline">&nbsp;</span> <span className="text-on-surface-variant">({item.meaning})</span></div>)}</div>;
+      content = <div className="space-y-2">{sample.slice(0,compact?2:4).map((item,i)=><div key={item.id} className="flex items-center gap-2"><span className="block h-9 w-9 overflow-hidden rounded"><PreviewPicture word={item}/></span><b>{i+1}. {[...item.word].map((letter,index)=>index===1?'_':letter).join(' ')}</b></div>)}</div>;
       break;
     case 'grouping':
       content = <div className="grid h-full grid-cols-2 gap-3">{['A', 'B'].map((group, i) => <div key={group} className="rounded-lg border-2 border-primary/25 bg-white p-2"><div className="mb-2 rounded bg-primary/10 py-1 text-center font-bold">Group {group}</div>{sample.filter((_, j) => j % 2 === i).map((item) => <div key={item.id} className="mb-1 rounded border border-dashed border-outline-variant px-2 py-1">{item.word}</div>)}</div>)}</div>;

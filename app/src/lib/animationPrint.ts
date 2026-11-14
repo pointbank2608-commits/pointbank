@@ -8,7 +8,7 @@ import { printableCrossword, type PrintCrossword } from './worksheetActivityPrin
 export type PaperItem = {
   id: string; label: string; prompt?: string; answer?: string; lines?: number;
   meaning?: string; definition?: string; exampleSentence?: string; choices?: string[]; trace?: string; cue?: string; example?: boolean; image?: string;
-  pictures?: string[]; puzzle?: PrintCrossword;
+  pictures?: string[]; puzzle?: PrintCrossword; context?: string[]; situation?: string;
 };
 type Options = { letters: number; bank: boolean; chunks: boolean; pictureClues: boolean; choiceCount?: number };
 type PrintActivity = { id: string; label: string; title: string; instruction: string; items: PaperItem[]; reason?: string };
@@ -41,11 +41,12 @@ export function animationPrintActivities(clip: VideoClip, bank: WordBankEntry[],
   const script = parseShadowText(clip.script).map((line,index) => ({
     ...line, id:String(index), label:clean(line.en), text:clean(line.en),
   }));
-  const questions = sceneQuestions(clip).map((item,index) => ({...item,id:String(index),label:item.q}));
+  const lesson = sceneLesson(clip);
+  const questions = sceneQuestions(clip,lesson.range).map((item,index) => ({...item,id:String(index),label:item.q}));
   const curated = {...teaching.print,...clip.pack.animationPrint};
   const scrambleSentences = [...new Set(teaching.scrambleSentences?.map(clean) ?? [])];
   const grammar = clip.pack.grammar;
-  const practice=sceneLesson(clip).expression;
+  const practice=lesson.expression;
   const wordRows = (fn: (entry: typeof vocabulary[number]) => Partial<PaperItem> | null) =>
     vocabulary.flatMap(entry => { const row = fn(entry); return row ? [{id:entry.id,label:entry.word,...row}] : []; });
   const questionRows = (fn: (entry: typeof questions[number]) => Partial<PaperItem> | null) =>
@@ -73,22 +74,23 @@ export function animationPrintActivities(clip: VideoClip, bank: WordBankEntry[],
   };
   return [
     {id:'words',title:'단어 연습',en:'Vocabulary',types:[
+      {id:'study',label:'단어 학습표',title:'Words for the Scene',instruction:'Read the words and examples.',items:wordRows(entry=>entry.meaning&&(entry.example||teaching.definitions?.[entry.word])?{meaning:entry.meaning,definition:teaching.definitions?.[entry.word],exampleSentence:entry.example}:null)},
       {id:'pictureMatch',label:'그림과 영어 단어 연결',title:'Picture Match',instruction:'Match each picture to its word.',items:wordRows(entry=>({image:entry.image,meaning:entry.meaning,answer:entry.word})),reason:'이 단어 목록에는 연결할 그림이 없어요.'},
       {id:'meaningMatch',label:'영어 단어와 한국어 뜻 연결',title:'Meaning Match',instruction:'Match each word to its meaning.',items:wordRows(entry=>entry.meaning?{answer:entry.meaning}:null)},
       {id:'wordTrace',label:'단어 따라쓰기',title:'Trace the Words',instruction:'Trace each word. Then write it on your own.',items:wordRows(entry=>({trace:entry.word,image:entry.image,answer:entry.word,lines:1}))},
       {id:'letters',label:'빠진 글자 채우기',title:'Missing Letters',instruction:'Complete the missing letters.',items:wordRows(entry=>entry.meaning&&/^[a-z]{3,}$/i.test(entry.word)?{meaning:entry.meaning,prompt:[...entry.word].map((letter,index)=>index>0&&index<=Math.min(options.letters,entry.word.length-2)?'_':letter).join(' '),answer:entry.word}:null)},
+      {id:'wordScramble',label:'단어 스크램블',title:'Unscramble the Words',instruction:'Put the letters in order. Write the word.',items:wordRows(entry=>/^[a-z]+$/i.test(entry.word)&&new Set(key(entry.word)).size>1?{prompt:mix([...entry.word.toUpperCase()]).join(' ')+(entry.meaning?' · '+entry.meaning:''),pictures:options.pictureClues&&entry.image?[entry.image]:undefined,answer:entry.word,lines:1}:null)},
       {id:'fromMeaning',label:'뜻 보고 영단어 쓰기',title:'Write the English Word',instruction:'Read the meaning. Write the English word.',items:wordRows(entry=>entry.meaning?{prompt:entry.meaning,answer:entry.word,lines:1}:null)},
       {id:'meaning',label:'영단어 보고 뜻 쓰기',title:'Vocabulary',instruction:'Write the meaning.',items:wordRows(entry=>entry.meaning?{prompt:entry.word,answer:entry.meaning,lines:1}:null)},
       {id:'wordContext',label:'문장 속 단어 고르기',title:'Choose the Word',instruction:'Read and circle.',items:verified('wordContext')},
       {id:'crossword',label:'크로스워드 퍼즐',title:'Crossword',instruction:'Read the clues. Write one letter in each box.',items:wordRows(entry=>entry.meaning?{answer:entry.meaning,image:options.pictureClues?entry.image:undefined}:null)},
-      {id:'wordScramble',label:'단어 스크램블',title:'Unscramble the Words',instruction:'Put the letters in order. Write the word.',items:wordRows(entry=>/^[a-z]+$/i.test(entry.word)&&new Set(key(entry.word)).size>1?{prompt:mix([...entry.word.toUpperCase()]).join(' ')+(entry.meaning?' · '+entry.meaning:''),pictures:options.pictureClues&&entry.image?[entry.image]:undefined,answer:entry.word,lines:1}:null)},
-      {id:'study',label:'단어 학습표',title:'Words for the Scene',instruction:'Read the words and examples.',items:wordRows(entry=>entry.meaning&&(entry.example||teaching.definitions?.[entry.word])?{meaning:entry.meaning,definition:teaching.definitions?.[entry.word],exampleSentence:entry.example}:null)},
     ]},
     {id:'questions',title:'내용 질문',en:'Comprehension',types:[
       {id:'scene',label:'장면 그림 고르기',title:'Choose the Scene',instruction:'Read and circle the picture.',items:verified('scene')},
       {id:'questionChoice',label:'보기에서 답 고르기',title:'Choose the Answer',instruction:'Read and circle.',items:questionRows(entry=>{
         const alternatives=teaching.choices?.[entry.q]?.filter(value=>value.trim()&&key(value)!==key(entry.a))??[];
-        const choices=mix([entry.a,...new Set(alternatives)].slice(0,options.choiceCount??3));
+        const choices=[...new Set(alternatives)].slice(0,(options.choiceCount??3)-1);
+        choices.splice((Number(entry.id)+1)%(choices.length+1),0,entry.a);
         return entry.a&&choices.length>=2?{choices,answer:String.fromCharCode(65+choices.indexOf(entry.a))+'. '+entry.a}:null;
       })},
       {id:'trueFalse',label:'참·거짓',title:'True or False',instruction:'Read and circle True or False.',items:verified('trueFalse').map(row=>({...row,prompt:row.prompt+'\nTrue / False'}))},
@@ -114,11 +116,11 @@ export function animationPrintActivities(clip: VideoClip, bank: WordBankEntry[],
       {id:'grammarPractice',label:'대표 문법과 응용',title:'Use the Pattern',instruction:'Read the pattern. Try it in a new situation.',items:(practice?.examples??[]).slice(0,5).map((example,index)=>{
         const parts=words(example.answer);
         const missing=parts.pop()??'';
-        const prefix=[practice?.original?'From the scene: '+practice.original:'Learning expression: '+practice?.text,practice?.explanation??'',example.situation];
+        const context=[practice?.original?'From the scene: '+practice.original:'Learning expression: '+practice?.text,practice?.explanation??''];
         const alternative=practice?.examples.find(item=>item.answer!==example.answer)?.answer;
         const choices=index===0&&alternative?mix([example.answer,alternative]):undefined;
         const task=index===4?'Write your own sentence.':index===3?'Use these words: '+parts.slice(0,3).join(' '):index===0&&choices?'Choose the best sentence.':parts.join(' ')+' '+gap;
-        return {id:'pattern-'+index,label:example.situation,prompt:[...prefix,task].join('\n'),choices,answer:choices?String.fromCharCode(65+choices.indexOf(example.answer))+'. '+example.answer:index>=3?example.answer:missing,lines:choices?0:index>=3?2:1,example:index>=3};
+        return {id:'pattern-'+index,label:example.situation,prompt:task,context,situation:example.situation,choices,answer:choices?String.fromCharCode(65+choices.indexOf(example.answer))+'. '+example.answer:index>=3?example.answer:missing,lines:choices?0:2,example:index>=3};
       })},
       {id:'substitute',label:'문장 일부 바꿔 쓰기',title:'Change Part of the Sentence',instruction:'Keep the pattern. Use the new words.',items:verified('substitute').concat((grammar?.drills??[]).flatMap((drill,index)=>{
         const replaced=grammar && drill.cue.trim() && wordMatch(drill.cue).test(drill.answer) && clean(drill.answer)!==clean(grammar.sentence);

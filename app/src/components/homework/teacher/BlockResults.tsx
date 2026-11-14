@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { HINT_NAMES } from "../../../lib/homework/spellingHints";
 import {
@@ -6,7 +6,9 @@ import {
   recordingUrl,
   reviewBlock,
   type BlockResult,
+  type RecordingOriginal,
 } from "../../../lib/homework/blockApi";
+import PlainTeachingVideo from '../../PlainTeachingVideo';
 
 /** 활동 한 칸의 색: 첫 시도 정답률(90↑ 초록 · 70↑ 노랑 · 그 아래 주황), 점수 없는 활동은 끝냄 파랑, 아직이면 회색 */
 function cellStyle(r: BlockResult): { bg: string; label: string } {
@@ -103,12 +105,16 @@ export function StudentStrip({
   rows,
   name,
   studentId,
+  originals,
+  originalsFailed,
   onReviewed,
   onError,
 }: {
   rows: BlockResult[];
   name: string;
   studentId?: string;
+  originals?: Record<string, RecordingOriginal>;
+  originalsFailed?: boolean;
   onReviewed: () => void;
   onError: (msg: string) => void;
 }) {
@@ -116,9 +122,9 @@ export function StudentStrip({
   const en = i18n.language.startsWith("en");
   const mine = useMemo(() => rows.filter(r => r.student_id&&studentId ? r.student_id===studentId : r.name===name), [rows,name,studentId]);
   const [open, setOpen] = useState<string | null>(null);
-  const [audio, setAudio] = useState<Record<string, string>>({});
   if (!mine.length) return null;
   const detail = mine.find((r) => r.item_id === open);
+  const original = detail ? originals?.[detail.item_id] : undefined;
   const statusText = (r: BlockResult) =>
     r.meta.review === "pending"
       ? en ? "Review needed" : "교사 확인 필요"
@@ -183,21 +189,7 @@ export function StudentStrip({
             {en ? "Hints / listens" : "힌트 / 다시 듣기"}: {detail.meta.hints || 0} / {detail.meta.listens || 0}
           </p>
           {detail.meta.response && <p className="whitespace-pre-wrap">{detail.meta.response}</p>}
-          {detail.meta.recording &&
-            (audio[detail.item_id] ? (
-              <audio controls src={audio[detail.item_id]} />
-            ) : (
-              <button
-                className="min-h-11 rounded-lg border px-3"
-                onClick={() =>
-                  void recordingUrl(detail.meta.recording!)
-                    .then((url) => setAudio((a) => ({ ...a, [detail.item_id]: url })))
-                    .catch(() => onError(en ? "Recording unavailable. Retry later." : "녹음을 불러오지 못했습니다. 다시 시도하세요."))
-                }
-              >
-                {en ? "Listen to recording" : "대표 녹음 듣기"}
-              </button>
-            ))}
+          {detail.meta.recording && <RecordingComparison key={detail.meta.recording} path={detail.meta.recording} original={original} originalsFailed={originalsFailed} en={en} onError={onError}/>}
           {detail.meta.review === "pending" && (
             <button
               className="min-h-11 rounded-lg bg-primary px-4 text-white"
@@ -210,4 +202,36 @@ export function StudentStrip({
       )}
     </div>
   );
+}
+
+function RecordingComparison({path,original,originalsFailed,en,onError}:{
+  path:string; original?:RecordingOriginal; originalsFailed?:boolean; en:boolean; onError:(message:string)=>void;
+}) {
+  const [url,setUrl] = useState('');
+  const [loading,setLoading] = useState(false);
+  const [showOriginal,setShowOriginal] = useState(false);
+  const audio = useRef<HTMLAudioElement>(null);
+  const pauseRecording = useCallback((playing:boolean)=>{if(playing)audio.current?.pause();},[]);
+  async function loadRecording() {
+    setLoading(true);
+    try { setUrl(await recordingUrl(path)); }
+    catch { onError(en?'Could not load the recording. Try again.':'녹음을 불러오지 못했습니다. 다시 시도하세요.'); }
+    finally { setLoading(false); }
+  }
+  return <div className={original?'grid gap-3 md:grid-cols-2':'space-y-2'}>
+    {original&&<section className="min-w-0 rounded-xl border bg-white p-3">
+      <h4 className="font-bold">{en?'Original audio':'원음'}</h4>
+      <p className="mb-2">{original.text}</p>
+      {showOriginal?<div className="min-h-[280px]"><PlainTeachingVideo simple videoUrl={original.videoUrl} title={original.text} start={original.start} end={original.end}
+        onPlayingChange={pauseRecording}/></div>
+        :<button type="button" className="min-h-11 rounded-lg border px-3" onClick={()=>{audio.current?.pause();setShowOriginal(true);}}>{en?'Open original clip':'원음 열기'}</button>}
+    </section>}
+    <section className="min-w-0 rounded-xl border bg-white p-3">
+      <h4 className="mb-2 font-bold">{en?'Student recording':'학생 녹음'}</h4>
+      {url?<audio ref={audio} controls className="w-full" aria-label={en?'Student recording':'학생 녹음'} src={url} onPlay={()=>setShowOriginal(false)}
+        onError={()=>setUrl('')}/>
+        :<button type="button" disabled={loading} className="min-h-11 rounded-lg border px-3" onClick={()=>void loadRecording()}>{loading?(en?'Loading…':'불러오는 중…'):(en?'Listen to recording':'학생 녹음 듣기')}</button>}
+    </section>
+    {originalsFailed&&<p role="status">{en?'Could not load the original clip. Reopen the results to retry.':'원음 정보를 불러오지 못했습니다. 결과 화면을 다시 열어 주세요.'}</p>}
+  </div>;
 }

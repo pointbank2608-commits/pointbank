@@ -4,10 +4,22 @@ import type { SceneTeaching } from '../lib/animationScene';
 const washingPictures = {'washing|빨래':'/word-bank-images/laundry.webp','wind|바람':'/word-bank-images/wind.webp'};
 const washingActivities: NonNullable<SceneTeaching["print"]> = {
   scene:[{prompt:'What is Mum doing at the beginning of the scene?',answer:'A. Hanging out the washing.',pictures:['/word-bank-images/laundry.webp','/word-bank-images/wind.webp']}],
-  trueFalse:[{prompt:'The wind blows the washing off the line.',answer:'True.'},{prompt:'Mum says it is wrong to be small.',answer:'False.'}],
+  trueFalse:[
+    {prompt:'The wind blows the washing off the line.',answer:'True.'},
+    {prompt:'Mum says it is wrong to be small.',answer:'False.'},
+    {prompt:'Pom Pom says Pomeranians are a small breed.',answer:'True.'},
+    {prompt:'Pom Pom says she can do it easily.',answer:'False.'},
+    {prompt:'Dad says he would have a go at the game.',answer:'True.'},
+  ],
   eventOrder:[{prompt:'___ Mum tells Pom Pom it is okay to be small.\n___ Mum hangs out the washing.\n___ The wind blows the washing away.',answer:'3, 1, 2.'}],
   infer:[{prompt:'How do you think Pom Pom feels when she says she cannot play? Use something she says or does.',answer:'She may feel discouraged because she says she cannot do it.'}],
-  wordContext:[{prompt:'The (wind / washing) blew the clothes off the line.',answer:'wind'}],
+  wordContext:[
+    {prompt:'The (wind / washing) blew the clothes off the line.',answer:'wind'},
+    {prompt:'Mum wants to get her clean clothes (long / back).',answer:'back'},
+    {prompt:'A Pomeranian is a (small / wrong) dog.',answer:'small'},
+    {prompt:'Mum hangs the (washing / wind) outside to dry.',answer:'washing'},
+    {prompt:'Pom Pom says it might be (best / long) if she stops playing.',answer:'best'},
+  ],
 };
 
 export const animationScenes: Record<string,SceneTeaching> = {

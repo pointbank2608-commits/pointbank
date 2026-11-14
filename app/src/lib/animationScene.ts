@@ -8,6 +8,17 @@ export interface AnimationLessonPlan {
   gameLast?: boolean;
 }
 
+export const animationLessonSteps = [
+  '장면 예상하기', '핵심 단어', '시청 질문과 영상', '내용 확인',
+  '표현 연습', '짝 말하기', '차례 넘기기 게임', '마무리 문장',
+] as const;
+
+export function animationLessonTiming(minutes: AnimationLessonPlan['minutes'], extras = 0) {
+  const time = minutes===40 ? [4,4,4,5,6,7,7,3] : [3,3,3,4,4,5,5,3];
+  for (let i=0;i<extras;i++) time[time.indexOf(Math.max(...time))] -= 2;
+  return time;
+}
+
 export interface SceneTeaching {
   /** Complete, reviewed lines suitable for word-order questions. */
   scrambleSentences?: string[];
@@ -33,6 +44,18 @@ export function learningRange(clip: VideoClip) {
   const focus = sceneTeaching(clip).range;
   return range && focus && focus.start >= range.start && focus.end <= range.end && focus.end > focus.start ? focus : range;
 }
+
+export function animationTimedSource(clip: VideoClip) {
+  const range = learningRange(clip);
+  if (!range) return '';
+  return clip.script.split(/\r?\n/).filter(raw=>{
+    if (!/^\s*\[\d{1,2}:\d{2}(?:\.\d+)?\s*[-–—]\s*\d{1,2}:\d{2}(?:\.\d+)?\]/.test(raw)) return false;
+    const [line] = parseShadowText(raw);
+    return line && line.start>=range.start && line.end<=range.end;
+  }).join('\n');
+}
+
+export const animationTimedLines = (clip: VideoClip) => parseShadowText(animationTimedSource(clip));
 
 export function sceneRange(clip: VideoClip) {
   const start = Number(clip.start_sec), end = Number(clip.end_sec);

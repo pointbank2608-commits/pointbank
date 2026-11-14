@@ -1,3 +1,4 @@
+import PlainTeachingVideo from '../PlainTeachingVideo';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { HwItem } from "../../lib/homework/types";
@@ -267,7 +268,8 @@ export default function BlockActivity({
   const speakingReady = finalSpeaking || b.type !== "speak" || stage >= b.stages.length;
   const guidedSpeaking = b.type === "speak" && b.guidedPractice === true;
   // 안내형 말하기: 문장을 가린 단계에서 바로 녹음할 수 있다(힌트로 문장을 열 수 있음)
-  const recordReady = speakingReady || (guidedSpeaking && currentStage === "hidden");
+  const originalRecording = b.type==='speak' && !!b.videoUrl && b.end>b.start;
+  const recordReady = originalRecording || speakingReady || (guidedSpeaking && currentStage === "hidden");
   const allowed =
     (b.type !== "video" || watched) &&
     recordReady &&
@@ -329,7 +331,7 @@ export default function BlockActivity({
         )}
       {b.type !== "video" && !finalSpeaking && (
         <div className="flex flex-wrap gap-2">
-          {(!guidedSpeaking || currentStage==="model" || showHint) && <button
+          {!(b.type==='speak'&&b.videoUrl) && (!guidedSpeaking || currentStage==="model" || showHint) && <button
             className={btn}
             onClick={() => {
               onSensor?.('audio');
@@ -379,6 +381,7 @@ export default function BlockActivity({
           {l("말해 봤어요", "I practised")} · {repeated + 1}/{b.repeats}
         </button>
       )}
+      {originalRecording&&<div className="min-h-[320px]"><PlainTeachingVideo videoUrl={b.videoUrl} title={b.text} start={b.start} end={b.end} simple/></div>}
       {b.type === "video" && (
         <VideoSegment
           url={b.videoUrl}

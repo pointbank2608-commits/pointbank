@@ -1,3 +1,5 @@
+import AnimationRecordingHomework from './AnimationRecordingHomework';
+import { useVideoClips } from '../lib/videoClips';
 import { lazy, Suspense, useMemo } from 'react';
 import StemFrameView from './stem/StemFrameView';
 import { useTranslation } from 'react-i18next';
@@ -52,6 +54,8 @@ export default function LessonSlideContent({
   if ((slide.kind === 'wordshow' || slide.kind === 'study') && slide.words?.length) words = slide.words;
   const grammarCards = useGrammarCards(words);
   const studyWords = usePhonicsFilled(words);
+  const {clips:videoClips} = useVideoClips(slide.kind === 'video' && !!slide.clipId);
+  const animationClip = slide.kind === 'video' ? videoClips?.find(clip=>clip.id===slide.clipId) : undefined;
   const clipPack = useClipPack(slide.kind === 'qna' || slide.kind === 'drill' ? slide.clipId : null);
   const clipDown = useClipTakenDown(slide.kind === 'shadow' || slide.kind === 'qna' || slide.kind === 'drill' || slide.kind === 'video' ? slide.clipId : null);
   // 새 배열을 매 렌더 넘기면 FlashcardStudy 가 처음 카드로 되돌아가므로 단어가 바뀔 때만 만든다.
@@ -117,7 +121,7 @@ export default function LessonSlideContent({
       <div className={fill ? 'absolute inset-0 p-2' : 'aspect-video w-full max-w-5xl'}>
         <QnaBoard
           key={slide.id}
-          questions={withFreshQuestionTimes(slide.questions, clipPack)}
+          questions={slide.animationGuide ? slide.questions : withFreshQuestionTimes(slide.questions, clipPack)}
           title={slide.title}
           videoUrl={student ? undefined : slide.videoUrl}
           themeId={slide.boardTheme ?? 'green'}
@@ -275,14 +279,16 @@ export default function LessonSlideContent({
     if (fill) {
       return (
         <div className="absolute inset-0 p-2 md:p-3">
-          <YoutubeShadowingPlayer title={slide.title} rememberKey={`lesson:${slide.id}`} videoUrl={slide.videoUrl} fit start={slide.startSec} end={slide.endSec} />
+          <YoutubeShadowingPlayer source={animationClip?.script} title={slide.title} rememberKey={`lesson:${slide.id}`} videoUrl={slide.videoUrl} fit start={slide.startSec} end={slide.endSec} />
+          {animationClip&&<div className="absolute right-4 top-16 z-10 rounded-lg bg-white px-3 py-2 text-deep-navy"><AnimationRecordingHomework clip={animationClip} classId={attendance?.classId}/></div>}
         </div>
       );
     }
     return (
       <div className="space-y-4">
         <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">{lessonName}</h2>
-        <YoutubeShadowingPlayer title={slide.title} rememberKey={`lesson:${slide.id}`} videoUrl={slide.videoUrl} start={slide.startSec} end={slide.endSec} />
+        <YoutubeShadowingPlayer source={animationClip?.script} title={slide.title} rememberKey={`lesson:${slide.id}`} videoUrl={slide.videoUrl} start={slide.startSec} end={slide.endSec} />
+        {animationClip&&<AnimationRecordingHomework clip={animationClip} classId={attendance?.classId}/>}
       </div>
     );
   }

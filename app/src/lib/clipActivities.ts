@@ -4,7 +4,7 @@ export type ClipActivity='words'|'shadow'|'questions'|'cloze'|'reading'|'drill'|
 export function clipActivities(clip:VideoClip):ClipActivity[]{
  const lines=parseShadowText(clip.script);const out:ClipActivity[]=[];
  if(clip.pack?.words?.length)out.push('words');if(lines.length)out.push('shadow');if(clip.pack?.questions?.length)out.push('questions');
- if(lines.length)out.push(clip.words.length?'cloze':'reading');if(clip.pack?.grammar?.drills?.length)out.push('drill');if(shadowSpeakers(lines).length>1)out.push('roles');if((clip.pack?.bingo?.length??0)>=9)out.push('bingo');return out;
+ if(lines.length)out.push(clip.words.length?'cloze':'reading');if(clip.pack?.grammar?.drills?.length)out.push('drill');if(shadowSpeakers(lines).length>1)out.push('roles');if(lines.length&&(clip.pack?.bingo?.length??0)>=9)out.push('bingo');return out;
 }
 export const clipTopics=(clips:VideoClip[])=>[...new Set(clips.flatMap(c=>c.tags).filter(t=>t&&!t.startsWith('classbank:')))].sort();
 /** Exact script & metadata are indexed; no AI-inferred levels or teaching times. */

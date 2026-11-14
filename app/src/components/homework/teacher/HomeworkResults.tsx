@@ -9,6 +9,7 @@ import { ClassMethods, StudentStrip, useBlockRows } from './BlockResults';
 import GuidedHomeworkFeedback from './GuidedHomeworkFeedback';
 import type { CheckType } from '../../../lib/homework/guided';
 import WatchResults from './WatchResults';
+import { recordingOriginals, type RecordingOriginal } from '../../../lib/homework/blockApi';
 
 const POLL_MS = 15000;
 
@@ -41,6 +42,19 @@ export default function HomeworkResults({
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
   const [allWords, setAllWords] = useState(false);
   const block = useBlockRows(hw.id);
+  const [originals,setOriginals] = useState<Record<string, RecordingOriginal>>({});
+  const [originalsFailed,setOriginalsFailed] = useState(false);
+  const hasRecording = block.rows.some(row=>!!row.meta.recording);
+
+  useEffect(()=>{
+    setOriginals({});
+    setOriginalsFailed(false);
+    if (!hasRecording) return;
+    let active = true;
+    void recordingOriginals(hw.id).then(items=>{if(active)setOriginals(items);})
+      .catch(()=>{if(active)setOriginalsFailed(true);});
+    return ()=>{active=false;};
+  },[hw.id,hasRecording]);
 
   const load = useCallback(async () => {
     try {
@@ -203,7 +217,7 @@ export default function HomeworkResults({
             </div>
 
             <GuidedHomeworkFeedback rows={block.rows.filter(row => row.student_id === s.student_id)} done={s.status === 'done'} onPrepare={(cards,type) => onPrepareGuided(s.student_id,cards,type)} />
-            <StudentStrip rows={block.rows} name={s.name} studentId={s.student_id} onReviewed={() => void block.load()} onError={(m) => notify(m, 'error')} />
+            <StudentStrip rows={block.rows} name={s.name} studentId={s.student_id} originals={originals} originalsFailed={originalsFailed} onReviewed={() => void block.load()} onError={(m) => notify(m, 'error')} />
 
             {(s.wrong_words.length > 0 || s.retries > 0) && (
               <div className="text-base text-on-surface-variant">

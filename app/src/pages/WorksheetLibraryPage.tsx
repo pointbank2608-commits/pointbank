@@ -1,3 +1,5 @@
+import WorksheetTypePreview from '../components/WorksheetTypePreview';
+import { WORKSHEET_ACTIVITIES, WORKSHEET_BASICS } from '../lib/worksheetActivityCatalog';
 import BackButton from '../components/BackButton';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -144,7 +146,8 @@ export default function WorksheetLibraryPage() {
       materialsColoringTitle: TOPIC_TITLES[category] ?? category,
       materialsDecorTheme: decorThemeFor(category, chosenEntries[0]?.subcategory),
     };
-    navigate('/materials/worksheet', { state });
+    const activity = (WORKSHEET_BASICS as readonly string[]).includes(tab) ? 'basic-'+tab : tab==='multipleChoice' ? 'basic-quiz' : WORKSHEET_ACTIVITIES.find(item=>item.legacy===tab)?.id;
+    navigate(activity ? '/materials/worksheet?activity='+activity : '/materials/worksheet', { state });
   }
 
   return (
@@ -291,16 +294,14 @@ export default function WorksheetLibraryPage() {
                       onClick={() => openWorksheet(card.tab)}
                       className="flex items-start gap-3 rounded-xl border-2 border-outline-variant bg-surface-container-lowest p-4 text-left transition-all hover:border-primary hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-outline-variant disabled:hover:shadow-none"
                     >
-                      <span className="material-symbols-outlined mt-0.5 text-3xl text-primary" aria-hidden>
-                        {card.icon}
-                      </span>
+                      <span className="block h-24 w-28 shrink-0 overflow-hidden rounded-md border border-outline-variant bg-white" aria-hidden="true"><span className="block w-[270px] origin-top-left scale-[.4]"><WorksheetTypePreview tab={card.tab} words={words.slice(0,3)} title="" compact/></span></span>
                       <span className="min-w-0">
                         <span className="block font-title-md text-title-md text-on-surface">{t(`materials.worksheet.${card.nameKey}`)}</span>
                         <span className="block font-body-sm text-body-sm text-on-surface-variant">
                           {t(`materials.library.desc.${card.descKey}`)}
                         </span>
                         <span className={`mt-1 block font-caption text-caption ${disabled ? 'text-error' : 'text-primary'}`}>
-                          {disabled ? t('materials.library.typeNone') : t('materials.library.typeReady', { count: n })}
+                          {disabled ? t('materials.library.typeNone') : n < words.length ? <>{n} / {words.length} · 일부 자료 부족</> : null}
                         </span>
                       </span>
                     </button>

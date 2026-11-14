@@ -127,7 +127,7 @@ function rethemeElement(el: CanvasElement, prev: BoardTheme | null, next: BoardT
   const prevText = prev ? prev.text : '#1f2937';
   const prevMuted = prev ? prev.muted : '#4b5563';
   const patch: Partial<CanvasTextElement> = {};
-  if (el.color === prevText) patch.color = next ? next.text : '#1f2937';
+  if (el.color === prevText || (el.color==='#112b50' && el.font==='round' && (prev?.id==='pastel'||prev?.id==='whiteboard'))) patch.color = next ? next.text : '#1f2937';
   else if (el.color === prevMuted) patch.color = next ? next.muted : '#4b5563';
   if (next && (!prev || el.font === prev.font)) patch.font = next.font;
   return { ...el, ...patch };

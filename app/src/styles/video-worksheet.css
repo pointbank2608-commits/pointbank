@@ -54,3 +54,11 @@
 .animation-word-trace img{width:13mm;height:13mm;object-fit:contain}
 .animation-match-grid:has(img)>div>div{height:29mm}
 .animation-choices{padding:1mm 0 0 7mm;display:grid;gap:1mm}
+.rc-sheet.animation-sheet{font-size:14pt;line-height:1.42}
+.animation-match-dot{display:block;flex:0 0 1.7mm;height:1.7mm;border-radius:50%;background:#364759}
+.animation-print-row{padding-block:2mm 3mm}
+.animation-choices{padding-top:2mm;gap:1.6mm}
+.animation-study-card>div{padding-block:3mm}
+.animation-study-card p+p{margin-top:2mm}
+.animation-pattern-context{display:grid;gap:2mm;margin-bottom:3mm;padding:3mm;background:#f2f7fc;border-radius:2mm}
+.animation-pattern-situation{font-weight:700;margin-bottom:2mm}

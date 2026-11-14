@@ -41,3 +41,7 @@
 @media print{.ws-live-thumbnail{display:none!important}}
 .worksheet-studio .landscape-preview{box-sizing:border-box;width:281mm;padding:2mm 1mm}@media print{.worksheet-studio .landscape-preview{padding:0;width:277mm}}
 .worksheet-studio .landscape-preview{zoom:1}
+.ws-edit-layout{display:grid;grid-template-columns:minmax(280px,380px) minmax(0,1fr);gap:20px;align-items:start}
+.ws-edit-sidebar{min-width:0}
+@media(max-width:900px){.ws-edit-layout{grid-template-columns:minmax(0,1fr)}}
+@media print{.ws-edit-layout{display:block}}

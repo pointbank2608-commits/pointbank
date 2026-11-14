@@ -78,10 +78,11 @@ export function fetchVideoClips(force = false): Promise<VideoClip[]> {
   return listPromise;
 }
 
-export function useVideoClips() {
+export function useVideoClips(enabled = true) {
   const [clips, setClips] = useState<VideoClip[] | null>(null);
   const [error, setError] = useState(false);
   useEffect(() => {
+    if (!enabled) return;
     let alive = true;
     fetchVideoClips()
       .then((c) => alive && setClips(c))
@@ -93,7 +94,7 @@ export function useVideoClips() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [enabled]);
   return { clips, error };
 }
 

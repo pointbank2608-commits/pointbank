@@ -12,6 +12,7 @@ import '../styles/video-worksheet.css';
 
 type Row = PaperItem & { group: string; groupTitle: string; type: string; title: string; instruction: string; number: number; matching?: PaperItem[]; bank?: string[] };
 const defaults = ['study','questionChoice','grammarPractice'];
+const minimumFive = new Set(['scene','questionChoice','trueFalse','questionHint','questionFull','infer','grammarPractice','substitute','create','wordContext','readCircle']);
 const matchTypes = ['pictureMatch','meaningMatch'];
 const printOptions = {letters:1,bank:true,chunks:true,pictureClues:false,choiceCount:3};
 
@@ -20,16 +21,18 @@ function paginate(rows: Row[], teacher: boolean) {
   let page: Row[] = [];
   let height = 0;
   for (const row of rows) {
-    const text = teacher ? [row.answer ?? '', row.cue ?? ''] : [row.prompt ?? '',row.trace ?? '',row.definition??'',row.exampleSentence??'',...(row.choices??[])];
+    const text = teacher ? [row.answer ?? '', row.cue ?? ''] : [row.prompt ?? '',row.trace ?? '',row.definition??'',row.exampleSentence??'',row.situation??'',...(row.choices??[])];
     const textHeight = text.flatMap(line=>line.split('\n')).reduce((sum,line)=>sum+(line?8*Math.ceil(line.length/59):0),0);
     const matchHeight = (row.matching?.length??0) * (teacher?10:row.type==='pictureMatch'?31:17);
     const puzzleHeight = row.puzzle ? row.puzzle.grid.length * 7 + row.puzzle.entries.length * 7 + 8 : 0;
-    const cost = 7 + textHeight + matchHeight + puzzleHeight + (teacher?0:(row.type==='wordTrace'?26:(row.lines??0)*10) + (row.pictures?.length?30:0) + (row.bank?.length?12:0));
-    const heading = page.at(-1)?.type === row.type ? 0 : 22;
-    if (page.length && (page[0].group!==row.group || height+cost+heading > (pages.at(-1)?.[0].group===row.group?242:216))) {
+    const cost = 7 + textHeight + matchHeight + puzzleHeight + (teacher?0:
+      (row.type==='wordTrace'?30:row.type==='study'?10:row.type==='letters'?14:(row.lines??0)*10) +
+      (row.pictures?.length?30:0) + (row.bank?.length?12:0));
+    const heading = 22 + (!teacher && row.context ? 8 + row.context.reduce((sum,line)=>sum+8*Math.ceil(line.length/59),0) : 0);
+    if (page.length && (page[0].type!==row.type || height+cost > (pages.at(-1)?.[0].type===row.type?242:216))) {
       pages.push(page); page=[]; height=0;
     }
-    height += cost+(page.at(-1)?.type===row.type?0:22);
+    height += cost+(page.length ? 0 : heading);
     page.push(row);
   }
   if (page.length) pages.push(page);
@@ -41,8 +44,8 @@ function Matching({items,pictures,teacher,start}:{items:PaperItem[];pictures:boo
   const right=mixed.every((item,index)=>item.id===items[index].id)?[...items.slice(1),items[0]]:mixed;
   if (teacher) return <ol start={start} className="animation-match-key">{items.map(item=><li key={item.id}>{item.label} → {String.fromCharCode(65+right.indexOf(item))}{!pictures&&' · '+item.answer}</li>)}</ol>;
   return <div className="animation-match-grid">
-    <div>{items.map((item,index)=><div key={item.id}>{start+index}. {item.label}<span aria-hidden>●</span></div>)}</div>
-    <div>{right.map((item,index)=><div key={item.id}><span aria-hidden>●</span>{String.fromCharCode(65+index)}. {pictures?<div><img src={item.image} alt=""/><small>{item.meaning}</small></div>:item.answer}</div>)}</div>
+    <div>{items.map((item,index)=><div key={item.id}>{start+index}. {item.label}<span className="animation-match-dot" aria-hidden="true"/></div>)}</div>
+    <div>{right.map((item,index)=><div key={item.id}><span className="animation-match-dot" aria-hidden="true"/>{String.fromCharCode(65+index)}. {pictures?<div><img src={item.image} alt=""/><small>{item.meaning}</small></div>:item.answer}</div>)}</div>
   </div>;
 }
 
@@ -64,7 +67,6 @@ function Worksheet({ clip }: { clip: VideoClip }) {
   const en = i18n.resolvedLanguage?.startsWith('en');
   const [bank,setBank] = useState<WordBankEntry[]>([]);
   const [enabled,setEnabled] = useState(new Set(defaults));
-  const [selections,setSelections] = useState<Record<string,Set<string>>>({});
   const [options,setOptions] = useState(printOptions);
   const [teacher,setTeacher] = useState(false);
   const [fontReady,setFontReady] = useState(false);
@@ -75,17 +77,18 @@ function Worksheet({ clip }: { clip: VideoClip }) {
     return () => { live = false; };
   }, []);
   const groups=useMemo(()=>animationPrintActivities(clip,bank,options),[clip,bank,options]);
-  const selected = (type: string,items: PaperItem[]) => items.filter(item=>!selections[type]||selections[type].has(item.id));
-  const pictureSelected=selected('pictureMatch',groups[0].types.find(type=>type.id==='pictureMatch')!.items);
+  const pictureSelected=groups[0].types.find(type=>type.id==='pictureMatch')!.items;
   const pictureMissing=pictureSelected.filter(item=>!item.image);
   const crosswordType=groups[0].types.find(type=>type.id==='crossword')!;
-  const crosswordSelected=selected(crosswordType.id,crosswordType.items);
+  const crosswordSelected=crosswordType.items;
   const {puzzle,included}=useMemo(()=>animationCrossword(crosswordSelected),[crosswordSelected]);
   const crosswordMissing=crosswordSelected.filter(item=>!included.has(item.id));
 
+  const available = (type: (typeof groups)[number]['types'][number]) => type.items.length >= (minimumFive.has(type.id) ? 5 : 1) && (type.id !== 'pictureMatch' || pictureSelected.some(item=>item.image)) && (type.id !== 'crossword' || included.size >= 2);
+  const missing = groups.flatMap(group=>group.types.filter(type=>!available(type)));
   const rows = groups.flatMap(group=>group.types.flatMap<Row>(type=>{
-    if (!enabled.has(type.id)) return [];
-    let items=selected(type.id,type.items);
+    if (!enabled.has(type.id) || !available(type)) return [];
+    let items=type.items;
     const base={group:group.id,groupTitle:group.en,type:type.id,title:type.title,instruction:type.instruction};
     if (type.id==='pictureMatch') items=items.filter(item=>item.image);
     if (matchTypes.includes(type.id)) return chunk(items,type.id==='pictureMatch'?5:7).map((matching,index)=>({...base,id:String(index),label:type.title,number:index*(type.id==='pictureMatch'?5:7)+1,matching}));
@@ -99,12 +102,6 @@ function Worksheet({ clip }: { clip: VideoClip }) {
     ...(teacher ? paginate(rows.filter(row=>row.type!=='study'),true).map(content => ({content,teacher:true})) : []),
   ];
   const toggleType = (id:string,on:boolean) => setEnabled(current=>{const next=new Set(current);if(on)next.add(id);else next.delete(id);return next;});
-  const changeSelection=(id:string,items:PaperItem[],itemId:string,on:boolean)=>{
-    const next=new Set(selected(id,items).map(item=>item.id));
-    if(on)next.add(itemId);else next.delete(itemId);
-    setSelections(current=>({...current,[id]:next}));
-    if(on)toggleType(id,true);
-  };
 
   if (!groups.some(group=>group.types.some(type=>type.items.length))) return <p role="alert">{t('readyMedia.noWorksheet')}</p>;
   return <section className="rc-workbook animation-worksheet">
@@ -116,40 +113,17 @@ function Worksheet({ clip }: { clip: VideoClip }) {
     <div className="animation-worksheet-layout">
       <aside className="no-print">
         <h2>{en?'Choose activities to print':'인쇄할 활동 선택'}</h2>
-        {groups.map(group=><details key={group.id} open={group.id==='words'}>
+        {groups.filter(group=>group.types.some(available)).map(group=><details key={group.id} open={group.id==='words'}>
           <summary><strong>{en?group.en:group.title}</strong></summary>
-          {group.types.map(type=>{
-            const count=selected(type.id,type.items).length;
-            const available=type.id==='pictureMatch'?type.items.some(item=>item.image):type.items.length>0;
-            return <section key={type.id} data-print-activity={type.id}>
-              <label className="animation-group-toggle"><input type="checkbox" checked={available&&enabled.has(type.id)} disabled={!available}
+          {group.types.filter(available).map(type=>{ return <section key={type.id} data-print-activity={type.id}>
+              <label className="animation-group-toggle"><input type="checkbox" checked={enabled.has(type.id)}
                 onChange={event=>toggleType(type.id,event.target.checked)}/> {en?type.title:type.label}</label>
-              {!available&&<p className="animation-activity-note">{en?'This video has no suitable material for this activity.':type.reason}</p>}
-              {!!type.items.length&&<details>
-                <summary>{count} / {type.items.length} {en?'selected':'선택'}</summary>
-                <div className="animation-select-actions">
-                  <button type="button" onClick={()=>{setSelections(current=>({...current,[type.id]:new Set(type.items.map(item=>item.id))}));if(available)toggleType(type.id,true);}}>{en?'Select all':'전체 선택'}</button>
-                  <button type="button" onClick={()=>setSelections(current=>({...current,[type.id]:new Set()}))}>{en?'Clear':'선택 해제'}</button>
-                </div>
-                {type.items.map(item=><label className="animation-item-toggle" key={item.id}><input type="checkbox" checked={!selections[type.id]||selections[type.id].has(item.id)}
-                  onChange={event=>changeSelection(type.id,type.items,item.id,event.target.checked)}/> <span lang="en">{item.label}</span></label>)}
-              </details>}
-              {type.id==='pictureMatch'&&pictureSelected.length>0&&<div className="animation-activity-note">
-                <p>{en?'Pictures available':'그림 사용 가능'} · {pictureSelected.length-pictureMissing.length}/{pictureSelected.length}{en?'':'개'}</p>
-                {pictureMissing.length>0&&<>
-                  <p>{en?'Missing pictures':'그림 없는 단어'} · {pictureMissing.map(item=>item.label).join(', ')}</p>
-                  <button type="button" className="underline" onClick={()=>{
-                    const meanings=group.types.find(type=>type.id==='meaningMatch')!.items;
-                    const ids=pictureMissing.filter(item=>meanings.some(meaning=>meaning.id===item.id)).map(item=>item.id);
-                    setSelections(current=>({...current,meaningMatch:new Set([...(enabled.has('meaningMatch')?selected('meaningMatch',meanings).map(item=>item.id):[]),...ids])}));
-                    toggleType('meaningMatch',true);
-                  }}>{en?'Match meanings for words without pictures':'그림 없는 단어로 뜻 연결 추가'}</button>
-                </>}
-              </div>}
-              {type.id==='crossword'&&enabled.has(type.id)&&<p className="animation-activity-note">{en?`Used ${included.size} of ${count} words`:`선택한 ${count}개 중 ${included.size}개 사용`}{crosswordMissing.length>0&&' · '+crosswordMissing.map(item=>item.label).join(', ')}{!included.size&&' · 교차할 단어를 다시 고르거나 단어 스크램블을 선택하세요.'}</p>}
+              {type.id==="pictureMatch"&&pictureMissing.length>0&&<p className="animation-activity-note">그림 없는 단어 · {pictureMissing.map(item=>item.label).join(", ")}</p>}
+              {type.id==='crossword'&&enabled.has(type.id)&&<p className="animation-activity-note">{en?`Used ${included.size} of ${crosswordSelected.length} words`:`선택한 ${crosswordSelected.length}개 중 ${included.size}개 사용`}{crosswordMissing.length>0&&' · '+crosswordMissing.map(item=>item.label).join(', ')}{!included.size&&' · 교차할 단어를 다시 고르거나 단어 스크램블을 선택하세요.'}</p>}
             </section>;
           })}
         </details>)}
+        {missing.length>0&&<details><summary>자료 준비 현황</summary><ul>{missing.map(type=><li key={type.id}>{type.label} · {minimumFive.has(type.id)?type.items.length+'/5문항':type.id==='crossword'?'서로 교차할 낱말이 2개 이상 필요해요.':type.reason}</li>)}</ul></details>}
         <details><summary><strong>{en?'Print options':'인쇄 옵션'}</strong></summary>
           <label className="animation-group-toggle">내용 질문 보기 수 <select value={options.choiceCount} onChange={event=>setOptions({...options,choiceCount:Number(event.target.value)})}><option>3</option><option>2</option></select></label>
           <label className="animation-group-toggle">{en?'Missing letters':'비울 글자 수'} <select value={options.letters} onChange={event=>setOptions({...options,letters:Number(event.target.value)})}><option>1</option><option>2</option><option>3</option></select></label>
@@ -161,14 +135,14 @@ function Worksheet({ clip }: { clip: VideoClip }) {
       </aside>
       <div className="min-w-0">
         <h2 className="no-print mb-2 font-bold">{en?'A4 print preview':'A4 인쇄 미리보기'} · {pages.length}{en?' pages':'쪽'}</h2>
-        {!pages.length&&<p className="no-print">{en?'Choose an activity and at least one item.':'인쇄할 활동과 문항을 선택하세요.'}</p>}
+        {!pages.length&&<p className="no-print">{en?'Choose an activity and at least one item.':'인쇄할 활동을 선택하세요.'}</p>}
         <div className="rc-preview">{pages.map((page,index) => <article className="rc-sheet animation-sheet" key={index} data-teacher={page.teacher}>
-          {(index === 0 || page.teacher!==pages[index-1]?.teacher || page.content[0].group!==pages[index-1]?.content[0].group) && <>
+          {(index === 0 || page.teacher!==pages[index-1]?.teacher || page.content[0].type!==pages[index-1]?.content[0].type) && <>
             <header className="animation-workbook-title"><h1 lang="en">{clip.title}</h1><strong>{page.content[0].groupTitle}</strong></header>
             {page.teacher ? <h2>{en?'Teacher notes and answers':'교사용 설명·정답'}</h2> : <div className="rc-name">Name <span /> Date <span /></div>}
           </>}
           {page.content.map((row,i)=><section key={row.type+':'+row.id} lang="en" className="animation-task">
-            {page.content[i-1]?.type!==row.type&&<><h2>{row.title}</h2>{!page.teacher&&<p className="animation-instruction">{row.instruction}</p>}</>}
+            {i===0&&<><h2>{row.title}</h2>{!page.teacher&&<><p className="animation-instruction">{row.instruction}</p>{row.context&&<div className="animation-pattern-context">{row.context.map(line=><p key={line}>{line}</p>)}</div>}</>}</>}
             <div className="animation-print-row">
               {row.bank&&!page.teacher&&<p className="animation-word-bank">Word Bank · {row.bank.join('  ·  ')}</p>}
               {row.matching?<Matching items={row.matching} pictures={row.type==='pictureMatch'} teacher={page.teacher} start={row.number}/>:row.puzzle?<Puzzle row={row} teacher={page.teacher}/>:page.teacher?
@@ -177,7 +151,7 @@ function Worksheet({ clip }: { clip: VideoClip }) {
                   {row.type==='study'?<div className="animation-study-card"><div>{row.number}. <strong>{row.label}</strong><small lang="ko">{row.meaning}</small></div><div>{row.definition&&<p>{row.definition}</p>}{row.exampleSentence&&<p>{row.exampleSentence}</p>}</div></div>:
                   row.type==='letters'?<div className="animation-missing"><p>{row.number}. {row.prompt}</p><span lang="ko">{row.meaning}</span></div>:
                   row.type==='wordTrace'?<div className="animation-word-trace"><div>{row.number}. <strong>{row.label}</strong>{row.image&&<img src={row.image} alt=""/>}</div><div><TracingRow word={row.label} trace last={false} gapMm={2} rowMm={10} emMm={Math.min(10,110/row.label.length)}/><TracingRow word="" trace={false} last rowMm={10}/></div></div>:
-                  <p>{row.number}. {row.prompt}</p>}
+                  row.situation?<><p className="animation-pattern-situation">{row.number}. {row.situation}</p><p>{row.prompt}</p></>:<p>{row.number}. {row.prompt}</p>}
                   {row.choices&&<ol className="animation-choices">{row.choices.map((choice,i)=><li key={choice}>{String.fromCharCode(65+i)}. {choice}</li>)}</ol>}
                   {row.pictures&&<div className="animation-picture-choices">{row.pictures.map((src,j)=><div key={src+':'+j}>{String.fromCharCode(65+j)}. <img src={src} alt=""/></div>)}</div>}
                   {row.trace&&row.type!=='wordTrace'&&<p className="animation-trace">{row.trace}</p>}

@@ -6,7 +6,7 @@ import { buildVideoLessonParts, markBingoWords } from './videoLesson';
 import type { FullCardItem, GameType, LessonSlide, SlideHelper, WordBankEntry } from './types';
 import type { VideoClip } from './videoClips';
 import type { AnimationLessonPlan } from './animationScene';
-import { sceneWordPicture } from './animationScene';
+import { animationLessonTiming, animationTimedSource, sceneWordPicture } from './animationScene';
 import { buildAnimationLesson } from './animationLesson';
 import type { LessonLevel } from './lessonLevel';
 import { newHelper } from './slideHelpers';
@@ -409,8 +409,20 @@ async function buildClipLesson(ctx: RecipeContext, clip: VideoClip): Promise<Les
     const bank=await loadWordBank();
     const words=clipWordCards(clip,bank.filter(entry=>clip.pack.words?.some(word=>word.word.toLowerCase()===entry.word.toLowerCase()&&word.meaning.trim()===entry.meaning.trim())));
     const plan=buildAnimationLesson(clip,words,ctx.video.plan);
-    const extras=await buildSelectedClipLesson(ctx,clip,(ctx.video.activities??[]).filter(activity=>!['words','questions'].includes(activity)));
-    if(plan.length && extras.length)plan.splice(plan.findIndex(slide=>slide.kind==='qna')+1,0,...extras);
+    const timedSource=animationTimedSource(clip);
+    const extras=await buildSelectedClipLesson(ctx,{...clip,script:timedSource},(ctx.video.activities??[]).filter(activity=>!['words','questions'].includes(activity)));
+    if(plan.length && extras.length){
+      const bingoSlides=extras.filter(slide=>slide.kind==='material'&&slide.materialId==='bingo'||slide.kind==='shadow'&&slide.subtitle==='cloze');
+      const timing=animationLessonTiming(ctx.video.plan.minutes,extras.length-(bingoSlides.length===2?1:0));
+      const order=ctx.video.plan.gameLast?[0,1,2,3,4,5,7,6]:[0,1,2,3,4,5,6,7];
+      let index=0;
+      for(const slide of plan)if(slide.animationGuide)slide.animationGuide.minutes=timing[order[index++]];
+      for(const slide of extras){
+        if('boardTheme' in slide)slide.boardTheme='whiteboard';
+        slide.animationGuide={clipId:clip.id,minutes:bingoSlides.includes(slide)&&bingoSlides.length===2?1:2,question:'',expected:'',hint:'',next:''};
+      }
+      plan.splice(plan.findIndex(slide=>slide.kind==='qna')+1,0,...extras);
+    }
     return plan;
   }
   if(ctx.video?.activities)return buildSelectedClipLesson(ctx,clip,ctx.video.activities);
@@ -464,7 +476,11 @@ export async function buildSelectedClipLesson(ctx:RecipeContext,clip:VideoClip,s
  if(picks.has('cloze')||picks.has('reading'))slides.push({id:uid(),kind:'reading',mode:'cloze',title,videoUrl,source:picks.has('cloze')?markBingoWords(clip.script,clip.words):clip.script,boardTheme:'green'});
  const g=clip.pack.grammar;if(picks.has('drill')&&g)slides.push({id:uid(),kind:'drill',title,sentence:g.sentence,sentenceKo:g.sentenceKo,point:g.point,drills:g.drills,time:g.time,videoUrl,boardTheme:'green',clipId:clip.id});
  if(picks.has('roles'))slides.push({id:uid(),kind:'shadow',title,videoUrl,source:clip.script,flow:'manual',repeat:1,speed:1,subtitle:'ko',roleTeams:2,clipId:clip.id});
- if(picks.has('bingo')){const bingo=clip.pack.bingo!;slides.push({id:uid(),kind:'material',materialId:'bingo',words:bingo.map(word=>({id:uid(),word,meaning:'',imageUrl:null})),boardTheme:'whiteboard'});}
+ if(picks.has('bingo')){
+  const bingo=clip.pack.bingo!;
+  slides.push({id:uid(),kind:'material',materialId:'bingo',words:bingo.map(word=>({id:uid(),word,meaning:'',imageUrl:null})),boardTheme:'whiteboard'});
+  slides.push({id:uid(),kind:'shadow',title:`${title} · ${ctx.t('recipes.bingoListen')}`,videoUrl,source:markBingoWords(clip.script,bingo),flow:'manual',repeat:2,speed:1,subtitle:'cloze',roleTeams:0,clipId:clip.id});
+ }
  return slides;
 }
 

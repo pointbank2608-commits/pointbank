@@ -1,6 +1,6 @@
 import { lessonBoard, lessonTitleSlide } from './lessonCanvas';
 import { newTextElement } from '../components/CanvasSlideEditor';
-import { sceneLesson, sceneTeaching, type AnimationLessonPlan } from './animationScene';
+import { animationLessonTiming, sceneLesson, sceneTeaching, type AnimationLessonPlan } from './animationScene';
 import { clipThumb, type VideoClip } from './videoClips';
 import type { CanvasSlide, FullCardItem, LessonSlide } from './types';
 
@@ -8,8 +8,8 @@ const uid = () => crypto.randomUUID();
 const reveal = { effect:'fade',trigger:'click',duration:.2,delay:0 } as const;
 
 function board(title:string, lines:string[], answer?:string) {
-  const slide=lessonBoard(title,lines);
-  if(answer) slide.elements.push(newTextElement({x:8,y:82,w:84,h:14,text:answer,fitText:true,color:'#fff2b1',fontSize:5,motion:reveal}));
+  const slide=lessonBoard(title,lines,5,'whiteboard');
+  if(answer) slide.elements.push(newTextElement({x:8,y:82,w:84,h:14,text:answer,fitText:true,color:'#163b63',fill:'#fff0bc',font:'round',fontSize:5,motion:reveal}));
   return slide;
 }
 
@@ -18,13 +18,13 @@ export function buildAnimationLesson(clip:VideoClip, cards:FullCardItem[], plan:
   if(scene.missing.length || !scene.range || !scene.expression) return [];
   const {expression,examples,questions,range}=scene;
   const extended=plan.minutes===40;
-  const timing=extended?[4,4,4,5,6,7,7,3]:[3,3,3,4,4,5,5,3];
+  const timing=animationLessonTiming(plan.minutes);
   const clipUrl='https://www.youtube.com/watch?v='+clip.youtube_id;
   const opener=questions.at(-1)!;
   const data=sceneTeaching(clip);
   const final=examples.at(-1)!;
   const models=examples.slice(0,-1);
-  const cover=lessonTitleSlide(clip.title,clip.series+' · '+plan.minutes+' min');
+  const cover=lessonTitleSlide(clip.title,clip.series+' · '+plan.minutes+' min','pastel');
   const predict=board('Look and predict',[opener.q,'Tell your partner what you think.'], 'Look for the answer as you watch.');
   predict.elements.splice(1,0,{id:uid(),type:'image',url:data.image??clipThumb(clip.youtube_id),fit:'contain',x:3,y:33,w:29,h:37});
   for (const item of predict.elements.slice(2,4)) {item.x=34;item.w=62;}
@@ -53,10 +53,10 @@ export function buildAnimationLesson(clip:VideoClip, cards:FullCardItem[], plan:
   const slides:LessonSlide[]=[
     cover,
     step(0,predict,opener.q,opener.a,'Ask pupils to predict before giving the answer.','Let’s look for it in the video.'),
-    step(1,{id:uid(),kind:'wordshow',boardTheme:'green',words:vocab,videoUrl:clipUrl},'What does this word mean?',vocab.map(word=>word.word+' · '+word.meaning).join(' / '),'Point, act out the meaning, or reveal the Korean meaning.','Listen for these words in the scene.'),
+    step(1,{id:uid(),kind:'wordshow',boardTheme:'whiteboard',words:vocab,videoUrl:clipUrl},'What does this word mean?',vocab.map(word=>word.word+' · '+word.meaning).join(' / '),'Point, act out the meaning, or reveal the Korean meaning.','Listen for these words in the scene.'),
     step(2,board('Watch for the answer',[opener.q,'Share your answer after the video.']),opener.q,opener.a,'Let pupils listen before answering.','Now watch the scene.'),
     {id:uid(),kind:'video',title:clip.title,clipId:clip.id,videoUrl:clipUrl,startSec:range.start,endSec:range.end},
-    step(3,{id:uid(),kind:'qna',title:'Story review',questions:questionItems,videoUrl:clipUrl,boardTheme:'green'},opener.q,opener.a,'Let students answer first. Replay the evidence if needed.','Now try the expression in a new situation.'),
+    step(3,{id:uid(),kind:'qna',title:'Story review',questions:questionItems,videoUrl:clipUrl,boardTheme:'whiteboard'},opener.q,opener.a,'Let students answer first. Replay the evidence if needed.','Now try the expression in a new situation.'),
     step(4,board('Look and say',[models[0].situation,expression.original?'From the scene: '+expression.original:'Learning expression: '+expression.text,expression.explanation],models[0].answer),
       models[0].situation,models[0].answer,expression.text,'Say it together, then change the situation.'),
     ...(extended?[board('Change the situation',[models[1].situation,'Use the same pattern.'],models[1].answer)]:[]),
