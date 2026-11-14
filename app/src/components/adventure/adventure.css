@@ -77,16 +77,25 @@
   will-change: auto;
 }
 
-.ad-game.ad-balloonpop {
+.ad-game:is(.ad-balloonpop, .ad-wordtrain) {
   width: min(100%, 108rem);
   min-height: 34rem;
   aspect-ratio: 3 / 2;
   margin-inline: auto;
 }
-.game-fs-stage .ad-game.ad-balloonpop {
+.game-fs-stage .ad-game:is(.ad-balloonpop, .ad-wordtrain) {
   width: min(100%, 108rem, max(44rem, 150cqh));
 }
-.ad-balloonpop .ad-world { object-position: center bottom; }
+:is(.ad-balloonpop, .ad-wordtrain) .ad-world { object-position: center bottom; }
+.ad-game.ad-wordtrain { min-height: auto; overflow: clip; }
+.ad-wordtrain .ad-assembly { max-width: 70rem; }
+.ad-wordtrain .ad-control-help { width: fit-content; margin-block: .65rem .5rem; }
+.ad-wordtrain .ad-piece { max-width: 100%; overflow-wrap: anywhere; }
+@media (max-height: 850px) {
+  .ad-wordtrain .ad-engine { width: 8rem; height: 6.5rem; }
+  .ad-wordtrain .ad-carriages { max-width: calc(100% - 9rem); }
+  .ad-wordtrain .ad-piece { padding: 1.1rem .85rem; min-height: 4.5rem; }
+}
 .ad-balloonpop .ad-sky {
   width: min(100%, 44rem);
   min-height: 0;
@@ -103,6 +112,10 @@
 .ad-balloonpop .ad-string { height: 1.65rem; }
 @media (max-width: 600px) {
   .ad-game.ad-balloonpop { min-height: 32rem; }
+  .ad-game.ad-wordtrain { aspect-ratio: auto; }
+  .ad-wordtrain .ad-engine { width: 6rem; height: 5rem; }
+  .ad-wordtrain .ad-carriages { max-width: 100%; }
+  .ad-wordtrain .ad-piece { padding: .95rem .65rem; min-height: 3.75rem; min-width: 3.75rem; }
   .ad-balloonpop .ad-sky { gap: 1rem .5rem; }
   .ad-balloonpop .ad-balloon { --balloon-height: clamp(6.5rem, 16dvh, 9rem); }
   .ad-balloonpop .ad-buddy { width: 3rem; height: 4rem; }
