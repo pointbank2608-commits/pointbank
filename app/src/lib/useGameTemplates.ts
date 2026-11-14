@@ -1,5 +1,6 @@
 import {flushGameTemplateWrites} from './gameTemplateWrites';
 import { activityName } from './activityNames';
+import { hasAdventureRoundSettings } from './adventureGames';
 import { GAME_CATALOG } from './gameCatalog';
 import { gamePreparation, isNativeGameReady } from './gamePreparation';
 import { guideSample, guideProblem, preparePlayableList } from './gameGuide';
@@ -475,7 +476,7 @@ export function useGameTemplates(params: {
       const draft = makeDraft({ cards: wordListToCards(list), kind, name: list.name, id: list.id });
       if (gameType === 'wordhoops') draft.config.hoopsMode = selected?.config.hoopsMode ?? draft.config.hoopsMode;
       if (gameType === 'tugofwar') draft.config.tugMode = selected?.config.tugMode ?? draft.config.tugMode;
-      if (gameType === 'balloonpop' && draft.config.adventure && selected?.config.adventure) {
+      if (hasAdventureRoundSettings(gameType) && draft.config.adventure && selected?.config.adventure) {
         draft.config.adventure.count = selected.config.adventure.count;
       }
       if (gameType === 'twodice') {

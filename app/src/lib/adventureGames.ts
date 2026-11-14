@@ -50,6 +50,9 @@ export interface AdventureConfig {
 }
 export const DEFAULT_ADVENTURE_QUESTIONS = 5;
 export const MAX_ADVENTURE_QUESTIONS = 50;
+export function hasAdventureRoundSettings(type?: string): type is 'balloonpop' | 'wordfishing' {
+  return type === 'balloonpop' || type === 'wordfishing';
+}
 export const adventureId = () => crypto.randomUUID();
 export const wordKey = (value: string) => normalizeStory(value).normalize('NFKC').toLowerCase();
 export function wordTokens(text: string): string[] { return text.trim().split(/\s+/u).filter(Boolean); }

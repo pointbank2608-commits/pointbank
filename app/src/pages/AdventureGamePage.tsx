@@ -4,7 +4,7 @@ import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import { createGameTemplate, renameGameTemplate } from '../lib/api';
-import { sampleAdventure, adventureErrors, ADVENTURE_NAMES, wordKey, type AdventureConfig, type AdventureRound, type AdventureType } from '../lib/adventureGames';
+import { sampleAdventure, adventureErrors, ADVENTURE_NAMES, hasAdventureRoundSettings, wordKey, type AdventureConfig, type AdventureRound, type AdventureType } from '../lib/adventureGames';
 import { pictureQuizDeck } from '../lib/pictureWordQuestions';
 import type { GameTemplate } from '../lib/types';
 import GameThemeFrame from '../components/GameThemeFrame';
@@ -27,7 +27,7 @@ export default function AdventureGamePage({ type }: { type: AdventureType }) {
   const [addLesson,setAddLesson]=useState(false);
   const selected=g.selected;
   const config=selected?.config.adventure || fallback.adventure;
-  const pictureRounds: AdventureRound[] | undefined = selected?.config.pictureWordMode && (type === 'wordfishing' || type === 'balloonpop' || type === 'wordclaw')
+  const pictureRounds: AdventureRound[] | undefined = selected?.config.pictureWordMode && (hasAdventureRoundSettings(type) || type === 'wordclaw')
     ? pictureQuizDeck(selected.config, []).slice(0, config.count).map(row => {
       const choices = row.choices.map((word, index) => ({ id: `${row.id}-${index}`, word, meaning: '', tags: [] }));
       const word = choices[row.correctIndex];

@@ -11,7 +11,7 @@ import { gamePreparation } from '../lib/gamePreparation';
 import { isSentenceList, listsForGame } from '../lib/gameWorkspace';
 import { preparePlayableList } from '../lib/gameGuide';
 import { pictureWordModeKind, pictureWordQuestions } from '../lib/pictureWordQuestions';
-import { DEFAULT_ADVENTURE_QUESTIONS, MAX_ADVENTURE_QUESTIONS, sampleAdventure } from '../lib/adventureGames';
+import { DEFAULT_ADVENTURE_QUESTIONS, MAX_ADVENTURE_QUESTIONS, hasAdventureRoundSettings, sampleAdventure } from '../lib/adventureGames';
 import { getGrammarPlay, setGrammarPlay } from '../lib/grammarPlay';
 import { setGameSoundOn, useGameSoundOn } from '../lib/gameSfx';
 import { wordListToCards } from '../lib/gameFromWords';
@@ -141,7 +141,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const [pList, setPList] = useState('');
   const selectedDetectiveList = useRef<{ templateId: string | undefined; listId: string } | null>(null);
   const [pPictureMode, setPPictureMode] = useState(false);
-  const [pBalloonCount, setPBalloonCount] = useState(String(DEFAULT_ADVENTURE_QUESTIONS));
+  const [pAdventureCount, setPAdventureCount] = useState(String(DEFAULT_ADVENTURE_QUESTIONS));
   const [pPictureList, setPPictureList] = useState('');
   const [pSaved, setPSaved] = useState('');
   const [pClass, setPClass] = useState('');
@@ -198,7 +198,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   }, []);
 
   const type = info?.gameType;
-  const isBalloonPop = type === 'balloonpop';
+  const hasRoundSettings = hasAdventureRoundSettings(type);
   const isDetective = type === 'grammardetective';
   const pictureKind = pictureWordModeKind(type);
   const currentPictureMode = !!info?.selected?.config.pictureWordMode;
@@ -296,7 +296,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     const chosenListId = selection && selection.templateId === info?.selected?.id ? selection.listId : detectiveListId;
     setPList(isDetective ? chosenListId : currentSourceId);
     setPPictureMode(currentPictureMode);
-    setPBalloonCount(String(info?.selected?.config.adventure?.count ?? DEFAULT_ADVENTURE_QUESTIONS));
+    setPAdventureCount(String(info?.selected?.config.adventure?.count ?? DEFAULT_ADVENTURE_QUESTIONS));
     setPPictureList('');
     setPSaved('');
     setPClass(info?.classId || '');
@@ -472,15 +472,15 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   });
   const applySettings = () => run(async () => {
     setGameSoundOn(pSound);
-    if (pictureKind && info?.selected && (isBalloonPop || pPictureMode || currentPictureMode)) {
+    if (pictureKind && info?.selected && (hasRoundSettings || pPictureMode || currentPictureMode)) {
       if (pPictureMode && !pictureCount) throw new Error(t('gameWordHoops.pictureNeedsList'));
       const config = { ...pictureConfig, pictureWordMode: pPictureMode };
-      if (isBalloonPop) {
-        const count = Number(pBalloonCount);
+      if (hasRoundSettings) {
+        const count = Number(pAdventureCount);
         if (!Number.isInteger(count) || count < 1 || count > MAX_ADVENTURE_QUESTIONS) {
           throw new Error(text(`라운드당 문제 수는 1~${MAX_ADVENTURE_QUESTIONS} 사이 정수로 입력해 주세요.`, `Enter a whole number from 1 to ${MAX_ADVENTURE_QUESTIONS}.`));
         }
-        config.adventure = { ...(config.adventure ?? sampleAdventure('balloonpop')), count };
+        config.adventure = { ...(config.adventure ?? sampleAdventure(type)), count };
       }
       await workspace.applyGuideAndPlay({ items: info.selected.items, config });
       return;
@@ -855,12 +855,12 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
 
       {open === 'settings' && panel(<>
         <PanelHead title={text('게임설정', 'Game settings')} onClose={close} text={text} />
-        {isBalloonPop && (
+        {hasRoundSettings && (
           <div className="space-y-2 rounded-xl bg-surface-container-low p-3">
             <label className="block text-sm font-bold">
               {text('라운드당 문제 수', 'Questions per round')}
               <input className={`${field} !w-28`} type="number" min={1} max={MAX_ADVENTURE_QUESTIONS} step={1}
-                value={pBalloonCount} onChange={event => setPBalloonCount(event.target.value)} />
+                value={pAdventureCount} onChange={event => setPAdventureCount(event.target.value)} />
             </label>
             <p className="text-sm text-on-surface-variant">{text('선택한 자료의 문제 수가 더 적으면, 만들 수 있는 문제만 나와요.', 'If your material has fewer questions, the round uses the available questions.')}</p>
           </div>
