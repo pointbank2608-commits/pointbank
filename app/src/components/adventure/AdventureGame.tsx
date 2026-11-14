@@ -80,9 +80,14 @@ function Vocabulary({type,c,e,r}:{type:AdventureType;c:AdventureConfig;e:Adventu
 }
 function Sentence({type,e,r}:{type:AdventureType;e:AdventureEngine;r:Extract<AdventureRound,{kind:'sentence'}>}){
   const [order,setOrder]=useState<string[]>([]);const train=type==='wordtrain';
+  const rocking = train && e.reaction === 'wrong';
+  function checkSentence() {
+    const correct = sentenceOrderCorrect(r.sentence, order);
+    e.judge(correct, '문장 완성', r.sentence.text, { duration: train && !correct ? 1050 : 1800 });
+  }
   return <><div className="ad-prompt">{train?`🚉 STATION ${e.index+1} · 단어 객차를 연결해 문장을 완성해요.`:'문장 블록을 연결해 로켓 연료를 채워요.'}</div>{!train&&<div className="ad-fuel"><span>🚀 FUEL</span><meter min={0} max={e.total} value={e.records.length}/><b>{Math.round(e.records.length/e.total*100)}%</b></div>}
-    <div className={`ad-assembly ${e.reaction==='correct'?'ad-depart':''}`}>{train&&<span className="ad-engine" aria-hidden="true"><img src="/skins/adventure/engine.webp" alt=""/><i className="ad-smoke">☁</i></span>}<ArrangePieces sentence={r.sentence} disabled={e.busy} train={train} onOrder={setOrder} sound={e.sound}/></div>
-    <button className="ad-primary" disabled={e.busy} onClick={()=>e.judge(sentenceOrderCorrect(r.sentence,order),'문장 완성',r.sentence.text,{duration:1800})}>{train?'출발! 문장 확인':'연료 채우기 · 문장 확인'}</button></>;
+    <div className={`ad-assembly ${rocking ? 'ad-train-rocking' : e.reaction==='correct' ? 'ad-depart' : ''}`}>{train&&<span className="ad-engine" aria-hidden="true"><img src="/skins/adventure/engine.webp" alt=""/><i className="ad-smoke">☁</i></span>}<ArrangePieces sentence={r.sentence} disabled={e.busy} train={train} onOrder={setOrder} sound={e.sound}/></div>
+    <button className="ad-primary" disabled={e.busy} onClick={checkSentence}>{train?'출발! 문장 확인':'연료 채우기 · 문장 확인'}</button></>;
 }
 function Detective({c,e,r}:{c:AdventureConfig;e:AdventureEngine;r:Extract<AdventureRound,{kind:'case'}>}){
   const item=r.item;
