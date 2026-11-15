@@ -8,7 +8,7 @@ import { loadYoutubeIframeApi, type YoutubePlayer } from './youtube';
  *
  * 영상을 못 불러오면(퍼가기 막힘·인터넷) `failed` 가 true — 부르는 쪽이 읽어 주기(TTS)로 대신한다.
  */
-export function useYoutubeSegment(videoId: string | null | undefined, initialStart?: number) {
+export function useYoutubeSegment(videoId: string | null | undefined, initialStart?: number, bounded = false) {
   const [elementId] = useState(() => `hw-yt-${crypto.randomUUID()}`);
   const playerRef = useRef<YoutubePlayer | null>(null);
   const pollRef = useRef<number | null>(null);
@@ -32,7 +32,7 @@ export function useYoutubeSegment(videoId: string | null | undefined, initialSta
         if (cancelled || !window.YT) return;
         playerRef.current = new window.YT.Player(elementId, {
           videoId,
-          playerVars: { rel: 0, modestbranding: 1, playsinline: 1, controls: initialStart === undefined ? 0 : 1, disablekb: initialStart === undefined ? 1 : 0, iv_load_policy: 3, fs: 0,
+          playerVars: { rel: 0, modestbranding: 1, playsinline: 1, controls: initialStart === undefined || bounded ? 0 : 1, disablekb: initialStart === undefined || bounded ? 1 : 0, iv_load_policy: 3, fs: 0,
             ...(initialStart !== undefined && { start: Math.floor(initialStart), origin: window.location.origin }) },
           events: {
             onReady: () => { window.clearTimeout(timeout); setReady(true); },
@@ -61,7 +61,7 @@ export function useYoutubeSegment(videoId: string | null | undefined, initialSta
       setPlaying(false);
       setFailed(false);
     };
-  }, [videoId, elementId, initialStart, stopPoll]);
+  }, [videoId, elementId, initialStart, bounded, stopPoll]);
 
   useEffect(() => () => stopPoll(), [stopPoll]);
 
@@ -115,13 +115,13 @@ export function useYoutubeSegment(videoId: string | null | undefined, initialSta
   );
 
   const stop = useCallback(() => {
-    playerRef.current?.pauseVideo();
+    if (ready) playerRef.current?.pauseVideo();
     stopPoll();
     setPlaying(false);
     const done = doneRef.current;
     doneRef.current = null;
     done?.(false);
-  }, [stopPoll]);
+  }, [ready, stopPoll]);
 
   return { elementId, ready, failed, playing, playSegment, stop };
 }

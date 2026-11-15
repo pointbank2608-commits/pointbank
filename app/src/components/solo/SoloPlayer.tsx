@@ -21,6 +21,7 @@ import { checkCondition, looseNorm } from '../../lib/soloLessons';
 import SoloTestRunner from './SoloTestRunner';
 import SoloPracticeGame from './SoloPracticeGame';
 import SoloSourceVideo from './SoloSourceVideo';
+import { CAILLOU_VIDEO_ID } from '../../lib/caillouVideoCourse';
 
 /**
  * 개별수업 플레이어 — 화면이 선생님이 되어 한 단계씩 이끈다. 학생 화면(/s/lesson)과 선생님 미리보기가 같이 쓴다.
@@ -124,6 +125,7 @@ export default function SoloPlayer({
   onHelpDone,
   headerExtra,
   noticeLoader,
+  history,
 }: {
   steps: SoloPublicStep[];
   startAt?: number;
@@ -142,9 +144,12 @@ export default function SoloPlayer({
   headerExtra?: ReactNode;
   /** 반 전체 공지를 읽는 함수(학생 화면만) — 주면 위쪽에 공지 띠가 뜬다 */
   noticeLoader?: () => Promise<ClassNotice | null>;
+  history?: { last: number; move: (step: number) => void };
 }) {
   const { t } = useTranslation();
   const [idx, setIdx] = useState(() => Math.min(startAt, Math.max(0, steps.length - 1)));
+  const [historyAt, setHistoryAt] = useState<number | null>(null);
+  const [hintRequest, setHintRequest] = useState(0);
   const [phase, setPhase] = useState<Phase>('ask');
   const [wrong, setWrong] = useState<number[]>([]);
   const [shownAnswer, setShownAnswer] = useState<string | null>(null);
@@ -183,8 +188,9 @@ export default function SoloPlayer({
   const touchX = useRef<number | null>(null);
 
   const step = steps[idx];
-  const sensor = useLearningActivity(!preview ? api.sensor : undefined, !finished && result === null && breakNext === null && step ? idx : null);
+  const sensor = useLearningActivity(!preview && historyAt === null ? api.sensor : undefined, !finished && result === null && breakNext === null && step ? idx : null);
   const zoom = useStageZoom();
+  const videoNavigation = useMemo(() => steps.some(step => step.t === 'watch' && step.clip.videoId === CAILLOU_VIDEO_ID), [steps]);
 
   // 노래·영상 단계가 쓰는 유튜브 플레이어(수업 하나에 영상 하나) — 한 번만 만들고 구간만 바꿔 튼다
   const videoId = useMemo(() => {
@@ -324,6 +330,7 @@ export default function SoloPlayer({
     setTyped([]);
     setText('');
     setHeard(false);
+    setHintRequest(0);
     setSourceError(false);
     setShowKo(false);
     setAdvanced(false);
@@ -374,6 +381,10 @@ export default function SoloPlayer({
   }, [finished]);
 
   async function next(unsure = false) {
+    if (history) {
+      history.move(Math.min(idx + 1, history.last));
+      return;
+    }
     const r = await guard(() => api.advance(idx, unsure));
     if (r === null) return;
     if (unsure) {
@@ -419,6 +430,22 @@ export default function SoloPlayer({
     setNonce((n) => n + 1);
   }
 
+  const lastNavigable = preview ? steps.length - 1 : history?.last ?? idx;
+  const canNavigate = !busy && !recording && mic !== 'asking';
+  function navigateStep(i: number) {
+    if (!canNavigate || i < 0 || i > lastNavigable) return;
+    setHintRequest(0);
+    yt.stop();
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    if (history) history.move(i);
+    else if (preview) {
+      setFinished(false);
+      jumpTo(i);
+    } else {
+      setHistoryAt(i === idx ? null : i);
+    }
+  }
+
   /** 틀린 것 다시 풀기 시작 */
   function startRetry(queue: number[], back: { start: number; end: number } | null) {
     if (queue.length === 0) return;
@@ -446,7 +473,10 @@ export default function SoloPlayer({
 
   /** 강의 카드에서 이전 카드로(서버 기록은 바꾸지 않는다 — 읽기만 하는 카드라서) */
   function goBackCard() {
-    if (idx > 0 && CARD_TYPES.includes(steps[idx - 1].t) && CARD_TYPES.includes(step?.t ?? '')) jumpTo(idx - 1);
+    if (idx > 0 && CARD_TYPES.includes(steps[idx - 1].t) && CARD_TYPES.includes(step?.t ?? '')) {
+      if (videoNavigation && !retry) navigateStep(idx - 1);
+      else jumpTo(idx - 1);
+    }
   }
 
   function goOn() {
@@ -473,6 +503,7 @@ export default function SoloPlayer({
 
   /** 답을 서버에 내고 맞았는지에 따라 단계 상태를 바꾼다 */
   async function submit(value: string, onWrong?: () => void) {
+    if (history) return;
     sensor('submitted');
     const res = await guard(() => api.answer(idx, value));
     if (res === null) return;
@@ -490,7 +521,7 @@ export default function SoloPlayer({
     if (attempts.current >= 2) await showAnswer();
     else {
       if (afterDialogue) setHeard(false);
-      sensor('hint');
+      if (!afterDialogue) sensor('hint');
       setPhase('wrong1');
     }
   }
@@ -562,6 +593,19 @@ export default function SoloPlayer({
   }, [missed, steps, testMissed]);
 
   const percent = useMemo(() => (steps.length ? Math.round((Math.min(idx, steps.length) / steps.length) * 100) : 0), [idx, steps.length]);
+
+  if (historyAt !== null) {
+    return <SoloPlayer key={historyAt} steps={steps} startAt={historyAt} onExit={onExit}
+      history={{ last: idx, move: i => setHistoryAt(i === idx ? null : i) }}
+      api={{
+        sensor: api.sensor,
+        gameTemplate: api.gameTemplate,
+        advance: async () => ({ answer: null }),
+        answer: async () => false,
+        reveal: async () => null,
+        submitTest: async () => { throw new Error('Review does not submit tests'); },
+      }} />;
+  }
 
   if (result) {
     const sc = scoreOf(result);
@@ -653,6 +697,9 @@ export default function SoloPlayer({
           </button>
         )}
         {finishExtra}
+        {preview && videoNavigation && <button type="button" onClick={() => navigateStep(steps.length - 1)} className={`${btn} bg-[#efe8d4]`}>
+          이전 단계
+        </button>}
         <button type="button" onClick={onExit} className={`${btn} bg-[#3b5bdb] text-white`}>
           {preview ? t('solo.closePreview') : t('solo.backHome')}
         </button>
@@ -666,6 +713,12 @@ export default function SoloPlayer({
   const answered = phase === 'right' || phase === 'shown';
   const practiceGame = 'practiceGame' in step ? step.practiceGame : undefined;
   const hintFirst = phase === 'wrong1' && (step.t === 'typeWord' || step.t === 'dictation' || step.t === 'gapType');
+  const questionVideo = !!audioQuestion && !!clip;
+  const hintVisible = questionVideo && (hintRequest > 0 || replayingEvidence || !afterDialogue);
+  const activityLabel = audioQuestion ? '원음 듣고 고르기'
+    : pronunciationPractice === 'shadow' ? '자막 없이 쉐도잉'
+    : sourceVideo && step.t === 'lineSing' ? '따라 말하기'
+    : step.t === 'pickWord' && !step.imageUrl ? t('solo.pickEnglishActivity') : t(`soloEdit.stepType_${step.t}`);
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-[#f8f1e3] text-[#1c2742]">
@@ -712,6 +765,14 @@ export default function SoloPlayer({
         )}
         {headerExtra}
       </header>
+      {videoNavigation && !retry && (
+        <nav aria-label="수업 단계 이동" className="flex flex-wrap items-center justify-center gap-2 px-4 pb-3">
+          <button type="button" disabled={!canNavigate || idx === 0} onClick={() => navigateStep(idx - 1)} className="min-h-11 rounded-xl border border-[#d9d3c3] px-4 font-bold disabled:opacity-40">‹ 이전 단계</button>
+          <button type="button" disabled={!canNavigate || idx >= lastNavigable} onClick={() => navigateStep(idx + 1)} className="min-h-11 rounded-xl border border-[#d9d3c3] px-4 font-bold disabled:opacity-40">다음 단계 ›</button>
+          {history && <button type="button" disabled={!canNavigate} onClick={() => navigateStep(history.last)} className="min-h-11 rounded-xl bg-[#efe8d4] px-4 font-bold">수업 이어하기</button>}
+        </nav>
+      )}
+      {history && <p className="text-center text-sm text-[#5b6580]">이전 단계 복습 중</p>}
 
       {noticeLoader && (
         <div className="px-4 pb-2">
@@ -726,7 +787,7 @@ export default function SoloPlayer({
       {activity && (
         <div className="-mt-1 flex justify-center px-4 pb-1">
           <span className="rounded-full bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-1 text-base font-bold text-[#5b6580]">
-            {audioQuestion ? '원음 듣고 고르기' : pronunciationPractice === 'shadow' ? '자막 없이 쉐도잉' : sourceVideo && step.t === 'lineSing' ? '따라 말하기' : t(`soloEdit.stepType_${step.t}`)}
+            {activityLabel}
             {activity.of > 1 ? ` · ${activity.n}/${activity.of}` : ''}
           </span>
         </div>
@@ -753,9 +814,9 @@ export default function SoloPlayer({
         {pronunciationPractice === 'shadow' && (
           <p className="text-center text-lg">영상 속 목소리를 들으면서 한 박자 뒤에 따라 말해요.</p>
         )}
-        {sourceVideo && clip && (!afterDialogue || replayingEvidence) && (
-          <SoloSourceVideo key={idx + ':' + nonce} clip={clip} audioOnly={!!audioQuestion}
-            playLabel={replayingEvidence ? '근거 한 문장 다시 듣기' : pronunciationPractice === 'shadow' ? '쉐도잉 시작' : pronunciationPractice === 'repeat' ? '이 부분 듣기' : undefined}
+        {sourceVideo && clip && !questionVideo && (
+          <SoloSourceVideo key={idx + ':' + nonce} clip={clip}
+            playLabel={pronunciationPractice === 'shadow' ? '쉐도잉 시작' : pronunciationPractice === 'repeat' ? '이 부분 듣기' : undefined}
             onCaptionShown={() => sensor('hint')}
             onPlay={() => { setSourceError(false); sensor('audio'); }}
             onHeard={() => setHeard(true)} onError={() => setSourceError(true)} />
@@ -792,7 +853,18 @@ export default function SoloPlayer({
         {step.t === 'lyricBlank' && audioQuestion && (
           <>
             <p className="text-xl font-bold">{audioQuestion}</p>
-            <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} disabled={needsEvidence || busy} />
+            <button type="button" onClick={() => setHintRequest(n => n + 1)}
+              className="min-h-11 rounded-xl border border-[#d9d3c3] bg-white px-4 font-bold text-[#304dcc]">
+              힌트 보기
+            </button>
+            {hintVisible && clip && (
+              <SoloSourceVideo key={idx + ':' + nonce} clip={clip} bounded playRequest={hintRequest}
+                playLabel={replayingEvidence ? '근거 한 문장 다시 듣기' : '근거 영상 다시 재생'}
+                onCaptionShown={() => sensor('hint')}
+                onPlay={() => { setSourceError(false); sensor('hint'); sensor('audio'); }}
+                onHeard={() => setHeard(true)} onError={() => setSourceError(true)} />
+            )}
+            <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} disabled={!!history || needsEvidence || busy} />
           </>
         )}
         {step.t === 'lyricBlank' && !audioQuestion && (
@@ -1113,7 +1185,7 @@ export default function SoloPlayer({
         )}
 
         {step.t === 'game' && (step.review ? (
-          <SoloReviewGame key={idx} step={step} busy={busy} onDone={() => void next()} />
+          <SoloReviewGame key={idx} step={step} busy={busy} onDone={() => void next()} onSignal={sensor} />
         ) : (
           <SoloGameStep key={`${idx}-${step.templateId}`} step={step} load={api.gameTemplate} busy={busy} api={api} stepIndex={idx} preview={preview} onDone={(summary) => {if(summary){setGameResults(old=>({...old,[idx]:summary}));summary.missed.forEach(word=>markMissedWord({word}));}void next();}} />
         ))}
@@ -1198,10 +1270,10 @@ export default function SoloPlayer({
 
         {step.t === 'pickWord' && !practiceGame && (
           <>
-            <p className="text-xl font-bold">{t('solo.pickWordQ')}</p>
+            <p className="text-xl font-bold">{t(step.imageUrl ? 'solo.pickWordQ' : 'solo.pickEnglishFromMeaning')}</p>
             <Picture url={step.imageUrl} />
             {!step.imageUrl && <p className="text-3xl font-bold">{step.meaning}</p>}
-            <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} />
+            <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} disabled={!!history || busy} />
           </>
         )}
 
@@ -1213,7 +1285,7 @@ export default function SoloPlayer({
               <span className="material-symbols-outlined text-[40px] text-[#3b5bdb]">volume_up</span>
               {step.word}
             </button>
-            <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} />
+            <Options options={step.options} wrong={wrong} phase={phase} onPick={(i) => void choose(i)} disabled={!!history || busy} />
           </>
         )}
 
@@ -1326,7 +1398,8 @@ export default function SoloPlayer({
               >
                 <input
                   ref={inputRef}
-                  autoFocus
+                  autoFocus={!history}
+                  disabled={!!history}
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   autoComplete="off"
@@ -1681,9 +1754,9 @@ export default function SoloPlayer({
                 <button type="button" onClick={() => setTyped((a) => a.slice(0, -1))} disabled={typed.length === 0} className={`${btn} flex-1 bg-[#efe8d4]`}>
                   {t('solo.erase')}
                 </button>
-                <button type="button" onClick={() => void checkUnscramble()} disabled={typed.length !== step.words.length || busy} className={`${btn} flex-1 bg-[#3b5bdb] text-white`}>
+                {!history && <button type="button" onClick={() => void checkUnscramble()} disabled={typed.length !== step.words.length || busy} className={`${btn} flex-1 bg-[#3b5bdb] text-white`}>
                   {t('solo.check')}
-                </button>
+                </button>}
               </div>
             )}
           </>
@@ -1711,7 +1784,7 @@ export default function SoloPlayer({
           </button>
         )}
 
-        {step.t !== 'intro' && step.t !== 'test' && step.t !== 'watch' && step.t !== 'lineSing' && step.t !== 'fadeRead' && step.t !== 'roleplay' && step.t !== 'rainbowSpeak' && step.t !== 'rainbowStructure' && !answered && !needsEvidence && (
+        {!history && step.t !== 'intro' && step.t !== 'test' && step.t !== 'watch' && step.t !== 'lineSing' && step.t !== 'fadeRead' && step.t !== 'roleplay' && step.t !== 'rainbowSpeak' && step.t !== 'rainbowStructure' && !answered && !needsEvidence && (
           <button
             type="button"
             disabled={busy}

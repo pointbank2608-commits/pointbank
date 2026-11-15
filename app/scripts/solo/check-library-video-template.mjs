@@ -108,13 +108,66 @@ try {
     return timing;
   }
 
-  await page.goto(origin + '/scripts/solo/video-template.html?library', { waitUntil: 'domcontentloaded' });
+  async function checkRecapWords(pairs) {
+    const recap = page.locator('main');
+    for (const [index, [word, meaning]] of pairs.entries()) {
+      await recap.getByText('뜻에 맞는 영어를 골라요', { exact: true }).waitFor();
+      await recap.getByText(meaning, { exact: true }).waitFor();
+      if (index === 0) {
+        const wrong = recap.getByRole('button', { name: pairs[1][0], exact: true });
+        await wrong.click();
+        assert.equal(await wrong.isDisabled(), true);
+      }
+      await click(word);
+      await recap.getByText('잘했어요! 👏', { exact: true }).waitFor();
+      await click('다음');
+    }
+  }
+
+  async function checkRecapSentence(start, end, sentence) {
+    await practiceShadowing(start, end, sentence);
+    await click('쉐도잉을 마쳤어요');
+    const recap = page.locator('main');
+    await recap.getByRole('button', { name: new RegExp(sentence.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) }).waitFor();
+    await click('읽었어요');
+    const words = sentence.split(/\s+/);
+    for (const word of words) {
+      await recap.getByRole('button', { name: word, exact: true }).last().click();
+    }
+    await click('확인');
+    await recap.getByText('잘했어요! 👏', { exact: true }).waitFor();
+    await click('다음');
+  }
+
+  await page.goto(origin + '/scripts/solo/video-template.html?library&short', { waitUntil: 'domcontentloaded' });
+  const previousStep = page.getByRole('button', { name: /이전 단계/ });
+  const nextStep = page.getByRole('button', { name: /다음 단계/ });
+  await nextStep.click();
+  await nextStep.click();
+  await page.getByText('아빠는 왜 조심하라고 했나요?', { exact: true }).waitFor();
+  await previousStep.click();
+  await page.getByText('아빠가 조심하라고 해요', { exact: true }).waitFor();
+  await previousStep.click();
+  assert.equal(await previousStep.isDisabled(), true);
   await click('시작하기');
   await page.getByText('아빠가 조심하라고 해요', { exact: true }).waitFor();
   const firstDialogue = await playAndCheck('원본 재생', 12.8, 19.55);
   await click('다 들었어요');
   await page.getByText('아빠는 왜 조심하라고 했나요?', { exact: true }).waitFor();
   assert.equal(await page.locator(frameSelector).count(), 0);
+  await click('힌트 보기');
+  const hintFrame = await player();
+  await hintFrame.waitForFunction(() => {
+    const video = document.querySelector('video');
+    return !video.paused && video.currentTime >= 13 && video.currentTime < 14;
+  });
+  const hintStart = await hintFrame.locator('video').evaluate(video => ({ time: video.currentTime, muted: video.muted }));
+  assert.equal(hintStart.muted, false);
+  assert.ok(Math.abs(hintStart.time - 13.1) < 0.8, JSON.stringify(hintStart));
+  await hintFrame.waitForFunction(() => document.querySelector('video').paused);
+  const hintEnd = await hintFrame.locator('video').evaluate(video => video.currentTime);
+  assert.ok(Math.abs(hintEnd - 16.55) < 0.23, String(hintEnd));
+  assert.equal(await page.locator('[data-source-caption]').count(), 0);
   await click('미끄러워서');
   await page.getByText('잘했어요! 👏', { exact: true }).waitFor();
   assert.equal(await page.getByRole('button', { name: '근거 한 문장 다시 듣기' }).count(), 0);
@@ -198,11 +251,16 @@ try {
   await page.getByRole('checkbox', { name: /slippery ·/ }).uncheck();
   const wordGames = page.getByRole('group', { name: '단어 게임', exact: true });
   const sentenceGames = page.getByRole('group', { name: '문장 게임', exact: true });
-  assert.equal(await wordGames.getByRole('checkbox').count(), 10);
-  assert.equal(await sentenceGames.getByRole('checkbox').count(), 4);
+  assert.equal(await wordGames.getByRole('checkbox', { name: /^매치업/ }).isChecked(), true);
+  assert.equal(await wordGames.getByRole('checkbox').count(), 13);
+  assert.equal(await sentenceGames.getByRole('checkbox').count(), 5);
   assert.equal(await wordGames.getByRole('checkbox', { name: /애너그램/ }).isDisabled(), true);
-  await wordGames.getByRole('checkbox', { name: /^퀴즈/ }).check();
+  await wordGames.getByRole('checkbox', { name: /^퀴즈(?! 쇼)/ }).check();
+  await wordGames.getByRole('checkbox', { name: /^퀴즈 쇼/ }).check();
+  await wordGames.getByRole('checkbox', { name: /^줄다리기/ }).check();
+  await wordGames.getByRole('checkbox', { name: /^단어 농구/ }).check();
   await sentenceGames.getByRole('checkbox', { name: /문장 기차/ }).check();
+  await sentenceGames.getByRole('checkbox', { name: /문장 잡기/ }).check();
   await click('학생 화면 미리보기');
   await page.getByText(/미리보기예요/).waitFor();
   await page.getByRole('button', { name: '나가기', exact: true }).click();
@@ -221,6 +279,22 @@ try {
   assert.deepEqual(train.review.config.adventure.sentences.map(s => s.text), beforeReview.map(s => s.en));
   assert.equal(quiz.measure, false);
   assert.equal(train.templateId, '');
+  for (const type of ['gameshowquiz', 'tugofwar']) {
+    const game = saved.find(s => s.gameType === type);
+    assert.deepEqual(game.review.config.questions.map(q => q.question), saved.filter(s => s.t === 'meet').map(s => s.word));
+    assert.equal(game.measure, false);
+  }
+  const hoops = saved.find(s => s.gameType === 'wordhoops');
+  assert.deepEqual(hoops.review.config.pairs.map(pair => pair.left), saved.filter(s => s.t === 'meet').map(s => s.word));
+  const catchSentence = saved.find(s => s.gameType === 'catchsentence');
+  assert.deepEqual(catchSentence.review.items.map(item => item.label), beforeReview.map(s => s.en));
+  assert.equal(saved[saved.indexOf(quiz) - 2].t, 'meet');
+  assert.equal(saved[saved.indexOf(train) - 1].practice, 'shadow');
+  const recap = saved.slice(reviewIndex);
+  assert.equal(recap.some(s => s.t === 'game'), false);
+  assert.deepEqual(recap.filter(s => s.t === 'pickWord').map(q => [q.options[q.answer], q.meaning]),
+    saved.filter(s => s.t === 'meet').map(step => [step.word, step.meaning]));
+  assert.deepEqual(recap.filter(s => s.t === 'unscramble').map(q => q.sentence), beforeReview.map(s => s.en));
 
   await openTeacherClip(otherClip.title);
   await page.getByText('단어·표현 · 4/6', { exact: true }).waitFor();
@@ -248,7 +322,7 @@ try {
   await parts.selectOption(latePart);
   await page.getByRole('checkbox', { name: /^매치업/ }).check();
   await page.getByRole('checkbox', { name: /^두더지잡기/ }).check();
-  await page.getByRole('checkbox', { name: /^퀴즈/ }).check();
+  await page.getByRole('checkbox', { name: /^퀴즈(?! 쇼)/ }).check();
   await page.getByRole('checkbox', { name: /문장 단어 순서 맞추기/ }).check();
   await page.getByRole('checkbox', { name: /문장 기차/ }).check();
   await click('학생 화면 미리보기');
@@ -268,13 +342,6 @@ try {
   await click('다 들었어요');
   await practiceExpression(/twins/, '쌍둥이');
   await practiceExpression(/look the same/, '똑같이 생기다');
-  await practiceShadowing(3362.83, 3365.73, "Don't cry, Rosie. They're twins.");
-  await click('쉐도잉을 마쳤어요');
-  const restoredClosing = await playAndCheck('원본 재생', 3374.60, 3387, 3);
-  await click('다 들었어요');
-  await page.getByRole('heading', { name: '오늘 배운 내용 총정리', exact: true }).waitFor();
-  await page.screenshot({ path: fileURLToPath(new URL('final-review.png', output)) });
-  await click('시작하기');
   await page.getByRole('heading', { name: '오늘의 단어·표현 매치업', exact: true }).waitFor();
   for (const [word, meaning] of [['get it back', '돌려받다'], ['give back', '돌려주다'], ['twins', '쌍둥이'], ['look the same', '똑같이 생기다']]) {
     await page.locator('main').getByRole('button', { name: word, exact: true }).click();
@@ -299,6 +366,8 @@ try {
     await review.getByRole('button', { name: /다음|결과/ }).click();
   }
   await click('다음');
+  await practiceShadowing(3362.83, 3365.73, "Don't cry, Rosie. They're twins.");
+  await click('쉐도잉을 마쳤어요');
   for (const word of 'Thanks for looking after my backpack.'.split(' ')) {
     await page.locator('main').getByRole('button', { name: word, exact: true }).click();
   }
@@ -319,19 +388,64 @@ try {
   await click('결과 보기');
   await review.getByText('모험 완료!', { exact: true }).waitFor();
   await click('다음');
+  const restoredClosing = await playAndCheck('원본 재생', 3374.60, 3387, 3);
+  await click('다 들었어요');
+  await page.getByRole('heading', { name: '오늘 배운 내용 총정리', exact: true }).waitFor();
+  await page.screenshot({ path: fileURLToPath(new URL('final-review.png', output)) });
+  await click('시작하기');
   await page.getByRole('heading', { name: '오늘 배운 단어·표현', exact: true }).waitFor();
   await page.locator('main').getByText('get it back · 돌려받다', { exact: true }).waitFor();
   await click('읽었어요');
-  await practiceShadowing(3296.30, 3297.99, 'Thanks for looking after my backpack.');
-  await click('쉐도잉을 마쳤어요');
-  await practiceShadowing(3362.83, 3365.73, "Don't cry, Rosie. They're twins.");
-  await click('쉐도잉을 마쳤어요');
+  await checkRecapWords([...pairs.entries()]);
+  await checkRecapSentence(3296.30, 3297.99, 'Thanks for looking after my backpack.');
+  await checkRecapSentence(3362.83, 3365.73, "Don't cry, Rosie. They're twins.");
   await page.getByText('오늘 수업 끝!', { exact: true }).waitFor();
+
+  await page.goto(origin + '/scripts/solo/video-template.html?library&student&short&step=2', { waitUntil: 'domcontentloaded' });
+  await page.getByText('아빠는 왜 조심하라고 했나요?', { exact: true }).waitFor();
+  assert.equal(await nextStep.isDisabled(), true);
+  await click('미끄러워서');
+  await page.getByText('잘했어요! 👏', { exact: true }).waitFor();
+  await previousStep.click();
+  await page.getByText('이전 단계 복습 중', { exact: true }).waitFor();
+  await page.getByText('아빠가 조심하라고 해요', { exact: true }).waitFor();
+  assert.equal(await page.locator('body').getAttribute('data-last-advance'), null);
+  await nextStep.click();
+  await page.getByText('잘했어요! 👏', { exact: true }).waitFor();
+  assert.equal(await nextStep.isDisabled(), true);
+  await click('다음');
+  assert.equal(await page.locator('body').getAttribute('data-last-advance'), '2');
+  await previousStep.click();
+  await page.getByText('아빠는 왜 조심하라고 했나요?', { exact: true }).waitFor();
+  assert.equal(await page.getByRole('button', { name: '미끄러워서', exact: true }).isDisabled(), true);
+  await click('수업 이어하기');
+  await page.getByRole('button', { name: /slippery/ }).waitFor();
+  assert.equal(await page.locator('body').getAttribute('data-last-advance'), '2');
+
+  await page.goto(origin + '/scripts/solo/video-template.html', { waitUntil: 'domcontentloaded' });
+  await page.getByRole('heading', { name: /1차시.*처음 타는 스케이트/ }).waitFor();
+  const defaultGame = page.getByRole('heading', { name: '오늘의 단어·표현 매치업', exact: true });
+  const summary = page.getByRole('heading', { name: '오늘 배운 내용 총정리', exact: true });
+  for (let index = 1; index < 13; index++) await nextStep.click();
+  await defaultGame.waitFor();
+  for (const [word, meaning] of [['slippery', '미끄러운'], ['be careful', '조심해'], ['by myself', '혼자서'], ['I want to …', '나는 …하고 싶어요']]) {
+    await click(word);
+    await click(meaning);
+  }
+  await click('다음');
+  for (let index = 14; index < 18; index++) await nextStep.click();
+  await summary.waitFor();
+  await click('시작하기');
+  await page.getByRole('heading', { name: '오늘 배운 단어·표현', exact: true }).waitFor();
+  await click('읽었어요');
+  await checkRecapWords([['slippery','미끄러운'],['be careful','조심해'],['by myself','혼자서'],['I want to …','나는 …하고 싶어요']]);
 
   assert.deepEqual(errors, []);
   const result = { id, firstDialogue, firstShadowing, secondDialogue, evidenceReplay, firstChunk, secondChunk, shadowing,
     correctPath: true, retryPath: true, teacherSelection: true, otherClipDefaults: true, allocations, lateScene,
-    fullCoverage: endOfPrevious, restoredBefore, restoredBetween, restoredClosing, finalReview: true, matchup: true, whackamole: true, quiz: true, sentenceOrder: true, wordtrain: true, errors };
+    fullCoverage: endOfPrevious, restoredBefore, restoredBetween, restoredClosing, finalReview: true, matchup: true, whackamole: true, quiz: true, sentenceOrder: true, wordtrain: true,
+    previewNavigation: true, studentNavigation: true, vocabularyRecap: true, sentenceRecap: true,
+    videoHint: { start: hintStart.time, end: hintEnd }, errors };
   await writeFile(new URL('shadowing-flow-results.json', output), JSON.stringify(result, null, 2));
   console.log('Library student preview passed', JSON.stringify(result));
 } finally {

@@ -36,6 +36,8 @@ interface Props {
   mode: HoopsMode;
   rule: HoopsRule;
   seconds: number;
+  onContinue?: () => void;
+  onSubmit?: () => void;
 }
 
 type Phase = 'ready' | 'playing' | 'done';
@@ -212,7 +214,10 @@ function HoopFront({ hit, k }: { hit: 'good' | 'miss' | null; k: number }) {
   );
 }
 
-export default function WordHoops({ pairs, pictureQuestions, teams, shots, mode, rule, seconds }: Props) {
+export default function WordHoops({ pairs, pictureQuestions, teams, shots, mode, rule, seconds, onContinue, onSubmit }: Props) {
+  const lessonSolo = teams === 1 && !!onContinue;
+  const courtWidth = lessonSolo ? 96 : COURT_W;
+  const courtHeight = lessonSolo ? '108cqw' : '56.25cqw';
   const timed = rule === 'timed';
   const limitMs = seconds * 1000;
   const { t } = useTranslation();
@@ -306,6 +311,7 @@ export default function WordHoops({ pairs, pictureQuestions, teams, shots, mode,
     if (!st || st.busy || st.doneMs !== null) return;
     const q = questions[st.idx];
     if (!q || ci >= q.choices.length || st.removed.includes(ci)) return;
+    onSubmit?.();
     const key = ++keyRef.current;
     if (ci === q.correctIndex) {
       const pts = pointsForTry(st.misses + 1);
@@ -396,7 +402,7 @@ export default function WordHoops({ pairs, pictureQuestions, teams, shots, mode,
   return (
     <div
       className="relative w-full select-none overflow-hidden rounded-[2.4cqw] shadow-xl"
-      style={{ containerType: 'inline-size', aspectRatio: '16 / 9', background: 'linear-gradient(180deg,#e9f1ea,#d3e3d6)' }}
+      style={{ containerType: 'inline-size', aspectRatio: lessonSolo ? '1 / 1.08' : '16 / 9', background: 'linear-gradient(180deg,#e9f1ea,#d3e3d6)' }}
     >
       <style>{css}</style>
       <div className="absolute inset-0 flex items-center justify-center" style={{ gap: '1.2cqw' }}>
@@ -410,7 +416,7 @@ export default function WordHoops({ pairs, pictureQuestions, teams, shots, mode,
             <section
               key={ti}
               className="relative overflow-hidden"
-              style={{ ['--u' as string]: `${COURT_W / 100}cqw`, width: `${COURT_W}cqw`, height: '56.25cqw', borderRadius: U(3), boxShadow: '0 .6cqw 1.6cqw rgba(0,0,0,.25)', border: `${'0.35cqw'} solid ${color}` } as CSSProperties}
+              style={{ ['--u' as string]: `${courtWidth / 100}cqw`, width: `${courtWidth}cqw`, height: courtHeight, borderRadius: U(3), boxShadow: '0 .6cqw 1.6cqw rgba(0,0,0,.25)', border: `${'0.35cqw'} solid ${color}` } as CSSProperties}
               aria-label={teamName(ti)}
             >
               {/* 머리줄 */}
@@ -522,17 +528,17 @@ export default function WordHoops({ pairs, pictureQuestions, teams, shots, mode,
       {phase === 'ready' && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-deep-navy/55 text-center text-white" style={{ gap: '1.4cqw' }}>
           <span style={{ fontSize: '7cqw' }}>🏀</span>
-          <span className="font-extrabold" style={{ fontSize: '3.8cqw' }}>{t('gameWordHoops.readyTitle')}</span>
+          <span className="font-extrabold" style={{ fontSize: lessonSolo ? '1.4rem' : '3.8cqw' }}>{t(lessonSolo ? 'solo.videoHoops' : 'gameWordHoops.readyTitle')}</span>
           <span className="max-w-[70%] font-semibold opacity-95" style={{ fontSize: '1.9cqw' }}>{timed ? t('gameWordHoops.readyHintTimed', { time: formatHoopsCountdown(limitMs) }) : teams > 1 ? t('gameWordHoops.readyHintTeams') : t('gameWordHoops.readyHintSolo')}</span>
           <button
             type="button"
             data-initial-game-start onClick={start}
             className="rounded-full bg-warm-yellow font-extrabold text-deep-navy shadow-xl transition-transform hover:scale-105 active:scale-95"
-            style={{ fontSize: '3cqw', padding: '1cqw 5cqw' }}
+            style={{ minHeight: lessonSolo ? '44px' : undefined, fontSize: lessonSolo ? '1rem' : '3cqw', padding: '1cqw 5cqw' }}
           >
             {t('flow.start')}
           </button>
-          <span className="font-medium opacity-80" style={{ fontSize: '1.4cqw' }}>{t('gameWordHoops.keys')}</span>
+          {!lessonSolo && <span className="font-medium opacity-80" style={{ fontSize: '1.4cqw' }}>{t('gameWordHoops.keys')}</span>}
         </div>
       )}
 
@@ -590,11 +596,11 @@ export default function WordHoops({ pairs, pictureQuestions, teams, shots, mode,
           </div>
           <button
             type="button"
-            onClick={reset}
+            onClick={onContinue ?? reset}
             className="rounded-full bg-primary font-extrabold text-on-primary shadow-lg transition-transform hover:scale-105 active:scale-95"
             style={{ fontSize: '2.2cqw', padding: '.8cqw 3.4cqw' }}
           >
-            {t('gameWordHoops.playAgain')}
+            {t(onContinue ? 'solo.next' : 'gameWordHoops.playAgain')}
           </button>
         </div>
       )}

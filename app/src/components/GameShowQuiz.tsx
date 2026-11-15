@@ -12,6 +12,9 @@ interface Props {
   bonusEvery: number;
   lifelines: number;
   boardStyle?: GameShowQuizStyle;
+  onContinue?: () => void;
+  onHint?: () => void;
+  onSubmit?: () => void;
 }
 
 type Team = 'blue' | 'red';
@@ -47,15 +50,16 @@ export function GameShowQuizEmptyMotif() {
 }
 
 const GameShowQuiz = forwardRef<UndoHandle, Props>(function GameShowQuiz(
-  { questions, bonusEvery, lifelines, boardStyle = 'wood' },
+  { questions, bonusEvery, lifelines, boardStyle = 'wood', onContinue, onHint, onSubmit },
   ref,
 ) {
   const { t } = useTranslation();
+  const solo = !!onContinue;
   const clay = boardStyle === 'clay';
   const [order, setOrder] = useState<number[]>(() => shuffle(questions.map((_, i) => i)));
   const [pos, setPos] = useState(0);
   const [turn, setTurn] = useState<Team>('blue');
-  useNativeGameTurn({current:t('gameGameShowQuiz.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gameGameShowQuiz.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:questions.length>0&&pos<questions.length});
+  useNativeGameTurn({current:t('gameGameShowQuiz.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gameGameShowQuiz.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:!solo&&questions.length>0&&pos<questions.length});
   const [scores, setScores] = useState<Record<Team, number>>({ blue: 0, red: 0 });
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
   const [removedChoices, setRemovedChoices] = useState<Set<number>>(new Set());
@@ -140,15 +144,15 @@ const GameShowQuiz = forwardRef<UndoHandle, Props>(function GameShowQuiz(
           >
             <div className="mb-2 font-title-md text-title-md text-deep-navy">{t('gameGameShowQuiz.finishedTitle')}</div>
             <div className="mb-2 font-title-md text-[22px] font-bold tabular-nums text-deep-navy">
-              {teamLabel('blue')} {scores.blue} : {scores.red} {teamLabel('red')}
+              {solo ? t('gameQuiz.scoreLabel', { score: scores.blue, total: questions.length }) : <>{teamLabel('blue')} {scores.blue} : {scores.red} {teamLabel('red')}</>}
             </div>
             <div className="font-title-md text-title-md text-deep-navy">
-              {winner ? t('gameGameShowQuiz.winnerLabel', { team: teamLabel(winner) }) : t('gameGameShowQuiz.drawLabel')}
+              {!solo && (winner ? t('gameGameShowQuiz.winnerLabel', { team: teamLabel(winner) }) : t('gameGameShowQuiz.drawLabel'))}
             </div>
           </div>
         </div>
-        <button onClick={restart} className={pill}>
-          {t('gameGameShowQuiz.restartButton')}
+        <button onClick={onContinue ?? restart} className={pill}>
+          {t(solo ? 'solo.next' : 'gameGameShowQuiz.restartButton')}
         </button>
       </div>
     );
@@ -165,7 +169,9 @@ const GameShowQuiz = forwardRef<UndoHandle, Props>(function GameShowQuiz(
     const wrongIndices = current.choices
       .map((_, i) => i)
       .filter((i) => i !== current.correctIndex && !removedChoices.has(i));
-    const toRemove = shuffle(wrongIndices).slice(0, 2);
+    const toRemove = shuffle(wrongIndices).slice(0, solo ? Math.min(2, wrongIndices.length - 1) : 2);
+    if (!toRemove.length) return;
+    onHint?.();
     setRemovedChoices((prev) => new Set([...prev, ...toRemove]));
     playSfx(sfx.fifty);
     setLifelinesLeft((prev) => ({ ...prev, [turn]: prev[turn] - 1 }));
@@ -173,6 +179,7 @@ const GameShowQuiz = forwardRef<UndoHandle, Props>(function GameShowQuiz(
 
   function selectChoice(choiceIndex: number) {
     if (revealed || removedChoices.has(choiceIndex)) return;
+    onSubmit?.();
     setPrevScores(scores);
     setSelectedChoice(choiceIndex);
     playSfx(choiceIndex === current.correctIndex ? sfx.correct : sfx.wrong);
@@ -185,13 +192,14 @@ const GameShowQuiz = forwardRef<UndoHandle, Props>(function GameShowQuiz(
     setPos((p) => p + 1);
     setSelectedChoice(null);
     setRemovedChoices(new Set());
-    setTurn((prev) => (prev === 'blue' ? 'red' : 'blue'));
+    if (!solo) setTurn((prev) => (prev === 'blue' ? 'red' : 'blue'));
     setPrevScores(null);
   }
 
   return (
     <div className="flex w-full flex-col items-center pt-1.5 pb-2">
       <div className={`gsq-stage w-full max-w-[720px] ${clay ? 'gsq-clay' : ''}`}>
+        {solo ? <div className="gsq-turn is-blue">{pos + 1} / {order.length}</div> : <>
         <div className="mb-4 flex justify-center gap-3">
           <div className={`gsq-score is-blue ${turn === 'blue' ? 'is-turn' : ''}`}>
             <span className="gsq-score-name">{teamLabel('blue')}</span>
@@ -205,7 +213,7 @@ const GameShowQuiz = forwardRef<UndoHandle, Props>(function GameShowQuiz(
 
         <div className={`gsq-turn ${turn === 'blue' ? 'is-blue' : 'is-red'}`}>
           {t('gameGameShowQuiz.turnLabel', { team: teamLabel(turn) })}
-        </div>
+        </div></>}
 
         {isBonus && <div className="gsq-bonus">{t('gameGameShowQuiz.bonusBadge')}</div>}
 
@@ -216,7 +224,7 @@ const GameShowQuiz = forwardRef<UndoHandle, Props>(function GameShowQuiz(
         <button
           type="button"
           onClick={useFiftyFifty}
-          disabled={revealed || lifelinesLeft[turn] <= 0}
+          disabled={revealed || lifelinesLeft[turn] <= 0 || (solo && current.choices.length - removedChoices.size <= 2)}
           className="gsq-life"
         >
           {t('gameGameShowQuiz.fiftyFiftyButton', { count: lifelinesLeft[turn] })}

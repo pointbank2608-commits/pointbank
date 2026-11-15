@@ -2,9 +2,11 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { SoloClip } from '../../lib/soloLessons';
 import { useYoutubeSegment } from '../../lib/useYoutubeSegment';
 
-export default function SoloSourceVideo({ clip, audioOnly, playLabel, onCaptionShown, onPlay, onHeard, onError }: {
+export default function SoloSourceVideo({ clip, audioOnly, bounded = false, playRequest = 0, playLabel, onCaptionShown, onPlay, onHeard, onError }: {
   clip: SoloClip;
   audioOnly?: boolean;
+  bounded?: boolean;
+  playRequest?: number;
   playLabel?: string;
   onCaptionShown?: () => void;
   onPlay: () => void;
@@ -12,16 +14,22 @@ export default function SoloSourceVideo({ clip, audioOnly, playLabel, onCaptionS
   onError: () => void;
 }) {
   const video = useRef<HTMLVideoElement>(null);
-  const youtube = useYoutubeSegment(clip.mediaUrl ? null : clip.videoId, clip.start);
+  const youtube = useYoutubeSegment(clip.mediaUrl ? null : clip.videoId, clip.start, bounded);
   const [time, setTime] = useState(clip.start);
   const [ready, setReady] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [captions, setCaptions] = useState(false);
   const running = useRef(false);
-  const caption = captions && (audioOnly
+  const mounted = useRef(false);
+  const lastRequest = useRef(0);
+  const caption = captions && (audioOnly || bounded
     ? clip.captions?.[0]
     : clip.captions?.find(line => line.start <= time && time < line.end));
   const reportError = useEffectEvent(onError);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
   useEffect(() => {
     if (youtube.failed) reportError();
   }, [youtube.failed]);
@@ -50,6 +58,7 @@ export default function SoloSourceVideo({ clip, audioOnly, playLabel, onCaptionS
       setTime(clip.start);
       onPlay();
       const completed = await youtube.playSegment(clip.start, clip.end, 1, setTime);
+      if (!mounted.current) return;
       if (completed) onHeard();
       else onError();
       return;
@@ -61,15 +70,23 @@ export default function SoloSourceVideo({ clip, audioOnly, playLabel, onCaptionS
       media.currentTime = clip.start;
       setTime(clip.start);
       await media.play();
-      if (running.current) {
+      if (mounted.current && running.current) {
         setPlaying(true);
         onPlay();
       }
     } catch {
       running.current = false;
-      onError();
+      if (mounted.current) onError();
     }
   }
+
+  const available = clip.mediaUrl ? ready && !playing : youtube.ready && !youtube.playing && !youtube.failed;
+  const playRequested = useEffectEvent(() => void play());
+  useEffect(() => {
+    if (!available || playRequest <= lastRequest.current) return;
+    lastRequest.current = playRequest;
+    playRequested();
+  }, [available, playRequest]);
 
   return (
     <div className="w-full space-y-2">
@@ -80,14 +97,14 @@ export default function SoloSourceVideo({ clip, audioOnly, playLabel, onCaptionS
             onCanPlay={() => setReady(true)} onTimeUpdate={sync} onEnded={sync}
             onError={() => { running.current = false; setPlaying(false); setReady(false); onError(); }} />
         ) : (
-          <div className="relative aspect-video min-h-[200px] w-full">
+          <div className="relative aspect-video min-h-[200px] w-full" inert={bounded}>
             <div id={youtube.elementId} className="absolute inset-0 h-full w-full" />
           </div>
         )}
         {captions && <p data-source-caption className="min-h-16 bg-black px-3 py-2 text-center text-lg text-white">{caption ? caption.text : ''}</p>}
       </div>
       <div className="flex flex-wrap gap-2">
-        <button type="button" disabled={clip.mediaUrl ? !ready || playing : !youtube.ready || youtube.playing || youtube.failed} onClick={() => void play()} className="min-h-12 flex-1 rounded-xl bg-[#3b5bdb] px-4 font-bold text-white disabled:opacity-50">
+        <button type="button" disabled={!available} onClick={() => void play()} className="min-h-12 flex-1 rounded-xl bg-[#3b5bdb] px-4 font-bold text-white disabled:opacity-50">
           {playing || youtube.playing ? '원음 재생 중' : playLabel ?? (audioOnly ? '원음 듣기' : '원본 재생')}
         </button>
         {!!clip.captions?.length && (

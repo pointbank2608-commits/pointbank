@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useId, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../context/ToastContext';
 import { grammarLevelTag } from '../../lib/grammar';
@@ -31,8 +31,8 @@ import SoloBlockAssembler from './SoloBlockAssembler';
 import { extractYoutubeId } from '../../lib/youtube';
 import { SONG_LESSONS } from '../../lib/songLessons';
 import { buildSoloPopSongLesson } from '../../lib/soloPopSongs';
-import { buildLibrarySoloVideoTemplate, buildLibraryVideoPractice, videoDraftSteps, videoSelectedSteps, type SoloVideoDraft } from '../../lib/soloVideoTemplate';
-import { videoReviewChoices, videoReviewSteps, type VideoReviewGames } from '../../lib/videoReviewGames';
+import { buildLibrarySoloVideoTemplate, buildLibraryVideoPractice, VIDEO_REVIEW_TITLE, videoDraftSteps, videoSelectedSteps, type SoloVideoDraft } from '../../lib/soloVideoTemplate';
+import { DEFAULT_CAILLOU_GAMES, videoReviewChoices, videoReviewSteps, type VideoReviewGames } from '../../lib/videoReviewGames';
 import { buildCaillouCourseDraft, caillouCourseCoverage, caillouCourseParts, caillouPracticeMinutes, VIDEO_LESSON_MINUTES, type VideoLessonMinutes } from '../../lib/caillouVideoCourse';
 import SoloPreview from './SoloPreview';
 import SoloSourceVideo from './SoloSourceVideo';
@@ -141,7 +141,8 @@ export default function SoloCatalogModal({
   /** 만들 수업 묶음 — 블록 조립기에서 켜고 끄고 만든다 */
   const [pending, setPending] = useState<{ title: string; lessons: BatchLesson[]; level: string; source: string } | null>(null);
   const [videoDraft, setVideoDraft] = useState<SoloVideoDraft | null>(initialVideoDraft?.draft ?? null);
-  const [videoGames, setVideoGames] = useState<VideoReviewGames>({});
+  const [videoGames, setVideoGames] = useState<VideoReviewGames>(() => initialVideoDraft?.caillouCourse ? DEFAULT_CAILLOU_GAMES : {});
+  const reviewOptionsId = useId();
   const [excludedVideoSteps, setExcludedVideoSteps] = useState<number[]>(() =>
     (initialVideoDraft?.caillouCourse ? buildCaillouCourseDraft(10, 0, initialVideoDraft.draft)?.defaultExcluded : undefined)
       ?? initialVideoDraft?.draft.defaultExcluded ?? []);
@@ -369,7 +370,7 @@ export default function SoloCatalogModal({
     const reviewed = buildLibrarySoloVideoTemplate(clip);
     const draft = reviewed ?? buildLibraryVideoPractice(clip);
     if (draft) {
-      setVideoGames({});
+      setVideoGames(reviewed ? DEFAULT_CAILLOU_GAMES : {});
       setCourseSource(reviewed);
       setCourseMinutes(10);
       setCoursePart(0);
@@ -456,7 +457,8 @@ export default function SoloCatalogModal({
     const videoSeconds = steps.reduce((sum, step) => step.t === 'watch' ? sum + step.clip.end - step.clip.start : sum, 0);
     const gameMinutes = Math.ceil(reviewChoices.reduce((total, game) =>
       total + (game.count && videoGames[game.type] ? game.seconds : 0), 0) / 60);
-    const minutes = (courseSource ? caillouPracticeMinutes(selectedSteps) :
+    const recapIndex = steps.findIndex(step => step.t === 'intro' && step.title === VIDEO_REVIEW_TITLE);
+    const minutes = (courseSource ? caillouPracticeMinutes(recapIndex < 0 ? selectedSteps : [...selectedSteps, ...steps.slice(recapIndex)]) :
       Math.max(lessonDraft.minutes, Math.ceil((videoSeconds + wordsCount * 20 + shadowCount * 45 + 75) / 60))) + gameMinutes;
     body = (
       <div className="space-y-4">
@@ -516,19 +518,37 @@ export default function SoloCatalogModal({
             ))}
             <fieldset className="space-y-3 rounded-xl border border-outline-variant px-3 py-2">
               <legend className="px-1 font-bold">복습 게임</legend>
-              <p className="text-sm text-on-surface-variant">위에서 고른 단어·표현과 쉐도잉 문장으로 게임이 만들어져요.</p>
+              <p className="text-sm text-on-surface-variant">{courseSource
+                ? '고른 단어·표현을 배우고 단어 게임을, 쉐도잉을 마치고 문장 게임을 해요.'
+                : '위에서 고른 단어·표현과 쉐도잉 문장으로 게임이 만들어져요.'}</p>
               {(['word', 'sentence'] as const).map(kind => (
                 <fieldset key={kind} className="grid gap-2 sm:grid-cols-2">
                   <legend className="mb-2 text-sm font-bold">{kind === 'word' ? '단어 게임' : '문장 게임'}</legend>
-                  {reviewChoices.filter(game => game.kind === kind).map(({ type, nameKey, count, requirement }) => (
-                    <label key={type} className="flex min-h-12 items-center gap-2 rounded-lg border border-outline-variant px-3 py-2">
-                      <input type="checkbox" checked={count > 0 && !!videoGames[type]} disabled={count === 0}
-                        onChange={event => setVideoGames(current => ({ ...current, [type]: event.target.checked }))} />
-                      <span>{type === 'unscramble' ? '문장 단어 순서 맞추기' : t(nameKey)} <span className="block text-xs text-on-surface-variant">
-                        {count ? `${count}${kind === 'word' ? '개' : '문장'}` : requirement}
-                      </span></span>
-                    </label>
-                  ))}
+                  {reviewChoices.filter(game => game.kind === kind).map(({ type, nameKey, descKey, cover, icon, count, requirement }) => {
+                    const id = `${reviewOptionsId}-${type}`;
+                    const checked = count > 0 && !!videoGames[type];
+                    return (
+                      <label key={type} className={`flex min-h-22 items-center gap-2.5 rounded-xl border px-2.5 py-2.5 focus-within:ring-2 focus-within:ring-primary/50 ${checked
+                        ? 'border-primary/50 bg-primary/5'
+                        : count ? 'cursor-pointer border-outline-variant hover:bg-surface-container-low' : 'cursor-not-allowed border-outline-variant bg-surface-container-low'}`}>
+                        <input type="checkbox" checked={checked} disabled={count === 0}
+                          aria-labelledby={`${id}-name`} aria-describedby={`${id}-description ${id}-count`}
+                          className="size-4 shrink-0 accent-primary"
+                          onChange={event => setVideoGames(current => ({ ...current, [type]: event.target.checked }))} />
+                        <span className="grid h-16 w-21 shrink-0 place-items-center overflow-hidden rounded-lg bg-primary-container text-on-primary-container" aria-hidden="true">
+                          {cover ? <img src={cover} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                            : <span className="material-symbols-outlined text-3xl">{icon}</span>}
+                        </span>
+                        <span className="min-w-0">
+                          <span id={`${id}-name`} className="block font-bold leading-tight">{type === 'unscramble' ? '문장 단어 순서 맞추기' : t(nameKey)}</span>
+                          <span id={`${id}-description`} className="mt-1 block text-sm leading-snug text-on-surface-variant">{t(descKey)}</span>
+                          <span id={`${id}-count`} className="mt-1 block text-xs font-semibold text-on-surface-variant">
+                            {count}{kind === 'word' ? '문제' : '문장'}{count === 0 && ` · ${requirement}`}
+                          </span>
+                        </span>
+                      </label>
+                    );
+                  })}
                 </fieldset>
               ))}
             </fieldset>

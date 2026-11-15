@@ -8,22 +8,37 @@ import SentenceSplash from '../SentenceSplash';
 import TrueFalse from '../TrueFalse';
 import TypeAnswer from '../TypeAnswer';
 import WordSearch from '../WordSearch';
+import GameShowQuiz from '../GameShowQuiz';
+import TugOfWar from '../TugOfWar';
+import WordHoops from '../WordHoops';
+import CatchSentence from '../CatchSentence';
 import AdventureGame from '../adventure/AdventureGame';
+import type { SensorAction } from '../../lib/learningSensors/core';
 
 type ReviewStep = Extract<SoloStep, { t: 'game'; gameType: SoloReviewGameType }>;
 
-export default function SoloReviewGame({ step, busy, onDone }: { step: ReviewStep; busy: boolean; onDone: () => void }) {
+export default function SoloReviewGame({ step, busy, onDone, onSignal }: { step: ReviewStep; busy: boolean; onDone: () => void; onSignal: (action: SensorAction) => void }) {
   const { t } = useTranslation();
   const [complete, setComplete] = useState(false);
   const { items, config } = step.review;
   const finish = () => setComplete(true);
   const next = () => { if (!busy) onDone(); };
+  const submit = () => onSignal('submitted');
+  const hint = () => onSignal('hint');
   const activity = (() => {
     switch (step.gameType) {
       case 'anagram': return items.length > 0 && <Anagram items={items} onComplete={finish} />;
       case 'hangman': return items.length > 0 && <Hangman items={items} maxAttempts={6} onComplete={finish} />;
       case 'wordsearch': return items.length > 0 && <WordSearch items={items} onComplete={finish} />;
       case 'quiz': return !!config.questions?.length && <Quiz questions={config.questions} onContinue={next} />;
+      case 'gameshowquiz': return !!config.questions?.length &&
+        <GameShowQuiz questions={config.questions} bonusEvery={0} lifelines={1} onContinue={next} onHint={hint} onSubmit={submit} />;
+      case 'tugofwar': return !!config.questions?.length &&
+        <TugOfWar questions={config.questions} pull={config.questions.length} freeze={0} seconds={0} onContinue={next} onSubmit={submit} />;
+      case 'wordhoops': return !!config.pairs?.length &&
+        <WordHoops pairs={config.pairs} teams={1} shots={config.pairs.length} mode="meaning" rule="race" seconds={0} onContinue={next} onSubmit={submit} />;
+      case 'catchsentence': return items.length > 0 && <CatchSentence items={items} teams={1} level={2} seconds={5}
+        onContinue={next} onHint={hint} onSubmit={submit} onReveal={() => onSignal('revealed')} />;
       case 'truefalse': return !!config.statements?.length && <TrueFalse statements={config.statements} onContinue={next} />;
       case 'typeanswer': return !!config.typeAnswerEntries?.length && <TypeAnswer entries={config.typeAnswerEntries} mode="question" onContinue={next} />;
       case 'sentencesplash': return items.length > 0 && <SentenceSplash items={items} seconds={config.splashSeconds} onExit={next} />;

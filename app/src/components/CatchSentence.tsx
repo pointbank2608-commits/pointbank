@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
 import { useRemoteActions } from '../lib/remote';
+import { looseNorm } from '../lib/soloLessons';
 import type { GameItem, UndoHandle } from '../lib/types';
 
 /**
@@ -24,6 +25,10 @@ interface Props {
   seconds: number;
   /** 단계·시간을 게임 화면에서 바로 바꾼다(저장은 페이지가) */
   onChange?: (patch: { level?: CatchLevel; seconds?: number }) => void;
+  onContinue?: () => void;
+  onSubmit?: () => void;
+  onHint?: () => void;
+  onReveal?: () => void;
 }
 
 type Phase = 'ready' | 'show' | 'hidden' | 'reveal';
@@ -80,9 +85,12 @@ const STYLE = `
 @media (prefers-reduced-motion: reduce) { .cs-anim { animation-duration:.01s !important; animation-iteration-count:1 !important; } }
 `;
 
-const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ items, teams, level: levelProp, seconds: secondsProp, onChange: onChangeProp }, ref) {
+const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ items, teams, level: levelProp, seconds: secondsProp, onChange: onChangeProp, onContinue, onSubmit, onHint, onReveal }, ref) {
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
+  const solo = !!onContinue;
+  const [answer, setAnswer] = useState('');
+  const [tryAgain, setTryAgain] = useState(false);
   // 저장할 곳이 없는 시범 화면(템플릿 만들기 전)에서도 단계·시간 칩이 보이고, 그 자리에서만 바뀐다
   const [demo, setDemo] = useState<{ level?: CatchLevel; seconds?: number }>({});
   const level = onChangeProp ? levelProp : (demo.level ?? levelProp);
@@ -115,6 +123,8 @@ const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ ite
     setRound(1);
     setScores(Array(teamCount).fill(0));
     setPhase('ready');
+    setAnswer('');
+    setTryAgain(false);
     setSnapshot(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teamCount, itemKey]);
@@ -168,6 +178,7 @@ const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ ite
   function startShow() {
     if (phase !== 'ready' && phase !== 'hidden') return;
     clearTimers();
+    if (solo && phase === 'hidden') onHint?.();
     setRunId((r) => r + 1);
     setPhase('show');
     playSfx(GAME_SFX.catchsentence.show);
@@ -185,6 +196,15 @@ const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ ite
     if (current.text) speak(current.text);
   }
 
+  function checkAnswer() {
+    if (phase !== 'hidden' || !answer.trim()) return;
+    onSubmit?.();
+    if (looseNorm(answer) === looseNorm(current.text)) {
+      setTryAgain(false);
+      reveal();
+    } else setTryAgain(true);
+  }
+
   function giveTeam(i: number) {
     if (phase !== 'reveal') return;
     setSnapshot({ scores: [...scores], pos, round });
@@ -196,6 +216,10 @@ const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ ite
 
   function next() {
     if (phase !== 'reveal') return;
+    if (solo && pos + 1 === order.length) {
+      onContinue();
+      return;
+    }
     setSnapshot({ scores: [...scores], pos, round });
     let np = pos + 1;
     if (np >= order.length) {
@@ -205,6 +229,8 @@ const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ ite
     setPos(np);
     setRound((r) => r + 1);
     setPhase('ready');
+    setAnswer('');
+    setTryAgain(false);
     playSfx(COMMON_SFX.yourTurn);
   }
 
@@ -221,7 +247,7 @@ const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ ite
   }));
 
   useRemoteActions(
-    phase === 'ready'
+    solo ? [] : phase === 'ready'
       ? [{ id: 'show', label: t('gameCatchSentence.show'), tone: 'primary', run: startShow }]
       : phase === 'hidden'
         ? [
@@ -256,7 +282,7 @@ const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ ite
       <style>{STYLE}</style>
 
       <div className="mb-3 flex flex-wrap items-center justify-center gap-2">
-        {scores.map((s, i) => (
+        {!solo && scores.map((s, i) => (
           <div key={i} className="flex items-center gap-2 rounded-full px-4 py-1.5 font-title-md text-title-md text-white shadow-md" style={{ background: TEAM_COLORS[i] }}>
             <span>{teamName(i)}</span>
             <span
@@ -268,11 +294,11 @@ const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ ite
           </div>
         ))}
         <span className="rounded-full bg-amber-100 px-3 py-1 font-label-md text-label-md text-amber-900">
-          {t('gameCatchSentence.roundLabel', { n: round })}
+          {solo ? `${pos + 1} / ${order.length}` : t('gameCatchSentence.roundLabel', { n: round })}
         </span>
       </div>
 
-      <CatchSentenceSettings level={level} seconds={seconds} disabled={phase==='show'} onChange={onChange}/>
+      {!solo && <CatchSentenceSettings level={level} seconds={seconds} disabled={phase==='show'} onChange={onChange}/>}
 
       <div
         className="relative w-full overflow-hidden rounded-[24px] shadow-lg"
@@ -290,7 +316,7 @@ const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ ite
             <div className="cs-anim flex h-full flex-col items-center justify-center gap-[1cqw] text-center" style={{ animation: 'cs-pop .4s both' }}>
               <img src={IMG('net')} alt="" draggable={false} className="h-[46%] object-contain" style={{ animation: 'cs-glow 2s ease-in-out infinite' }} />
               <div className="font-bold text-white drop-shadow" style={{ fontSize: 'clamp(16px,3cqw,40px)' }}>
-                {t('gameCatchSentence.readyTitle')}
+                {solo ? '낱말을 보고 문장을 기억해요.' : t('gameCatchSentence.readyTitle')}
               </div>
               <div className="rounded-full bg-black/30 px-[1.4cqw] py-[0.3cqw] text-amber-100" style={{ fontSize: 'clamp(11px,1.6cqw,22px)' }}>
                 {t('gameCatchSentence.wordCount', { n: words.length })}
@@ -430,27 +456,40 @@ const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ ite
               <button type="button" onClick={startShow} className={btn} style={{ ...bf, background: '#6366f1' }}>
                 ↻ {t('gameCatchSentence.again')}
               </button>
-              <button type="button" onClick={reveal} className={btn} style={{ ...bf, background: '#f59e0b' }}>
+              {!solo && <button type="button" onClick={reveal} className={btn} style={{ ...bf, background: '#f59e0b' }}>
                 {t('gameCatchSentence.reveal')}
-              </button>
+              </button>}
             </>
           )}
           {phase === 'reveal' && (
             <>
-              {scores.map((_, i) => (
+              {!solo && scores.map((_, i) => (
                 <button key={i} type="button" onClick={() => pictureTurn(() => giveTeam(i))} className={btn} style={{ ...bf, background: TEAM_COLORS[i] }}>
                   {teamName(i)} +1
                 </button>
               ))}
               <button type="button" onClick={next} className={btn} style={{ ...bf, background: '#0ea5a4' }}>
-                {t('gameCatchSentence.next')}
+                {t(solo && pos + 1 === order.length ? 'solo.next' : 'gameCatchSentence.next')}
               </button>
             </>
           )}
         </div>
       </div>
 
-      <div className="mt-2 text-center font-caption text-caption text-on-surface-variant">{t('gameCatchSentence.rule')}</div>
+      {solo && phase === 'hidden' && (
+        <form className="mt-3 space-y-2" onSubmit={event => { event.preventDefault(); checkAnswer(); }}>
+          <label className="block font-bold">기억한 문장을 써 보세요
+            <input value={answer} onChange={event => { setAnswer(event.target.value); setTryAgain(false); }}
+              autoComplete="off" className="mt-1 block min-h-12 w-full rounded-xl border border-outline-variant px-3" />
+          </label>
+          {tryAgain && <p role="status">{t('solo.tryAgain')}</p>}
+          <div className="flex flex-wrap gap-2">
+            <button type="submit" disabled={!answer.trim()} className="min-h-11 rounded-xl bg-primary px-4 font-bold text-on-primary disabled:opacity-40">{t('solo.check')}</button>
+            <button type="button" onClick={() => { onReveal?.(); reveal(); }} className="min-h-11 rounded-xl border border-outline-variant px-4">{t('gameCatchSentence.reveal')}</button>
+          </div>
+        </form>
+      )}
+      <div className="mt-2 text-center font-caption text-caption text-on-surface-variant">{solo ? '낱말을 기억해 순서대로 문장을 써요.' : t('gameCatchSentence.rule')}</div>
     </div>
   );
 });

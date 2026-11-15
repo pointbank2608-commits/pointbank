@@ -122,7 +122,8 @@ export interface SoloClip {
 /** 개별수업에서 혼자 할 수 있는 게임 종류(템플릿을 그대로 읽어 온다) */
 export type SoloGameType = 'matchup' | 'anagram' | 'whackamole' | 'wordsearch' | 'hangman';
 export type SoloReviewGameType = 'anagram' | 'hangman' | 'wordsearch' | 'quiz' | 'truefalse' | 'typeanswer'
-  | 'balloonpop' | 'wordfishing' | 'wordtrain' | 'sentencesplash' | 'grammardetective';
+  | 'balloonpop' | 'wordfishing' | 'wordtrain' | 'sentencesplash' | 'grammardetective'
+  | 'gameshowquiz' | 'tugofwar' | 'wordhoops' | 'catchsentence';
 type SoloGameStep = { t: 'game'; templateId: string; title: string } & (
   | { gameType: SoloGameType; measure?: boolean; pairs?: MatchPair[]; review?: undefined }
   | { gameType: SoloReviewGameType; measure: false; pairs?: undefined; review: { items: GameItem[]; config: GameTemplateConfig } }

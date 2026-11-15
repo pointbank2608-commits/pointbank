@@ -7,6 +7,7 @@ import { COMMON_SFX, playSfx, useGameSfx } from '../lib/gameSfx';
 import {
   buildTugDeck,
   formatTugClock,
+  playableTugQuestions,
   tugAccuracy,
   tugKnotPercent,
   tugSuddenWinner,
@@ -27,6 +28,8 @@ interface Props {
   pull: number;
   freeze: number;
   seconds: number;
+  onContinue?: () => void;
+  onSubmit?: () => void;
 }
 
 type Phase = 'ready' | 'playing' | 'done';
@@ -168,16 +171,21 @@ function fontFor(text: string, big: number, mid: number, small: number): number 
   return len <= 12 ? big : len <= 28 ? mid : small;
 }
 
-export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
+export default function TugOfWar({ questions, pull: teamGoal, freeze: teamFreeze, seconds, onContinue, onSubmit }: Props) {
   const { t } = useTranslation();
   const sfx = useGameSfx('tugofwar');
-  const timed = seconds > 0;
+  const solo = !!onContinue;
+  const teams = solo ? [0] : [0, 1];
+  const playableCount = solo ? playableTugQuestions(questions).length : 0;
+  const pull = solo ? playableCount : teamGoal;
+  const freeze = solo ? 0 : teamFreeze;
+  const timed = !solo && seconds > 0;
   const limitMs = seconds * 1000;
   const [seed, setSeed] = useState(0);
   const qKey = questions.map((q) => `${q.id}:${q.question}:${q.choices.join('/')}:${q.correctIndex}:${q.imageUrl ?? ''}`).join('|');
   // 팀마다 따로 만든 문제 순서·보기 배치
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const decks = useMemo<TugShown[][]>(() => [buildTugDeck(questions), buildTugDeck(questions)], [qKey, seed]);
+  const decks = useMemo<TugShown[][]>(() => solo ? [buildTugDeck(questions, playableCount)] : [buildTugDeck(questions), buildTugDeck(questions)], [qKey, seed, solo, playableCount]);
   const playable = decks[0].length > 0;
 
   const [phase, setPhase] = useState<Phase>('ready');
@@ -273,7 +281,7 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
     startAt.current = gameClock.now();
     setTick(startAt.current);
     setPhaseBoth('playing');
-    ticker.current = gameClock.setInterval(() => tickFn.current(), 100);
+    if (!solo) ticker.current = gameClock.setInterval(() => tickFn.current(), 100);
   }
 
   function advance(team: number) {
@@ -281,12 +289,13 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
   }
 
   function choose(team: 0 | 1, ci: number) {
-    if (phaseRef.current !== 'playing' || winnerRef.current !== null) return;
+    if (phaseRef.current !== 'playing' || winnerRef.current !== null || (solo && team !== 0)) return;
     const side = sidesRef.current[team];
     const now = gameClock.now();
     if (side.locked || now < side.frozenUntil) return;
     const q = decks[team][side.idx % decks[team].length];
     if (!q || ci >= q.choices.length || side.removed.includes(ci)) return;
+    onSubmit?.();
     const key = ++keyRef.current;
     if (ci === q.correctIndex) {
       playSfx(sfx.pull);
@@ -304,7 +313,7 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
     patchSide(team, {
       wrong: side.wrong + 1,
       removed: [...side.removed, ci],
-      frozenUntil: now + freeze * 1000,
+      frozenUntil: freeze > 0 ? now + freeze * 1000 : 0,
       flash: { kind: 'bad', choice: ci, key },
     });
     later(() => {
@@ -330,7 +339,7 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [decks, pull, freeze, playable]);
+  }, [decks, pull, freeze, playable, solo, onSubmit]);
 
   const teamName = (i: number) => (i === 0 ? t('gameTugOfWar.teamBlue') : t('gameTugOfWar.teamRed'));
   const knot = tugKnotPercent(pos, pull, FINISH_WIDTH);
@@ -348,7 +357,7 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
   return (
     <div
       className="tw-root relative w-full select-none overflow-hidden rounded-[2.4cqw] shadow-xl"
-      style={{ containerType: 'inline-size', aspectRatio: '16 / 9', background: 'linear-gradient(180deg,#14284d,#0e1c38)' }}
+      style={{ containerType: 'inline-size', ...(solo ? { minHeight: 'calc(min(26vw, 9rem) + 15rem)' } : { aspectRatio: '16 / 9' }), background: 'linear-gradient(180deg,#14284d,#0e1c38)' }}
     >
       <style>{STYLE}</style>
 
@@ -369,7 +378,7 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
       >
         <div key={`bump-${pulse?.key ?? 0}`} className="tw-anim absolute inset-0" style={{ animation: pulse ? 'tw-bump .36s ease-out' : undefined }}>
           {/* 양쪽 끝 응원 깃발 */}
-          {[0, 1].map((i) => (
+          {teams.map((i) => (
             <img
               key={`flag-${i}`}
               src={`${IMG}${i === 0 ? 'flag-blue' : 'flag-red'}.webp`}
@@ -390,7 +399,7 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
           ))}
 
           {/* 승리 선: 매듭이 여기까지 오면 그 팀이 이긴다 */}
-          {[0, 1].map((i) => (
+          {teams.map((i) => (
             <div key={`goal-${i}`} className="absolute" style={{ left: `${i === 0 ? 50 - FINISH_WIDTH / 2 : 50 + FINISH_WIDTH / 2}%`, bottom: 0, width: 0, height: '9.2cqw' }}>
               <div
                 className="absolute"
@@ -424,7 +433,7 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
               className="tw-anim absolute block"
               style={{ left: '-1.75cqw', width: '3.5cqw', height: 'auto', bottom: '4.4cqw', zIndex: 4, transformOrigin: '50% 6%', animation: 'tw-ribbon 1.6s ease-in-out infinite', filter: 'drop-shadow(0 .3cqw .2cqw rgba(0,0,0,.25))' }}
             />
-            {[0, 1].map((team) =>
+            {teams.map((team) =>
               [2, 1, 0].map((n) => {
                 const lead = team === 0 ? pos : -pos;
                 const lean = Math.max(-3, Math.min(14, 3 + lead * 2.4));
@@ -520,18 +529,18 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
         className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between"
         style={{ height: '6cqw', padding: '0 1.8cqw', background: 'linear-gradient(180deg,rgba(14,28,56,.82),rgba(14,28,56,0))' }}
       >
-        <TeamChip team={0} name={teamName(0)} pulls={t('gameTugOfWar.pulls', { n: sides[0].correct })} />
+        {!solo && <TeamChip team={0} name={teamName(0)} pulls={t('gameTugOfWar.pulls', { n: sides[0].correct })} />}
         <div
           className={`rounded-full font-extrabold tabular-nums shadow-lg ${urgent || sudden ? 'bg-warm-yellow text-[#b3261e]' : 'bg-white/95 text-deep-navy'}`}
           style={{ fontSize: '2.2cqw', padding: '.4cqw 2.4cqw', border: '.2cqw solid rgba(255,255,255,.7)' }}
         >
-          {sudden ? t('gameTugOfWar.suddenChip') : timed ? formatTugClock(remainingMs) : t('gameTugOfWar.noLimit')}
+            {solo ? `${sides[0].correct} / ${pull}` : sudden ? t('gameTugOfWar.suddenChip') : timed ? formatTugClock(remainingMs) : t('gameTugOfWar.noLimit')}
         </div>
-        <TeamChip team={1} name={teamName(1)} pulls={t('gameTugOfWar.pulls', { n: sides[1].correct })} />
+        {!solo && <TeamChip team={1} name={teamName(1)} pulls={t('gameTugOfWar.pulls', { n: sides[1].correct })} />}
       </div>
 
       {/* 팀 패널 */}
-      {[0, 1].map((team) => {
+      {teams.map((team) => {
         const side = sides[team];
         const deck = decks[team];
         const q = deck[side.idx % deck.length];
@@ -544,31 +553,31 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
             style={{
               top: '27.4cqw',
               [team === 0 ? 'left' : 'right']: '1cqw',
-              width: '48.4cqw',
-              height: '28.2cqw',
+              width: solo ? '98cqw' : '48.4cqw',
+              height: solo ? '14rem' : '28.2cqw',
               borderRadius: '1.8cqw',
               background: `linear-gradient(180deg,${TEAM_LIGHT[team]},${TEAM_DARK[team]})`,
               boxShadow: '0 .5cqw 1.4cqw rgba(0,0,0,.4), inset 0 .25cqw 0 rgba(255,255,255,.4)',
             }}
-            aria-label={teamName(team)}
+            aria-label={solo ? '뜻 고르기' : teamName(team)}
           >
-            <div className="absolute left-[1.6cqw] top-[.9cqw] font-extrabold text-white" style={{ fontSize: '1.8cqw', textShadow: '0 .15cqw .3cqw rgba(0,0,0,.35)' }}>
+            {!solo && <div className="absolute left-[1.6cqw] top-[.9cqw] font-extrabold text-white" style={{ fontSize: '1.8cqw', textShadow: '0 .15cqw .3cqw rgba(0,0,0,.35)' }}>
               {teamName(team)}
-            </div>
-            <div className="absolute right-[1.6cqw] top-[1.1cqw] font-bold tabular-nums text-white/85" style={{ fontSize: '1.4cqw' }}>
+            </div>}
+            {!solo && <div className="absolute right-[1.6cqw] top-[1.1cqw] font-bold tabular-nums text-white/85" style={{ fontSize: '1.4cqw' }}>
               {t('gameTugOfWar.keysHint', { keys: KEY_LABELS[team].join('·') })}
-            </div>
+            </div>}
             <div
               className="absolute flex items-center justify-center bg-white text-center"
-              style={{ left: '1.6cqw', right: '1.6cqw', top: '3.6cqw', height: '9.4cqw', borderRadius: '1.4cqw', padding: '0 1.6cqw', boxShadow: '0 .45cqw 0 rgba(0,0,0,.18), 0 .7cqw 1.2cqw rgba(0,0,0,.18)' }}
+              style={{ left: '1.6cqw', right: '1.6cqw', top: solo ? '.5rem' : '3.6cqw', height: solo ? '3.25rem' : '9.4cqw', borderRadius: '1.4cqw', padding: '0 1.6cqw', boxShadow: '0 .45cqw 0 rgba(0,0,0,.18), 0 .7cqw 1.2cqw rgba(0,0,0,.18)' }}
             >
               {q.imageUrl ? (
                 <img data-picture-word src={q.imageUrl} alt={t('gameWordHoops.askWord')} draggable={false} className="h-full object-contain" style={{ maxWidth: '100%' }} />
-              ) : <span className="font-extrabold leading-tight text-deep-navy" style={{ fontSize: `${fontFor(q.question, 3.4, 2.7, 2.1)}cqw`, wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>
+              ) : <span className="font-extrabold leading-tight text-deep-navy" style={{ fontSize: solo ? '1.2rem' : `${fontFor(q.question, 3.4, 2.7, 2.1)}cqw`, wordBreak: 'keep-all', whiteSpace: 'pre-line' }}>
                 {q.question}
               </span>}
             </div>
-            <div className="absolute grid grid-cols-2" style={{ left: '1.6cqw', right: '1.6cqw', top: '13.9cqw', bottom: '1.3cqw', gap: '.9cqw' }}>
+            <div className="absolute grid grid-cols-2" style={{ left: '1.6cqw', right: '1.6cqw', top: solo ? '4.25rem' : '13.9cqw', bottom: '1.3cqw', gap: '.9cqw' }}>
               {q.choices.map((c, ci) => {
                 const removed = side.removed.includes(ci);
                 const flashed = side.flash && side.flash.choice === ci ? side.flash : null;
@@ -585,7 +594,7 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
                       background: bg,
                       color: fg,
                       borderRadius: '1.2cqw',
-                      fontSize: `${fontFor(c, 2.5, 2, 1.55)}cqw`,
+                      fontSize: solo ? '1rem' : `${fontFor(c, 2.5, 2, 1.55)}cqw`,
                       opacity: removed && !flashed ? 0.38 : 1,
                       textDecoration: removed && !flashed ? 'line-through' : undefined,
                       animation: flashed?.kind === 'bad' ? 'tw-shake .45s ease-in-out' : undefined,
@@ -630,25 +639,25 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
       {phase === 'ready' && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-deep-navy/60 text-center text-white" style={{ gap: '1.4cqw' }}>
           <span style={{ fontSize: '7cqw' }}>🪢</span>
-          <span className="font-extrabold" style={{ fontSize: '3.8cqw' }}>{t('gameTugOfWar.readyTitle')}</span>
+          <span className="font-extrabold" style={{ fontSize: solo ? '1.4rem' : '3.8cqw' }}>{t(solo ? 'solo.videoTug' : 'gameTugOfWar.readyTitle')}</span>
           <span className="max-w-[70%] font-semibold opacity-95" style={{ fontSize: '1.9cqw' }}>
-            {t('gameTugOfWar.readyHint', { pull, freeze })}
+            {solo ? '뜻을 맞힐 때마다 줄을 당겨요.' : t('gameTugOfWar.readyHint', { pull, freeze })}
           </span>
           <button
             type="button"
             data-initial-game-start onClick={start}
             className="rounded-full bg-warm-yellow font-extrabold text-deep-navy shadow-xl transition-transform hover:scale-105 active:scale-95"
-            style={{ fontSize: '3cqw', padding: '1cqw 5cqw' }}
+            style={{ minHeight: solo ? '44px' : undefined, fontSize: solo ? '1rem' : '3cqw', padding: '1cqw 5cqw' }}
           >
             {t('flow.start')}
           </button>
-          <span className="font-medium opacity-80" style={{ fontSize: '1.4cqw' }}>{t('gameTugOfWar.keys')}</span>
+          {!solo && <span className="font-medium opacity-80" style={{ fontSize: '1.4cqw' }}>{t('gameTugOfWar.keys')}</span>}
         </div>
       )}
 
       {winner !== null && phase === 'playing' && (
         <div className="tw-anim pointer-events-none absolute left-1/2 top-[8cqw] z-20 rounded-full bg-white/95 font-extrabold shadow-xl" style={{ fontSize: '3.4cqw', padding: '.8cqw 3.4cqw', color: TEAM_COLORS[winner], animation: 'tw-pop .4s ease-out both' }}>
-          {t('gameTugOfWar.winner', { team: teamName(winner) })}
+          {solo ? '목표선에 도착했어요!' : t('gameTugOfWar.winner', { team: teamName(winner) })}
         </div>
       )}
 
@@ -669,14 +678,14 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
           ))}
           <img src={`${IMG}trophy.webp`} alt="" draggable={false} style={{ height: '8cqw', width: 'auto', filter: 'drop-shadow(0 .5cqw .5cqw rgba(0,0,0,.25))' }} />
           <span className="font-extrabold" style={{ fontSize: '4cqw', color: TEAM_COLORS[winner] }}>
-            {t('gameTugOfWar.winner', { team: teamName(winner) })}
+            {solo ? '목표선에 도착했어요!' : t('gameTugOfWar.winner', { team: teamName(winner) })}
           </span>
-          <span className="font-semibold text-on-surface-variant" style={{ fontSize: '1.9cqw' }}>{t('gameTugOfWar.cheer')}</span>
+          {!solo && <span className="font-semibold text-on-surface-variant" style={{ fontSize: '1.9cqw' }}>{t('gameTugOfWar.cheer')}</span>}
           <div className="flex" style={{ gap: '2cqw' }}>
-            {[0, 1].map((i) => (
+            {teams.map((i) => (
               <div key={i} className="overflow-hidden bg-white text-left shadow-lg" style={{ width: '24cqw', borderRadius: '1.4cqw', border: `.3cqw solid ${winner === i ? '#f5b301' : '#e5e7eb'}` }}>
                 <div className="font-extrabold text-white" style={{ background: TEAM_COLORS[i], fontSize: '2cqw', padding: '.7cqw 1.6cqw' }}>
-                  {teamName(i)} {winner === i && '🏆'}
+                  {solo ? '내 기록' : teamName(i)} {winner === i && '🏆'}
                 </div>
                 <div className="font-extrabold tabular-nums text-deep-navy" style={{ fontSize: '4.2cqw', padding: '.6cqw 1.6cqw 0' }}>
                   {sides[i].correct}
@@ -684,18 +693,18 @@ export default function TugOfWar({ questions, pull, freeze, seconds }: Props) {
                 </div>
                 <div className="text-on-surface-variant" style={{ fontSize: '1.55cqw', padding: '.4cqw 1.6cqw 1.2cqw' }}>
                   <div>{t('gameTugOfWar.accuracy')}: <b className="text-deep-navy">{tugAccuracy(sides[i])}%</b> ({sides[i].correct}/{sides[i].correct + sides[i].wrong})</div>
-                  <div>{t('gameTugOfWar.frozenCount')}: <b className="text-deep-navy">{sides[i].wrong}{t('gameTugOfWar.countUnit')}</b></div>
+                  {!solo && <div>{t('gameTugOfWar.frozenCount')}: <b className="text-deep-navy">{sides[i].wrong}{t('gameTugOfWar.countUnit')}</b></div>}
                 </div>
               </div>
             ))}
           </div>
           <button
             type="button"
-            onClick={reset}
+            onClick={onContinue ?? reset}
             className="rounded-full bg-primary font-extrabold text-on-primary shadow-lg transition-transform hover:scale-105 active:scale-95"
             style={{ fontSize: '2.2cqw', padding: '.8cqw 3.4cqw' }}
           >
-            {t('gameTugOfWar.playAgain')}
+            {t(solo ? 'solo.next' : 'gameTugOfWar.playAgain')}
           </button>
         </div>
       )}

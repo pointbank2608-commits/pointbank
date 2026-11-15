@@ -1,10 +1,15 @@
-import type { SoloClip, SoloStep } from './soloLessons';
+import { shuffle, type SoloClip, type SoloStep } from './soloLessons';
 import type { VideoClip } from './videoClips';
-import { withSource } from './soloBoard';
+import type { WordListItem } from './types';
+import { stepSource, withSource } from './soloBoard';
 import { parseShadowText } from './shadowLines';
+import { isVideoSentenceGame } from './videoReviewGames';
+import { buildQuizQuestions } from './quizFromWordList';
+import { normalizedWord } from './wordListLaunch';
 
 export const DEFAULT_VIDEO_WORDS = 4;
 export const DEFAULT_VIDEO_SHADOW_LINES = 2;
+export const VIDEO_REVIEW_TITLE = '오늘 배운 내용 총정리';
 
 export interface VerifiedVideoLine {
   start: number;
@@ -31,18 +36,79 @@ export function videoSelectedSteps(draft: SoloVideoDraft, excluded: readonly num
     !omitted.has(index) || (step.t !== 'meet' && (step.t !== 'lineSing' || step.practice !== 'shadow')));
 }
 
+function videoVocabularyReview(steps: readonly SoloStep[]) {
+  const seen = new Set<string>();
+  const entries = steps.flatMap((step, index) => {
+    if (step.t !== 'meet') return [];
+    const word = step.word.trim();
+    const meaning = step.meaning.trim();
+    const key = `${normalizedWord(word)}\0${normalizedWord(meaning)}`;
+    if (!word || !meaning || seen.has(key)) return [];
+    seen.add(key);
+    const item: WordListItem = { id: String(index), word, meaning, image_url: null, category: null };
+    return [{ item, source: stepSource(step) }];
+  });
+  const items = entries.map(({ item }) => item);
+  const byMeaning = new Map(buildQuizQuestions({ items }, 'meaningToWord').map(question => [question.id, question]));
+  const byWord = new Map(buildQuizQuestions({ items }, 'wordToMeaning').map(question => [question.id, question]));
+  const questions = entries.flatMap(({ item, source }): SoloStep[] => {
+    const fromMeaning = byMeaning.get(item.id);
+    const fromWord = byWord.get(item.id);
+    let question: SoloStep;
+    if (fromMeaning) {
+      question = { t: 'pickWord', meaning: item.meaning, imageUrl: null, options: fromMeaning.choices, answer: fromMeaning.correctIndex };
+    } else if (fromWord) {
+      question = { t: 'pickMeaning', word: item.word, imageUrl: null, options: fromWord.choices, answer: fromWord.correctIndex };
+    } else {
+      // A single recall cue needs a unique answer when meaningful distractors are unavailable.
+      if (items.some(other => other.id !== item.id && normalizedWord(other.meaning) === normalizedWord(item.meaning))) return [];
+      const word = item.word.replace(/\s*(?:…|\.{3})$/, '');
+      if (!word) return [];
+      question = { t: 'typeWord', word, meaning: item.meaning, imageUrl: null, length: word.length, first: word[0] };
+    }
+    return source ? withSource([question], source) : [question];
+  });
+  return { words: items.map(item => `${item.word} · ${item.meaning}`), questions };
+}
+
+function videoSentenceReview(line: Extract<SoloStep, { t: 'lineSing' }>): SoloStep[] {
+  const sentence = line.en.trim();
+  const tokens = sentence.split(/\s+/);
+  const example: SoloStep = { t: 'example', sentence, ko: line.ko };
+  const chunkSize = Math.ceil(tokens.length / 12);
+  const pieces = Array.from({ length: Math.ceil(tokens.length / chunkSize) }, (_, index) =>
+    tokens.slice(index * chunkSize, (index + 1) * chunkSize).join(' '));
+  const words = shuffle(pieces);
+  if (words.join(' ') === pieces.join(' ')) words.push(words.shift()!);
+  const exercises: SoloStep[] = [example];
+  if (new Set(pieces).size > 1) exercises.push({ t: 'unscramble', sentence, words });
+  const source = stepSource(line);
+  return [line, ...(source ? withSource(exercises, source) : exercises)];
+}
+
 export function videoDraftSteps(draft: SoloVideoDraft, excluded: readonly number[] = draft.defaultExcluded, games: readonly SoloStep[] = []): SoloStep[] {
   const selected = videoSelectedSteps(draft, excluded);
   if (!draft.finalReview) return [...selected, ...games];
-  const words = selected.flatMap(step => step.t === 'meet' ? [`${step.word} · ${step.meaning}`] : []);
-  const lines = selected.filter(step => step.t === 'lineSing' && step.practice === 'shadow');
+  const { words, questions } = videoVocabularyReview(selected);
+  const lines = selected.filter((step): step is Extract<SoloStep, { t: 'lineSing' }> => step.t === 'lineSing' && step.practice === 'shadow' && !!step.en.trim());
+  const sentenceReview = lines.flatMap(videoSentenceReview);
   const watched = selected.filter(step => step.t === 'watch');
+  const lastWord = selected.findLastIndex(step => step.t === 'meet');
+  const lastShadow = selected.findLastIndex(step => step.t === 'lineSing' && step.practice === 'shadow');
+  const activities = selected.flatMap((step, index) => [
+    step,
+    ...games.filter(game => index === (isVideoSentenceGame(game) ? lastShadow : lastWord)),
+  ]);
   return [
-    ...selected,
-    { t: 'intro' as const, title: '오늘 배운 내용 총정리', text: lines.length ? `오늘 연습한 ${lines.length}문장을 차례로 한 번 더 쉐도잉해요.` : '오늘 들은 장면과 배운 표현을 떠올려 봐요.' },
-    ...games,
-    ...(words.length ? [{ t: 'rule' as const, title: '오늘 배운 단어·표현', pattern: '뜻을 떠올려 봐요', explain: '', lines: [...new Set(words)], tip: '' }] : []),
-    ...(lines.length ? lines : watched.map(step => ({ ...step, clip: { ...step.clip, captions: [] } }))),
+    ...activities,
+    { t: 'intro', title: VIDEO_REVIEW_TITLE, text: [
+      questions.length ? '단어·표현을 읽고 문제로 확인해요.' : '',
+      sentenceReview.some(step => step.t === 'unscramble') ? '원음을 따라 말하고 읽은 뒤 문장을 직접 만들어요.'
+        : lines.length ? '원음을 따라 말하고 대사를 읽어요.' : '',
+    ].filter(Boolean).join(' ') || '오늘 들은 장면과 배운 표현을 떠올려 봐요.' },
+    ...(words.length ? [{ t: 'rule' as const, title: '오늘 배운 단어·표현', pattern: '뜻을 떠올려 봐요', explain: '', lines: words, tip: '' }] : []),
+    ...questions,
+    ...(lines.length ? sentenceReview : watched.map(step => ({ ...step, clip: { ...step.clip, captions: [] } }))),
   ];
 }
 

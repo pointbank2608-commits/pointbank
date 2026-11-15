@@ -4,19 +4,40 @@ import { prepareClassroomGame } from './gameWorkspace';
 import type { SoloReviewGameType, SoloStep } from './soloLessons';
 import type { FullCardItem, GameTemplateConfig } from './types';
 import { normalizedWord } from './wordListLaunch';
+import { HOOPS_MIN_PAIRS } from './wordHoops';
 
 type ReviewGame = SoloReviewGameType | 'matchup' | 'whackamole' | 'unscramble';
 export type VideoReviewGames = Partial<Record<ReviewGame, boolean>>;
+export const DEFAULT_CAILLOU_GAMES: VideoReviewGames = { matchup: true };
 
-const wordGames = ['matchup', 'whackamole', 'quiz', 'truefalse', 'typeanswer', 'anagram', 'hangman', 'wordsearch', 'balloonpop', 'wordfishing'] as const;
-const sentenceGames = ['unscramble', 'wordtrain', 'sentencesplash', 'grammardetective'] as const;
+const wordGames = ['matchup', 'whackamole', 'quiz', 'truefalse', 'typeanswer', 'anagram', 'hangman', 'wordsearch', 'balloonpop', 'wordfishing',
+  'gameshowquiz', 'tugofwar', 'wordhoops'] as const;
+const sentenceGames = ['unscramble', 'wordtrain', 'sentencesplash', 'grammardetective', 'catchsentence'] as const;
+const soloNames: Partial<Record<ReviewGame, string>> = {
+  gameshowquiz: 'solo.videoQuizShow', tugofwar: 'solo.videoTug', wordhoops: 'solo.videoHoops',
+};
+const soloDescriptions: Partial<Record<ReviewGame, string>> = {
+  gameshowquiz: 'solo.videoQuizShowDesc',
+  tugofwar: 'solo.videoTugDesc',
+  wordhoops: 'solo.videoHoopsDesc',
+  catchsentence: 'solo.videoCatchDesc',
+  balloonpop: 'solo.videoBalloonDesc',
+  typeanswer: 'solo.videoTypeAnswerDesc',
+};
+const sentenceGameTypes = new Set<ReviewGame>(sentenceGames);
+
+export function isVideoSentenceGame(step: SoloStep) {
+  return step.t === 'unscramble' || (step.t === 'game' && sentenceGameTypes.has(step.gameType));
+}
 const spellingGames = new Set<ReviewGame>(['anagram', 'hangman', 'wordsearch']);
-const pairGames = new Set<ReviewGame>(['matchup', 'whackamole']);
-const needsChoices = new Set<ReviewGame>(['quiz', 'truefalse', ...pairGames]);
+const pairGames = new Set<ReviewGame>(['matchup', 'whackamole', 'wordhoops']);
+const needsChoices = new Set<ReviewGame>(['quiz', 'truefalse', 'gameshowquiz', 'tugofwar', ...pairGames]);
 const games = [...wordGames.map(type => ({ type, kind: 'word' as const })),
   ...sentenceGames.map(type => ({ type, kind: 'sentence' as const }))].map(({ type, kind }) => {
   const entry = GAME_CATALOG.find(game => game.type === type)!;
-  return { type, kind, nameKey: entry.nameKey, minimum: entry.minItems === 999 ? (needsChoices.has(type) ? 2 : 1) : entry.minItems };
+  const minimum = type === 'wordhoops' ? HOOPS_MIN_PAIRS : entry.minItems === 999 ? (needsChoices.has(type) ? 2 : 1) : entry.minItems;
+  return { type, kind, nameKey: soloNames[type] ?? entry.nameKey,
+    descKey: soloDescriptions[type] ?? entry.descKey, cover: entry.cover, icon: entry.icon, minimum };
 });
 
 function uniqueCards(cards: FullCardItem[], key: (card: FullCardItem) => string) {
