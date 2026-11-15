@@ -839,6 +839,8 @@ export interface WorksheetSlideOptions {
  * 리스트)으로 연다. worksheetOptions 는 그 탭의 세부 설정(2026-09-25 추가) — 발표 중엔 옵션
  * 컨트롤이 안 보이므로 여기서 미리 정해둔 값이 그대로 쓰인다. */
 export interface MaterialSlide {
+  /** Confirmed word forms and their authored practice contexts. */
+  grammarWords?: import('./grammarCoreWords').GrammarWordSelection;
   phonicsStage1?: { unitId: string; view: 'slides' | 'workbook'; lesson: 1 | 2; optional?: boolean };
   id: string;
   kind: 'material';
@@ -1056,10 +1058,11 @@ export interface ShadowSlide {
 
 /** Q&A 슬라이드(2026-10-03, 클래스5 무비 수업 참고) — 영상 내용 질문을 하나씩, 정답 공개, 장면 보기 */
 export interface QnaSlide {
+  grammarWordSource?: import('./grammarCoreWords').GrammarWordReference;
   id: string;
   kind: 'qna';
   title?: string;
-  questions: { q: string; a: string; qKo?: string; aKo?: string; time?: number }[];
+  questions: { q: string; a: string; qKo?: string; aKo?: string; time?: number; grammarWord?: { id: string; contentId: string } }[];
   /** 장면 보기에 쓰는 영상(선택) */
   videoUrl?: string | null;
   boardTheme?: string | null;

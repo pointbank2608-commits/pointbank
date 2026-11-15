@@ -9,6 +9,8 @@ import { fetchCurriculumLessonById } from '../lib/api';
 import { effectiveSlides } from '../lib/lessonSlides';
 import { wordsFromLocationState } from '../lib/materialsHandoff';
 import { restoreReadingCues } from '../lib/readingLines';
+import { GRAMMAR_WORD_SHEET } from '../lib/grammarCoreWords';
+import GrammarWordWorksheet from '../components/worksheets/GrammarWordWorksheet';
 import type { CurriculumLesson } from '../lib/types';
 
 /**
@@ -24,7 +26,8 @@ export default function LessonSlideViewerPage() {
   const isPresenting = usePresenting();
   const location = useLocation();
   const { academy, profile } = useAuth();
-  const runnerClassId = useLessonRunner().runner?.classId ?? null;
+  const { runner } = useLessonRunner();
+  const runnerClassId = runner?.classId ?? null;
   // 카드로 외우기·단어 소개·문법 슬라이드의 단어 — 발표 러너가 수업 단어장을 navigation state 로 넘겨준다.
   const stateWords = useMemo(() => wordsFromLocationState(location.state), [location.state]);
 
@@ -46,6 +49,9 @@ export default function LessonSlideViewerPage() {
   }
   const slides = lesson ? effectiveSlides(lesson) : [];
   const slide = slides.find((s) => s.id === slideId);
+  if (slide?.kind === 'material' && slide.materialId === GRAMMAR_WORD_SHEET && slide.grammarWords) {
+    return <div className={isPresenting ? 'absolute inset-0 overflow-auto bg-white' : ''}><GrammarWordWorksheet selection={slide.grammarWords} /></div>;
+  }
   if (!lesson || !slide || slide.kind === 'game' || slide.kind === 'material') {
     return (
       <div className="space-y-4">
@@ -69,6 +75,9 @@ export default function LessonSlideViewerPage() {
       words={stateWords}
       fill={isPresenting}
       lessonName={lesson.name}
+      grammarWordObservation={slide.kind === 'qna' && slide.grammarWordSource && runner?.lessonId === lesson.id
+        && runner.steps[runner.stepIndex]?.slideId === slide.id
+        ? { lessonId: lesson.id, position: runner.stepIndex } : undefined}
       attendance={{ academyId: academy?.id ?? '', classId: runnerClassId ?? lesson.class_id ?? null, teacherId: profile?.id ?? null }}
     />
   );

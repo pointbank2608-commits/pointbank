@@ -2,11 +2,12 @@ import { useClassWordLists } from '../lib/useClassWordLists';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BANK_LEVELS, SENTENCE_BANK, bankSentences, type BankLevel } from '../data/sentenceBank';
-import { createCurriculumLesson, createWordList } from '../lib/api';
+import { createCurriculumLesson, createWordList, fetchCurriculumLessons } from '../lib/api';
 import { curriculumFor, SCHOOLS, type SchoolId } from '../lib/curriculumGrammar';
 import { getGameCatalogEntry } from '../lib/gameCatalog';
 import { wordListToCards } from '../lib/gameFromWords';
 import { grammarPoint } from '../lib/grammar';
+import { grammarWordCandidates, grammarWordReview, grammarWordReviewQuestions, lessonGrammarWordSelection, selectGrammarWords, type GrammarWordSelection } from '../lib/grammarCoreWords';
 import { LESSON_RECIPES, type RecipeContext } from '../lib/lessonRecipes';
 import { LESSON_SETS, lessonSetName, pickSetWords } from '../lib/lessonSets';
 import { loadPhonicsBank } from '../lib/phonicsFill';
@@ -32,6 +33,7 @@ import type { ClassRow, CurriculumLesson, FullCardItem, LessonSlide, WordList } 
 import { clipLength, clipThumb, formatClipTime, useVideoClips } from '../lib/videoClips';
 import { enrichCards, loadWordBank } from '../lib/wordBankCache';
 import { useToast } from '../context/ToastContext';
+import GrammarWordPicker from './GrammarWordPicker';
 
 type Source = 'paste' | 'mine' | 'topic';
 export type QuickAction = 'start' | 'save' | 'edit';
@@ -82,6 +84,10 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
   // 문법
   const [school, setSchool] = useState<SchoolId>('elementary');
   const [grammarId, setGrammarId] = useState('');
+  const [wordDecision, setWordDecision] = useState<string[] | null>(null);
+  const [reviewOptions, setReviewOptions] = useState<{ id: string; name: string; selection: GrammarWordSelection }[]>([]);
+  const [reviewId, setReviewId] = useState('');
+  const [reviewError, setReviewError] = useState(false);
   // 파닉스
   const [phStep, setPhStep] = useState(1);
   // 상황 표현
@@ -109,6 +115,29 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
   useEffect(()=>{setListId('');setWordRoles({});},[classId]);
   const pastedCount = useMemo(() => parsePastedWords(pasted, []).length, [pasted]);
   const grades = useMemo(() => curriculumFor(school), [school]);
+  const grammarCandidates = useMemo(() => grammarWordCandidates(grammarId), [grammarId]);
+  const review = reviewOptions.find(option => option.id === reviewId);
+  useEffect(() => {
+    setReviewOptions([]);
+    setReviewId('');
+    setReviewError(false);
+    if (!classId) return;
+    let active = true;
+    void fetchCurriculumLessons(academyId, classId).then(lessons => {
+      if (!active) return;
+      setReviewOptions([...lessons].reverse().flatMap(lesson => {
+        if (lesson.class_id !== classId) return [];
+        const source = lessonGrammarWordSelection(lesson);
+        return source ? [{ id: lesson.id, name: lesson.name, selection: source.selection }] : [];
+      }).slice(0, 8));
+    }).catch(() => { if (active) setReviewError(true); });
+    return () => { active = false; };
+  }, [academyId, classId]);
+
+  function chooseGrammar(id: string) {
+    setGrammarId(id);
+    setWordDecision(null);
+  }
   const clipLevels = useMemo(() => [...new Set((clips ?? []).map((c) => c.level))].sort((a, b) => a - b), [clips]);
   const shownClips = useMemo(() => {
     const q = clipQuery.trim().toLowerCase();
@@ -128,7 +157,7 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
     (kind === 'vocab'
       ? wordsReady
       : kind === 'grammar'
-        ? !!grammarId
+        ? !!grammarId && (!grammarCandidates.length || wordDecision !== null)
         : kind === 'phonics'
           ? true
           : kind === 'situation'
@@ -210,7 +239,8 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
       } else if (kind === 'grammar') {
         const point = grammarPoint(grammarId);
         if (!point) throw new Error('grammar');
-        slides = await recipe('grammar')!.build(ctx({ grammarId }));
+        const grammarWords = wordDecision?.length ? selectGrammarWords(grammarId, point.name, wordDecision) : undefined;
+        slides = await recipe('grammar')!.build(ctx({ grammarId, grammarWords }));
         lessonName = t('quickLesson.lessonName', { list: point.name });
       } else if (kind === 'phonics') {
         const all = (await loadPhonicsBank()).filter((e) => e.step === phStep).sort((a, b) => a.sort_order - b.sort_order);
@@ -268,6 +298,11 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
         lessonName = `${song.title} · ${song.artist}`;
       }
       if (slides.length === 0) throw new Error('empty');
+      if (review) {
+        const position = slides.findIndex(slide => slide.kind !== 'attendance');
+        const title = t('grammarLesson.coreReviewTitle', { topic: review.selection.topic });
+        slides.splice(position < 0 ? slides.length : position, 0, grammarWordReview(review.selection, title, review.id));
+      }
 
       // 레시피가 만든 단어장(영상·노래)이 있으면 그것을 수업 단어장으로
       const made = helpers.createdLists();
@@ -319,11 +354,28 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
           <h3 className="font-title-md text-title-md text-on-surface">1. {t('quickLesson.q1')}</h3>
           <div className="flex flex-wrap gap-2">
             {classes.map((c) => (
-              <button key={c.id} type="button" disabled={busy} aria-pressed={classId === c.id} onClick={() => setClassId(c.id)} className={chip(classId === c.id)}>
+              <button key={c.id} type="button" disabled={busy} aria-pressed={classId === c.id} onClick={() => {
+                if (classId !== c.id) setReviewId('');
+                setClassId(c.id);
+              }} className={chip(classId === c.id)}>
                 {c.name}
               </button>
             ))}
           </div>
+          {reviewOptions.length > 0 && (
+            <div className="space-y-1 rounded-xl bg-primary/5 p-3">
+              <label className="block font-bold" htmlFor="quick-grammar-review">{t('grammarLesson.coreReview')}</label>
+              <p className="text-sm text-on-surface-variant">{t('grammarLesson.coreReviewHelp')}</p>
+              <select id="quick-grammar-review" value={reviewId} onChange={event => setReviewId(event.target.value)} disabled={busy} className="min-h-11 w-full rounded-lg border border-outline-variant bg-white px-3">
+                <option value="">{t('grammarLesson.coreReviewNone')}</option>
+                {reviewOptions.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}
+              </select>
+              {review && <ol className="list-decimal pl-5 text-sm" lang="en">
+                {grammarWordReviewQuestions(review.selection).map(question => <li key={question.id}>{question.q}</li>)}
+              </ol>}
+            </div>
+          )}
+          {reviewError && <p role="status" className="text-sm text-on-surface-variant">{t('grammarLesson.coreReviewUnavailable')}</p>}
         </section>
 
         <section className="space-y-3">
@@ -425,7 +477,7 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
                     aria-pressed={school === s.id}
                     onClick={() => {
                       setSchool(s.id);
-                      setGrammarId('');
+                      chooseGrammar('');
                     }}
                     className={chip(school === s.id)}
                   >
@@ -433,7 +485,7 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
                   </button>
                 ))}
               </div>
-              <select value={grammarId} onChange={(e) => setGrammarId(e.target.value)} className="min-h-11 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3">
+              <select value={grammarId} onChange={(e) => chooseGrammar(e.target.value)} className="min-h-11 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3">
                 <option value="">{t('quickLesson.pickGrammar')}</option>
                 {grades.map((g) =>
                   g.units.map((u) => (
@@ -447,6 +499,7 @@ export default function QuickLessonWizard({ academyId, teacherId, classes, defau
                   )),
                 )}
               </select>
+              {grammarCandidates.length > 0 && <GrammarWordPicker key={grammarId} candidates={grammarCandidates} decision={wordDecision} onDecision={setWordDecision} busy={busy} />}
             </div>
           )}
 

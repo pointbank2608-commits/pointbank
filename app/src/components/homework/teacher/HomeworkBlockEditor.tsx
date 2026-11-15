@@ -89,6 +89,7 @@ export default function HomeworkBlockEditor({
   ownerId,
   initialItems,
   initialTitle,
+  draftScope,
   lessonId,
   startWithLessonImport,
   initialStudentIds,
@@ -104,6 +105,7 @@ export default function HomeworkBlockEditor({
   ownerId: string;
   initialItems?: HwItemDraft[];
   initialTitle?: string;
+  draftScope?: string;
   lessonId?: string;
   onClose: () => void;
   onCreated: (result: { id: string; code: string }) => void;
@@ -117,19 +119,19 @@ export default function HomeworkBlockEditor({
     (ko: string, english: string) => (en ? english : ko),
     [en],
   );
-  const cache = `classbank.hw.draft.${ownerId}.${academyId}.${classId}`;
+  const cache = `classbank.hw.draft.${ownerId}.${academyId}.${classId}${draftScope ? `.${draftScope}` : ''}`;
   const badRecovery = useRef(false);
   const [draft, setDraft] = useState<HomeworkDraft>(() => {
-    if (initialItems)
-      return {
+    const fromItems = () => ({
         ...newDraft(),
         title: initialTitle || "",
-        items: structuredClone(initialItems),
+        items: structuredClone(initialItems ?? []),
         assignment: {
           students: initialStudentIds || null,
           due: initialDue || "",
         },
-      };
+      });
+    if (initialItems && !draftScope) return fromItems();
     try {
       const saved = JSON.parse(localStorage.getItem(cache) || "null");
       if (isEditableDraft(saved)) return saved;
@@ -140,7 +142,7 @@ export default function HomeworkBlockEditor({
     } catch {
       /* recovery remains optional */
     }
-    return newDraft();
+    return initialItems ? fromItems() : newDraft();
   });
   const [past, setPast] = useState<HomeworkDraft[]>([]);
   const [future, setFuture] = useState<HomeworkDraft[]>([]);

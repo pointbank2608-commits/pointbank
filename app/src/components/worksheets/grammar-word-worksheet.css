@@ -1,0 +1,14 @@
+.grammar-word-print { display: none; }
+.grammar-word-preview .grammar-word-print-page {
+  border: 1px solid #dee8f5;
+  border-radius: 12px;
+  background: white;
+  padding: clamp(12px, 4vw, 32px);
+}
+
+@media print {
+  body:has(> .grammar-word-print) > :not(.grammar-word-print) { display: none !important; }
+  body:has(> .grammar-word-print) { height: auto !important; overflow: visible !important; }
+  .grammar-word-print { display: block; color: black; font-size: 12pt; }
+  .grammar-word-print .grammar-word-print-page:not(:last-child) { break-after: page; }
+}

@@ -29,7 +29,7 @@ type Panel =
   | { k: 'adaptive' }
   | { k: 'wordProject' }
   | { k: 'compose'; mode?:'lesson'|'list'; studentIds?:string[]; cards?:FullCardItem[]; title?:string; lessonId?:string; followUp?:{studentId:string;type:CheckType} }
-  | { k: 'editor'; items?: HwItemDraft[]; title?: string; lessonId?: string; importLesson?: boolean; studentIds?: string[] | null; due?: string }
+  | { k: 'editor'; items?: HwItemDraft[]; title?: string; lessonId?: string; importLesson?: boolean; studentIds?: string[] | null; due?: string; draftScope?: string }
   | { k: 'recommend'; studentIds: string[]; gamesOnly?: boolean; source?:{cards:FullCardItem[];name:string} };
 
 /**
@@ -204,13 +204,15 @@ export default function HomeworkPage() {
         academyId={academy.id} ownerId={profile.id} classId={classId} className={className}
         initialLessonId={panel.lessonId} initialMode={panel.mode} initialStudents={panel.studentIds} followUp={panel.followUp} initialCards={panel.cards} initialTitle={panel.title}
         onSwitch={!panel.lessonId&&!panel.cards&&!panel.followUp&&!panel.studentIds?kind=>setPanel({k:kind}):undefined} adaptiveEnabled={soloOpen}
+        onGrammarReview={({scope, ...draft})=>setPanel({k:'editor',draftScope:scope,...draft})}
         onClose={()=>setPanel({k:'none'})}
         onCreated={async hw=>{setPanel({k:'none'});notify(t('studentHw.created'));await reload();setShareId(hw.id);}}
       />}
 
       {panel.k === 'editor' && classId && academy?.id && profile && <HomeworkBlockEditor
-        key={`${classId}-${panel.lessonId ?? ''}`} academyId={academy.id} classId={classId} ownerId={profile.id}
+        key={`${classId}-${panel.draftScope ?? panel.lessonId ?? ''}`} academyId={academy.id} classId={classId} ownerId={profile.id}
         initialItems={panel.items} initialTitle={panel.title} lessonId={panel.lessonId}
+        draftScope={panel.draftScope}
         startWithLessonImport={panel.importLesson}
         initialStudentIds={panel.studentIds} initialDue={panel.due}
         classOptions={classes.filter((c) => c.id !== classId).map((c) => ({ id: c.id, name: c.name }))}

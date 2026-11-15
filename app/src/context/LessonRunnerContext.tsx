@@ -13,6 +13,7 @@ import { lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
 import { effectiveSlides } from '../lib/lessonSlides';
 import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
 import { grammarPoint } from '../lib/grammar';
+import { GRAMMAR_WORD_SHEET } from '../lib/grammarCoreWords';
 import type { CurriculumLesson, GameType, SlideHelper, WordList } from '../lib/types';
 
 export interface RunnerStep {
@@ -291,6 +292,10 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
         } else {
           // 예전 "주제별 워크시트 라이브러리" 슬라이드는 고르는 화면이라 발표에 안 맞다 — 워크시트로 연다
           // (주제 단어는 이제 워크시트 슬라이드의 "단어: 주제에서 고르기"로 정한다, 2026-09-27).
+          if (slide.grammarWords && slide.materialId === GRAMMAR_WORD_SHEET) {
+            push({ kind: 'material', path: `/curriculum/${lesson.id}/slide/${slide.id}`, label: t('grammarLesson.coreSheet'), icon: 'print' });
+            continue;
+          }
           const materialId = slide.materialId === 'library' ? 'worksheet' : slide.materialId;
           const entry = MATERIALS_CATALOG.find((m) => m.id === materialId);
           if (!entry) continue;

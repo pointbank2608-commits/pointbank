@@ -91,6 +91,8 @@ import { activityMaterial, canvasExample, LessonWordThumbnail, LESSON_SAMPLE_WOR
 import LessonPdfView, { LessonPdfThumbnail } from './LessonPdfView';
 import { gameAvailability, PHONICS_GAMES, phonicsGameUnits } from '../lib/phonicsGames';
 import { PhonicsGameCover } from './PhonicsGameArt';
+import GrammarWordWorksheet from './worksheets/GrammarWordWorksheet';
+import { GRAMMAR_WORD_SHEET } from '../lib/grammarCoreWords';
 import { loadPhonicsBank } from '../lib/phonicsFill';
 import { buildPhonicsWorkbook, workbookPrintable } from '../data/phonicsWorkbook';
 import type { PhonicsBankEntry } from '../lib/types';
@@ -792,6 +794,7 @@ function slideThumbLabel(slide: LessonSlide, t: TFunction): { icon: string; labe
     const label = ref.view === 'workbook' ? t('phonicsStage1.workbook') : ref.optional ? t('phonicsStage1.extra') : t('phonicsStage1.lesson', { n: ref.lesson });
     return { icon: 'auto_stories', label: t('phonicsStage1.title') + ' · ' + label };
   }
+  if (slide.materialId === GRAMMAR_WORD_SHEET && slide.grammarWords) return { icon: 'print', label: t('grammarLesson.coreSheet') };
   const entry = MATERIALS_CATALOG.find((m) => m.id === slide.materialId);
   return { icon: entry?.icon ?? 'print', label: entry ? t(entry.nameKey) : slide.materialId };
 }
@@ -1033,7 +1036,9 @@ function SlideDetail({
           <QnaBoard key={slide.questions.map((q) => q.q).join('|')} questions={slide.questions} title={slide.title} videoUrl={slide.videoUrl} themeId={slide.boardTheme ?? 'green'} interactive={false} initialShowKo={!!slide.showKo} />
         </div>
         <BoardThemeChips value={slide.boardTheme ?? 'green'} onChange={(th) => onUpdate({ boardTheme: th?.id ?? 'green' } as Partial<LessonSlide>)} />
-        <QnaSlideForm initial={slide} onChange={(patch) => onUpdate(patch as Partial<LessonSlide>)} />
+        <QnaSlideForm initial={slide} onChange={(patch) => onUpdate((patch.questions && slide.grammarWordSource
+          ? { ...patch, grammarWordSource: undefined }
+          : patch) as Partial<LessonSlide>)} />
       </div>
     );
   }
@@ -1255,6 +1260,7 @@ function SlideDetail({
   if(slide.kind==='stem')return <div className="space-y-4"><StemFrameView frame={slide.frame} meta={slide.stemMeta} interactive={false}/><label className="block">{t('stem.titleLabel')}<input className="w-full rounded-xl border p-3" value={slide.frame.title} onChange={e=>onUpdate({frame:{...slide.frame,title:e.target.value}} as Partial<LessonSlide>)}/></label><label className="block">{t('stem.lines')}<textarea className="w-full rounded-xl border p-3" value={slide.frame.lines.join('\n')} onChange={e=>onUpdate({frame:{...slide.frame,mode:'text',lines:e.target.value.split('\n')}} as Partial<LessonSlide>)}/></label><p>{t('stem.existingEdit')}</p><a className="text-primary underline" href="/stem">{t('stem.openLessons')} · STEM</a></div>;
 
   // material slide
+  if (slide.materialId === GRAMMAR_WORD_SHEET && slide.grammarWords) return <GrammarWordWorksheet selection={slide.grammarWords} />;
   if (slide.materialId === 'phonicsstage1' && slide.phonicsStage1) {
     return PHONICS_TEACHING_PREVIEW?<Stage1LessonOptions slide={slide} onUpdate={(patch) => onUpdate(patch as Partial<LessonSlide>)} />:<p>{t('phonicsTeaching.unavailable')}</p>;
   }

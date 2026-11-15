@@ -38,6 +38,7 @@ export default function LessonSlideContent({
   lessonName,
   attendance,
   student = false,
+  grammarWordObservation,
 }: {
   slide: LessonSlide;
   /** 수업 단어(카드로 외우기·단어 소개·문법 "우리 단어장 예문") */
@@ -48,6 +49,7 @@ export default function LessonSlideContent({
   /** 출석 체크 슬라이드에 필요한 것 — 학생 화면에서는 null(이름을 보여 주지 않는다) */
   attendance: { academyId: string; classId: string | null; teacherId: string | null } | null;
   student?: boolean;
+  grammarWordObservation?: { lessonId: string; position: number };
 }) {
   const { t } = useTranslation();
   // 단어 소개·카드로 외우기는 이 슬라이드만의 단어가 있으면 그것으로
@@ -127,6 +129,7 @@ export default function LessonSlideContent({
           themeId={slide.boardTheme ?? 'green'}
           interactive
           initialShowKo={!!slide.showKo}
+          observation={grammarWordObservation}
         />
       </div>
     );

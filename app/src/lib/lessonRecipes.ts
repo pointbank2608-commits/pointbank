@@ -11,6 +11,7 @@ import { buildAnimationLesson } from './animationLesson';
 import type { LessonLevel } from './lessonLevel';
 import { newHelper } from './slideHelpers';
 import { buildGrammarLessonSlides, type GrammarGames } from './grammarLesson';
+import type { GrammarWordSelection } from './grammarCoreWords';
 
 /**
  * 수업 레시피(2026-09-27) — 기능이 많아 "뭐부터?" 막막한 선생님을 위해, 수업 종류를 고르면 슬라이드가 순서대로
@@ -26,6 +27,7 @@ export interface RecipeContext {
   /** 영상 레시피: 이미 골라 둔 수업 단어장을 그대로 쓴다(영상 낱말로 단어장·퀴즈를 새로 만들지 않는다) */
   keepWordList?: boolean;
   grammarId?: string;
+  grammarWords?: GrammarWordSelection;
   reading?: { source: string; title?: string; videoUrl?: string | null };
   /** 영상 레시피: 유튜브 주소 + 쉐도잉 대사표 */
   video?: { source: string; title?: string; videoUrl: string; clip?: VideoClip | null;activities?:import('./clipActivities').ClipActivity[]; plan?:AnimationLessonPlan };
@@ -277,7 +279,7 @@ export const LESSON_RECIPES: LessonRecipe[] = [
       const games: GrammarGames = ctx.makeGrammarGames
         ? await ctx.makeGrammarGames(ctx.grammarId).catch(() => ({ unscrambleId: null, teamQuizId: null, focus: null }))
         : { unscrambleId: await ctx.makeUnscramble(ctx.grammarId), teamQuizId: null };
-      return buildGrammarLessonSlides({ t: ctx.t, grammarId: ctx.grammarId, hasWords: ctx.hasWords, games });
+      return buildGrammarLessonSlides({ t: ctx.t, grammarId: ctx.grammarId, hasWords: ctx.hasWords, games, grammarWords: ctx.grammarWords });
     },
   },
   {

@@ -7,6 +7,7 @@ import { speak } from '../lib/speech';
 import { extractYoutubeId } from '../lib/youtube';
 import { CanvasStageBox } from './CanvasSlideView';
 import SceneOverlay from './SceneOverlay';
+import { useLearningActivity } from '../lib/learningSensors/useLearningActivity';
 
 /**
  * Q&A 슬라이드 칠판(2026-10-03, 클래스5 무비 수업 "Q & A" 참고) — 영상 내용 질문을 하나씩.
@@ -21,6 +22,7 @@ export default function QnaBoard({
   interactive,
   initialShowKo = false,
   autoSpeak = true,
+  observation,
 }: {
   questions: QnaItem[];
   title?: string;
@@ -30,6 +32,7 @@ export default function QnaBoard({
   interactive: boolean;
   initialShowKo?: boolean;
   autoSpeak?: boolean;
+  observation?: { lessonId: string; position: number };
 }) {
   const { t } = useTranslation();
   const th = boardTheme(themeId ?? 'green') ?? boardTheme('green')!;
@@ -47,6 +50,19 @@ export default function QnaBoard({
 
   const item = questions[Math.min(idx, questions.length - 1)];
   const shownStep = interactive ? step : 1;
+  const sensor = useLearningActivity(
+    interactive && !follower && observation ? { source: 'group', resource: observation.lessonId, credential: '' } : undefined,
+    observation?.position ?? null,
+    item ? idx : null,
+  );
+  const revealed = useRef<number | null>(null);
+  useEffect(() => {
+    if (!observation || !item || shownStep === 0) revealed.current = null;
+    else if (revealed.current !== idx) {
+      revealed.current = idx;
+      sensor('revealed');
+    }
+  }, [observation, item, shownStep, idx, sensor]);
   const stateRef = useRef({ idx, step, total: questions.length });
   stateRef.current = { idx, step, total: questions.length };
 

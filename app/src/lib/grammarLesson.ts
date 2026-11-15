@@ -8,6 +8,7 @@ import { newHelper } from './slideHelpers';
 import { buildFactoryItems } from './sentenceFactory';
 import type { GameType, LessonSlide, QuizQuestion, SlideHelper } from './types';
 import '../i18n/grammarLessonLocales';
+import { GRAMMAR_WORD_SHEET, grammarWordQnaQuestions, grammarWordQuestions, type GrammarWordSelection } from './grammarCoreWords';
 
 /**
  * 문법 30분 수업(2026-11-03): 도입 → 개념 → 개념 확인 문제 → 게임 ① → 심화 → 게임 ② 팀 대항 퀴즈 → 정리.
@@ -63,17 +64,18 @@ export function chooseToQuiz(items: ChooseItem[]): QuizQuestion[] {
   return items.map((it) => ({ id: uid(), question: it.p, choices: it.c, correctIndex: it.a }));
 }
 
-export function buildGrammarLessonSlides(params: { t: TFn; grammarId: string; hasWords: boolean; games: GrammarGames }): LessonSlide[] {
-  const { t, grammarId, hasWords, games } = params;
+export function buildGrammarLessonSlides(params: { t: TFn; grammarId: string; hasWords: boolean; games: GrammarGames; grammarWords?: GrammarWordSelection }): LessonSlide[] {
+  const { t, grammarId, hasWords, games, grammarWords } = params;
   const point = grammarPoint(grammarId);
   const sheet = GRAMMAR_SHEET_BANK[grammarId] as GrammarSheetContent | undefined;
   const attendance: LessonSlide = { id: uid(), kind: 'attendance', boardTheme: 'green' };
   const grammarBoard: LessonSlide = { id: uid(), kind: 'grammar', grammarId, useWordList: hasWords, boardTheme: 'green' };
+  const wordSlides = grammarWords?.grammarId === grammarId ? grammarWordSlides(grammarWords, t) : [];
   const unscramble = (): LessonSlide[] => (games.unscrambleId ? [{ id: uid(), kind: 'game', gameType: 'unscramble', templateId: games.unscrambleId }] : []);
   const focusGame = (): LessonSlide[] => (games.focus ? [{ id: uid(), kind: 'game', gameType: games.focus.gameType, templateId: games.focus.templateId }] : unscramble());
   // 워크북 자료가 없는 문법은 예전 짧은 수업
   if (!point || !sheet || !hasGrammarLessonBank(grammarId)) {
-    return [attendance, grammarBoard, ...unscramble(), ...(hasWords ? [{ id: uid(), kind: 'wordshow', boardTheme: 'green' } as LessonSlide] : [])];
+    return [attendance, grammarBoard, ...wordSlides, ...unscramble(), ...(hasWords ? [{ id: uid(), kind: 'wordshow', boardTheme: 'green' } as LessonSlide] : [])];
   }
   const b = sheet.b;
   const qna = (title: string, questions: ReturnType<typeof chooseToQna>, seconds: number, extra: SlideHelper[] = []): LessonSlide =>
@@ -97,6 +99,7 @@ export function buildGrammarLessonSlides(params: { t: TFn; grammarId: string; ha
     // 개념 3~10분: 문법 칠판 + 규칙 발견 질문
     { ...grammarBoard, helpers: [timer(300)] } as LessonSlide,
     qna(t('grammarLesson.discoverTitle'), [{ q: sheet.discover.q, a: sheet.discover.a }], 120),
+    ...wordSlides.filter(slide => slide.kind !== 'material'),
     // 개념 이해 문제 10~16분
     qna(t('grammarLesson.conceptTitle'), conceptQs, 360, [scoreboard()]),
     // 게임 ① 16~19분: 문법에 어울리는 게임(없으면 문장 배열하기)
@@ -113,7 +116,31 @@ export function buildGrammarLessonSlides(params: { t: TFn; grammarId: string; ha
       helpers: [timer(60)],
     } as LessonSlide,
     qna(t('grammarLesson.exitTitle'), exitQs, 60),
+    ...wordSlides.filter(slide => slide.kind === 'material'),
   ];
+  return slides;
+}
+
+function grammarWordSlides(selection: GrammarWordSelection, t: TFn): LessonSlide[] {
+  const slides: LessonSlide[] = [];
+  const examples = grammarWordQuestions(selection, 'discover');
+  for (let i = 0; i < examples.length; i += 2) {
+    const group = examples.slice(i, i + 2);
+    slides.push(lessonBoard(t('grammarLesson.coreDiscover'), group.flatMap((question, index) =>
+      index > 0 && question.contentId === group[index - 1].contentId
+        ? [question.example]
+        : [t('grammarLesson.coreWordLabel', { word: question.label, meaning: question.meaning }), question.example],
+    ), 5.5));
+  }
+  const questions = grammarWordQnaQuestions(grammarWordQuestions(selection, 'recall'));
+  const { recommendationId, version, grammarId } = selection;
+  for (let i = 0; i < questions.length; i += 12) {
+    slides.push({
+      id: uid(), kind: 'qna', title: t('grammarLesson.coreRecall'), questions: questions.slice(i, i + 12),
+      boardTheme: 'green', grammarWordSource: { recommendationId, version, grammarId },
+    });
+  }
+  slides.push({ id: uid(), kind: 'material', materialId: GRAMMAR_WORD_SHEET, grammarWords: selection });
   return slides;
 }
 

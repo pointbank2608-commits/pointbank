@@ -21,6 +21,8 @@ import { extractYoutubeId } from '../lib/youtube';
 import { LESSON_LEVELS, levelMatches, useLessonLevel } from '../lib/lessonLevel';
 import { buildSongLesson, SONG_LESSONS, type SongLesson } from '../lib/songLessons';
 import SongLessonPicker from './SongLessonPicker';
+import GrammarWordPicker from './GrammarWordPicker';
+import { grammarWordCandidates, selectGrammarWords } from '../lib/grammarCoreWords';
 
 /**
  * 새 수업 만들기의 "레시피로 시작하기"(2026-09-27). 수업 종류를 고르면 슬라이드가 순서대로 채워진다.
@@ -65,6 +67,12 @@ export default function LessonRecipePicker({
   const [tab, setTab] = useState<'sets' | 'recipes'>('sets');
   const [picked, setPicked] = useState<LessonRecipe | null>(null);
   const [grammarId, setGrammarId] = useState<string | null>(null);
+  const [grammarWords, setGrammarWords] = useState<string[] | null>(null);
+  const grammarCandidates = grammarId ? grammarWordCandidates(grammarId) : [];
+  const chooseGrammar = (id: string | null) => {
+    setGrammarId(id);
+    setGrammarWords(null);
+  };
   const [reading, setReading] = useState({ source: '', title: '', videoUrl: '' });
   const [video, setVideo] = useState({ source: '', title: '', videoUrl: '' });
   const [scripting, setScripting] = useState(false);
@@ -94,6 +102,9 @@ export default function LessonRecipePicker({
         hasWords,
         keepWordList: hasWords && keepMyList,
         grammarId: grammarId ?? undefined,
+        grammarWords: recipe.id === 'grammar' && grammarId && grammarWords?.length
+          ? selectGrammarWords(grammarId, grammarPoint(grammarId)?.name ?? grammarId, grammarWords)
+          : undefined,
         reading: { source: reading.source, title: reading.title.trim() || undefined, videoUrl: reading.videoUrl.trim() || null },
         makeUnscramble,
         makeGrammarGames,
@@ -132,6 +143,12 @@ export default function LessonRecipePicker({
 
   /** 수업 세트: 미리 만들어 둔 수업 — 단어 세트는 단어장을 같이 만들고, 문법·영상 세트는 해당 레시피에 내용을 끼워 넣는다. */
   async function applySet(set: LessonSet) {
+    if (set.kind === 'grammar' && set.grammarId && grammarWordCandidates(set.grammarId).length) {
+      chooseGrammar(set.grammarId);
+      setPicked(LESSON_RECIPES.find(recipe => recipe.id === 'grammar') ?? null);
+      setTab('recipes');
+      return;
+    }
     setBusy(true);
     try {
       const name = lessonSetName(set, i18n.language);
@@ -408,13 +425,14 @@ export default function LessonRecipePicker({
                 <div className="flex flex-wrap items-center gap-2 rounded-lg bg-primary-fixed/40 px-3 py-2">
                   <span className="material-symbols-outlined text-[18px] text-primary">rule</span>
                   <span className="font-label-md text-label-md">{grammarPoint(grammarId)?.name}</span>
-                  <button type="button" onClick={() => setGrammarId(null)} className="ml-auto font-caption text-caption text-on-surface-variant hover:text-primary">
+                  <button type="button" onClick={() => chooseGrammar(null)} className="ml-auto font-caption text-caption text-on-surface-variant hover:text-primary">
                     {t('recipes.changeGrammar')}
                   </button>
                 </div>
               ) : (
-                <GrammarPickerPanel onPick={setGrammarId} />
+                <GrammarPickerPanel onPick={chooseGrammar} />
               )}
+              {grammarCandidates.length > 0 && <GrammarWordPicker key={grammarId} candidates={grammarCandidates} decision={grammarWords} onDecision={setGrammarWords} busy={busy} />}
             </>
           )}
           {picked.input === 'video' && hasWords && (
@@ -530,7 +548,7 @@ export default function LessonRecipePicker({
           {busy && picked.input === 'video' && videoTab === 'library' && <div className="font-caption text-caption text-on-surface-variant">{t('common.loading')}</div>}
           {!(picked.input === 'video' && videoTab === 'library') && <button
             type="button"
-            disabled={busy || (picked.input === 'grammar' && !grammarId) || (picked.input === 'reading' && !reading.source.trim()) || (picked.input === 'video' && (!video.source.trim() || !extractYoutubeId(video.videoUrl)))}
+            disabled={busy || (picked.input === 'grammar' && (!grammarId || grammarCandidates.length > 0 && grammarWords === null)) || (picked.input === 'reading' && !reading.source.trim()) || (picked.input === 'video' && (!video.source.trim() || !extractYoutubeId(video.videoUrl)))}
             onClick={() => void apply(picked)}
             className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 font-label-md text-label-md text-on-primary shadow-sm hover:bg-primary-container disabled:opacity-40"
           >
