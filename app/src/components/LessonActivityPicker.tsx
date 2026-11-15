@@ -7,13 +7,11 @@ import { LessonActivityExample, type CanvasExample } from './LessonActivityExamp
 import { materialSections, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
 import { GAME_BROWSE_GROUPS, gameBrowseGroups, type GameBrowseGroup } from '../lib/gameBrowse';
 import { GAME_CATALOG } from '../lib/gameCatalog';
-import { isNativeGameReady } from '../lib/gamePreparation';
 import { useVideoClips } from '../lib/videoClips';
 import { READY_STEM } from '../data/stemLessons';
 import type { StemLesson } from '../lib/stemTypes';
 import StemFrameView from './stem/StemFrameView';
-import { prepareClassroomGame } from '../lib/gameWorkspace';
-import type { GameContent } from '../lib/gameFromWords';
+import { resolveLessonGame, type lessonGameSources, type LessonGameMatch } from '../lib/lessonGameContent';
 import type { FullCardItem, GameType, LessonSlide, MaterialSlide, PdfSlide, PhonicsBankEntry } from '../lib/types';
 import LessonWorksheetChooser from './worksheets/LessonWorksheetChooser';
 import type { BlockDef } from '../lib/blocks/types';
@@ -48,10 +46,11 @@ export const printSections = materialSections().map(section => ({
 }));
 const canvasLayouts: CanvasExample[] = ['title', 'word', 'blank'];
 
-export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClose,canAttachHelper,storageKey,cards,gameCards:sourceCards,selected,sourceName,sourceKind,entries,lessonName,academyId}:{
+export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClose,canAttachHelper,storageKey,cards,gameSources,slides,replaceTargetId,selected,sourceName,entries,lessonName,academyId}:{
  onPick:(b:BlockDef,layout?:CanvasExample,theme?:string|null, worksheet?:Pick<MaterialSlide,'words'|'topic'|'worksheetTab'>)=>void;onBundle:()=>void;onClose:()=>void;canAttachHelper:boolean;storageKey:string;
- cards:FullCardItem[];gameCards:FullCardItem[];selected:LessonSlide|null;sourceName:string;entries:PhonicsBankEntry[];lessonName:string;
- sourceKind:'word'|'sentence';academyId:string;onPdf:(asset:Omit<PdfSlide,'id'|'kind'>)=>void;
+ cards:FullCardItem[];gameSources:ReturnType<typeof lessonGameSources>;slides:LessonSlide[];replaceTargetId:string|null;
+ selected:LessonSlide|null;sourceName:string;entries:PhonicsBankEntry[];lessonName:string;
+ academyId:string;onPdf:(asset:Omit<PdfSlide,'id'|'kind'>)=>void;
  onStem:(lesson:StemLesson)=>void;
 }){
  const {t,i18n}=useTranslation(),ko=i18n.language.startsWith('ko');
@@ -103,7 +102,7 @@ export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClo
  const q=query.trim().toLocaleLowerCase();
  const defaults=['learn.wordShow','learn.study','learn.shadow','practice.quiz','game.matchup','media.video','free.canvas','learn.stem'];
  const ids=recent.length?recent:defaults;
- const shown=q?activities.filter(b=>`${name(b)} ${b.name?.ko??''} ${b.name?.en??''} ${ALIASES[b.id]??''} ${t('lessonUx.'+activityCategory(b))}`.toLocaleLowerCase().includes(q)):
+ const filtered=q?activities.filter(b=>`${name(b)} ${b.name?.ko??''} ${b.name?.en??''} ${ALIASES[b.id]??''} ${t('lessonUx.'+activityCategory(b))}`.toLocaleLowerCase().includes(q)):
   cat==='recent'?ids.map(id=>activities.find(b=>b.id===id)).filter((b):b is BlockDef=>!!b):
   cat==='games'?gameCards.filter(block=>gameGroup==='all'||belongsToGameGroup(block,gameGroup)):
   cat==='print'?printSections.flatMap(section=>section.blocks):activities.filter(b=>activityCategory(b)===cat);
@@ -111,25 +110,34 @@ export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClo
  const choose=(b:BlockDef,layout?:CanvasExample)=>{if(locked.current)return;if(b.id==='media.pdf'){pdfInput.current?.click();return;}if(b.slide?.kind==='stem'){setStemOpen(true);return;}if(b.slide?.materialId==='library'||(b.slide?.materialId==='worksheet'&&!b.id.startsWith('worksheet.'))){setWorksheetBlock(b);return;}locked.current=true;onPick(b,layout,theme);};
  const canvasTitle = lessonName.trim() || t('lessonUx.sampleTitle');
  const selectedName = sourceName || t('lessonUx.linked');
- const canvasVisible = shown.some(b => b.id === 'free.canvas');
- const gameExamples = useMemo(() => new Map<GameType,GameContent | null>(), [sourceCards, sourceKind]);
- function exampleGame(type?: GameType) {
-   if (!type) return null;
-   if (type === 'wordtrain' && sourceKind !== 'sentence') return null;
-   if (!gameExamples.has(type)) {
-     const content = prepareClassroomGame(type, sourceCards, sourceKind);
-     gameExamples.set(type, content && isNativeGameReady({game_type:type, items:content.items, config:content.config ?? {}}) ? content : null);
+ const gameExamples = useMemo(() => {
+   const matches = new Map<GameType, LessonGameMatch>();
+   const replacing = slides.findIndex(slide => slide.id === replaceTargetId);
+   for (const block of gameCards) {
+     const gameType = block.slide?.gameType;
+     if (!gameType || block.slide?.kind !== 'game') continue;
+     const candidate = { id: 'activity-picker-preview', kind: 'game', gameType } as const;
+     const playlist = [...slides];
+     playlist.splice(replacing < 0 ? playlist.length : replacing, replacing < 0 ? 0 : 1, candidate);
+     matches.set(gameType, resolveLessonGame(candidate, playlist, gameSources));
    }
-   return gameExamples.get(type) ?? null;
- }
+   return matches;
+ }, [slides, replaceTargetId, gameSources]);
+ const gamePriority = (block: BlockDef) => {
+   const match = block.slide?.gameType ? gameExamples.get(block.slide.gameType) : null;
+   return !match?.content ? 2 : match.kind === 'builtin' ? 1 : 0;
+ };
+ const shown = !q && cat === 'games' ? [...filtered].sort((a, b) => gamePriority(a) - gamePriority(b)) : filtered;
+ const canvasVisible = shown.some(b => b.id === 'free.canvas');
  const example = (block: BlockDef, layout?: CanvasExample, large = false) => <LessonActivityExample
-   block={block} cards={block.slide?.gameType ? sourceCards : cards} sourceKind={sourceKind} prepared={exampleGame(block.slide?.gameType)} selected={selected} entries={entries} layout={layout} theme={theme} title={canvasTitle} large={large} sampleVideo={clips?.[0]} />;
+   block={block} cards={cards} gameMatch={block.slide?.gameType ? gameExamples.get(block.slide.gameType) : undefined}
+   selected={selected} entries={entries} layout={layout} theme={theme} title={canvasTitle} large={large} sampleVideo={clips?.[0]} />;
  useEffect(()=>{const previous=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=previous;};},[]);
  return <AccessibleDialog label={t('lessonUx.add')} onClose={pdfBusy ? () => {} : worksheetBlock ? ()=>setWorksheetBlock(null) : stemPreview ? ()=>setStemPreview(null) : stemOpen ? ()=>setStemOpen(false) : preview ? closePreview : onClose}>
   <div className="lesson-activity-picker">
    <header><div><h2>{t('lessonUx.add')}</h2><button type="button" disabled={pdfBusy} onClick={onClose} aria-label={t('lessonUx.close')}><span className="material-symbols-outlined" aria-hidden>close</span></button></div>
     <label className="activity-search"><span className="material-symbols-outlined" aria-hidden>search</span><input autoFocus value={query} onChange={e=>{setQuery(e.target.value);setPreview(null);setStemOpen(false);setStemPreview(null);}} placeholder={t('lessonUx.search')} aria-label={t('lessonUx.search')}/></label>
-    {cards.length > 0 && <p className="activity-source"><span className="material-symbols-outlined" aria-hidden>menu_book</span>{selectedName} · {t(sourceKind === 'sentence' ? 'lessonUx.sentenceCount' : 'curriculum.slides.previewWordCount', { count: cards.length })}</p>}
+    {cards.length > 0 && <p className="activity-source"><span className="material-symbols-outlined" aria-hidden>menu_book</span>{selectedName} · {t(gameSources.kind === 'sentence' ? 'lessonUx.sentenceCount' : 'curriculum.slides.previewWordCount', { count: cards.length })}</p>}
    </header>
    <div className="activity-body">
     <nav aria-label={t('lessonUx.add')}>{CATEGORIES.map((c,i)=><button key={c} type="button" aria-pressed={cat===c&&!q} onClick={()=>{if(cat!==c)setGameGroup('all');setCat(c);setQuery('');setPreview(null);setStemOpen(false);setStemPreview(null);}}><span className="material-symbols-outlined" aria-hidden>{ICONS[i]}</span>{t('lessonUx.'+c)}</button>)}</nav>
@@ -175,7 +183,7 @@ export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClo
        <button type="button" className="activity-preview-button" onClick={()=>setWorksheetBlock(null)}>← {t('lessonUx.backToActivities')}</button>
        <h3>{name(worksheetBlock)}</h3>
        <LessonWorksheetChooser key={worksheetBlock.id} topicMode={worksheetBlock.slide?.materialId==='library'}
-         academyId={academyId} lessonWords={sourceKind==='word'?cards:[]} onAdd={(worksheetTab,words,topic)=>{
+         academyId={academyId} lessonWords={gameSources.kind==='word'?cards:[]} onAdd={(worksheetTab,words,topic)=>{
            if(locked.current)return;
            locked.current=true;
            onPick(worksheetBlock,undefined,theme,{worksheetTab,words,topic});

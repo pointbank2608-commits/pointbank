@@ -41,7 +41,7 @@ import LessonHistoryModal from '../components/LessonHistoryModal';
 import MoreMenu from '../components/MoreMenu';
 import { useClasses } from '../lib/useClasses';
 import { buildGameContent, lessonGameTemplateName, lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
-import { isSentenceList, prepareClassroomGame } from '../lib/gameWorkspace';
+import { lessonGameSources, resolveLessonGame } from '../lib/lessonGameContent';
 import { enrichCards, loadWordBank } from '../lib/wordBankCache';
 import { lessonCover } from '../lib/lessonCover';
 import { effectiveSlides } from '../lib/lessonSlides';
@@ -498,25 +498,25 @@ export default function CurriculumPage() {
 
   /** 게임 슬라이드 중 아직 내용(템플릿)을 안 고른 것은 수업 단어장으로 게임 템플릿을 만들어 붙인다 —
    * "준비는 편집 화면에서 끝내고 발표 중엔 고르지 않는다"(2026-09-25). 저장할 때만 만들어서 편집을
-   * 취소하면 아무것도 안 생긴다. 단어장으로 만들 수 없는 게임은 그대로 둔다(발표 땐 반의 첫 게임). */
+   * 취소하면 아무것도 안 생긴다. 호환 자료가 없는 게임에는 템플릿을 붙이지 않는다. */
   async function attachGameContent(slides: LessonSlide[]): Promise<LessonSlide[]> {
     if (!academy?.id || !profile) return slides;
     const wordList = wordLists.find((wl) => wl.id === wordListId) ?? null;
     // 단어장에는 예문이 저장돼 있지 않아서, 사전에서 같은 낱말의 예문·품사를 보충해야 "문장 배열하기" 같은 게임도 만들어진다
     // 수업 단어장을 안 골랐으면 단어 슬라이드(영상 수업 등)에 들어 있는 낱말로 게임 내용을 만든다
-    const base = wordList ? wordListToCards(wordList) : lessonSlideWords(slides);
-    const cards = enrichCards(base, await loadWordBank());
+    const listCards = wordListToCards(wordList);
+    const base = listCards.length ? listCards : lessonSlideWords(slides);
+    const cards = base.length ? enrichCards(base, await loadWordBank()) : [];
+    const source = lessonGameSources(slides, wordList, cards);
     const out: LessonSlide[] = [];
     for (const slide of slides) {
-      if (slide.kind !== 'game' || slide.templateId) {
+      if (slide.kind !== 'game' || (slide.templateId && (!slide.autoWordListId || slide.autoWordListId === wordListId))) {
         out.push(slide);
         continue;
       }
-      const content = wordList && isSentenceList(wordList)
-        ? prepareClassroomGame(slide.gameType, cards, 'sentence')
-        : buildGameContent(slide.gameType, cards);
-      if (!content) {
-        out.push(slide);
+      const { content, kind } = resolveLessonGame(slide, slides, source);
+      if (!content || kind === 'grammar' || kind === 'builtin') {
+        out.push({ ...slide, templateId: undefined, autoWordListId: undefined });
         continue;
       }
       const tpl = await createGameTemplate({
@@ -528,7 +528,7 @@ export default function CurriculumPage() {
         config: {...content.config,lessonSnapshot:true},
         teacherId: profile.id,
       });
-      out.push({ ...slide, templateId: tpl.id });
+      out.push({ ...slide, templateId: tpl.id, autoWordListId: content.config?.classroomSource?.id === wordList?.id ? wordList?.id : undefined });
     }
     return out;
   }

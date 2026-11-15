@@ -11,6 +11,7 @@ import { GAME_CATALOG } from '../lib/gameCatalog';
 import { PHONICS_GAMES } from '../lib/phonicsGames';
 import { lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
 import { effectiveSlides } from '../lib/lessonSlides';
+import { lessonGameRequirement, lessonGameSources, resolveLessonGame } from '../lib/lessonGameContent';
 import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
 import { grammarPoint } from '../lib/grammar';
 import { GRAMMAR_WORD_SHEET } from '../lib/grammarCoreWords';
@@ -157,6 +158,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
       const sourceSlides=effectiveSlides(lesson);
       const isStem=sourceSlides.some(s=>s.kind==='stem'||(s.kind==='game'||s.kind==='video')&&s.stemMeta);
       const listWords=wordListToCards(wordList);
+      const gameSources = lessonGameSources(sourceSlides, wordList, listWords.length ? listWords : lessonSlideWords(sourceSlides));
       const materialsWords=listWords.length||!isStem?listWords:lessonSlideWords(sourceSlides);
       const steps: RunnerStep[] = [];
       let currentSlideId: string | undefined;
@@ -281,6 +283,15 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
           const navState: Record<string, unknown> = {};
           navState.materialsWords = materialsWords;
           if (slide.templateId) navState.openTemplateId = slide.templateId;
+          const match = resolveLessonGame(slide, sourceSlides, gameSources);
+          const followsGrammar = match.kind === 'grammar' && match.hasGrammarSlide;
+          if (!slide.templateId || followsGrammar) {
+            navState.lessonGameContent = match.content;
+            if (!match.content) {
+              const reason = lessonGameRequirement(slide.gameType, match);
+              navState.lessonGameIssue = t(reason.key, { count: reason.count });
+            }
+          }
           if (classId) navState.openClassId = classId;
           push({
             kind: 'game',

@@ -37,6 +37,7 @@ import type { FullCardItem, GameItem, GameTemplate, GameTemplateConfig, GameType
 export type RosterScope = 'class' | 'academy';
 
 interface OpenState {
+  lessonGameContent?: import('./gameFromWords').GameContent | null;
   materialsWords?: FullCardItem[];
   openTemplateId?: string;
   openClassId?: string;
@@ -115,7 +116,8 @@ export function useGameTemplates(params: {
 
   const [withoutClass, setWithoutClass] = useState(true);
   const chooseClass = (id: string) => { setWithoutClass(!id); if (id) selectClass(id); };
-  const classId = preview ? null : !embed && !presenting && workspace && isStaff && withoutClass ? null : embed ? (embed.classId ?? staffClassId) : isStaff ? staffClassId : studentClassId;
+  const presentationClassId = presenting ? (location.state as OpenState | null)?.openClassId : undefined;
+  const classId = preview ? null : !embed && !presenting && workspace && isStaff && withoutClass ? null : embed ? (embed.classId ?? staffClassId) : isStaff ? (presentationClassId ?? staffClassId) : studentClassId;
 
   // 참가자를 매번 직접 입력하지 않도록, 이 반/학원 전체 학생 명단을 게임 항목 후보로 불러온다.
   const [rosterScope, setRosterScope] = useState<RosterScope>('class');
@@ -219,11 +221,14 @@ export function useGameTemplates(params: {
   // Factories passed by game pages are often inline. Read their latest values
   // without restarting the network load on every game edit.
   const draftFactory = useRef(makeDraft); draftFactory.current = makeDraft;
+  const gameDefaults = useRef(defaultConfig); gameDefaults.current = defaultConfig;
   const routeState = useRef(location.state); routeState.current = location.state;
   const consumedSource = useRef('');
+  const lessonDraftId = `activity-draft:lesson:${location.key}`;
+  const workspaceKey = `${classId}:${gameType}:${presenting ? location.key : ''}`;
   const load = useCallback(async () => {
     const sequence = ++loadSequence.current;
-    if (preview || !academy?.id || (!classId && !temporary && !embedRef.current)) {
+    if (preview || !academy?.id || (!classId && !temporary && !embedRef.current && !presenting)) {
       setTemplates([]);
       setLoading(false);
       return;
@@ -236,6 +241,23 @@ export function useGameTemplates(params: {
       const hasNewSource = !!source && consumedSource.current !== location.key;
       const openId = openTemplateIdRef.current;
       const opened=rows.find(row=>row.id===openId);
+      if (presenting) {
+        const state = routeState.current as OpenState | null;
+        const content = state?.lessonGameContent;
+        const saved = rows.find(row => row.id === state?.openTemplateId);
+        const grammarId = content?.config?.grammarId;
+        const pinned = saved && (!grammarId || saved.config.grammarId === grammarId) ? saved : null;
+        const draft: GameTemplate | null = !pinned && content ? {
+          id: lessonDraftId, academy_id: academy.id, class_id: classId, game_type: gameType,
+          name: content.config?.classroomSource?.name || content.items[0]?.label || '',
+          created_by: null, created_at: '', updated_at: '', items: content.items,
+          config: { ...gameDefaults.current?.(), ...content.config },
+        } : null;
+        if (draft) writeActivityDraft(draft, false);
+        setTemplates(draft ? [draft, ...rows] : rows);
+        setSelectedId(pinned?.id ?? draft?.id ?? null);
+        return;
+      }
       const draft = temporary && temporaryId ? (opened?{...structuredClone(opened),id:`${temporaryId}:${crypto.randomUUID()}`,config:{...structuredClone(opened.config),editingTemplateId:opened.id}}:hasNewSource ? draftFactory.current(source) : readActivityDraft(temporaryId) || draftFactory.current()) : null;
       consumedSource.current = location.key;
       if (draft) writeActivityDraft(draft);
@@ -252,12 +274,16 @@ export function useGameTemplates(params: {
       });
     } catch (err) {
       if (sequence !== loadSequence.current) return;
+      if (presenting) {
+        setTemplates([]);
+        setSelectedId(null);
+      }
       if (temporary && temporaryId) chooseDraft(readActivityDraft(temporaryId) || draftFactory.current());
       notify(err instanceof Error ? err.message : String(err), 'error');
     } finally {
-      if (sequence === loadSequence.current) { setLoadedWorkspaceKey(`${classId}:${gameType}`); setLoading(false); }
+      if (sequence === loadSequence.current) { setLoadedWorkspaceKey(workspaceKey); setLoading(false); }
     }
-  }, [preview, academy?.id, session?.user.id, classId, gameType, notify, temporary, temporaryId, location.key]);
+  }, [preview, academy?.id, session?.user.id, classId, gameType, notify, temporary, temporaryId, location.key, presenting, lessonDraftId, workspaceKey]);
 
   useEffect(() => {
     void load();
@@ -271,6 +297,7 @@ export function useGameTemplates(params: {
     const state = location.state as OpenState | null;
     openTemplateIdRef.current = state?.openTemplateId;
     if (isStaff && state?.openClassId) chooseClass(state.openClassId);
+    if (presenting) return;
     const openId = state?.openTemplateId;
     if (openId && templates.some((r) => r.id === openId)) {
       openTemplateIdRef.current = undefined;
@@ -665,7 +692,7 @@ export function useGameTemplates(params: {
     selectedId,
     setSelectedId:selectTemplate,
     persistConfig,
-    loading: !preview && (loading || classesLoading || (!!classId && loadedWorkspaceKey !== `${classId}:${gameType}`)),
+    loading: !preview && (loading || classesLoading || ((!!classId || presenting) && loadedWorkspaceKey !== workspaceKey)),
     showCreateForm,
     setShowCreateForm,
     submitting,

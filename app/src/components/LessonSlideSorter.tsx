@@ -31,6 +31,9 @@ import { useToast } from '../context/ToastContext';
 import { createGameTemplate, fetchAllWordLists, fetchWordLists, uploadLessonSlideImage } from '../lib/api';
 import { GAME_CATALOG, GAME_MOMENTS } from '../lib/gameCatalog';
 import { buildGameContent, lessonGameTemplateName, lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
+import { lessonGameRequirement, lessonGameSources, resolveLessonGame, type LessonGameMatch } from '../lib/lessonGameContent';
+import { guideProblem } from '../lib/gameGuide';
+import { gamePreparation } from '../lib/gamePreparation';
 import { isSentenceList, prepareClassroomGame } from '../lib/gameWorkspace';
 import { enrichCards, loadWordBank, useWordBankEnriched } from '../lib/wordBankCache';
 import SlideHelpersEditor from './SlideHelpersEditor';
@@ -178,10 +181,6 @@ interface Props {
 
 /** 게임 슬라이드가 발표 때 열 내용이 정해졌는지 — 템플릿을 골랐거나, 저장할 때 수업 단어장으로
  * 자동으로 만들 수 있으면 OK. */
-function gameSlideReady(slide: GameSlide, cards: FullCardItem[]): boolean {
-  return !!slide.templateId || (cards.length >= (GAME_CATALOG.find(g=>g.type===slide.gameType)?.minItems??1) && buildGameContent(slide.gameType, cards) !== null);
-}
-
 type AddMode = 'library' | 'wordset' | null;
 
 /** 캔바 프레젠테이션 편집 화면처럼 — 왼쪽 세로 슬라이드 썸네일 레일(드래그로 순서 변경) +
@@ -209,6 +208,9 @@ export default function LessonSlideSorter({
   const slideWords = useMemo(() => lessonSlideWords(slides), [slides]);
   const gameBase = cards.length > 0 ? cards : slideWords;
   const gameCards = useWordBankEnriched(gameBase);
+  const gameSources = useMemo(() => lessonGameSources(slides, wordList, gameCards), [slides, wordList, gameCards]);
+  const gameMatches = useMemo(() => new Map(slides.flatMap(slide => slide.kind === 'game'
+    ? [[slide.id, resolveLessonGame(slide, slides, gameSources)] as const] : [])), [slides, gameSources]);
   const [selectedId, setSelectedId] = useState<string | null>(
     initialSelectedId && slides.some((s) => s.id === initialSelectedId) ? initialSelectedId : slides[0]?.id ?? null,
   );
@@ -522,7 +524,7 @@ export default function LessonSlideSorter({
 
   return (
     <WordListManageContext.Provider value={onManageWordList}>
-    {pickerOpen&&<LessonActivityPicker storageKey={recentKey} cards={cards} gameCards={gameCards} selected={selected} sourceName={wordList?.name ?? ''} sourceKind={wordList&&isSentenceList(wordList)?'sentence':'word'} entries={phonicsEntries} lessonName={lessonName} academyId={academyId} canAttachHelper={!!selectedId&&!replaceTargetId}
+    {pickerOpen&&<LessonActivityPicker storageKey={recentKey} cards={cards} gameSources={gameSources} slides={slides} replaceTargetId={replaceTargetId} selected={selected} sourceName={wordList?.name ?? ''} entries={phonicsEntries} lessonName={lessonName} academyId={academyId} canAttachHelper={!!selectedId&&!replaceTargetId}
       onClose={()=>{setPickerOpen(false);if(addMode==='library')setAddMode(null);}}
       onStem={lesson=>{
         pendingActivity.current='learn.stem';
@@ -577,7 +579,7 @@ export default function LessonSlideSorter({
                 }}
                 onDelete={() => removeSlide(slide.id)}
                 onDuplicate={() => duplicateSlide(slide.id)}
-                needsContent={slide.kind === 'game' && !gameSlideReady(slide, gameCards)}
+                needsContent={slide.kind === 'game' && (!slide.templateId || !!gameMatches.get(slide.id)?.hasGrammarSlide) && !gameMatches.get(slide.id)?.content}
               />
             ))}
           </SortableContext>
@@ -708,6 +710,7 @@ export default function LessonSlideSorter({
               wordList={wordList}
               cards={cards}
               gameCards={gameBase}
+              gameMatch={gameMatches.get(selected.id)}
               wordListId={wordListId}
               wordLists={wordLists}
               onWordListChange={onWordListChange}
@@ -948,6 +951,7 @@ function SlideDetail({
   wordList,
   cards,
   gameCards,
+  gameMatch,
   wordListId,
   wordLists,
   onWordListChange,
@@ -966,6 +970,7 @@ function SlideDetail({
   cards: FullCardItem[];
   /** 게임 슬라이드가 쓰는 낱말 — 수업 단어장이 없으면 단어 슬라이드의 낱말 */
   gameCards: FullCardItem[];
+  gameMatch?: LessonGameMatch;
   wordListId: string;
   wordLists: WordList[];
   onWordListChange: (id: string) => void;
@@ -1249,6 +1254,7 @@ function SlideDetail({
         lessonName={lessonName}
         wordList={wordList}
         cards={gameCards}
+        match={gameMatch}
         wordListId={wordListId}
         wordLists={wordLists}
         onWordListChange={onWordListChange}
@@ -1511,6 +1517,7 @@ function GameSlideEditor({
   lessonName,
   wordList,
   cards: rawCards,
+  match,
   wordListId,
   wordLists,
   onWordListChange,
@@ -1522,6 +1529,7 @@ function GameSlideEditor({
   lessonName: string;
   wordList: WordList | null;
   cards: FullCardItem[];
+  match?: LessonGameMatch;
   wordListId: string;
   wordLists: WordList[];
   onWordListChange: (id: string) => void;
@@ -1545,9 +1553,10 @@ function GameSlideEditor({
   const cards = useWordBankEnriched(rawCards);
 
   const sentenceSource = !!wordList && isSentenceList(wordList);
-  const content = useMemo(() => sentenceSource
-    ? prepareClassroomGame(slide.gameType, cards, 'sentence')
-    : buildGameContent(slide.gameType, cards), [slide.gameType, cards, sentenceSource]);
+  const content = match?.content;
+  const tiedGrammar = match?.kind === 'grammar' && (match.hasGrammarSlide || !slide.templateId);
+  const requirement = lessonGameRequirement(slide.gameType, match);
+  const acceptsSentences = (gamePreparation(slide.gameType).kinds as readonly string[]).includes('sentence');
 
   /** 수업 단어장으로 이 게임의 내용을 만들어 슬라이드에 붙인다 — 슬라이드를 고르면 자동으로 한 번 하고, 단어장이 바뀌면 다시 한다. */
   async function createFromLesson(reason: 'first' | 'changed') {
@@ -1560,7 +1569,7 @@ function GameSlideEditor({
         gameType: slide.gameType,
         name: lessonGameTemplateName(lessonName || t('curriculum.slides.gameContentDefaultName'), wordList?.name),
         items: content.items,
-        config: content.config,
+        config: { ...content.config, lessonSnapshot: true },
         teacherId: profile.id,
       });
       onUpdate({ templateId: tpl.id, autoWordListId: wordListId, ownWordListId: undefined });
@@ -1577,7 +1586,7 @@ function GameSlideEditor({
 
   // Keep the lesson-level sentence picker consistent with both game pages.
   useEffect(() => {
-    if (!['unscramble', 'sentencesplash', 'lightning'].includes(slide.gameType) || !academyId) {
+    if (!acceptsSentences || !academyId) {
       setSentenceLists([]);
       return;
     }
@@ -1588,7 +1597,7 @@ function GameSlideEditor({
     return () => {
       alive = false;
     };
-  }, [academyId, classId, slide.gameType]);
+  }, [academyId, classId, acceptsSentences]);
 
   async function applySentenceList(listId: string) {
     const list = sentenceLists.find((l) => l.id === listId);
@@ -1603,7 +1612,7 @@ function GameSlideEditor({
   async function applySlideSource(cards: FullCardItem[], kind: 'word' | 'sentence', list?: WordList) {
     if (!profile || creating) return;
     const content = prepareClassroomGame(slide.gameType, cards, kind);
-    if (!content) {
+    if (!content || guideProblem({game_type: slide.gameType, items: content.items, config: content.config ?? {}})) {
       notify(t('wordLists.sentence.needSentences'), 'error');
       return;
     }
@@ -1615,7 +1624,7 @@ function GameSlideEditor({
         gameType: slide.gameType,
         name: lessonGameTemplateName(lessonName || t('curriculum.slides.gameContentDefaultName'), list?.name),
         items:content.items,
-        config: list ? {...content.config,classroomSource:{id:list.id,name:list.name,version:list.updated_at,kind,cards}} : content.config,
+        config: {...content.config, lessonSnapshot: true, classroomSource: {id:list?.id ?? slide.id,name:list?.name ?? '',version:list?.updated_at ?? '',kind,cards}},
         teacherId: profile.id,
       });
       onUpdate({ templateId: tpl.id, ownWordListId: list?.id, autoWordListId: !list && kind === 'word' ? wordListId : undefined });
@@ -1719,7 +1728,7 @@ function GameSlideEditor({
                     type="button"
                     onClick={() => {
                       // 게임 종류가 바뀌면 이전 게임의 내용(템플릿)은 맞지 않으니 비운다.
-                      if (slide.gameType !== g.type) onUpdate({ gameType: g.type, templateId: undefined });
+                      if (slide.gameType !== g.type) onUpdate({ gameType: g.type, templateId: undefined, autoWordListId: undefined, ownWordListId: undefined });
                       setPickerOpen(false);
                     }}
                     className={`flex items-center gap-1 rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${
@@ -1741,10 +1750,14 @@ function GameSlideEditor({
         <span className="material-symbols-outlined text-[16px] text-primary">info</span>
         {t('curriculum.slides.gameEmbedHint')}
       </p>
-      {content&&(!slide.templateId||(slide.autoWordListId&&slide.autoWordListId!==wordListId))&&<button type="button" className="min-h-11 rounded-xl border px-4 py-2" disabled={creating} onClick={()=>void createFromLesson(slide.templateId?'changed':'first')}>{t('curriculum.slides.gameContentCreateNow')}</button>}
-      {GamePage ? (
+      {(tiedGrammar || !slide.templateId) && <p role="status" className="px-1 text-sm">
+        {content ? t(match?.kind === 'grammar' ? 'lessonUx.gameFollowsGrammar' : match?.kind === 'builtin' ? 'lessonUx.gameBuiltinReady' : 'lessonUx.gameReady')
+          : t(requirement.key, { count: requirement.count })}
+      </p>}
+      {content&&!tiedGrammar&&match?.kind!=='builtin'&&(!slide.templateId||(slide.autoWordListId&&slide.autoWordListId!==wordListId))&&<button type="button" className="min-h-11 rounded-xl border px-4 py-2" disabled={creating} onClick={()=>void createFromLesson(slide.templateId?'changed':'first')}>{t('lessonUx.applyGameMaterial')}</button>}
+      {GamePage && (!tiedGrammar || content) ? (
         <div className="game-embed relative isolate rounded-xl bg-background p-3 md:p-4">
-          <GameEmbedContext.Provider value={embed}>
+          <GameEmbedContext.Provider value={tiedGrammar && content ? { ...embed, preview: { content, title: content.items[0]?.label ?? '' } } : embed}>
             <GamePage key={`${slide.id}:${slide.gameType}:${reloadKey}`} />
           </GameEmbedContext.Provider>
         </div>

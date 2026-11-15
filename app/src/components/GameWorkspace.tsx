@@ -43,6 +43,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const groupOpen = useFeature('group');
   const navigate = useNavigate();
   const location=useLocation();const editHandled=useRef('');
+  const lessonGameIssue = presenting ? (location.state as { lessonGameIssue?: string } | null)?.lessonGameIssue : undefined;
   const [stage, setStage] = useState<HTMLDivElement | null>(null);
   const [teacherToolsTarget, setTeacherToolsTarget] = useState<HTMLDivElement | null>(null);
   const [info, setInfo] = useState<GameWorkspaceBridge | null>(null);
@@ -330,7 +331,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
         <p className="text-base text-deep-navy">{t('launchUx.menuHint')}</p>
       </header>}
       <div ref={setStage} className={`game-workspace-stage relative ${!running || panel || teams ? 'game-workspace-paused' : ''}`} style={presenting ? {height:'calc(100dvh - 100px)',minHeight:320}:undefined}>
-
+        {lessonGameIssue && <p role="status" className="mx-auto max-w-xl rounded-2xl bg-white p-6 text-center font-bold">{lessonGameIssue}</p>}
       </div>
       <dialog ref={dialog} className="classroom-dialog game-workspace-dialog" aria-label={t(panel === 'teacher' ? 'flow.menuTitle' : 'flow.teacherPreparation')} onCancel={event => {event.preventDefault(); if (!busy) setPanel(null);}}>
         <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 bg-deep-navy p-4 text-white"><div><h2 className="text-xl font-bold">{t(panel === 'teacher' ? 'flow.menuTitle' : 'flow.teacherPreparation')}</h2><p className="text-sm">{t(capabilities.realtime ? 'flow.onlineContinues' : 'flow.localPaused')}</p></div><button className={btn} disabled={busy} onClick={() => setPanel(null)}>{t('common.close')}</button></header>
@@ -367,7 +368,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
             <span className="font-bold">{info.selected.name}</span><button className={btn} disabled={busy} onClick={()=>void action(()=>bridge.current!.renameActivity(),false)}>{t('wordLists.rename')}</button>
           </div>}
           {info?.gameType !== 'quizshow' && !simpleSettings && <><p className="mb-3 text-sm text-on-surface-variant">{t(info?.selected&&!isActivityDraft(info.selected.id)?'settingsSave.existingEditorHint':'flow.nativeEditorHint')}</p><p className="mb-3 text-sm text-on-surface-variant">{t('flow.editsMayRestart')}</p></>}
-          {children}
+          {!lessonGameIssue && children}
 
         </div>
         </div>

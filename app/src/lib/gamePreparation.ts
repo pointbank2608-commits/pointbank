@@ -2,6 +2,7 @@ import { ADVENTURE_TYPES, adventureErrors, type AdventureType } from './adventur
 import type { GameTemplate, GameType } from './types';
 import { storyErrors } from './storybook';
 import { GAME_CATALOG } from './gameCatalog';
+import { grammarRuleContent, isGrammarRuleGame } from './lessonGrammarGame';
 import { isLiveQuestionReady } from './liveQuiz';
 import { asSentenceSlot, DEFAULT_WATERMELON_PATTERN_ID, getSentencePattern } from './sentencePatterns';
 
@@ -37,6 +38,7 @@ export function gameReadyDetails(template: GameTemplate) {
 /** Validate the native config as well as converted sources before entering focus mode. */
 export function isNativeGameReady(template: Pick<GameTemplate, 'game_type' | 'config' | 'items'>): boolean {
   const { game_type: type, config: c, items } = template;
+  if (isGrammarRuleGame(type)) return !!grammarRuleContent(type, c.grammarId);
   const pictureMode = c.pictureWordMode ? pictureWordModeKind(type) : null;
   if (pictureMode) {
     if (!pictureWordQuestions(c).length) return false;

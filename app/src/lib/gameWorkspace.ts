@@ -12,6 +12,7 @@ import {
 
 const SENTENCE_GAMES = new Set<GameType>([
   "wordtrain",
+  "sentencerocket",
   "grammardetective",
   "unscramble",
   "sentencesplash",

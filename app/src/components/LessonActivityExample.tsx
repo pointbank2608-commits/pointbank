@@ -3,9 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { GAME_CATALOG } from '../lib/gameCatalog';
 
 
-import { classroomGameRequirement } from '../lib/gameWorkspace';
-import { gamePreparation } from '../lib/gamePreparation';
-import type { GameContent } from '../lib/gameFromWords';
+import { lessonGameRequirement, type LessonGameMatch } from '../lib/lessonGameContent';
 import { gameAvailability, PHONICS_GAMES, phonicsGameUnits } from '../lib/phonicsGames';
 import { PhonicsGameCover } from './PhonicsGameArt';
 import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
@@ -72,11 +70,10 @@ export function activityMaterial(block: BlockDef, selected: LessonSlide | null):
   };
 }
 
-export function LessonActivityExample({ block, cards, sourceKind, prepared, selected, entries, layout, theme, title, sampleVideo, large = false }: {
+export function LessonActivityExample({ block, cards, gameMatch, selected, entries, layout, theme, title, sampleVideo, large = false }: {
   block: BlockDef;
   cards: FullCardItem[];
-  sourceKind: 'word' | 'sentence';
-  prepared: GameContent | null;
+  gameMatch?: LessonGameMatch;
   selected: LessonSlide | null;
   entries: PhonicsBankEntry[];
   layout?: CanvasExample;
@@ -155,6 +152,7 @@ export function LessonActivityExample({ block, cards, sourceKind, prepared, sele
     next = actual ? undefined : 'needWords';
     picture = <LessonWordThumbnail card={first} study={kind === 'study'} />;
   } else if (game) {
+    const prepared = gameMatch?.content ?? null;
     actual = !!prepared;
     const config: GameTemplateConfig | undefined = prepared?.config;
     const sentence = config?.adventure?.sentences[0];
@@ -184,10 +182,7 @@ export function LessonActivityExample({ block, cards, sourceKind, prepared, sele
       </div>}
     </div>;
     if (!actual) {
-      const kinds = gamePreparation(game.type).kinds as readonly string[];
-      const needed = kinds.includes('sentence') && !kinds.includes('word')
-        ? { key: !cards.length || sourceKind !== 'sentence' ? 'lessonUx.needSentenceList' : 'quick.needSentence', count: 0 }
-        : classroomGameRequirement(game.type, sourceKind);
+      const needed = lessonGameRequirement(game.type, gameMatch);
       requirement = t(needed.key, { count: needed.count });
     }
   } else {
@@ -200,7 +195,9 @@ export function LessonActivityExample({ block, cards, sourceKind, prepared, sele
   return <>
     <div className={`activity-example ${large ? 'activity-example-large' : ''} ${kind === 'material' ? 'activity-example-print' : ''} ${kind === 'video' && large ? 'activity-example-video' : ''}`}>{picture}</div>
     {kind !== 'pdf' && <div className="activity-example-tags">
-      <span className={actual ? 'is-linked' : ''}>{t(actual ? 'lessonUx.linked' : 'lessonUx.sample')}</span>
+      <span className={actual ? 'is-linked' : ''}>{t(!actual ? 'lessonUx.sample' : !game ? 'lessonUx.linked'
+        : gameMatch?.kind === 'builtin' ? 'lessonUx.gameBuiltinReady'
+          : gameMatch?.kind === 'grammar' ? 'lessonUx.gameFollowsGrammar' : 'lessonUx.gameReady')}</span>
       {next && <span className="is-needed">{t(`lessonUx.${next}`)}</span>}
       {requirement && <span className="is-needed">{requirement}</span>}
     </div>}

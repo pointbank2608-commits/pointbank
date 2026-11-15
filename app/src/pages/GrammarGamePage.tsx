@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { useGameEmbed } from '../context/GameEmbedContext';
+import { usePresenting } from '../context/LessonRunnerContext';
 import EditOnly from '../components/EditOnly';
 import GameThemeFrame from '../components/GameThemeFrame';
 import GrammarGame, { PlaySettings } from '../components/GrammarGames';
@@ -45,22 +46,26 @@ export default function GrammarGamePage({ type }: { type: GrammarGameType }) {
   const navigate = useNavigate();
   const { academy, profile } = useAuth();
   const embed = useGameEmbed();
+  const presenting = usePresenting();
+  const { state } = useLocation();
+  const lessonGrammarId = presenting ? (state as { lessonGameContent?: { config?: { grammarId?: string } } } | null)?.lessonGameContent?.config?.grammarId : undefined;
   const { notify } = useToast();
-  const g = useGameTemplates({
-    gameType: type,
-    defaultItems: () => itemsFor(DEFAULT_GRAMMAR_ID),
-    defaultConfig: () => ({ grammarId: DEFAULT_GRAMMAR_ID }),
-  });
-  const [restart, setRestart] = useState(0);
-  const play = useGrammarPlay();
-  const [name, setName] = useState('');
-  const [draftId, setDraftId] = useState(DEFAULT_GRAMMAR_ID);
-  const [busy, setBusy] = useState(false);
-  const grammarId = (g.selected?.config.grammarId as string | undefined) ?? draftId;
   const options = useMemo(
     () => GRAMMAR_POINTS.filter((p) => grammarGameSupport(p.id)[type] >= MIN_ROUNDS[type]),
     [type],
   );
+  const defaultId = options.find(point => point.id === DEFAULT_GRAMMAR_ID)?.id ?? options[0]?.id ?? DEFAULT_GRAMMAR_ID;
+  const g = useGameTemplates({
+    gameType: type,
+    defaultItems: () => itemsFor(defaultId),
+    defaultConfig: () => ({ grammarId: defaultId }),
+  });
+  const [restart, setRestart] = useState(0);
+  const play = useGrammarPlay();
+  const [name, setName] = useState('');
+  const [draftId, setDraftId] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const grammarId = lessonGrammarId ?? g.selected?.config.grammarId ?? draftId ?? defaultId;
 
   async function choose(next: string) {
     if (busy) return;
@@ -118,7 +123,7 @@ export default function GrammarGamePage({ type }: { type: GrammarGameType }) {
         </GameThemeFrame>
       )}
       {g.loading && <p role="status">{text('불러오는 중…', 'Loading…')}</p>}
-      {g.isStaff && (
+      {g.isStaff && !lessonGrammarId && (
         <EditOnly>
           <section className="space-y-4 rounded-2xl bg-surface-container-lowest p-4" aria-label={text('문법 게임 설정', 'Grammar game settings')}>
             <Link to="/games" className="text-primary underline">{text('게임 목록으로', 'Back to games')}</Link>
