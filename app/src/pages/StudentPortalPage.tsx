@@ -8,6 +8,9 @@ import WordMemoryPortalLinks from '../components/wordMemory/WordMemoryPortalLink
 import StudentStampCalendar from '../components/homework/StudentStampCalendar';
 import ClassNoticeBanner from '../components/solo/ClassNoticeBanner';
 import GrammarPortalLinks from '../components/grammar/GrammarPortalLinks';
+import { CaillouHomeworkCard } from '../components/solo/CaillouFollowup';
+import { actOnTransferHomework, listTransferHomework } from '../lib/caillouFollowupApi';
+import type { TransferState } from '../lib/caillouFollowup';
 import { useGrammarPortalAssignments } from '../lib/useGrammarPortalAssignments';
 import { studentNotice } from '../lib/soloChat';
 import {
@@ -156,6 +159,18 @@ function HomeView({
 }) {
   const { t, i18n } = useTranslation();
   const grammar = useGrammarPortalAssignments(home && !error ? savedToken() : null);
+  const canLoadTransfer = home && !error && home.features?.homework !== false && home.features?.solo !== false
+    && home.lessons?.some(lesson => !lesson.kind || lesson.kind === 'lesson');
+  const transferToken = canLoadTransfer ? savedToken() : null;
+  const [transfer, setTransfer] = useState<TransferState[]>([]);
+  const [transferError, setTransferError] = useState(false);
+  const [transferRefresh, setTransferRefresh] = useState(0);
+  useEffect(() => {
+    if (!transferToken) return;
+    let active = true;
+    void listTransferHomework(transferToken).then(rows => { if (active) setTransfer(rows); }, () => { if (active) setTransferError(true); });
+    return () => { active = false; };
+  }, [transferToken, transferRefresh]);
   if (error) {
     return (
       <div className={`${shell} items-center justify-center gap-4 p-6 text-center`}>
@@ -243,8 +258,17 @@ function HomeView({
           {t('studentPortal.homework')}
         </h2>
         {hwClosed && <p className="text-base text-[#5b6580]">{t('studentPortal.featureClosed')}</p>}
-        {!hwClosed && home.homework.length === 0 && adaptive.length === 0 && !grammarHomework.length && <p className="text-base text-[#5b6580]">{t('studentPortal.homeworkEmpty')}</p>}
+        {!hwClosed && home.homework.length === 0 && adaptive.length === 0 && !grammarHomework.length && !(transferToken && (transfer.length || transferError)) && <p className="text-base text-[#5b6580]">{t('studentPortal.homeworkEmpty')}</p>}
+        {transferToken && transferError && <p role="status" className="mb-2 text-sm">
+          카이유 숙제를 불러오지 못했어요. <button className="underline" type="button" onClick={() => { setTransferError(false); setTransferRefresh(value => value + 1); }}>다시 시도</button>
+        </p>}
         <ul className="flex flex-col gap-3">
+          {transferToken && transfer.map(row => <li key={row.assignment_id}>
+            <CaillouHomeworkCard state={row} act={async (action, answer) => {
+              const next = await actOnTransferHomework(transferToken, row.assignment_id, action, answer);
+              setTransfer(current => current.map(item => item.assignment_id === next.assignment_id ? next : item));
+            }} />
+          </li>)}
           <GrammarPortalLinks rows={grammarHomework} />
           {adaptive.map(h=><li key={h.id}>
             <a href={`/s/homework/${h.id}`} className={`flex min-h-16 items-center gap-3 rounded-2xl px-4 py-3 ${h.done||h.path_waiting?'bg-white shadow-sm ring-1 ring-[#eadfc5] text-[#5b6580]':'bg-[#3b5bdb] text-white'}`}>

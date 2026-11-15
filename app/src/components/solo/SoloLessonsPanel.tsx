@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import MoreMenu from '../MoreMenu';
 import LearningPathStudio from './LearningPathStudio';
 import GrammarTeacherPanel from '../grammar/GrammarTeacherPanel';
@@ -31,6 +31,18 @@ import SoloLessonEditor from './SoloLessonEditor';
 import SoloPreview from './SoloPreview';
 import WatchPanel from './WatchPanel';
 import SoloStarterLibrary from './SoloStarterLibrary';
+import { CaillouFollowupTeacher } from './CaillouFollowup';
+import { isCaillouFirstLesson } from '../../lib/caillouFollowup';
+import { teacherTransferApi } from '../../lib/caillouFollowupApi';
+
+function CaillouFollowupDetails({ lessonId }: { lessonId: string }) {
+  const [open, setOpen] = useState(false);
+  const api = useMemo(() => teacherTransferApi(lessonId), [lessonId]);
+  return <details className="rounded-xl border border-outline-variant/50 p-3" onToggle={event => setOpen(event.currentTarget.open)}>
+    <summary className="cursor-pointer font-bold text-deep-navy">다음 날 숙제와 추천</summary>
+    {open && <div className="mt-3"><CaillouFollowupTeacher api={api} /></div>}
+  </details>;
+}
 
 /**
  * 내 수업 → "개별수업" 탭. 개별수업은 화면이 선생님이 되어 학생이 혼자 하는 수업이다(단체수업과 목록·만들기가 따로).
@@ -202,6 +214,7 @@ function LegacySoloLessonsPanel({ academyId, classId, revision }: { academyId: s
                     ]}
                   />
                 </div>
+                {isCaillouFirstLesson(l) && <CaillouFollowupDetails lessonId={l.id} />}
               </div>
             );
           })}
