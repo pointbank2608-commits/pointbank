@@ -48,7 +48,7 @@ try {
   await page.goto(`http://127.0.0.1:${port}${previewPath}`);
   await activity('builder').waitFor();
   assert.deepEqual(await slide.locator('[data-builder-part]').allTextContents(), ['d', 'ad']);
-  assert.equal(await slide.locator('.rc-unit-one-result').textContent(), 'dad');
+  assert.equal(await slide.locator('.rc-activity-result').textContent(), 'dad');
   const backgroundLoaded = await activity('builder').evaluate(async element => {
     const url = getComputedStyle(element).backgroundImage.match(/url\("(.+)"\)/)?.[1];
     if (!url) return false;
@@ -58,21 +58,21 @@ try {
     return image.naturalWidth > 1000;
   });
   assert.equal(backgroundLoaded, true);
-  const builderAudio = await listen(slide.locator('.rc-unit-one-blend-audio'), 'dad');
+  const builderAudio = await listen(slide.locator('.rc-activity-blend-audio'), 'dad');
   await snapshot('01-listen-and-blend');
 
   await open('듣고 고르기');
   await activity('choose').waitFor();
-  const cards = slide.locator('.rc-unit-one-choice');
+  const cards = slide.locator('.rc-activity-choice');
   const choices = await cards.evaluateAll(elements => elements.map(element => ({ id: element.dataset.entry, width: element.getBoundingClientRect().width, color: getComputedStyle(element).backgroundColor })));
   assert.equal(choices.length, 3);
   assert.ok(choices.every(choice => Math.abs(choice.width - choices[0].width) < 1 && choice.color === choices[0].color));
   assert.equal(await cards.locator('.s1-word, button, .pc-answer').count(), 0);
   assert.equal(await cards.locator('.s1-picture').count(), 3);
-  const listeningAudio = await listen(slide.locator('.rc-unit-one-listen-audio'), 'bad');
+  const listeningAudio = await listen(slide.locator('.rc-activity-listen-audio'), 'bad');
   await snapshot('02-listen-and-choose');
   await reveal();
-  const winner = slide.locator('.rc-unit-one-choice.pc-answer');
+  const winner = slide.locator('.rc-activity-choice.pc-answer');
   await winner.waitFor();
   assert.equal(await winner.locator('.s1-word').textContent(), 'bad');
   assert.deepEqual(await cards.evaluateAll(elements => elements.map(element => element.dataset.entry)), choices.map(choice => choice.id));
@@ -82,10 +82,10 @@ try {
 
   await open('단어 분류');
   await activity('sort').waitFor();
-  const bins = slide.locator('.rc-unit-one-bin');
+  const bins = slide.locator('.rc-activity-bin');
   assert.deepEqual(await bins.locator('h3').allTextContents(), ['-ad', '-ag', '-am']);
   assert.equal(await bins.locator('.s1-word').count(), 0);
-  const words = await slide.locator('.rc-unit-one-word-bank > span').allTextContents();
+  const words = await slide.locator('.rc-activity-word-bank > span').allTextContents();
   await snapshot('04-read-and-sort');
   await reveal();
   await bins.locator('.s1-word').first().waitFor();
@@ -98,7 +98,7 @@ try {
 
   await open('혼자 읽기');
   await activity('read').waitFor();
-  assert.equal(await slide.locator('.rc-unit-one-independent').innerText(), 'bag');
+  assert.equal(await slide.locator('.rc-activity-independent').innerText(), 'bag');
   assert.equal(await slide.locator('img, svg, .s1-target, .s1-speaker, .pc-answer').count(), 0);
   await snapshot('06-read-on-your-own');
   await reveal();

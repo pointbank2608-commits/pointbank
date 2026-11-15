@@ -20,6 +20,12 @@ export async function openUnitOnePreview(port) {
     plugins: [react(), tailwindcss(), {
       name: 'ready-class-local-bank',
       configureServer(vite) {
+        vite.middlewares.use((request, _response, next) => {
+          if (request.url?.split('?')[0] === '/phonics/lesson') {
+            request.url = `/scripts/ready-media/unit-one-preview.html${request.url.slice('/phonics/lesson'.length)}`;
+          }
+          next();
+        });
         vite.middlewares.use('/rest/v1/phonics_bank', (_request, response) => {
           response.writeHead(200, { 'Content-Type': 'application/json' }).end('[]');
         });
