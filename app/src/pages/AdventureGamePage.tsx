@@ -27,7 +27,7 @@ export default function AdventureGamePage({ type }: { type: AdventureType }) {
   const [addLesson,setAddLesson]=useState(false);
   const selected=g.selected;
   const config=selected?.config.adventure || fallback.adventure;
-  const pictureRounds: AdventureRound[] | undefined = selected?.config.pictureWordMode && (hasAdventureRoundSettings(type) || type === 'wordclaw')
+  const pictureRounds: AdventureRound[] | undefined = selected?.config.pictureWordMode && hasAdventureRoundSettings(type)
     ? pictureQuizDeck(selected.config, []).slice(0, config.count).map(row => {
       const choices = row.choices.map((word, index) => ({ id: `${row.id}-${index}`, word, meaning: '', tags: [] }));
       const word = choices[row.correctIndex];

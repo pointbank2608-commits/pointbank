@@ -11,7 +11,7 @@ import { gamePreparation } from '../lib/gamePreparation';
 import { isSentenceList, listsForGame } from '../lib/gameWorkspace';
 import { preparePlayableList } from '../lib/gameGuide';
 import { pictureWordModeKind, pictureWordQuestions } from '../lib/pictureWordQuestions';
-import { DEFAULT_ADVENTURE_QUESTIONS, MAX_ADVENTURE_QUESTIONS, hasAdventureRoundSettings, sampleAdventure } from '../lib/adventureGames';
+import { defaultAdventureQuestionCount, MAX_ADVENTURE_QUESTIONS, hasAdventureRoundSettings, sampleAdventure } from '../lib/adventureGames';
 import { getGrammarPlay, setGrammarPlay } from '../lib/grammarPlay';
 import { setGameSoundOn, useGameSoundOn } from '../lib/gameSfx';
 import { wordListToCards } from '../lib/gameFromWords';
@@ -141,7 +141,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const [pList, setPList] = useState('');
   const selectedDetectiveList = useRef<{ templateId: string | undefined; listId: string } | null>(null);
   const [pPictureMode, setPPictureMode] = useState(false);
-  const [pAdventureCount, setPAdventureCount] = useState(String(DEFAULT_ADVENTURE_QUESTIONS));
+  const [pAdventureCount, setPAdventureCount] = useState('');
   const [pPictureList, setPPictureList] = useState('');
   const [pSaved, setPSaved] = useState('');
   const [pClass, setPClass] = useState('');
@@ -296,7 +296,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     const chosenListId = selection && selection.templateId === info?.selected?.id ? selection.listId : detectiveListId;
     setPList(isDetective ? chosenListId : currentSourceId);
     setPPictureMode(currentPictureMode);
-    setPAdventureCount(String(info?.selected?.config.adventure?.count ?? DEFAULT_ADVENTURE_QUESTIONS));
+    setPAdventureCount(String(info?.selected?.config.adventure?.count ?? defaultAdventureQuestionCount(type)));
     setPPictureList('');
     setPSaved('');
     setPClass(info?.classId || '');
@@ -862,6 +862,12 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
               <input className={`${field} !w-28`} type="number" min={1} max={MAX_ADVENTURE_QUESTIONS} step={1}
                 value={pAdventureCount} onChange={event => setPAdventureCount(event.target.value)} />
             </label>
+            {type === 'wordclaw' && !pPictureMode && <p className="text-sm text-on-surface-variant">
+              {text(
+                `미션 1개가 문제 1개예요. 현재 미션은 ${info?.selected?.config.adventure?.missions.length ?? 1}개이며, 게임별 설정에서 추가할 수 있어요.`,
+                `Each mission counts as one question. You have ${info?.selected?.config.adventure?.missions.length ?? 1} missions. Add more in Game-specific settings.`,
+              )}
+            </p>}
             <p className="text-sm text-on-surface-variant">{text('선택한 자료의 문제 수가 더 적으면, 만들 수 있는 문제만 나와요.', 'If your material has fewer questions, the round uses the available questions.')}</p>
           </div>
         )}

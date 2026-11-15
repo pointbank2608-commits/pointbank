@@ -284,6 +284,20 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
       const wrap = scaleRef.current;
       if (!stage || !wrap) return;
 
+      if (fullOn && gameType === 'wordclaw') {
+        const scene = wrap.querySelector<HTMLElement>('.ad-wordclaw');
+        if (scene?.offsetWidth && scene.offsetHeight) {
+          // Measure the unzoomed scene so the cabinet, text and hit areas grow together.
+          const style = getComputedStyle(stage);
+          const width = stage.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+          const height = stage.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+          const zoom = Math.min(width / scene.offsetWidth, height / scene.offsetHeight);
+          stage.style.setProperty('--claw-fullscreen-zoom', String(Math.max(1, Math.floor(zoom * 1000) / 1000)));
+        }
+      } else {
+        stage.style.removeProperty('--claw-fullscreen-zoom');
+      }
+
       if (responsiveScene || (!fill && window.innerWidth < DESKTOP_BREAKPOINT)) {
         setScale(1);
         setNaturalSize(old => old.w || old.h ? { w:0, h:0 } : old);
@@ -392,7 +406,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
       if (fitFrame) window.cancelAnimationFrame(fitFrame);
       window.removeEventListener('resize', fit);
     };
-  }, [fill, gameType, bg, responsiveScene]);
+  }, [fill, fullOn, gameType, bg, responsiveScene]);
 
   function enterPseudo() {
     setPseudoFs(true);
