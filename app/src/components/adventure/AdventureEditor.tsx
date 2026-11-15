@@ -174,7 +174,7 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
     </div>}
     {type==='grammardetective'&&!showAuthoring&&<>
       <section className="ad-edit-card" data-detective-grammar>
-        <p><strong>{en?'Source':'문제 출처'}</strong> · {source&&source.kind!=='default'?source.name:source?.kind==='default'?(en?'ClassBank sample sentences':'클래스뱅크 기본 문장'):(en?'Current questions':'현재 문제')}</p>
+        <p><strong>{en?'Source':'문제 출처'}</strong> · {source&&source.kind!=='default'?source.name:source?.kind==='default'?(en?'수업뚝딱 sample sentences':'수업뚝딱 기본 문장'):(en?'Current questions':'현재 문제')}</p>
         <fieldset className="ad-detective-rule-set">
           <legend>{en?'Grammar topics':'적용할 문법'}</legend>
           <div className="ad-detective-rules">

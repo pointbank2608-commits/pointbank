@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
+import BrandMark from '../components/BrandMark';
 import { BRAND_FILES, brandLocalUrl, brandRemoteUrl, deleteBrandFile, toWebp, uploadBrandFile, type BrandFile } from '../lib/brand';
 
 /** 관리자 > 로고(2026-10-17): 서버(Supabase 저장소)에 둔 브랜드 로고를 보고 교체한다. 올리면 배포 없이 사이트 전체가 바뀐다. */
@@ -55,24 +56,28 @@ export default function AdminBrandPage() {
       <div className="grid gap-5 lg:grid-cols-3">
         {BRAND_FILES.map((f) => {
           const src = fallback[f] ? brandLocalUrl(f) : `${brandRemoteUrl(f)}?t=${stamp[f] ?? 0}`;
+          const preview = fallback[f] && f !== 'symbol' ? (
+            <div className="inline-flex items-center gap-1.5 rounded bg-white px-2 py-1 text-lg font-black text-deep-navy">
+              {f === 'logo' && <BrandMark className="h-8 w-8" />}{t('common.brand')}
+            </div>
+          ) : (
+            <img
+              src={src}
+              alt=""
+              className="max-h-full max-w-full object-contain"
+              onError={() => setFallback((s) => ({ ...s, [f]: true }))}
+            />
+          );
           return (
             <section key={f} className="rounded-xl bg-surface-container-lowest p-5 shadow-card">
               <h3 className="font-title-md text-title-md text-on-surface">{t(`adminBrand.file_${f}`)}</h3>
               <p className="mb-3 font-caption text-caption text-on-surface-variant">{t(`adminBrand.hint_${f}`)}</p>
               <div className="grid grid-cols-2 gap-2">
                 <div className={`flex h-32 items-center justify-center rounded-lg border border-outline-variant/40 p-3 ${checker}`}>
-                  <img
-                    src={src}
-                    alt=""
-                    className="max-h-full max-w-full object-contain"
-                    onError={(e) => {
-                      if (!fallback[f]) setFallback((s) => ({ ...s, [f]: true }));
-                      else e.currentTarget.style.display = 'none';
-                    }}
-                  />
+                  {preview}
                 </div>
                 <div className="flex h-32 items-center justify-center rounded-lg bg-[#16213e] p-3">
-                  <img src={src} alt="" className="max-h-full max-w-full object-contain" />
+                  {preview}
                 </div>
               </div>
               <p className="mt-2 font-caption text-caption text-on-surface-variant">

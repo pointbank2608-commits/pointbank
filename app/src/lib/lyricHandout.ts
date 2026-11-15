@@ -177,7 +177,7 @@ export function buildLyricHandoutHtml(input: HandoutInput): string {
 </style></head>
 <body>
 <h1>${title}</h1>
-<p class="sub">노래로 배우는 영어 · 클래스뱅크 수업 자료</p>
+<p class="sub">노래로 배우는 영어 · 수업뚝딱 수업 자료</p>
 ${vocabSection}
 ${grammarSection}
 ${lineSection}

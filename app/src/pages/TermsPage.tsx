@@ -25,7 +25,7 @@ export default function TermsPage() {
           <section>
             <h2 className="mb-2 font-title-md text-title-md text-on-surface">제1조 (목적)</h2>
             <p>
-              이 약관은 플럭스미디어(이하 "회사")가 제공하는 학원·공부방 수업 관리 서비스 "클래스뱅크"(이하 "서비스")의
+              이 약관은 플럭스미디어(이하 "회사")가 제공하는 학원·공부방 수업 관리 서비스 "수업뚝딱"(이하 "서비스")의
               이용과 관련하여 회사와 회원 간의 권리·의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.
             </p>
           </section>

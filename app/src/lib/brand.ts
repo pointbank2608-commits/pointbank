@@ -11,7 +11,8 @@ export const BRAND_BUCKET = 'brand';
 
 const base = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 
-export const brandRemoteUrl = (f: BrandFile) => `${base}/storage/v1/object/public/${BRAND_BUCKET}/${f}.webp`;
+const brandObjectName = (f: BrandFile) => f === 'symbol' ? 'symbol.webp' : `classddak-${f}.webp`;
+export const brandRemoteUrl = (f: BrandFile) => `${base}/storage/v1/object/public/${BRAND_BUCKET}/${brandObjectName(f)}`;
 export const brandLocalUrl = (f: BrandFile) => `/brand/${f}.webp`;
 
 // 서버 그림을 미리 받아 본 결과(true 받음 / false 없음·실패) — 같은 접속에서 되풀이하지 않는다
@@ -79,13 +80,13 @@ export async function toWebp(file: File, maxWidth: number): Promise<Blob> {
 }
 
 export async function uploadBrandFile(f: BrandFile, blob: Blob): Promise<void> {
-  const { error } = await supabase.storage.from(BRAND_BUCKET).upload(`${f}.webp`, blob, { upsert: true, contentType: 'image/webp', cacheControl: '300' });
+  const { error } = await supabase.storage.from(BRAND_BUCKET).upload(brandObjectName(f), blob, { upsert: true, contentType: 'image/webp', cacheControl: '300' });
   if (error) throw new Error(error.message);
   resetBrandProbe(f);
 }
 
 export async function deleteBrandFile(f: BrandFile): Promise<void> {
-  const { error } = await supabase.storage.from(BRAND_BUCKET).remove([`${f}.webp`]);
+  const { error } = await supabase.storage.from(BRAND_BUCKET).remove([brandObjectName(f)]);
   if (error) throw new Error(error.message);
   resetBrandProbe(f);
 }

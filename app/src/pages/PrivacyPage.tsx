@@ -20,7 +20,7 @@ export default function PrivacyPage() {
         <div className="space-y-8 font-body-md text-body-md leading-7 text-on-surface">
           <section>
             <p>
-              플럭스미디어(이하 "회사")는 「개인정보 보호법」 등 관계 법령을 준수하며, 클래스뱅크 서비스(이하 "서비스")
+              플럭스미디어(이하 "회사")는 「개인정보 보호법」 등 관계 법령을 준수하며, 수업뚝딱 서비스(이하 "서비스")
               이용자의 개인정보를 안전하게 보호하기 위해 다음과 같이 개인정보처리방침을 수립·공개합니다.
             </p>
           </section>

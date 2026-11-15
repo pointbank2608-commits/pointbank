@@ -72,7 +72,7 @@ export default function StoryGame({ type, config, onRestart, pictureMode }: { ty
   const instruction = type === 'feedmonster' ? '카드를 입으로 옮겨 주세요! 카드 → 몬스터 터치도 가능해요.' : type === 'sentencebridge' ? '빈칸에 알맞은 말을 골라 강을 건너요!' : '빈자리에 들어갈 표현을 골라 성을 지어요!';
   const board = <div ref={root} data-story-game={type} className={`sb-game sb-${type} ${pseudoFull ? 'sb-pseudo-full' : ''} ${paused ? 'sb-paused' : ''}`}>
     <StoryWorld type={type}/>
-    <header className="sb-top"><div className="sb-brand"><span className="sb-mini-star">✦</span><span>ClassBank <small>PLAY & GROW</small></span></div><div className="sb-tools">{!workspace && <><button onClick={exit} aria-label="게임 준비로 돌아가기">← <span>준비 화면</span></button><button onClick={() => void fullscreen()} aria-label={full || pseudoFull ? '전체 화면 종료' : '전체 화면'}>{full || pseudoFull ? '⊡' : '⛶'}</button></>}</div></header>
+    <header className="sb-top"><div className="sb-brand"><span className="sb-mini-star">✦</span><span>수업뚝딱 <small>PLAY & GROW</small></span></div><div className="sb-tools">{!workspace && <><button onClick={exit} aria-label="게임 준비로 돌아가기">← <span>준비 화면</span></button><button onClick={() => void fullscreen()} aria-label={full || pseudoFull ? '전체 화면 종료' : '전체 화면'}>{full || pseudoFull ? '⊡' : '⛶'}</button></>}</div></header>
     <div className="sb-game-name"><span>{STORY_KO[type]}</span><h2>{STORY_NAMES[type]}</h2></div>
     <div className="sb-progress" aria-label={`진행 ${progress} / ${r.total}`}><span>✦ {progress} / {r.total}</span><div><i style={{width:`${progress / Math.max(1,r.total) * 100}%`}}/></div>{!!config.seconds && <span aria-label="남은 시간">◷ {r.remaining}s</span>}</div>
     {type !== 'sentencetower' && <div className="sb-prompt">

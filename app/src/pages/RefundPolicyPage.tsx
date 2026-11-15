@@ -20,7 +20,7 @@ export default function RefundPolicyPage() {
         <div className="space-y-8 font-body-md text-body-md leading-7 text-on-surface">
           <section>
             <p>
-              이 환불정책은 클래스뱅크(이하 "서비스")의 유료 플랜 결제·해지·환불에 관한 사항을 정합니다. 이 정책은
+              이 환불정책은 수업뚝딱(이하 "서비스")의 유료 플랜 결제·해지·환불에 관한 사항을 정합니다. 이 정책은
               「전자상거래 등에서의 소비자보호에 관한 법률」을 따르며, <Link to="/terms" className="text-primary underline">이용약관</Link>과
               함께 적용됩니다.
             </p>

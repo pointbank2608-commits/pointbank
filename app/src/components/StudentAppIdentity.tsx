@@ -21,7 +21,7 @@ export default function StudentAppIdentity() {
     };
     manifest?.setAttribute('href', '/student.webmanifest');
     touch?.setAttribute('href', '/apple-touch-icon-student.png');
-    title?.setAttribute('content', '학생 클래스뱅크');
+    title?.setAttribute('content', '학생 수업뚝딱');
     theme?.setAttribute('content', '#16213e');
     return () => {
       if (manifest && prev.manifest) manifest.setAttribute('href', prev.manifest);

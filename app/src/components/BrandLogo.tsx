@@ -1,25 +1,23 @@
 import { useTranslation } from 'react-i18next';
-import { useBrandSrc } from '../lib/brand';
+import { brandLocalUrl, useBrandSrc } from '../lib/brand';
+import BrandMark from './BrandMark';
 
 interface Props {
   className?: string;
-  /** true 면 로고 옆 글자(클래스뱅크)가 없는 심볼만 */
+  /** 이름 없이 심볼만 표시 */
   symbolOnly?: boolean;
 }
 
-/** 클래스뱅크 전체 로고(심볼 + 글자). 헤더·로그인·약관 같은 "이름이 같이 있어야 하는 자리"에 쓴다. 그림은 Supabase 저장소 `brand/logo.webp`, 없으면 내장. */
 export default function BrandLogo({ className = 'h-11 w-auto', symbolOnly = false }: Props) {
   const { t } = useTranslation();
-  const f = symbolOnly ? 'symbol' : 'logo';
-  const src = useBrandSrc(f);
+  const logo = useBrandSrc('logo');
+  if (!symbolOnly && logo !== brandLocalUrl('logo')) {
+    return <img src={logo} alt={t('common.brand')} width={1000} height={207} draggable={false} className={className} />;
+  }
   return (
-    <img
-      src={src}
-      alt={t('common.brand')}
-      width={symbolOnly ? 420 : 1000}
-      height={symbolOnly ? 313 : 207}
-      draggable={false}
-      className={className}
-    />
+    <span className={`inline-flex items-center gap-1.5 ${className}`} aria-label={symbolOnly ? t('common.brand') : undefined} role={symbolOnly ? 'img' : undefined}>
+      <BrandMark className="h-full w-auto shrink-0" />
+      {!symbolOnly && <span className="whitespace-nowrap text-xl font-black tracking-tight text-deep-navy sm:text-2xl">{t('common.brand')}</span>}
+    </span>
   );
 }

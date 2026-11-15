@@ -80,7 +80,7 @@ function Brand() {
   return (
     <div className="flex items-center justify-center gap-2 text-base text-[#5b6580]">
       <BrandMark className="h-7 w-7" />
-      Classbank
+      수업뚝딱
     </div>
   );
 }

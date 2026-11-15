@@ -27,7 +27,7 @@ export async function issueBillingKey(customerName: string): Promise<string> {
     channelKey,
     billingKeyMethod: 'CARD',
     issueId,
-    issueName: '클래스뱅크 유료 플랜 카드 등록',
+    issueName: '수업뚝딱 유료 플랜 카드 등록',
     customer: { fullName: customerName },
   });
 

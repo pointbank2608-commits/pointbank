@@ -75,7 +75,7 @@ export default function AdminLearningPage() {
   const insights = report ? researchInsights(report) : [];
   return <div className="min-w-0 space-y-6">
     <header className="rounded-3xl bg-deep-navy px-5 py-7 text-white md:px-8">
-      <p className="text-sm font-bold text-white/70">{l('클래스뱅크 · 학습 연구실','Classbank · Learning research')}</p>
+      <p className="text-sm font-bold text-white/70">{l('수업뚝딱 · 학습 연구실','수업뚝딱 · Learning research')}</p>
       <h1 className="mt-2 break-keep text-3xl font-black">{l('더 잘 배우는 수업을 찾는 곳','Find lessons that help learners')}</h1>
       <p className="mt-3 max-w-3xl text-sm leading-relaxed text-white/85">{l('실제 학습 결과와 필요한 연습, 이후 기억을 함께 확인하고 다음 검증 방향을 정합니다. 교사의 추가 기록 없이 수업·숙제·학생 수행에서 모은 근거를 사용합니다.','Review outcomes, practice and later recall together to choose what to validate next. Evidence comes from normal teaching and learning, without extra teacher records.')}</p>
       <p className="mt-4 inline-block rounded-full bg-white/15 px-3 py-1 text-sm">{l('어휘 회상 v1 · 관찰 분석','Vocabulary recall v1 · observational analysis')}</p>

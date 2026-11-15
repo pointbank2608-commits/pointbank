@@ -9,7 +9,7 @@ import '../../styles/stem.css';
 export function StemReportSheet({report,showBank=report.showWordBank}:{report:Report;showBank?:boolean}){
  const order=stemReportOrder(report.steps.length);
  return <article className="stem-report-sheet" lang="en" data-stem-report>
-  <header><div><small>ClassBank · SCIENCE LAB</small><h1>MY SCIENCE REPORT</h1><h2>{report.title}</h2></div>{report.mascotUrl&&<img src={report.mascotUrl} alt=""/>}</header>
+  <header><div><small>수업뚝딱 · SCIENCE LAB</small><h1>MY SCIENCE REPORT</h1><h2>{report.title}</h2></div>{report.mascotUrl&&<img src={report.mascotUrl} alt=""/>}</header>
   <p className="stem-report-name">Name: _____________________ <span>Date: __________________</span></p>
   <section><h3>1. My Question</h3><div className="stem-report-question">{report.question}</div></section>
   <section><h3>2. My Prediction &amp; Result</h3><p>{report.prediction}</p><p>{report.result}</p></section>

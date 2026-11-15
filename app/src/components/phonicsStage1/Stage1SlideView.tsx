@@ -40,7 +40,7 @@ export default function Stage1SlideView({unit,slide,position,total}:{unit:Stage1
     case 'finish':case 'speaking':body=<>{wordTiles(slide.kind==='finish')}{slide.kind==='speaking'&&<p className="s1-sentence">I see a _____.</p>}<p className="s1-subtitle">Great work!</p></>;break;
   }
   return <article className="s1-slide" data-stage1-slide={slide.id} data-slide-kind={slide.kind}>
-    <header className="s1-slide-brand"><strong>ClassBank</strong><span>{unit.number?'UNIT '+unit.number+' · ':''}{unit.groups.map(g=>g.letter+g.letter.toLowerCase()).join(' ')}</span></header>
+    <header className="s1-slide-brand"><strong>수업뚝딱</strong><span>{unit.number?'UNIT '+unit.number+' · ':''}{unit.groups.map(g=>g.letter+g.letter.toLowerCase()).join(' ')}</span></header>
     <h2 className="s1-slide-title">{slide.title}</h2>
     <div className="s1-slide-body">{slide.questionNumber&&<small className="s1-quiz-label">Quiz {slide.questionNumber}</small>}{body}</div>
     <footer className="s1-slide-footer"><span>{slide.optional?t('phonicsStage1.extra'):t('phonicsStage1.lesson',{n:slide.lesson})}</span><progress value={position} max={total}/><span>{position} / {total}</span></footer>

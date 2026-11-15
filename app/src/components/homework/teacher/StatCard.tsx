@@ -97,7 +97,7 @@ export default function StatCard({ name, className, days, sheet }: { name: strin
       <div className="flex items-center gap-4">
         <GradeBadge grade={sheet.overall.grade} size="lg" />
         <div className="min-w-0 flex-1">
-          <div className="text-xs font-bold uppercase tracking-[0.2em] text-warm-yellow">Classbank Student</div>
+          <div className="text-xs font-bold uppercase tracking-[0.2em] text-warm-yellow">수업뚝딱 Student</div>
           <div className="text-xs text-white/70">{t('studentHw.overallGrowth',{defaultValue:'종합 성장 · 학습과 꾸준함'})}</div>
           <div className="truncate text-2xl font-black">{name}</div>
           <div className="text-sm text-white/70">

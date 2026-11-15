@@ -162,7 +162,7 @@ export default function HomeworkPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <div className="font-label-md text-label-md text-primary">Classbank Student</div>
+          <div className="font-label-md text-label-md text-primary">수업뚝딱 Student</div>
           <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-deep-navy md:font-headline-lg md:text-headline-lg">{t('studentHw.pageTitle')}</h1>
           <p className="mt-1 max-w-3xl font-body-md text-body-md text-on-surface-variant">{i18n.language.startsWith('en')?'Choose a lesson or collection, preview the practice, then send it to your students.':'수업이나 단어장을 고르고, 학생 화면을 확인한 뒤 숙제를 보내세요.'}</p>
         </div>

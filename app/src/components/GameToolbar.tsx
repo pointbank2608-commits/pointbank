@@ -688,7 +688,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         <p className="text-sm text-on-surface-variant">{text('저장한 자료를 고르세요. 게임설정에서 출제할 문법을 정할 수 있어요.', 'Choose a saved list. You can choose the grammar rules in Game settings.')}</p>
         <label className="block font-bold">{text('내 단어장 · 문장 모음', 'My word / sentence lists')}
           <select className={field} value={pList} onChange={event=>setPList(event.target.value)}>
-            <option value="">{text('없음 · 클래스뱅크 기본 문장', 'None · ClassBank sample sentences')}</option>
+            <option value="">{text('없음 · 수업뚝딱 기본 문장', 'None · 수업뚝딱 sample sentences')}</option>
             {(info?.lists ?? []).filter(list=>list.items.some(item=>item.word.trim())).map(list=>(
               <option key={list.id} value={list.id}>{isSentenceList(list)?text('문장 모음','Sentences'):text('단어장','Words')} · {list.name}</option>
             ))}

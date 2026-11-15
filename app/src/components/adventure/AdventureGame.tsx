@@ -29,7 +29,7 @@ export default function AdventureGame({type,config:c,onRestart,onContinue,prepar
     <span className="ad-ambient ad-ambient-one" aria-hidden="true">✦</span><span className="ad-ambient ad-ambient-two" aria-hidden="true">✧</span>
     {(type==='balloonpop'||type==='wordclaw')&&<img className={`ad-buddy ${e.reaction}`} src={`/skins/adventure/${type==='balloonpop'?'bunny':'kitten'}.webp`} alt=""/>}
     <img className="ad-world" src={`/skins/adventure/${worlds[type]}.webp`} alt=""/>
-    <header className="ad-header"><div><small>CLASSBANK · ENGLISH ADVENTURE</small><h1>{ADVENTURE_NAMES[type][0]}</h1></div><span>{Math.min(e.index+1,e.total)} / {e.total} {e.remaining>0&&c.seconds>0&&<b> · {Math.ceil(e.remaining)}초</b>}</span></header>
+    <header className="ad-header"><div><small>수업뚝딱 · ENGLISH ADVENTURE</small><h1>{ADVENTURE_NAMES[type][0]}</h1></div><span>{Math.min(e.index+1,e.total)} / {e.total} {e.remaining>0&&c.seconds>0&&<b> · {Math.ceil(e.remaining)}초</b>}</span></header>
     <div className="ad-progress"><i style={{width:`${e.total?e.records.length/e.total*100:0}%`}}/></div>
     {errors.length?<div className="ad-overlay"><h2>게임을 준비해 주세요</h2>{errors.map(v=><p key={v}>{v}</p>)}</div>:<>
       {(e.phase==='playing'||e.phase==='review')&&<div className="ad-play" inert={e.paused||e.phase==='review'||e.expired}>

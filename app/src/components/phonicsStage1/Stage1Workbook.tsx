@@ -40,10 +40,10 @@ export function Stage1WorkbookPage({unit,page}:{unit:Stage1Unit;page:Stage1Page}
     }
   }
   return <article className="s1-book-page print-board" data-stage1-page={page.id} data-audience="student">
-    <header><div><b>ClassBank</b><b>{unit.number?'UNIT '+unit.number+' · ':''}{unit.groups.map(g=>g.letter+g.letter.toLowerCase()).join(' ')}</b></div><h2>{page.title}</h2></header>
+    <header><div><b>수업뚝딱</b><b>{unit.number?'UNIT '+unit.number+' · ':''}{unit.groups.map(g=>g.letter+g.letter.toLowerCase()).join(' ')}</b></div><h2>{page.title}</h2></header>
     <div className="s1-book-name"><span>{t('phonicsStage1.name')}: ________________________</span><span>Lesson {page.lesson}</span></div>
     <div className="s1-book-page-body">{body}</div>
-    <footer><span>ClassBank · {unit.number?'Unit '+unit.number:unit.groups[0].letter+unit.groups[0].letter.toLowerCase()}</span><span>{n} / {unit.pages.length}</span></footer>
+    <footer><span>수업뚝딱 · {unit.number?'Unit '+unit.number:unit.groups[0].letter+unit.groups[0].letter.toLowerCase()}</span><span>{n} / {unit.pages.length}</span></footer>
   </article>;
 }
 

@@ -75,7 +75,7 @@ export default function PhonicsCourseSlide({unit:u,slide:s,index,total}:{unit:Co
   }
  }
  return <article className={'s1-slide pc-lesson-slide pc-level-'+u.step} data-course-slide={s.id} data-course-kind={s.kind}>
-  <header className="s1-slide-brand"><strong>ClassBank</strong><span>LEVEL {u.step} · UNIT {u.number} · {u.groups.map(g=>g.label).join(' · ')}</span>{!activityGuide&&s.kind!=='readAlone'&&<ClaySprite kind="robot" className="pc-slide-guide"/>}</header>
+  <header className="s1-slide-brand"><strong>수업뚝딱</strong><span>LEVEL {u.step} · UNIT {u.number} · {u.groups.map(g=>g.label).join(' · ')}</span>{!activityGuide&&s.kind!=='readAlone'&&<ClaySprite kind="robot" className="pc-slide-guide"/>}</header>
   <h2 className="s1-slide-title">{s.title}</h2><div className="s1-slide-body">{s.draft&&<span className="pc-draft-badge">{t('phonicsLesson.readDraft')}</span>}<p className="pc-slide-hint">{!['cover','lesson','finish','extra','end','readIntro'].includes(s.kind)&&s.hint}</p>{body}</div>
   <footer className="s1-slide-footer"><span>{s.lesson==='extra'?'Extra Practice':`Lesson ${s.lesson}`} · {u.groups.map(g=>g.label).join(' · ')}</span><progress value={index+1} max={total}/><span>{index+1} / {total}</span></footer>
  </article>;

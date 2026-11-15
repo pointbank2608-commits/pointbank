@@ -14,9 +14,9 @@ function Box({title,children,large=false}:{title:string;children?:ReactNode;larg
 function Paper({doc,children,label,page}:{doc:WorksheetDocument;children:ReactNode;label?:string;page:number}) {
  const {t}=useTranslation();
  return <section className="ws-paper print-board" data-studio-paper data-activity={doc.activityId}>
-  <header className="ws-paper-heading"><div><span className="ws-brand">ClassBank</span>{label&&<span className="ws-sheet-label">{label}</span>}<h2>{doc.title}</h2></div><div className="ws-name">{t('worksheetStudio.name')}: __________<br/>{t('worksheetStudio.date')}: __________</div></header>
+  <header className="ws-paper-heading"><div><span className="ws-brand">수업뚝딱</span>{label&&<span className="ws-sheet-label">{label}</span>}<h2>{doc.title}</h2></div><div className="ws-name">{t('worksheetStudio.name')}: __________<br/>{t('worksheetStudio.date')}: __________</div></header>
   <p className="ws-instruction">{doc.instruction}</p>
-  <div className="ws-paper-body">{children}</div><footer>ClassBank <span>{page}</span></footer>
+  <div className="ws-paper-body">{children}</div><footer>수업뚝딱 <span>{page}</span></footer>
  </section>;
 }
 function Text({text}:{text:string}) {return <div className="ws-reading-text">{text}</div>;}

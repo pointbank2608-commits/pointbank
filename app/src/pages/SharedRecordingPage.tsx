@@ -55,7 +55,7 @@ export default function SharedRecordingPage() {
         <div className="mx-auto flex max-w-xl items-center gap-3">
           <BrandMark className="h-9 w-9" />
           <div className="min-w-0 flex-1">
-            <div className="truncate text-lg font-bold">{data.academy ?? 'Classbank'}</div>
+            <div className="truncate text-lg font-bold">{data.academy ?? '수업뚝딱'}</div>
             <div className="truncate text-sm text-white/60">{data.lesson}</div>
           </div>
         </div>

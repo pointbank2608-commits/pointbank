@@ -148,7 +148,7 @@ function Worksheet({ clip }: { clip: VideoClip }) {
                 </>}
             </div>
           </section>)}
-          <footer><strong>ClassBank</strong><span>{index+1} / {total}</span></footer>
+          <footer><strong>수업뚝딱</strong><span>{index+1} / {total}</span></footer>
         </article>);
 
   if (!groups.some(group=>group.types.some(type=>type.items.length))) return <p role="alert">{t('readyMedia.noWorksheet')}</p>;
