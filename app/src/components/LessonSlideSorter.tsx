@@ -453,7 +453,7 @@ export default function LessonSlideSorter({
     onChange(arrayMove(slides, oldIndex, newIndex));
   }
 
-  function pickBlock(block: BlockDef, layout?: CanvasExample, theme: string | null = null) {
+  function pickBlock(block: BlockDef, layout?: CanvasExample, theme: string | null = null, worksheet?: Pick<MaterialSlide,'words'|'topic'|'worksheetTab'>) {
     setPickerOpen(false);
     pendingActivity.current = block.id;
     if (block.category === 'helper') {
@@ -487,7 +487,7 @@ export default function LessonSlideSorter({
       }
       case 'pdf': return; // Added only after the file and thumbnail are stored.
       case 'material':
-        slide = { ...activityMaterial(block, selected), id, helpers: undefined };
+        slide = { ...activityMaterial(block, selected), ...worksheet, id, helpers: undefined };
         break;
       case 'canvas':
         slide = canvasExample(layout ?? 'title', theme, lessonName.trim() || t('lessonUx.sampleTitle'), cards[0] ?? LESSON_SAMPLE_WORDS[0]);

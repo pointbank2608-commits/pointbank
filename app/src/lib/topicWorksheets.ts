@@ -94,10 +94,14 @@ export function toCard(e: WordBankEntry): FullCardItem {
  * 단어를 먼저 뽑아서 어떤 유형을 눌러도 빈 페이지가 안 나오게 한다. 같은 seed 면 같은 결과.
  */
 export function pickRecommended(candidates: WordBankEntry[], count: number, seed: number): WordBankEntry[] {
+  const animalParts = /^(?:antler|beak|claw|feather|fin|fur|hoof|horn|mane|paw|snout|tail|tusk|whisker|wing)s?$/i;
+  const animalNames = candidates.filter(entry => entryInCategory(entry, '동물') && !animalParts.test(entry.word.trim())
+    && !/신체|부위/.test(entry.subcategory ?? ''));
+  const pool = candidates.every(entry => entryInCategory(entry, '동물')) ? animalNames : candidates;
   const score = (e: WordBankEntry) =>
     (lineartUrlForWord(e.word) ? 2 : 0) + (e.image_url ? 1 : 0) + (e.sense_number === 1 ? 0.5 : 0) + (/\s/.test(e.word) ? -0.3 : 0);
   const rng = makeRng(seed);
-  return shuffled(candidates, rng)
+  return shuffled(pool, rng)
     .sort((a, b) => score(b) - score(a))
     .slice(0, count)
     .sort((a, b) => a.word.localeCompare(b.word));

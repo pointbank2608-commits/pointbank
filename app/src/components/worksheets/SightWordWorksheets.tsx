@@ -1,52 +1,98 @@
 import { useState } from 'react';
+import { SIGHT_WORDS, SIGHT_WORD_REVIEWS } from '../../data/sightWords';
 import '../../styles/ready-class-workbook.css';
+import '../../styles/sight-word-worksheets.css';
 
-const sets = [
-  { id:'01', words:['I','see','a'], sentences:['I see a pig.','I see a hen.'], prompt:'I ___ a pig.', choices:['see','a'] },
-  { id:'02', words:['can','it'], sentences:['I see a pig.','I can see it.'], prompt:'I ___ see a pig.', choices:['can','a'] },
-  { id:'03', words:['the','is'], sentences:['The cat is big.','The pig is wet.'], prompt:'The cat ___ big.', choices:['is','the'] },
-  { id:'R1', words:['I','see','a','can','it','the','is'], sentences:['I can see a cat.','The hen is wet.'], prompt:'The hen ___ wet.', choices:['is','see'] },
-  { id:'04', words:['in','on'], sentences:['The cat is in the box.','The cat is on the box.'], prompt:'The cat is ___ the box. (inside)', choices:['on','in'] },
-  { id:'05', words:['my','and'], sentences:['I can see my cat and my dog.','My cat is big and wet.'], prompt:'I see a cat ___ a dog.', choices:['my','and'] },
-  { id:'06', words:['you','we'], sentences:['Can you see it?','We can see it.'], prompt:'Can ___ see it?', choices:['it','you'] },
-  { id:'R2', words:['in','on','my','and','you','we','can','see','it','the','is','a','I'], sentences:['We can see a dog in the box.','Can you see my cat and my dog?'], prompt:'Can you see my cat ___ my dog?', choices:['and','on'] },
-];
-const title = (id: string) => id.startsWith('R') ? 'Review ' + id.slice(1) : 'Set ' + id;
+const andGrid = 'I see and can it the and is in a on my you we see can it the and in'.split(' ');
+const familiar = 'I see can it the is in a on my you we'.split(' ');
+
+function findGrid(word: string) {
+  if (word === 'and') return andGrid;
+  const others = familiar.filter(item => item !== word);
+  const offset = SIGHT_WORDS.indexOf(word);
+  return Array.from({ length: 20 }, (_, i) =>
+    [2, 6, 18].map(position => (position + offset) % 20).includes(i)
+      ? word : others[(i + offset) % others.length],
+  );
+}
+
+function Picture({ word }: { word: string }) {
+  return <img src={`/word-bank-images/${word}.webp`} alt={word} />;
+}
+
+function WritingLine({ word }: { word?: string }) {
+  return <div className="sw-writing-line">
+    {word && Array.from({ length: 3 }, (_, i) => <span key={i}>{word}</span>)}
+  </div>;
+}
+
+function SingleWord({ word }: { word: string }) {
+  return <article className="rc-sheet sw-sheet sw-single" lang="en">
+    <header className="sw-banner">
+      <h1>High-Frequency Word:</h1>
+      <div className="sw-badge"><span aria-hidden="true">♥</span><strong>{word}</strong></div>
+    </header>
+    <div className="sw-content">
+      <div className="sw-intro">
+        <section><h2>Say the word.</h2><div className="sw-big-word">{word}</div></section>
+        <section><h2>Read the word three times. Color a heart each time.</h2>
+          <div className="sw-hearts" aria-hidden="true"><span>♡</span><span>♡</span><span>♡</span></div>
+        </section>
+      </div>
+      <section><h2>Read the words. Find and circle the word “{word}”.</h2>
+        <table className="sw-find"><tbody>{[0, 1, 2, 3].map(row =>
+          <tr key={row}>{findGrid(word).slice(row * 5, row * 5 + 5).map((item, i) => <td key={i}>{item}</td>)}</tr>,
+        )}</tbody></table>
+      </section>
+      <section><h2>Trace and write the word.</h2><div className="sw-word-writing"><WritingLine word={word}/><WritingLine/></div></section>
+    </div>
+  </article>;
+}
+
+function Review({ review }: { review: typeof SIGHT_WORD_REVIEWS[number] }) {
+  const first = review.id === '01';
+  const distractors = ['cat', 'see', 'pig', 'I', 'a', 'dog'].filter(item => !review.words.includes(item)).slice(0, 3);
+  const find = first ? ['cat', 'see', 'pig', 'I', 'a', 'dog'] :
+    [distractors[0], review.words[1], distractors[1], review.words[0], review.words[2], distractors[2]];
+  return <article className="rc-sheet sw-sheet sw-review" lang="en">
+    <header className="sw-banner"><h1>Sight Word Review {review.id}</h1></header>
+    <div className="sw-content">
+      <section><h2>Read the words.</h2><div className="sw-review-cards">{review.words.map(word => <strong key={word}>{word}</strong>)}</div></section>
+      <section><h2>Find and circle the three words.</h2><p className="sw-find-line">{find.join(' · ')}</p></section>
+      <section><h2>Read the sentences.</h2>
+        {review.sentences.map((sentence, index) => <div className="sw-sentence" key={sentence}>
+          <p>{sentence.split(/([A-Za-z]+)/).map((part, i) => review.words.some(word => word.toLowerCase() === part.toLowerCase())
+            ? <strong key={i}>{part}</strong> : part)}</p>
+          <Picture word={review.practicePictures[index]}/>
+        </div>)}
+      </section>
+      <section><h2>Read and circle the picture.</h2><p className="sw-check">{review.check}</p>
+        <div className="sw-picture-choices">{review.choices.map(word => <Picture key={word} word={word}/>)}</div>
+      </section>
+      <section><h2>Write the sentence.</h2><WritingLine/></section>
+    </div>
+  </article>;
+}
 
 export default function SightWordWorksheets() {
-  const [active,setActive] = useState('01');
-  const set = sets.find(item=>item.id===active)!;
-  const review = active.startsWith('R');
-  const targets = set.words.slice(0,review?4:3);
-  const distractors = sets.slice(0,sets.indexOf(set)+1).flatMap(item=>item.words);
+  const [mode, setMode] = useState<'word' | 'review'>('word');
+  const [word, setWord] = useState('and');
+  const [reviewId, setReviewId] = useState('01');
+  const review = SIGHT_WORD_REVIEWS.find(item => item.id === reviewId)!;
   return <section className="rc-workbook">
     <div className="no-print">
       <h2 className="text-2xl font-bold">사이트워드</h2>
-      <p>수업 전후 3~5분에 쓰는 A4 활동지예요. 세트를 골라 바로 미리 보거나 인쇄하세요.</p>
-      <div className="my-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{sets.map(item=>
-        <button key={item.id} type="button" aria-pressed={active===item.id} onClick={()=>setActive(item.id)}
-          className={`rounded-xl border-2 bg-white p-4 text-left ${active===item.id?'border-primary':'border-outline-variant'}`}>
-          <strong className="block">{title(item.id)} · {item.id.startsWith('R')?'누적 복습':'기본 세트'}</strong>
-          <span className="block">{item.words.join(' · ')}</span><span lang="en">{item.sentences[0]}</span>
-        </button>)}</div>
-      <div className="rc-controls"><strong>{title(active)} 미리보기</strong><button type="button" data-print onClick={()=>window.print()}>인쇄</button></div>
+      <div className="rc-controls mt-3">
+        <button type="button" aria-pressed={mode === 'word'} onClick={() => setMode('word')}>한 단어 연습</button>
+        <button type="button" aria-pressed={mode === 'review'} onClick={() => setMode('review')}>3단어 문장 리뷰</button>
+        {mode === 'word' ? <label>단어 <select value={word} onChange={event => setWord(event.target.value)}>
+          {SIGHT_WORDS.map(item => <option key={item}>{item}</option>)}
+        </select></label> : <label>리뷰 세트 <select value={reviewId} onChange={event => setReviewId(event.target.value)}>
+          {SIGHT_WORD_REVIEWS.map(item => <option key={item.id} value={item.id}>{item.id} · {item.words.join(' · ')}</option>)}
+        </select></label>}
+        <button type="button" data-print onClick={() => window.print()}>인쇄</button>
+      </div>
     </div>
-    <div className="rc-preview"><article className="rc-sheet" lang="en">
-      <div className="rc-band" style={{background:'#fff0b9'}}><h1>Sight Words · {title(active)}</h1></div>
-      <div className="rc-name">Name <span/> Date <span/></div>
-      <div className="rc-body" style={{gap:'9mm'}}>
-        <section><h2>{review?'Review the Words':'Read the Words'}</h2><div className="rc-review-words" style={{background:'#eef6ff'}}>{set.words.map(word=><strong key={word}>{word}</strong>)}</div></section>
-        <section><h2>Find and Circle</h2><p>Read the first word. Circle the same word.</p>
-          {targets.map((word,index)=>{
-            const others=[...new Set(distractors)].filter(other=>other!==word).slice(0,4);
-            const choices=[...others]; choices.splice(index% (choices.length+1),0,word);
-            return <div key={word} className="rc-review-row" style={{background:'#f2f7ff'}}><strong>{word}</strong><div>{choices.map(choice=><span key={choice}>{choice}</span>)}</div></div>;
-          })}
-        </section>
-        <section><h2>Read the Sentences</h2>{set.sentences.map((sentence,index)=><p key={sentence} style={{fontSize:'6mm',lineHeight:1.55}}>
-          {index===0&&!review?sentence.split(/(\s+)/).map((part,i)=>set.words.some(word=>word.toLowerCase()===part.replace(/[.!?]/g,'').toLowerCase())?<strong key={i}>{part}</strong>:part):sentence}</p>)}</section>
-        <section><h2>Quick Check</h2><p>Choose a word. Read the sentence.</p><p style={{fontSize:'6mm'}}>{set.prompt}</p><p style={{fontSize:'5mm'}}>{set.choices.join('     /     ')}</p></section>
-      </div><footer>ClassBank <span>1 / 1</span></footer>
-    </article></div>
+    <div className="rc-preview">{mode === 'word' ? <SingleWord word={word}/> : <Review review={review}/>}</div>
   </section>;
 }

@@ -5,3 +5,4 @@
 .rc-sight .rc-reader{display:flex;align-items:center;gap:12mm}.rc-sight .rc-reader img{height:30mm;width:30mm}
 
 .rc-review-table{display:grid;gap:2mm}.rc-review-row{display:flex;align-items:center;gap:4mm;background:var(--rc-tone);border-radius:3mm;padding:3mm;font-size:5mm}.rc-review-row>strong{min-width:22mm}.rc-review-row>div{display:flex;flex-wrap:wrap;justify-content:space-around;gap:2mm;flex:1;color:#111}
+.rc-sheet[data-rc-page]{box-shadow:inset 0 0 0 .6mm var(--rc-tone);padding-inline:2mm}.rc-sheet[data-rc-page] .rc-band{margin-inline:0}@media print{.rc-sheet[data-rc-page]{outline:.5mm solid var(--rc-tone);outline-offset:-.5mm}}

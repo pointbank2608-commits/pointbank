@@ -45,3 +45,4 @@
 .ws-edit-sidebar{min-width:0}
 @media(max-width:900px){.ws-edit-layout{grid-template-columns:minmax(0,1fr)}}
 @media print{.ws-edit-layout{display:block}}
+.phonics-sheet-thumbnail{container-type:inline-size;max-height:14rem;overflow:hidden;background:#edf4fa;padding:.5rem;border-radius:.75rem}.phonics-sheet-thumbnail-paper{width:210mm;zoom:calc(100cqi / 794px);background:white}.phonics-sheet-thumbnail-paper .print-board{margin:0}@media print{.phonics-sheet-thumbnail{display:none}}

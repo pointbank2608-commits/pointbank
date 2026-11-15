@@ -62,3 +62,4 @@
 .animation-study-card p+p{margin-top:2mm}
 .animation-pattern-context{display:grid;gap:2mm;margin-bottom:3mm;padding:3mm;background:#f2f7fc;border-radius:2mm}
 .animation-pattern-situation{font-weight:700;margin-bottom:2mm}
+.animation-measure{position:fixed;top:0;left:-10000px;visibility:hidden;pointer-events:none}.animation-measure .animation-sheet>*,.animation-sheet .animation-task{flex-shrink:0}

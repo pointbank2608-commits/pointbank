@@ -11,3 +11,4 @@
 .hw-composer button.hw-primary:disabled:not(.hw-student-screen *){background:#edf1f6;color:#52627a;border-color:#d5deea;opacity:1}
 .hw-composer button.hw-selected-day:not(.hw-student-screen *){background:#e5efff;color:#174ba4;border-color:#174ba4}
 .hw-composer button.hw-today[aria-pressed=true]{box-shadow:inset 0 0 0 2px white}
+.classroom-dialog.hw-deadline-dialog { width: min(23rem, calc(100vw - 2rem)); }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import AccessibleDialog from '../../AccessibleDialog';
 import { formatHomeworkDeadline, guidedDeadline } from '../../../lib/homework/deadline';
+import '../../../styles/homework-composer.css';
 
 function todayInKorea() {
   const fields = new Intl.DateTimeFormat('en', {timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts();
@@ -34,8 +35,8 @@ export default function HomeworkDeadlinePicker({ value, onChange, en }: { value:
       {value && <button type="button" onClick={()=>onChange('')}>{en?'Clear':'지우기'}</button>}
     </div>
     <span className="hw-muted">{en?'New dates close at the end of that day in Korea.':'새로 고른 날짜는 한국 시간 기준 그날 끝까지 제출할 수 있어요.'}</span>
-    {draft !== null && <AccessibleDialog label={label} onClose={()=>setDraft(null)}>
-      <div className="hw-composer w-[min(23rem,calc(100vw-2rem))] !p-4">
+    {draft !== null && <AccessibleDialog label={label} onClose={()=>setDraft(null)} className="hw-deadline-dialog">
+      <div className="hw-composer !p-4">
         <div className="mb-3 flex items-center justify-between gap-2">
           <button type="button" aria-label={en?'Previous month':'이전 달'} onClick={()=>shift(-1)}>‹</button>
           <strong aria-live="polite">{first.toLocaleDateString(en?'en':'ko',{year:'numeric',month:'long',timeZone:'UTC'})}</strong>

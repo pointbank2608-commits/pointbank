@@ -2,12 +2,17 @@ import {useTranslation} from 'react-i18next';
 import {builderParts,courseWord,readerSentence,type CourseUnit,type CourseSlide} from '../../data/phonicsLessons';
 import {Stage1Lines,Stage1Picture,Stage1Speaker,Stage1Word} from './Stage1Art';
 import type {PhonicsBankEntry} from '../../lib/types';
+import {ClaySprite} from '../PhonicsGameArt';
 import '../../styles/phonics-lessons.css';
 
 const rotate=<T,>(items:T[])=>items.length>1?[...items.slice(1),items[0]]:items;
+function ActivityGuide({kind}:{kind:'builder'|'choose'|'sort'}) {
+ return <span className="pc-activity-guide" data-guide={kind} aria-hidden="true"/>;
+}
 function MarkedSentence({text,unit}:{text:string;unit:CourseUnit}){return <>{text.split(/(\b[a-z]+(?:-[a-z]+)*\b)/gi).map((part,i)=>{const entry=[...unit.reading.entries,...unit.entries].find(e=>e.word.toLowerCase()===part.toLowerCase());return entry?<Stage1Word key={i} entry={{...entry,word:part}}/>:part;})}</>;}
 export default function PhonicsCourseSlide({unit:u,slide:s,index,total}:{unit:CourseUnit;slide:CourseSlide;index:number;total:number}){
  const {t}=useTranslation();
+ const activityGuide=['builder','choose','sort'].includes(s.kind);
  const words=s.entryIds.map(id=>courseWord(u,id)),groups=s.groupIds.length?u.groups.filter(g=>s.groupIds.includes(g.id)):u.groups;
  const answer=s.phase>0,gameAnswer=s.phase===2;
  const tile=(entry:PhonicsBankEntry,label=true,speaker=true)=> <div className={'pc-word-card '+(answer&&s.answerIds.includes(entry.id)?'pc-answer':'')} key={entry.id} data-entry={entry.id}>{u.id==='course-4-7'&&entry.word==='fish'&&s.kind==='readChoose'?<div className="pc-plural-fish"><Stage1Picture entry={entry}/><Stage1Picture entry={entry}/></div>:<Stage1Picture entry={entry}/>} {label&&<Stage1Word entry={entry}/>} {speaker&&<Stage1Speaker entry={entry}/>}</div>;
@@ -31,10 +36,14 @@ export default function PhonicsCourseSlide({unit:u,slide:s,index,total}:{unit:Co
   case 'letterMatch':body=<div className="pc-letter-match"><div>{groups.map(g=><strong className="pc-pastel pc-tone-1" key={g.id}>{g.label[0]}</strong>)}</div><div>{rotate(groups).map(g=><strong className="pc-pastel pc-tone-2" key={g.id}>{g.label[1]}</strong>)}</div></div>;break;
   case 'guess':case 'shadow':body=<div className="pc-single pc-guess"><Stage1Picture entry={words[0]} shadow={s.kind==='shadow'&&!answer}/>{answer&&<Stage1Word entry={words[0]}/>}</div>;break;
   case 'missing':body=<div className="pc-missing-grid" data-game-phase={s.phase}>{words.map(e=><div key={e.id} className={s.phase===2&&s.answerIds.includes(e.id)?'pc-answer':''}>{s.phase===1&&s.answerIds.includes(e.id)?<span>?</span>:<Stage1Picture entry={e}/>}</div>)}</div>;break;
-  case 'word':case 'group':case 'choose':case 'odd':body=<>{s.kind==='choose'&&<Stage1Speaker entry={courseWord(u,s.answerIds[0])}/>}<div className={words.length===1?'pc-single':'pc-cards-wrap'}>{cards(s.kind!=='choose'||answer)}</div></>;break;
+  case 'choose':body=<div className="pc-listen-board">
+   <div className="pc-listen-prompt"><ActivityGuide kind="choose"/><Stage1Speaker entry={courseWord(u,s.answerIds[0])}/></div>
+   {cards(answer)}
+  </div>;break;
+  case 'word':case 'group':case 'odd':body=<div className={words.length===1?'pc-single':'pc-cards-wrap'}>{cards()}</div>;break;
   case 'builder':{
    const target=u.groups.find(g=>g.entries.some(e=>e.id===words[0].id))!;const twoSounds=u.step===4&&target.ruleId.startsWith('blend-')&&!['sh','ch','wh','ng'].includes(target.sound);
-   body=<div className="pc-builder">{twoSounds&&<div className="pc-blend-formation">{target.sound.split('').map((c,i)=><span key={i}>{i>0?' + ':''}{c}</span>)}<span> → {target.sound}</span></div>}<div className="pc-builder-parts">{builderParts(words[0],u.step).map((part,i)=><span key={i} className={'pc-pastel pc-tone-'+i%4} data-builder-part={part}>{part}</span>)}</div><div className="pc-builder-word">{tile(words[0])}</div>{u.step===3&&<div className="pc-magic-e"><span>Silent e · {target.sound.replace('_','…')}</span></div>}</div>;break;
+   body=<div className="pc-builder">{twoSounds&&<div className="pc-blend-formation">{target.sound.split('').map((c,i)=><span key={i}>{i>0?' + ':''}{c}</span>)}<span> → {target.sound}</span></div>}<div className="pc-builder-parts"><ActivityGuide kind="builder"/><div className="pc-builder-equation">{builderParts(words[0],u.step).map((part,i)=><span key={i} className={'pc-pastel pc-tone-'+i%4} data-builder-part={part}>{part}</span>)}</div></div><div className="pc-builder-word">{tile(words[0])}</div>{u.step===3&&<div className="pc-magic-e"><span>Silent e · {target.sound.replace('_','…')}</span></div>}</div>;break;
   }
   case 'match':{
    const pictures=rotate(words);
@@ -43,7 +52,13 @@ export default function PhonicsCourseSlide({unit:u,slide:s,index,total}:{unit:Co
   case 'writeLetter':body=<div className="pc-letter-writing">{groups.map(g=><div key={g.id}><div className="pc-capitals"><span>{g.label[0]}</span><span>{g.label[1]}</span></div><Stage1Lines text={g.label[0]+'   '+g.label[1]} trace/></div>)}</div>;break;
   case 'write':body=<div className="pc-writing">{words.map(e=><div key={e.id}><Stage1Picture entry={e}/><Stage1Word entry={e}/><Stage1Lines text={e.word} trace/><Stage1Lines/></div>)}</div>;break;
   case 'complete':body=<div className="pc-word-grid">{words.map(e=><div className="pc-word-card" key={e.id}><Stage1Picture entry={e}/><Stage1Word entry={e} blank={!answer}/></div>)}</div>;break;
-  case 'sort':body=<><div className="pc-sort-bank">{words.map(e=><Stage1Word key={e.id} entry={e}/>)}</div><div className="pc-sort-bins">{u.groups.filter(g=>g.entries.some(e=>s.entryIds.includes(e.id))).map((g,i)=><div className={'pc-pastel pc-tone-'+i%4} key={g.id}><strong>{g.label}</strong>{answer&&g.entries.filter(e=>s.entryIds.includes(e.id)).map(e=><Stage1Word entry={e} key={e.id}/>)}</div>)}</div></>;break;
+  case 'sort': {
+   const bins=groups.map(group=>({label:group.label,id:group.id,entries:words.filter(word=>group.entries.some(entry=>entry.id===word.id))}));
+   const rows=Math.max(0,...bins.map(bin=>bin.entries.length));
+   const mixed=rotate(Array.from({length:rows},(_,row)=>bins.flatMap(bin=>bin.entries.slice(row,row+1))).flat());
+   body=<><div className="pc-sort-bank"><ActivityGuide kind="sort"/><div className="pc-sort-tiles">{mixed.map(e=><span className="pc-sort-tile" key={e.id}>{answer?<Stage1Word entry={e}/>:e.word}</span>)}</div></div><div className="pc-sort-bins">{bins.map((bin,i)=><div className={'pc-pastel pc-tone-'+i%4} key={bin.id}><strong>{bin.label}</strong>{answer&&bin.entries.map(e=><Stage1Word entry={e} key={e.id}/>)}</div>)}</div></>;
+   break;
+  }
   case 'puzzle':body=<div className="pc-game" data-game-phase={s.phase}><div className={'pc-puzzle pc-puzzle-'+s.phase}>{[0,1,2,3].map(i=><div key={i} className={'pc-piece pc-piece-'+i} style={{backgroundImage:`url("${words[0].image_url}")`}}/>)}</div>{gameAnswer&&<Stage1Word entry={words[0]}/>}</div>;break;
   case 'memory':body=<div className="pc-memory" data-game-phase={s.phase}>{s.phase===0?<Stage1Word entry={words[0]}/>:gameAnswer?<>{tile(words[0])}</>:<span className="pc-recall" aria-label={t('phonicsLesson.recall')}>?</span>}</div>;break;
   case 'readIntro':body=<><strong className="pc-big-title pc-reader-pattern">{s.hint}</strong>{s.draft&&<p className="pc-review-note">{t('phonicsLesson.draftHint')}</p>}</>;break;
@@ -60,7 +75,7 @@ export default function PhonicsCourseSlide({unit:u,slide:s,index,total}:{unit:Co
   }
  }
  return <article className={'s1-slide pc-lesson-slide pc-level-'+u.step} data-course-slide={s.id} data-course-kind={s.kind}>
-  <header className="s1-slide-brand"><strong>ClassBank</strong><span>LEVEL {u.step} · UNIT {u.number} · {u.groups.map(g=>g.label).join(' · ')}</span></header>
+  <header className="s1-slide-brand"><strong>ClassBank</strong><span>LEVEL {u.step} · UNIT {u.number} · {u.groups.map(g=>g.label).join(' · ')}</span>{!activityGuide&&s.kind!=='readAlone'&&<ClaySprite kind="robot" className="pc-slide-guide"/>}</header>
   <h2 className="s1-slide-title">{s.title}</h2><div className="s1-slide-body">{s.draft&&<span className="pc-draft-badge">{t('phonicsLesson.readDraft')}</span>}<p className="pc-slide-hint">{!['cover','lesson','finish','extra','end','readIntro'].includes(s.kind)&&s.hint}</p>{body}</div>
   <footer className="s1-slide-footer"><span>{s.lesson==='extra'?'Extra Practice':`Lesson ${s.lesson}`} · {u.groups.map(g=>g.label).join(' · ')}</span><progress value={index+1} max={total}/><span>{index+1} / {total}</span></footer>
  </article>;

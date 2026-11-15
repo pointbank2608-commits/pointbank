@@ -1,0 +1,16 @@
+.rc-course-catalog{display:grid;gap:1rem}
+.rc-stage-tabs,.rc-period-grid{display:grid;gap:.75rem}
+.rc-stage-tabs{grid-template-columns:repeat(5,minmax(0,1fr))}
+.rc-stage-tabs [aria-pressed=true],.rc-catalog-detail [aria-pressed=true]{background:var(--rc-stage-tone);border-color:#37557a;font-weight:800}
+.rc-period-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.rc-unit-band{margin-block:.75rem;padding:.65rem 1rem;border-radius:1rem;background:var(--rc-stage-tone);color:#193755;font-weight:800}
+.rc-period-card{overflow:hidden;border:1px solid #d6e0ee;border-radius:1rem;background:white;color:#193755}
+.rc-period-art{position:relative;display:grid;place-items:center;aspect-ratio:2.65;overflow:hidden}
+.rc-period-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.rc-period-art>div{position:relative;max-width:96%;border-radius:.75rem;padding:.45rem .9rem;background:#fff9ee;font-size:clamp(.95rem,3vw,2rem);font-weight:800;text-align:center}
+.rc-period-copy{display:grid;gap:.5rem;padding:1rem}
+.rc-period-copy h3,.rc-catalog-detail h3{font-weight:800}
+.rc-period-copy p{font-size:.875rem}
+.rc-period-copy button{justify-self:start}
+@media(max-width:650px){.rc-stage-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.rc-period-grid{gap:.5rem}.rc-period-copy{padding:.6rem}.rc-period-art{aspect-ratio:1.65}}
+.rc-period-art .rc-period-guide{position:absolute;left:4%;bottom:2%;width:27%;height:76%}.rc-period-art>div{margin-left:21%}

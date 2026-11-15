@@ -31,6 +31,7 @@ import type { FullCardItem, PhonicsBankEntry } from '../lib/types';
 import PhonicsUnitControls from '../components/PhonicsUnitControls';
 import { curriculumEntries, selectPhonicsEntries, unitById } from '../data/phonicsCurriculum';
 import { savedPhonicsEntries } from '../lib/phonicsSelection';
+import '../styles/worksheet-studio.css';
 
 const COUNT_OPTIONS = [6, 8, 10, 12];
 const GRID_PAGE = 60;
@@ -278,6 +279,14 @@ export default function PhonicsWorksheetLibraryPage() {
   }
 
   const support = useMemo(() => worksheetSupport(words), [words]);
+  const suggestedReaderIds = useMemo(() => {
+    const ids = readerIdsForWords(words.map(word => word.word));
+    return ids.length ? ids : [1, 2, 3, 4];
+  }, [words]);
+  const cardReaders = useMemo(() => [
+    ...CVC_READERS.filter(reader => (readerIds.length ? readerIds : suggestedReaderIds).includes(reader.n)).map(readerCardFromBank),
+    ...parseCustomReaders(customText),
+  ], [readerIds, suggestedReaderIds, customText]);
   const cards: TypeCard[] = useMemo(() => {
     const withPattern = words.filter((w) => markedGroups(w.patternMarked).length > 0).length;
     const ruleSet = new Set(words.map((w) => w.category).filter(Boolean));
@@ -294,18 +303,17 @@ export default function PhonicsWorksheetLibraryPage() {
       { tab: 'match', icon: 'link', name: name('tabMatch'), desc: desc('match'), count: support.match, unit: 'words' },
       { tab: 'wordSearch', icon: 'search', name: name('tabWordSearch'), desc: desc('wordSearch'), count: support.wordSearch, unit: 'words' },
       { tab: 'unscramble', icon: 'shuffle', name: name('tabUnscramble'), desc: desc('unscramble'), count: support.unscramble, unit: 'words' },
-      { tab: 'phonicsReader', icon: 'menu_book', name: name('tabPhonicsReader'), desc: desc('reader'), count: CVC_READERS.length, unit: 'cards' },
+      { tab: 'phonicsReader', icon: 'menu_book', name: name('tabPhonicsReader'), desc: desc('reader'), count: cardReaders.length, unit: 'cards' },
       { tab: 'phonicsTracing', icon: 'draw', name: name('tabTracing'), desc: desc('tracing'), count: words.length, unit: 'words' },
       { tab: 'coloring', icon: 'palette', name: name('tabColoring'), desc: desc('coloring'), count: support.coloring, unit: 'words' },
       { tab: 'phonicsList', icon: 'list_alt', name: name('tabList'), desc: desc('list'), count: words.length, unit: 'words' },
     ];
-  }, [words, support, t]);
+  }, [words, support, t, cardReaders.length]);
 
   function openTab(next: string) {
     if (next === 'phonicsReader' && readerIds.length === 0) {
       // 고른 파닉스 단어 중 읽기 카드가 있는 것으로 시작하고, 없으면 -at 가족 앞 4장으로 시작한다.
-      const fromWords = readerIdsForWords(words.map((w) => w.word));
-      setReaderIds(fromWords.length > 0 ? fromWords : [1, 2, 3, 4]);
+      setReaderIds(suggestedReaderIds);
     }
     setTab(next);
     setSheetSeed(1);
@@ -341,6 +349,17 @@ export default function PhonicsWorksheetLibraryPage() {
   const listPerPage = showImage ? PHONICS_PER_PAGE.list : PHONICS_PER_PAGE.list + 2;
   const usesCute = tab === 'phonicsTracing' || tab === 'phonicsList' || (tab ?? '').startsWith('phonics');
 
+  function cardPreview(kind: string) {
+    if (kind === 'phonicsReader') return <ReaderCute cards={cardReaders.slice(0, PHONICS_PER_PAGE.reader)}
+      color={cuteColor} startIndex={0} imageMode={readerImage} imageOf={imageOf}/>;
+    if (kind === 'phonicsList') return <PhonicsListCute rows={words.slice(0, listPerPage)}
+      color={cuteColor} startIndex={0} showImage={showImage} showMeaning={showMeaning}/>;
+    if (kind === 'phonicsTracing') return <PhonicsTracingCute rows={words.slice(0, PHONICS_PER_PAGE.tracing)}
+      color={cuteColor} startIndex={0} showImage={showImage} showMeaning={showMeaning}/>;
+    const data = buildWorksheet(kind as NewWorksheetKind, words, kind === tab ? sheetSeed : 1, {coloring});
+    const first = 'pages' in data ? {...data, pages: data.pages.slice(0, 1)} as typeof data : data;
+    return <WorksheetSheets data={first} includeAnswers={false} cuteColor={cuteColor}/>;
+  }
   const sheets = (
     <>
     {generated && <WorksheetSheets data={generated} includeAnswers={includeAnswers} cuteColor={cuteColor} />}
@@ -499,7 +518,7 @@ export default function PhonicsWorksheetLibraryPage() {
                         disabled={disabled}
                         aria-pressed={active}
                         onClick={() => openTab(card.tab)}
-                        className={`flex items-start gap-3 rounded-xl border-2 p-4 text-left transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-none ${
+                        className={`flex min-w-0 flex-col items-stretch gap-3 rounded-xl border-2 p-4 text-left transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-none ${
                           active ? 'border-primary bg-primary-container/30' : 'border-outline-variant bg-surface-container-lowest hover:border-primary disabled:hover:border-outline-variant'
                         }`}
                       >
@@ -515,6 +534,9 @@ export default function PhonicsWorksheetLibraryPage() {
                               : t(card.unit === 'problems' ? 'materials.phonicsLibrary.typeReadyProblems' : card.unit === 'cards' ? 'materials.phonicsLibrary.typeReadyCards' : 'materials.library.typeReady', { count: card.count })}
                           </span>
                         </span>
+                        {!disabled && <div className="phonics-sheet-thumbnail" aria-hidden="true">
+                          <div className="phonics-sheet-thumbnail-paper">{cardPreview(card.tab)}</div>
+                        </div>}
                       </button>
                     );
                   })}

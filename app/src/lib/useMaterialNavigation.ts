@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 /** Measures the real scroll ancestor and app chrome, including font and safe-area changes. */
-export function useMaterialNavigation(ids: string[]) {
+export function useMaterialNavigation(ids: string[], locationKey?: string) {
   const rootRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const navigateRef = useRef<(id: string, focus: boolean) => void>(() => {});
@@ -21,8 +21,8 @@ export function useMaterialNavigation(ids: string[]) {
     const height = () => nested ? scroller.clientHeight : window.innerHeight;
     const showActive = (id: string) => {
       setActive(id);
-      const link = nav.querySelector<HTMLAnchorElement>(`a[href="#${id}"]`);
-      const rail = link?.parentElement;
+      const link = nav.querySelector<HTMLAnchorElement>(`a[href$="#${id}"]`);
+      const rail = link?.closest<HTMLElement>('.materials-shortcuts-scroll') ?? link?.parentElement;
       if (link && rail) {
         const x = link.offsetLeft;
         if (x < rail.scrollLeft) rail.scrollLeft = x;
@@ -54,10 +54,7 @@ export function useMaterialNavigation(ids: string[]) {
       const section = sections.find(s => s.id === id);
       if (!section) return;
       measure(); locked = id; showActive(id);
-      if (focus) {
-        history.replaceState(history.state, '', `#${id}`);
-        section.querySelector<HTMLElement>('h2')?.focus({preventScroll:true});
-      }
+      if (focus) section.querySelector<HTMLElement>('h2')?.focus({preventScroll:true});
       const y = Math.max(0, Math.min(scroller.scrollHeight - height(), scroller.scrollTop + section.getBoundingClientRect().top - rootTop() - inset));
       const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches || !focus ? 'instant' : 'smooth';
       if (nested) scroller.scrollTo({top:y, behavior}); else window.scrollTo({top:y, behavior});
@@ -72,6 +69,7 @@ export function useMaterialNavigation(ids: string[]) {
     eventTarget.addEventListener('wheel', unlock, {passive:true});
     eventTarget.addEventListener('touchstart', unlock, {passive:true});
     window.addEventListener('resize', resized); window.addEventListener('hashchange', hashJump);
+    if (!location.hash) scroller.scrollTo({ top: 0, behavior: 'instant' });
     measure(); hashJump(); schedule();
     return () => {
       observer.disconnect(); cancelAnimationFrame(frame); clearTimeout(releaseTimer);
@@ -79,6 +77,6 @@ export function useMaterialNavigation(ids: string[]) {
       window.removeEventListener('resize', resized); window.removeEventListener('hashchange', hashJump);
       navigateRef.current = () => {};
     };
-  }, [ids]);
+  }, [ids, locationKey]);
   return {rootRef, navRef, active, jump:(id: string, focus = false) => navigateRef.current(id, focus)};
 }

@@ -66,7 +66,7 @@ export function activityMaterial(block: BlockDef, selected: LessonSlide | null):
   }
   return {
     id: block.id, kind: 'material', materialId,
-    ...(materialId === 'worksheet' ? { worksheetTab: block.id.startsWith('worksheet.') ? block.id.slice(10) : 'list' } : {}),
+    ...(materialId === 'worksheet' ? { worksheetTab: block.id.startsWith('worksheet.') ? block.id.slice(10) : block.slide?.materialId === 'library' ? 'match' : 'list' } : {}),
     ...(block.id === 'worksheet.tracing' ? { worksheetOptions: { tracingShow: { meaning: false, image: true } } } : {}),
     ...(materialId === 'phonics' ? { phonicsTab: 'phonicsBlank' } : {}),
   };
@@ -89,7 +89,11 @@ export function LessonActivityExample({ block, cards, sourceKind, prepared, sele
   const kind = block.slide?.kind;
   const game = GAME_CATALOG.find(g => g.type === block.slide?.gameType);
   const phonicsGame = PHONICS_GAMES.find(g => g.id === block.slide?.phonicsGameId);
-  const words = cards.length ? cards : LESSON_SAMPLE_WORDS;
+  const words = block.slide?.materialId === 'library'
+    ? [['cat','고양이'],['dog','강아지'],['pig','돼지']].map(([word,meaning])=>({
+      id:word, word, meaning, imageUrl:`/word-bank-images/${word}.webp`,
+    }))
+    : cards.length ? cards : LESSON_SAMPLE_WORDS;
   const first = words[0];
   let actual = false;
   let next: string | undefined;

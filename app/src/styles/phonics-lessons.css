@@ -12,3 +12,50 @@
 .pc-word-card>.pc-plural-fish{height:62%;flex-shrink:0}
 
 .pc-annotated-slide{position:relative;width:100%;max-width:min(100%,1280px);align-self:center;flex-shrink:0}.pc-annotated-slide>.s1-slide{width:100%}.pc-player-full .pc-annotated-slide{width:min(100%,calc((100dvh - 220px)*16/9))}.pc-player-full .pc-annotated-slide>.pc-lesson-slide{width:100%}.pc-drawing-tools{width:100%;max-width:100%;flex-shrink:0}.pc-drawing-tools [aria-label]{flex-shrink:0}.pc-drawing-tools button:focus-visible{outline:3px solid #f9d75e;outline-offset:2px}.pc-drawing-hint{font-size:14px;color:#52667e;width:100%}@media(max-width:700px){.pc-player-full .pc-annotated-slide{width:100%}}
+.pc-lesson-slide .s1-slide-brand{background:var(--pc-tone);color:#183454}.pc-lesson-slide .s1-slide-body{background:#fffdf7;border-radius:1cqw}.pc-lesson-slide[data-course-kind="readAlone"] .pc-sentence-parts{min-height:32%;font-size:8cqw}.pc-lesson-slide[data-course-kind="readAlone"] .pc-sentence-parts .s1-word{color:#172d47}.pc-lesson-slide[data-course-kind="choose"] .pc-word-card:not(.pc-answer){border-color:#cbd9e6;background:white}.pc-lesson-slide[data-course-kind="sort"] .pc-sort-bins>div{background:#fff;border:2px dashed #89a4bd}
+.s1-slide-brand .pc-slide-guide{width:4.3cqw;height:4.3cqw;flex:none}.pc-builder-word{position:relative}.pc-builder-word::before{content:"→";position:absolute;right:100%;top:45%;color:#22395a;font-size:2.3cqw;font-weight:800}
+
+.pc-lesson-slide[data-course-kind="readAlone"] .s1-target { color: inherit; }
+
+.pc-activity-guide {
+  display: block;
+  flex: none;
+  width: 10cqw;
+  aspect-ratio: 1;
+  background: url('/phonics-course/ready-class-activity-guides.webp') left center / 300% 100% no-repeat;
+}
+.pc-activity-guide[data-guide="choose"] { background-position: center; }
+.pc-activity-guide[data-guide="sort"] { background-position: right center; }
+.pc-builder-parts { flex-direction: column; gap: .5cqw; }
+.pc-builder-equation { display: flex; gap: 2.7cqw; align-items: center; }
+.pc-builder-equation > .pc-pastel { position: relative; min-width: 7cqw; text-align: center; }
+.pc-builder-equation > .pc-pastel:not(:last-child)::after {
+  content: "+";
+  position: absolute;
+  left: calc(100% + .5cqw);
+  top: 50%;
+  transform: translateY(-50%);
+  color: #22395a;
+  font-size: 2.4cqw;
+}
+.pc-builder-word .s1-word { font-size: 5.2cqw; }
+.pc-listen-board { width: 94%; height: 92%; display: grid; grid-template-rows: 1fr 2fr; gap: 1cqw; min-height: 0; }
+.pc-listen-board > .pc-word-grid { min-height: 0; }
+.pc-listen-prompt { display: flex; justify-content: center; align-items: center; gap: 1.5cqw; }
+.pc-listen-prompt .s1-speaker { width: 5cqw; height: 5cqw; min-height: 0; min-width: 0; }
+.pc-listen-prompt .s1-speaker svg { width: 2.8cqw; height: 2.8cqw; }
+.pc-sort-bank { display: flex; align-items: center; gap: 1.6cqw; }
+.pc-sort-bank .pc-activity-guide { width: 8cqw; }
+.pc-sort-tiles { display: flex; flex: 1; flex-wrap: wrap; justify-content: center; gap: .65cqw; }
+.pc-sort-tile {
+  padding: .4cqw 1.3cqw;
+  border: 1px solid #cbd9e6;
+  border-radius: .8cqw;
+  background: #fff;
+  color: #172d47;
+  font-size: 2.7cqw;
+  font-weight: 700;
+}
+.pc-sort-tile .s1-word { font-size: inherit; }
+.pc-lesson-slide[data-course-kind="readAlone"] .pc-sentence-parts { align-items: center; justify-content: center; gap: 3cqw; }
+.pc-lesson-slide[data-course-kind="readAlone"] .pc-sentence-parts .s1-word { font-size: 8cqw; }

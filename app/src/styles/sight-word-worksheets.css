@@ -1,0 +1,56 @@
+.rc-sheet.sw-sheet {
+  --sw-accent: #b92168;
+  --sw-line: #d64b8a;
+  --sw-paper: #fbe2ec;
+  background: var(--sw-paper);
+  color: #181318;
+  border: .55mm solid var(--sw-line);
+  padding: 5mm;
+  gap: 4mm;
+  font-family: Andika, "Trebuchet MS", sans-serif;
+}
+.rc-sheet.sw-review { --sw-accent: #206895; --sw-line: #4aa4d2; --sw-paper: #e0f4fe; }
+.sw-sheet > .sw-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 20mm;
+  padding: 3mm 5mm;
+  border-radius: 2mm;
+  background: var(--sw-accent);
+  color: white;
+}
+.sw-sheet .sw-banner h1 { font-size: 7mm; }
+.sw-badge { position: absolute; right: 5mm; top: -4mm; width: 47mm; height: 31mm; display: grid; place-items: center; }
+.sw-badge span { position: absolute; color: #fff; -webkit-text-stroke: .5mm var(--sw-line); font-size: 33mm; line-height: 1; }
+.sw-badge strong { position: relative; color: #111; font-size: 5.6mm; }
+.sw-content { flex: 1; padding: 5mm; background: #fff; display: flex; flex-direction: column; justify-content: space-between; gap: 4mm; }
+.sw-content h2 { margin-bottom: 2mm; color: #151515; }
+.sw-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+.sw-big-word { display: grid; place-items: center; height: 40mm; border: .6mm solid var(--sw-line); color: var(--sw-accent); border-radius: 3mm; font-size: 13mm; font-weight: 700; }
+.sw-hearts { display: flex; justify-content: space-around; color: var(--sw-accent); font-size: 19mm; line-height: 1.3; }
+.sw-find { table-layout: fixed; border-collapse: collapse; width: 100%; }
+.sw-find td { height: 19mm; text-align: center; border: .45mm solid var(--sw-line); font-size: 5.4mm; font-weight: 700; color: var(--sw-accent); }
+.sw-word-writing { display: grid; grid-template-columns: 3fr 1fr; gap: 5mm; }
+.sw-writing-line {
+  height: 20mm;
+  border-block: .4mm solid #555;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 2mm;
+  color: #bababa;
+  font-size: 6mm;
+}
+.sw-writing-line::before { content: ""; position: absolute; inset: 50% 0 auto; border-top: .35mm dashed #777; }
+.sw-writing-line span { position: relative; }
+.sw-review-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
+.sw-review-cards strong { border: .5mm solid var(--sw-line); border-radius: 2mm; text-align: center; padding: 2mm; font-size: 8mm; color: var(--sw-accent); }
+.sw-find-line { font-size: 5.3mm; color: #111; word-spacing: 1mm; }
+.sw-sentence { display: flex; align-items: center; justify-content: space-between; gap: 4mm; font-size: 5.1mm; }
+.sw-sentence img { width: 28mm; height: 23mm; object-fit: contain; }
+.sw-sentence strong { color: var(--sw-accent); }
+.sw-check { font-size: 5mm; }
+.sw-picture-choices { display: flex; justify-content: space-around; gap: 7mm; padding-top: 1mm; }
+.sw-picture-choices img { width: 32mm; height: 30mm; object-fit: contain; }

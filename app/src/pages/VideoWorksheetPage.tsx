@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useVideoClips, type VideoClip } from '../lib/videoClips';
@@ -15,29 +15,6 @@ const defaults = ['study','questionChoice','grammarPractice'];
 const minimumFive = new Set(['scene','questionChoice','trueFalse','questionHint','questionFull','infer','grammarPractice','substitute','create','wordContext','readCircle']);
 const matchTypes = ['pictureMatch','meaningMatch'];
 const printOptions = {letters:1,bank:true,chunks:true,pictureClues:false,choiceCount:3};
-
-function paginate(rows: Row[], teacher: boolean) {
-  const pages: Row[][] = [];
-  let page: Row[] = [];
-  let height = 0;
-  for (const row of rows) {
-    const text = teacher ? [row.answer ?? '', row.cue ?? ''] : [row.prompt ?? '',row.trace ?? '',row.definition??'',row.exampleSentence??'',row.situation??'',...(row.choices??[])];
-    const textHeight = text.flatMap(line=>line.split('\n')).reduce((sum,line)=>sum+(line?8*Math.ceil(line.length/59):0),0);
-    const matchHeight = (row.matching?.length??0) * (teacher?10:row.type==='pictureMatch'?31:17);
-    const puzzleHeight = row.puzzle ? row.puzzle.grid.length * 7 + row.puzzle.entries.length * 7 + 8 : 0;
-    const cost = 7 + textHeight + matchHeight + puzzleHeight + (teacher?0:
-      (row.type==='wordTrace'?30:row.type==='study'?10:row.type==='letters'?14:(row.lines??0)*10) +
-      (row.pictures?.length?30:0) + (row.bank?.length?12:0));
-    const heading = 22 + (!teacher && row.context ? 8 + row.context.reduce((sum,line)=>sum+8*Math.ceil(line.length/59),0) : 0);
-    if (page.length && (page[0].type!==row.type || height+cost > (pages.at(-1)?.[0].type===row.type?242:216))) {
-      pages.push(page); page=[]; height=0;
-    }
-    height += cost+(page.length ? 0 : heading);
-    page.push(row);
-  }
-  if (page.length) pages.push(page);
-  return pages;
-}
 
 function Matching({items,pictures,teacher,start}:{items:PaperItem[];pictures:boolean;teacher:boolean;start:number}) {
   const mixed = shuffled(items,makeRng(31));
@@ -86,7 +63,7 @@ function Worksheet({ clip }: { clip: VideoClip }) {
 
   const available = (type: (typeof groups)[number]['types'][number]) => type.items.length >= (minimumFive.has(type.id) ? 5 : 1) && (type.id !== 'pictureMatch' || pictureSelected.some(item=>item.image)) && (type.id !== 'crossword' || included.size >= 2);
   const missing = groups.flatMap(group=>group.types.filter(type=>!available(type)));
-  const rows = groups.flatMap(group=>group.types.flatMap<Row>(type=>{
+  const rows = useMemo(() => groups.flatMap(group=>group.types.flatMap<Row>(type=>{
     if (!enabled.has(type.id) || !available(type)) return [];
     let items=type.items;
     const base={group:group.id,groupTitle:group.en,type:type.id,title:type.title,instruction:type.instruction};
@@ -96,12 +73,83 @@ function Worksheet({ clip }: { clip: VideoClip }) {
     return items.map((item,index)=>({...base,...item,number:index+1,
       ...(type.id==='fromMeaning'&&options.bank&&index===0?{bank:shuffled(items.map(word=>word.answer!),makeRng(67))}:{}),
     }));
-  }));
-  const pages = [
-    ...paginate(rows,false).map(content => ({content,teacher:false})),
-    ...(teacher ? paginate(rows.filter(row=>row.type!=='study'),true).map(content => ({content,teacher:true})) : []),
-  ];
+  })), [groups, enabled, options.bank, puzzle, included, pictureSelected]);
+  const sections = useMemo(() => {
+    const grouped: {content: Row[]; teacher: boolean}[] = [];
+    for (const isTeacher of teacher ? [false, true] : [false]) {
+      for (const row of rows) {
+        if (isTeacher && row.type === 'study') continue;
+        const current = grouped.at(-1);
+        if (current?.teacher === isTeacher && current.content[0].type === row.type) current.content.push(row);
+        else grouped.push({content:[row],teacher:isTeacher});
+      }
+    }
+    return grouped;
+  }, [rows, teacher]);
+  const measurement = useRef<HTMLDivElement>(null);
+  const [layout, setLayout] = useState<{sections: typeof sections; pages: (typeof sections[number] & { first: boolean })[]}>();
+  const pages = layout?.sections === sections ? layout.pages : [];
+  useLayoutEffect(() => {
+    if (!fontReady || !measurement.current) return;
+    const pages: (typeof sections[number] & { first: boolean })[] = [];
+    const boxes = [...measurement.current.children] as HTMLElement[];
+    sections.forEach((section, index) => {
+      const sheet = boxes[index];
+      const tasks = [...sheet.querySelectorAll<HTMLElement>('.animation-task')];
+      const heights = tasks.map(task => task.getBoundingClientRect().height);
+      const heading = heights[0] - tasks[0].querySelector<HTMLElement>('.animation-print-row')!.getBoundingClientRect().height;
+      const headingMargin = parseFloat(getComputedStyle(tasks[0]).marginTop);
+      const closingBorder = parseFloat(getComputedStyle(tasks.at(-1)!).borderBottomWidth);
+      heights[0] -= heading;
+      heights[heights.length - 1] -= closingBorder;
+      const footer = sheet.querySelector('footer')!.getBoundingClientRect().height;
+      const total = sheet.getBoundingClientRect().height - parseFloat(getComputedStyle(sheet).paddingBottom) - footer - closingBorder;
+      const preamble = tasks[0].getBoundingClientRect().top - sheet.getBoundingClientRect().top;
+      const continuation = parseFloat(getComputedStyle(sheet).paddingTop) + headingMargin;
+      let first = true;
+      let content: Row[] = [];
+      let used = preamble + heading;
+      section.content.forEach((row, rowIndex) => {
+        if (content.length && used + heights[rowIndex] > total + .05) {
+          pages.push({...section,content,first});
+          first = false;
+          content = [];
+          used = continuation + heading;
+        }
+        used += heights[rowIndex];
+        content.push(row);
+      });
+      pages.push({...section,content,first});
+    });
+    setLayout({sections,pages});
+  }, [sections,fontReady]);
   const toggleType = (id:string,on:boolean) => setEnabled(current=>{const next=new Set(current);if(on)next.add(id);else next.delete(id);return next;});
+
+  const renderPage = (page: typeof sections[number] & {first: boolean}, index: number, total: number) => (<article className="rc-sheet animation-sheet" key={index} data-teacher={page.teacher}>
+          {page.first && <>
+            <header className="animation-workbook-title"><h1 lang="en">{clip.title}</h1><strong>{page.content[0].groupTitle}</strong></header>
+            {page.teacher ? <h2>{en?'Teacher notes and answers':'교사용 설명·정답'}</h2> : <div className="rc-name">Name <span /> Date <span /></div>}
+          </>}
+          {page.content.map((row,i)=><section key={row.type+':'+row.id} lang="en" className="animation-task">
+            {i===0&&<><h2>{row.title}</h2>{!page.teacher&&<><p className="animation-instruction">{row.instruction}</p>{row.context&&<div className="animation-pattern-context">{row.context.map(line=><p key={line}>{line}</p>)}</div>}</>}</>}
+            <div className="animation-print-row">
+              {row.bank&&!page.teacher&&<p className="animation-word-bank">Word Bank · {row.bank.join('  ·  ')}</p>}
+              {row.matching?<Matching items={row.matching} pictures={row.type==='pictureMatch'} teacher={page.teacher} start={row.number}/>:row.puzzle?<Puzzle row={row} teacher={page.teacher}/>:page.teacher?
+                <p className="animation-answer">{row.number}. {row.example?'Example: ':''}{row.answer||'Answers may vary.'}{row.cue&&' · '+row.cue}{row.example&&' · Accept other suitable answers.'}</p>:
+                <>
+                  {row.type==='study'?<div className="animation-study-card"><div>{row.number}. <strong>{row.label}</strong><small lang="ko">{row.meaning}</small></div><div>{row.definition&&<p>{row.definition}</p>}{row.exampleSentence&&<p>{row.exampleSentence}</p>}</div></div>:
+                  row.type==='letters'?<div className="animation-missing"><p>{row.number}. {row.prompt}</p><span lang="ko">{row.meaning}</span></div>:
+                  row.type==='wordTrace'?<div className="animation-word-trace"><div>{row.number}. <strong>{row.label}</strong>{row.image&&<img src={row.image} alt=""/>}</div><div><TracingRow word={row.label} trace last={false} gapMm={2} rowMm={10} emMm={Math.min(10,110/row.label.length)}/><TracingRow word="" trace={false} last rowMm={10}/></div></div>:
+                  row.situation?<><p className="animation-pattern-situation">{row.number}. {row.situation}</p><p>{row.prompt}</p></>:<p>{row.number}. {row.prompt}</p>}
+                  {row.choices&&<ol className="animation-choices">{row.choices.map((choice,i)=><li key={choice}>{String.fromCharCode(65+i)}. {choice}</li>)}</ol>}
+                  {row.pictures&&<div className="animation-picture-choices">{row.pictures.map((src,j)=><div key={src+':'+j}>{String.fromCharCode(65+j)}. <img src={src} alt=""/></div>)}</div>}
+                  {row.trace&&row.type!=='wordTrace'&&<p className="animation-trace">{row.trace}</p>}
+                  {row.type!=='wordTrace'&&Array.from({length:row.lines??0},(_,line)=><span className="animation-write-line" key={line}/>)}
+                </>}
+            </div>
+          </section>)}
+          <footer><strong>ClassBank</strong><span>{index+1} / {total}</span></footer>
+        </article>);
 
   if (!groups.some(group=>group.types.some(type=>type.items.length))) return <p role="alert">{t('readyMedia.noWorksheet')}</p>;
   return <section className="rc-workbook animation-worksheet">
@@ -136,31 +184,10 @@ function Worksheet({ clip }: { clip: VideoClip }) {
       <div className="min-w-0">
         <h2 className="no-print mb-2 font-bold">{en?'A4 print preview':'A4 인쇄 미리보기'} · {pages.length}{en?' pages':'쪽'}</h2>
         {!pages.length&&<p className="no-print">{en?'Choose an activity and at least one item.':'인쇄할 활동을 선택하세요.'}</p>}
-        <div className="rc-preview">{pages.map((page,index) => <article className="rc-sheet animation-sheet" key={index} data-teacher={page.teacher}>
-          {(index === 0 || page.teacher!==pages[index-1]?.teacher || page.content[0].type!==pages[index-1]?.content[0].type) && <>
-            <header className="animation-workbook-title"><h1 lang="en">{clip.title}</h1><strong>{page.content[0].groupTitle}</strong></header>
-            {page.teacher ? <h2>{en?'Teacher notes and answers':'교사용 설명·정답'}</h2> : <div className="rc-name">Name <span /> Date <span /></div>}
-          </>}
-          {page.content.map((row,i)=><section key={row.type+':'+row.id} lang="en" className="animation-task">
-            {i===0&&<><h2>{row.title}</h2>{!page.teacher&&<><p className="animation-instruction">{row.instruction}</p>{row.context&&<div className="animation-pattern-context">{row.context.map(line=><p key={line}>{line}</p>)}</div>}</>}</>}
-            <div className="animation-print-row">
-              {row.bank&&!page.teacher&&<p className="animation-word-bank">Word Bank · {row.bank.join('  ·  ')}</p>}
-              {row.matching?<Matching items={row.matching} pictures={row.type==='pictureMatch'} teacher={page.teacher} start={row.number}/>:row.puzzle?<Puzzle row={row} teacher={page.teacher}/>:page.teacher?
-                <p className="animation-answer">{row.number}. {row.example?'Example: ':''}{row.answer||'Answers may vary.'}{row.cue&&' · '+row.cue}{row.example&&' · Accept other suitable answers.'}</p>:
-                <>
-                  {row.type==='study'?<div className="animation-study-card"><div>{row.number}. <strong>{row.label}</strong><small lang="ko">{row.meaning}</small></div><div>{row.definition&&<p>{row.definition}</p>}{row.exampleSentence&&<p>{row.exampleSentence}</p>}</div></div>:
-                  row.type==='letters'?<div className="animation-missing"><p>{row.number}. {row.prompt}</p><span lang="ko">{row.meaning}</span></div>:
-                  row.type==='wordTrace'?<div className="animation-word-trace"><div>{row.number}. <strong>{row.label}</strong>{row.image&&<img src={row.image} alt=""/>}</div><div><TracingRow word={row.label} trace last={false} gapMm={2} rowMm={10} emMm={Math.min(10,110/row.label.length)}/><TracingRow word="" trace={false} last rowMm={10}/></div></div>:
-                  row.situation?<><p className="animation-pattern-situation">{row.number}. {row.situation}</p><p>{row.prompt}</p></>:<p>{row.number}. {row.prompt}</p>}
-                  {row.choices&&<ol className="animation-choices">{row.choices.map((choice,i)=><li key={choice}>{String.fromCharCode(65+i)}. {choice}</li>)}</ol>}
-                  {row.pictures&&<div className="animation-picture-choices">{row.pictures.map((src,j)=><div key={src+':'+j}>{String.fromCharCode(65+j)}. <img src={src} alt=""/></div>)}</div>}
-                  {row.trace&&row.type!=='wordTrace'&&<p className="animation-trace">{row.trace}</p>}
-                  {row.type!=='wordTrace'&&Array.from({length:row.lines??0},(_,line)=><span className="animation-write-line" key={line}/>)}
-                </>}
-            </div>
-          </section>)}
-          <footer><strong>ClassBank</strong><span>{index+1} / {pages.length}</span></footer>
-        </article>)}</div>
+        {layout?.sections !== sections && <div className="animation-measure no-print" aria-hidden="true" ref={measurement}>
+          {sections.map((section,index)=>renderPage({...section,first:true},index,sections.length))}
+        </div>}
+        <div className="rc-preview">{pages.map((page,index)=>renderPage(page,index,pages.length))}</div>
       </div>
     </div>
   </section>;
