@@ -56,7 +56,8 @@ export default function ClassChipRow({ classes, selectedId, onSelect, onReorder 
     let hoveredId: string | null = null;
     for (const [id, el] of chipRefs.current) {
       const rect = el.getBoundingClientRect();
-      if (e.clientX >= rect.left && e.clientX <= rect.right) {
+      if (e.clientX >= rect.left && e.clientX <= rect.right &&
+          e.clientY >= rect.top && e.clientY <= rect.bottom) {
         hoveredId = id;
         break;
       }
@@ -94,6 +95,8 @@ export default function ClassChipRow({ classes, selectedId, onSelect, onReorder 
               else chipRefs.current.delete(c.id);
             }}
             type="button"
+            aria-pressed={c.id === selectedId}
+            onClick={(e) => { if (e.detail === 0) onSelect(c.id); }}
             onPointerDown={(e) => handlePointerDown(e, c.id)}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
