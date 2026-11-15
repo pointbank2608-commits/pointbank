@@ -26,7 +26,9 @@ export function useYoutubeSegment(videoId: string | null | undefined, initialSta
   useEffect(() => {
     if (!videoId) return;
     let cancelled = false;
-    const timeout = window.setTimeout(() => !cancelled && setFailed((f) => f || !playerRef.current), 12000);
+    const timeout = window.setTimeout(() => {
+      if (!cancelled) setFailed(true);
+    }, 12000);
     loadYoutubeIframeApi()
       .then(() => {
         if (cancelled || !window.YT) return;
@@ -35,8 +37,15 @@ export function useYoutubeSegment(videoId: string | null | undefined, initialSta
           playerVars: { rel: 0, modestbranding: 1, playsinline: 1, controls: initialStart === undefined || bounded ? 0 : 1, disablekb: initialStart === undefined || bounded ? 1 : 0, iv_load_policy: 3, fs: 0,
             ...(initialStart !== undefined && { start: Math.floor(initialStart), origin: window.location.origin }) },
           events: {
-            onReady: () => { window.clearTimeout(timeout); setReady(true); },
+            onReady: () => {
+              if (cancelled) return;
+              window.clearTimeout(timeout);
+              setFailed(false);
+              setReady(true);
+            },
             onError: () => {
+              if (cancelled) return;
+              window.clearTimeout(timeout);
               setFailed(true);
               stopPoll();
               setPlaying(false);
@@ -47,7 +56,11 @@ export function useYoutubeSegment(videoId: string | null | undefined, initialSta
           },
         });
       })
-      .catch(() => setFailed(true));
+      .catch(() => {
+        if (cancelled) return;
+        window.clearTimeout(timeout);
+        setFailed(true);
+      });
     return () => {
       cancelled = true;
       window.clearTimeout(timeout);

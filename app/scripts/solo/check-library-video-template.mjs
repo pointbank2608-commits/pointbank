@@ -51,6 +51,12 @@ const bundles = new Map(compiled.output.map(file => ['/' + file.fileName, file.t
 const browser = await chromium.launch({ channel: 'chrome', args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] });
 
 try {
+  await checkVideoFlow();
+} finally {
+  await browser.close();
+}
+
+async function checkVideoFlow() {
   await mkdir(output, { recursive: true });
   const page = await browser.newPage({ viewport: { width: 430, height: 920 }, permissions: ['microphone'] });
   const errors = [];
@@ -62,6 +68,36 @@ try {
     const contentType = path.endsWith('.js') ? 'text/javascript' : path.endsWith('.css') ? 'text/css' : 'text/html';
     return route.fulfill({ contentType, body: asset });
   });
+  if (process.argv.includes('--readiness')) {
+    await page.addInitScript(() => {
+      window.YT = {
+        Player: class {
+          constructor(_elementId, options) {
+            window.pendingVideoReady = options.events.onReady;
+          }
+          destroy() {}
+        },
+        PlayerState: { ENDED: 0, PLAYING: 1 },
+      };
+    });
+    await page.clock.install();
+    await page.goto(origin + '/scripts/solo/video-template.html?library&student&short&step=1');
+    await page.waitForFunction(() => typeof window.pendingVideoReady === 'function');
+    const play = page.getByRole('button', { name: '원본 재생', exact: true });
+    const next = page.getByRole('button', { name: '다 들었어요', exact: true });
+    await play.waitFor();
+    assert.equal(await play.isDisabled(), true);
+    assert.equal(await next.isDisabled(), true);
+    await page.clock.fastForward(12500);
+    await page.getByRole('alert').getByText('원음을 재생하지 못했어요.', { exact: false }).waitFor();
+    assert.equal(await next.isDisabled(), true);
+    await page.evaluate(() => window.pendingVideoReady());
+    assert.equal(await play.isEnabled(), true);
+    assert.equal(await next.isDisabled(), true);
+    assert.deepEqual(errors, []);
+    console.log('Video readiness passed: stalled initialization reports the error; late readiness enables playback without completing the activity.');
+    return;
+  }
   const click = (name, timeout = 16000) => page.getByRole('button', { name, exact: true }).click({ timeout });
   const frameSelector = 'iframe[src*="/embed/' + id + '"]';
   const player = async () => {
@@ -448,6 +484,4 @@ try {
     videoHint: { start: hintStart.time, end: hintEnd }, errors };
   await writeFile(new URL('shadowing-flow-results.json', output), JSON.stringify(result, null, 2));
   console.log('Library student preview passed', JSON.stringify(result));
-} finally {
-  await browser.close();
 }
