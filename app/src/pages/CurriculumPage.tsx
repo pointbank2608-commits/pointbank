@@ -27,6 +27,8 @@ import {
   createGameTemplate,
   createWordList,
   deleteCurriculumLesson,
+  fetchAllCurriculumLessons,
+  fetchAllWordLists,
   fetchCurriculumLessons,
   fetchDeletedLessons,
   fetchWordLists,
@@ -94,6 +96,9 @@ export default function CurriculumPage() {
 
   const [wordLists, setWordLists] = useState<WordList[]>([]);
   const [lessons, setLessons] = useState<CurriculumLesson[]>([]);
+  const [showAllClasses, setShowAllClasses] = useState(false);
+  const groupView = mode === 'group' || !soloOpen;
+  const allClasses = groupView && showAllClasses;
   // 수업 목록 정렬·찾기(2026-10-05) — 정렬은 이 기기에 기억
   const [lessonSort, setLessonSort] = useState<LessonSort>(() => {
     try {
@@ -122,19 +127,19 @@ export default function CurriculumPage() {
       return;
     }
     setLoading(true);
-    const scope=`${academy.id}:${staffClassId??''}`;
+    const scope=`${academy.id}:${allClasses ? 'all' : staffClassId ?? ''}`;
     if(loadedScope.current!==scope){setWordLists([]);setLessons([]);setDeletedLessons([]);}
     try {
       const [wl, ls] = await Promise.all([
-        fetchWordLists(academy.id, staffClassId || '', 'all'),
-        fetchCurriculumLessons(academy.id, staffClassId || ''),
+        allClasses ? fetchAllWordLists(academy.id, 'all') : fetchWordLists(academy.id, staffClassId || '', 'all'),
+        allClasses ? fetchAllCurriculumLessons(academy.id) : fetchCurriculumLessons(academy.id, staffClassId || ''),
       ]);
       if(version!==reloadVersion.current)return;
       loadedScope.current=scope;
       setWordLists(wl);
       setLessons(ls);
       try {
-        const deleted=await fetchDeletedLessons(academy.id, staffClassId || '');
+        const deleted=await fetchDeletedLessons(academy.id, allClasses ? null : staffClassId || '');
         if(version===reloadVersion.current)setDeletedLessons(deleted);
       } catch {
         if(version===reloadVersion.current)setDeletedLessons([]);
@@ -144,7 +149,7 @@ export default function CurriculumPage() {
     } finally {
       if(version===reloadVersion.current)setLoading(false);
     }
-  },[academy?.id,staffClassId,notify]);
+  },[academy?.id,staffClassId,allClasses,notify]);
 
   useEffect(() => {
     void reload();
@@ -189,6 +194,7 @@ export default function CurriculumPage() {
   // 편집 중인 레슨의 반(없으면 지금 보고 있는 반) — 게임 내용(템플릿)을 이 반 것으로 고르고 만든다.
   const [formTarget,setFormTarget]=useState<{id:string|null}|null>(null);
   const formClassId = formTarget ? formTarget.id : staffClassId ?? null;
+  const classWordLists = wordLists.filter(list => !list.class_id || list.class_id === formClassId || list.id === wordListId);
   const [playlist, setPlaylist] = useState<LessonSlide[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const saveLock = useRef(false);
@@ -633,12 +639,14 @@ export default function CurriculumPage() {
 
   async function handleDelete(lesson: CurriculumLesson) {
     if (!confirm(t('curriculum.deleteConfirm', { name: lesson.name }))) return;
+    const version = reloadVersion.current;
     const ok = await run(() => deleteCurriculumLesson(lesson.id), t('curriculum.deletedToast'));
     if (ok) {
       setLessons((prev) => prev.filter((l) => l.id !== lesson.id));
-      if (academy?.id && staffClassId) {
+      if (academy?.id && (staffClassId || allClasses)) {
         try {
-          setDeletedLessons(await fetchDeletedLessons(academy.id, staffClassId));
+          const deleted = await fetchDeletedLessons(academy.id, allClasses ? null : staffClassId);
+          if (version === reloadVersion.current) setDeletedLessons(deleted);
         } catch {
           /* 034 미적용이면 목록만 비움 */
         }
@@ -812,11 +820,22 @@ export default function CurriculumPage() {
         <p className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.v2Subtitle')}</p>
       </div>
 
-      <ClassChipRow classes={classes} selectedId={staffClassId} onSelect={id=>{
-        if(id===staffClassId || saveLock.current)return;
+      <div className="flex flex-wrap items-center gap-2">
+        {groupView && <button type="button" aria-pressed={allClasses}
+          className="min-h-11 rounded-full border border-outline-variant px-4 py-2 font-bold aria-pressed:bg-primary aria-pressed:text-white"
+          onClick={() => {
+            if (allClasses || saveLock.current) return;
+            if (showForm && dirty && !confirm(t('curriculum.discardConfirm'))) return;
+            if (showForm) resetForm();
+            setShowAllClasses(true);
+          }}>{t('curriculum.allClasses')}</button>}
+      <ClassChipRow classes={classes} selectedId={allClasses ? null : staffClassId} onSelect={id=>{
+        if((id===staffClassId && !allClasses) || saveLock.current)return;
         if(showForm){if(dirty&&!confirm(t('curriculum.discardConfirm')))return;resetForm();}
+        setShowAllClasses(false);
         selectClass(id);
       }} onReorder={reorderClasses} />
+      </div>
 
       {!showForm && (mode === 'group' || !soloOpen) && <h2 className="text-xl font-bold text-deep-navy">{t('lessonUx.create')}</h2>}
       {!showForm && (mode === 'group' || !soloOpen) && (
@@ -947,7 +966,7 @@ export default function CurriculumPage() {
                 className="w-56 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               >
                 <option value="">{t('curriculum.wordListPlaceholder')}</option>
-                {wordLists.map((wl) => (
+                {classWordLists.map((wl) => (
                   <option key={wl.id} value={wl.id}>
                     {wl.name} ({wl.items.length})
                   </option>
@@ -1121,7 +1140,7 @@ export default function CurriculumPage() {
                 slides={playlist}
                 onChange={setPlaylist}
                 wordListId={wordListId}
-                wordLists={wordLists}
+                wordLists={classWordLists}
                 onWordListChange={setWordListId}
                 onManageWordList={openWordListModal}
                 onSaveWordsAsList={(words, listName) => saveWordsAsList(words, listName, false)}
@@ -1306,6 +1325,9 @@ export default function CurriculumPage() {
       <div className="lesson-card-grid grid gap-5">
         {sortedLessons.map((lesson) => {
           const wl = wordLists.find((w) => w.id === lesson.word_list_id);
+          const classBadge = lesson.class_id
+            ? (allClasses ? classes.find(row => row.id === lesson.class_id)?.name : null)
+            : t('curriculum.sharedLessonBadge');
           return (
             <div
               key={lesson.id}
@@ -1324,9 +1346,9 @@ export default function CurriculumPage() {
                         {cover.icon}
                       </span>
                     )}
-                    {!lesson.class_id && (
+                    {classBadge && (
                       <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-0.5 font-caption text-caption font-bold text-deep-navy">
-                        {t('curriculum.sharedLessonBadge')}
+                        {classBadge}
                       </span>
                     )}
                   </div>

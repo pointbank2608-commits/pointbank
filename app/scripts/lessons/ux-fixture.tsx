@@ -1,6 +1,7 @@
 import {createRoot} from 'react-dom/client';
 import {BrowserRouter,Link,Routes,Route,useLocation,useParams} from 'react-router-dom';
 import CurriculumPage from '../../src/pages/CurriculumPage';
+import ClassBoardPage from '../../src/pages/ClassBoardPage';
 import GamesPage from '../../src/pages/GamesPage';
 import PhonicsGamesPage from '../../src/pages/PhonicsGamesPage';
 import GameWorkspace from '../../src/components/GameWorkspace';
@@ -27,6 +28,7 @@ function PreviewGame() {
 createRoot(document.getElementById('root')!).render(
   <BrowserRouter><LessonRunnerProvider><Routes><Route element={<AppLayout/>}>
     <Route path="/curriculum" element={<CurriculumPage/>}/>
+    <Route path="/board" element={<ClassBoardPage/>}/>
     <Route path="/wordlists" element={<WordListsPage/>}/>
     <Route path="/materials/videos" element={<VideoLibraryPage/>}/>
     <Route path="/curriculum/:id/slide/:slideId" element={<LessonSlideViewerPage/>}/>

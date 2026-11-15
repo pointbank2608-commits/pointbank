@@ -6199,6 +6199,7 @@ const ko = {
     shownCount: "{{n}}곳",
   },
   curriculum: {
+    allClasses: '전체 반',
     v2Subtitle: '준비한 수업을 고르고, 바로 시작하세요.',
     bannerQuick: '추천 구성으로 만들기',
     bannerQuickDesc: '질문 3개로 수업 구성 완성',
@@ -7211,6 +7212,8 @@ const ko = {
   },
 
   board: {
+    manageClassHint: '삭제할 반을 선택하거나 반 이름을 끌어 순서를 바꾸세요.',
+    classDeleteFailed: '반을 삭제하지 못했어요. 권한과 연결 상태를 확인한 뒤 다시 시도해 주세요.',
     title: '{{name}} 학생 통장',
     countBadge: '{{count}}명',
     totalEconomy: '총 반 경제',

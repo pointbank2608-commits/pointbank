@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import AddStudentModal from '../components/AddStudentModal';
 import ClassChipRow from '../components/ClassChipRow';
+import AccessibleDialog from '../components/AccessibleDialog';
 import PassbookCard from '../components/PassbookCard';
 import SettleModal from '../components/SettleModal';
 import { useAuth } from '../context/AuthContext';
@@ -13,6 +14,7 @@ import {
   checkOut,
   createSettlement,
   deleteSettlement,
+  deleteClass,
   deleteStudent,
   deleteTransaction,
   fetchAttendance,
@@ -27,10 +29,37 @@ import { useClasses } from '../lib/useClasses';
 import type { Attendance, Preset, Settlement, StudentBalance, Transaction } from '../lib/types';
 
 export default function ClassBoardPage() {
-  const { academy, profile, pointUnit } = useAuth();
+  const { academy, profile, pointUnit, isStaff } = useAuth();
   const { notify, run } = useToast();
   const { t, i18n } = useTranslation();
-  const { classes, selectedId, selected, loading: classesLoading, select, reorder } = useClasses(academy?.id);
+  const { classes, selectedId, selected, loading: classesLoading, select, reorder, reload: reloadClasses, error: classError } = useClasses(academy?.id);
+  const [manageClasses, setManageClasses] = useState(false);
+  const [deleteClassId, setDeleteClassId] = useState<string | null>(null);
+  const [deletingClass, setDeletingClass] = useState(false);
+  const [deleteError, setDeleteError] = useState(false);
+  const classToDelete = classes.find(row => row.id === deleteClassId);
+
+  function closeClassManagement() {
+    setManageClasses(false);
+    setDeleteClassId(null);
+    setDeleteError(false);
+  }
+
+  async function confirmClassDeletion(classId: string) {
+    if (deletingClass) return;
+    setDeletingClass(true);
+    setDeleteError(false);
+    try {
+      await deleteClass(classId);
+      closeClassManagement();
+      await reloadClasses();
+      notify(t('settings.classDeletedToast'));
+    } catch {
+      setDeleteError(true);
+    } finally {
+      setDeletingClass(false);
+    }
+  }
 
   const [students, setStudents] = useState<StudentBalance[]>([]);
   const [todayTx, setTodayTx] = useState<Transaction[]>([]);
@@ -317,7 +346,30 @@ export default function ClassBoardPage() {
   return (
     <div className="space-y-6">
       <ClassroomHeader />
-      <ClassChipRow classes={classes} selectedId={selectedId} onSelect={select} onReorder={reorder} />
+      <div className="flex flex-wrap items-start gap-2">
+        <ClassChipRow classes={classes} selectedId={selectedId} onSelect={select} onReorder={reorder} />
+        {isStaff && <button type="button" className="min-h-11 rounded-full border border-outline-variant bg-white px-4 py-2 font-bold" onClick={() => setManageClasses(true)}>{t('settings.classManageTitle')}</button>}
+      </div>
+      {isStaff && manageClasses && <AccessibleDialog label={t('settings.classManageTitle')} onClose={() => { if (!deletingClass) closeClassManagement(); }}>
+        <section className="grid gap-4 p-5">
+          <h2 className="text-xl font-bold">{t('settings.classManageTitle')}</h2>
+          {classError && <p role="alert">{classError}</p>}
+          <fieldset disabled={deletingClass} className="space-y-2">
+            <legend>{t('board.manageClassHint')}</legend>
+            <ClassChipRow classes={classes} selectedId={deleteClassId} onSelect={id => {
+              setDeleteClassId(id);
+              setDeleteError(false);
+            }} onReorder={ids => { if (!deletingClass) void reorder(ids); }} />
+          </fieldset>
+          {classToDelete && <>
+            <p className="whitespace-pre-line rounded-xl bg-red-50 p-3 text-red-900">{t('settings.classDeleteConfirm', { name: classToDelete.name })}</p>
+            {deleteError && <p role="alert">{t('board.classDeleteFailed')}</p>}
+            <button type="button" className="min-h-11 rounded-xl bg-red-700 px-4 font-bold text-white disabled:opacity-50"
+              disabled={deletingClass} onClick={() => void confirmClassDeletion(classToDelete.id)}>{t('settings.deleteClass')}</button>
+          </>}
+          <button type="button" className="min-h-11 rounded-xl border px-4 font-bold" disabled={deletingClass} onClick={closeClassManagement}>{t('common.close')}</button>
+        </section>
+      </AccessibleDialog>}
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

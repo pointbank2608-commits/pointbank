@@ -6202,6 +6202,7 @@ const en: Ko = {
     shownCount: "{{n}} shown",
   },
   curriculum: {
+    allClasses: 'All classes',
     v2Subtitle: 'Pick a prepared lesson and start right away.',
     bannerQuick: 'Build a recommended lesson',
     bannerQuickDesc: 'Three questions build the plan',
@@ -7216,6 +7217,8 @@ const en: Ko = {
   },
 
   board: {
+    manageClassHint: 'Choose a class to delete, or drag the class names to reorder them.',
+    classDeleteFailed: 'Could not delete the class. Check your permissions and connection, then try again.',
     title: '{{name}} Passbook',
     countBadge: '{{count}} students',
     totalEconomy: 'Total class economy',

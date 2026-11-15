@@ -80,8 +80,9 @@ export async function setClassSchedule(classId: string, schedule: ClassRow['sche
 }
 
 export async function deleteClass(classId: string) {
-  const { error } = await supabase.from('classes').delete().eq('id', classId);
+  const { data, error } = await supabase.from('classes').delete().eq('id', classId).select('id');
   if (error) throw new Error(error.message);
+  if (!data?.length) throw new Error('Class deletion was not permitted or the class no longer exists.');
 }
 
 /** 드래그로 반 순서를 바꾼 뒤, 새 순서(앞에서부터 0,1,2…)를 한 번에 저장한다. */
@@ -1029,10 +1030,13 @@ export async function fetchWordLists(academyId: string, classId: string, kind: W
 
 /** 반 구분 없이 이 학원의 단어장을 전부 불러온다 ("내 단어장"의 "전체" 탭). */
 export async function fetchAllWordLists(academyId: string, kind: WordListKind | 'all' = 'word'): Promise<WordList[]> {
-  const rows = fixLegacyImageUrls(unwrap(
-    await supabase.from('word_lists').select('*').eq('academy_id', academyId).order('created_at', { ascending: false }),
-  )) as WordList[];
-  return onlyKind(rows, kind);
+  const rows: WordList[] = [];
+  for (let offset = 0; ; offset += 500) {
+    const page = unwrap(await supabase.from('word_lists').select('*').eq('academy_id', academyId)
+      .order('created_at', { ascending: false }).order('id').range(offset, offset + 499)) as WordList[];
+    rows.push(...page);
+    if (page.length < 500) return onlyKind(fixLegacyImageUrls(rows), kind);
+  }
 }
 
 export async function createWordList(params: {
@@ -1223,7 +1227,7 @@ async function fetchDeletedRows(
 }
 
 /** 지운 수업(180일 안) — 이 반 것과 반 없는 것. 같은 수업을 여러 번 지웠다 되살렸으면 가장 최근 것만 */
-export async function fetchDeletedLessons(academyId: string, classId: string): Promise<ContentRevision[]> {
+export async function fetchDeletedLessons(academyId: string, classId: string | null): Promise<ContentRevision[]> {
   return fetchDeletedRows('curriculum_lessons', academyId, classId);
 }
 
@@ -1429,7 +1433,13 @@ export async function cancelBilling(action: 'cancel' | 'resume'): Promise<void> 
 
 /** Home and optional lesson picker: academy scope remains enforced by RLS. */
 export async function fetchAllCurriculumLessons(academyId: string): Promise<CurriculumLesson[]> {
-  return unwrap(await supabase.from('curriculum_lessons').select('*').eq('academy_id', academyId).order('updated_at', { ascending: false }));
+  const rows: CurriculumLesson[] = [];
+  for (let offset = 0; ; offset += 500) {
+    const page = unwrap(await supabase.from('curriculum_lessons').select('*').eq('academy_id', academyId)
+      .order('updated_at', { ascending: false }).order('id').range(offset, offset + 499)) as CurriculumLesson[];
+    rows.push(...page);
+    if (page.length < 500) return rows;
+  }
 }
 /** Reject a concurrent edit rather than overwriting a teacher's playlist. */
 export async function appendActivityToLesson(lesson: CurriculumLesson, slide: LessonSlide) {
