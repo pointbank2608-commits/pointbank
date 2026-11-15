@@ -6,8 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import {useGameWorkspace} from '../context/GameWorkspaceContext';
 import type { GameWorkspaceBridge } from '../context/GameWorkspaceContext';
-import { GAME_CATALOG } from '../lib/gameCatalog';
-import { isBombReading, guideKindProblem, guideFamily, fillDistractors, splitCards, guideKinds, guideRows, guideContent, guideProblem, type GuideKind } from '../lib/gameGuide';
+import { isBombReading, guideKindProblem, guideFamily, fillDistractors, splitCards, guideKinds, guideRows, guideContent, guideProblem, guideMissingListMinimum, type GuideKind } from '../lib/gameGuide';
 import { prepareClassroomGame, classroomGameRequirement } from '../lib/gameWorkspace';
 
 import { useRecoverableField } from '../lib/useRecoverableField';
@@ -179,7 +178,15 @@ export default function GameSetupGuide({info,active,canStart,busy,run,complete,e
           content.config.ladderResultOrder=resultDraft.order;
         }
         content.config.setupKind=kind==='sample'?undefined:kind;
-        const check=guideProblem({...info.selected,...content});if(check){const count=work.filter(r=>r[0]?.trim()).length;const minimum=family==='list'?GAME_CATALOG.find(g=>g.type===info.gameType)?.minItems||1:0;setError(minimum>count?t('launchUx.minimum',{count,minimum}):t('launchUx.problem',{reason:t(`guide.${check}`),count}));return;}
+        const check = guideProblem({ ...info.selected, ...content });
+        if (check) {
+          const count = work.filter(row => row[0]?.trim()).length;
+          const minimum = guideMissingListMinimum(info.gameType, check, count);
+          setError(minimum === null
+            ? t('launchUx.problem', { reason: t(`guide.${check}`), count })
+            : t('launchUx.minimum', { count, minimum }));
+          return;
+        }
         if(!await run(()=>info.applyGuide(content)))return;
       }else if(workspace?.commitPreparation){if(!await workspace.commitPreparation()){setError(t(`guide.${problem||'incomplete'}`));return;}}
       else if(problem||!canStart){setError(t(`guide.${problem||'incomplete'}`));return;}

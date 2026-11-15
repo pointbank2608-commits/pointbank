@@ -7,10 +7,12 @@ const server=await createServer({root,logLevel:'error',plugins:[{name:'no-backen
 const wait=(ms)=>new Promise(resolve=>setTimeout(resolve,ms));
 
 try {
- const {GUIDE_FAMILIES,guideSample,guideContent,guideProblem,guideKinds}=await server.ssrLoadModule('/src/lib/gameGuide.ts');
+ const {GUIDE_FAMILIES,guideSample,guideContent,guideProblem,guideKinds,guideMissingListMinimum}=await server.ssrLoadModule('/src/lib/gameGuide.ts');
  const {GAME_CATALOG:catalog}=await server.ssrLoadModule('/src/lib/gameCatalog.ts');
  const {storySample}=await server.ssrLoadModule('/src/lib/storybook.ts');
- assert.equal(catalog.filter(g=>g.number<=53).length,53);assert.equal(Object.keys(GUIDE_FAMILIES).length,53);
+ const originalGames = catalog.filter(game => game.number <= 53);
+ assert.equal(originalGames.length, 53);
+ assert.ok(originalGames.every(game => Object.hasOwn(GUIDE_FAMILIES, game.type)));
  const make=type=>({id:'original',game_type:type,items:[{id:'x',label:'apple'},{id:'y',label:'banana'}],config:{},name:'Original'});
  for(const g of catalog.filter(g=>g.number<=53)){const original=make(g.type),before=JSON.stringify(original);const content=guideSample(g.type,original);assert.equal(guideProblem({...original,...content}),null,g.type);assert.equal(JSON.stringify(original),before,'original changed '+g.type);assert(guideKinds(g.type).includes('sample'));}
  console.log('ok all 53 sample configurations ready; originals unchanged; explicit family coverage');
@@ -18,6 +20,11 @@ try {
  assert.equal(guideProblem({...pairs,...contents}),null);assert.equal(guideProblem({...pairs,...guideContent('matchup',[['apple','사과']],'word',{})}),'incomplete');
  assert.equal(guideProblem({...pairs,...guideContent('matchup',[['apple','사과'],['cat','사과']],'word',{})}),'duplicate');
  for(const type of ['wordsearch','crossword'])assert.equal(guideProblem({...make(type),items:[{id:'x',label:'a'},{id:'y',label:'I'}]}),'letters');
+ assert.equal(guideMissingListMinimum('wordsearch', 'letters', 1), null);
+ assert.equal(guideMissingListMinimum('wordsearch', 'duplicate', 1), null);
+ assert.equal(guideMissingListMinimum('wordsearch', 'incomplete', 1), 2);
+ assert.equal(guideMissingListMinimum('wordsearch', 'incomplete', 2), null);
+ assert.equal(guideMissingListMinimum('tugofwar', 'incomplete', 1), null);
  assert.equal(guideProblem({...make('wordsearch'),items:[{id:'x',label:'abcdefghijklmno'},{id:'y',label:'banana'}]}),'letters');
  const names=guideContent('wheel',[['민지'],['지우']],'names',{classroomSource:{id:'old',kind:'word',cards:[{id:'x',word:'apple',meaning:'사과',imageUrl:null}]}});assert.equal(names.config.classroomSource,undefined);assert.equal(names.items[0].label,'민지');
  const input=[{id:'a',word:'apple',meaning:'사과',imageUrl:'/apple.webp'},{id:'c',word:'cat',meaning:'고양이',imageUrl:'/cat.webp'}];const base={classroomSource:{id:'list',name:'원본',kind:'word',version:'v1',cards:input}};const before=JSON.stringify(base);

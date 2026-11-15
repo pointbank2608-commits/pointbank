@@ -190,6 +190,13 @@ export function guideProblem(template:Pick<GameTemplate, 'game_type' | 'config' 
   return isNativeGameReady(template)?null:'incomplete';
 }
 
+export function guideMissingListMinimum(type: GameType, problem: string, count: number): number | null {
+  if (problem !== 'incomplete' || guideFamily(type) !== 'list') return null;
+  const minimum = GAME_CATALOG.find(game => game.type === type)?.minItems;
+  // The catalog uses 999 to exclude games from list conversion.
+  return minimum !== undefined && minimum !== 999 && count < minimum ? minimum : null;
+}
+
 export function preparePlayableList(type: GameType, list: WordList) {
   const content = prepareClassroomGame(type, list);
   if (!content || guideProblem({ game_type: type, items: content.items, config: content.config ?? {} })) return null;
