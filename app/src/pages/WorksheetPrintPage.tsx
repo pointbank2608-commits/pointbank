@@ -20,6 +20,7 @@ import WorksheetSheets from '../components/worksheets/WorksheetSheets';
 import WorksheetStudio from '../components/worksheets/WorksheetStudio';
 import WorksheetSourceEditor from '../components/worksheets/WorksheetSourceEditor';
 import { WORKSHEET_ACTIVITIES } from '../lib/worksheetActivityCatalog';
+import { useWorksheetExamples } from '../lib/worksheetExamples';
 import {
   buildWorksheet,
   DEFAULT_COLORING_OPTIONS,
@@ -107,6 +108,8 @@ function LegacyWorksheetPrintPage() {
   const materialState = handoffFromLocationState(location.state);
   const materialAllowed = !materialState.materialsOwnerId || (materialState.materialsOwnerId === session?.user.id && materialState.materialsAcademyId === academy?.id);
   const [words, setWords] = useState<FullCardItem[]>(() => wordsFromLocationState(materialAllowed ? location.state : null));
+  const fillExamples = useWorksheetExamples();
+  const exampleSource = JSON.stringify(words.map(w => [w.id, w.word, w.meaning]));
   const [bridgeBusy, setBridgeBusy] = useState(false);
   // 발표 중이면 편집 UI를 숨기고 인쇄만 — 단, 수업에 단어장이 없어 단어가 비어 있으면 막다른
   // 화면이 되지 않게 평소 화면(단어 고르기)을 그대로 보여준다.
@@ -124,6 +127,9 @@ function LegacyWorksheetPrintPage() {
   const [boardThemeId, setBoardThemeId] = useState(() => handoffFromLocationState(location.state).materialsBoardTheme ?? null);
   // 단어 리스트에 뜻 말고 무엇을 더 보여줄지(품사·예문·그림).
   const [listShow, setListShow] = useState(() => handoffFromLocationState(location.state).materialsWorksheetOptions?.listShow ?? { pos: true, example: false, image: false });
+  useEffect(() => {
+    setWords(current => fillExamples(current));
+  }, [fillExamples, exampleSource, location.key]);
   // 사선지에 뜻·그림도 함께 보여줄지.
   const [tracingShow, setTracingShow] = useState(() => handoffFromLocationState(location.state).materialsWorksheetOptions?.tracingShow ?? { meaning: false, image: false });
   const [coloring, setColoring] = useState<ColoringOptions>(() => {

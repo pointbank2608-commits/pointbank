@@ -8,6 +8,7 @@ import { ACTIVITY_PURPOSES, WORKSHEET_ACTIVITIES, WORKSHEET_BASIC_ACTIVITIES, wo
 import { addKnownWorksheetSounds } from '../../lib/worksheetActivitySamples';
 import { parseWorksheetFile, readWorksheetStore, rebuildWordTasks, replaceStudioWords, studioKey, studioWordsFromCards, writeWorksheetStore, type StudioWord, type WorksheetDocument, type WorksheetStore } from '../../lib/worksheetStudio';
 import { teacherCues } from '../../lib/worksheetActivityPrinting';
+import { useWorksheetExamples } from '../../lib/worksheetExamples';
 import { handoffFromLocationState } from '../../lib/materialsHandoff';
 import { speakSequence } from '../../lib/speech';
 import type { FullCardItem, PhonicsBankEntry, WordList } from '../../lib/types';
@@ -30,6 +31,8 @@ function WorksheetStudioOwner({owner}:{owner:string}) {
  const tr=(key:string,values?:Record<string,string|number>)=>t(`worksheetStudio.${key}`,values);
  const store=useRef<WorksheetStore>(readWorksheetStore(owner)),[copies,setCopies]=useState(store.current.copies),[copyName,setCopyName]=useState('');
  const [doc,setDoc]=useState<WorksheetDocument|null>(null),docRef=useRef(doc);docRef.current=doc;
+ const fillExamples=useWorksheetExamples();
+ const exampleSource=doc&&JSON.stringify([doc.activityId,doc.source?.id,doc.source?.revision,doc.words.map(w=>[w.id,w.word,w.meaning])]);
  const [purpose,setPurpose]=useState<ActivityPurpose|'all'>('all'),[search,setSearch]=useState(''),[limit,setLimit]=useState(18);
  const [lists,setLists]=useState<WordList[]>([]),[bank,setBank]=useState<PhonicsBankEntry[]>([]),[loading,setLoading]=useState(true),[sourceError,setSourceError]=useState(false);
  const [saved,setSaved]=useState(true),[undo,setUndo]=useState<WorksheetDocument|null>(null),[audience,setAudience]=useState<'student'|'teacher'>('student'),[imageStatus,setImageStatus]=useState<'ready'|'loading'|'error'>('loading'),[pageCount,setPageCount]=useState(0),[printing,setPrinting]=useState(false);
@@ -38,6 +41,12 @@ function WorksheetStudioOwner({owner}:{owner:string}) {
  const active=useRef(true);useEffect(()=>{active.current=true;return()=>{active.current=false;window.speechSynthesis?.cancel();};},[]);
  const persist=useCallback((value:WorksheetStore)=>{store.current=value;const success=writeWorksheetStore(owner,value);setSaved(success);return success;},[owner]);
  const change=useCallback((next:WorksheetDocument)=>{docRef.current=next;setDoc(next);persist({...store.current,current:{...store.current.current,[next.activityId]:next}});},[persist]);
+ useEffect(()=>{
+  const current=docRef.current;
+  if(!current)return;
+  const words=fillExamples(current.words);
+  if(words!==current.words)change(current.editedTasks?{...current,words}:rebuildWordTasks({...current,words}));
+ },[exampleSource,fillExamples,change]);
  const requested=params.get('activity'),sourceId=params.get('source');
  const incoming=handoffFromLocationState(location.state),allowed=!incoming.materialsOwnerId||(incoming.materialsOwnerId===session?.user.id&&incoming.materialsAcademyId===academy?.id);
  const [source,setSource]=useState<WorksheetSource|null>(()=>sourceFromHandoff(allowed?incoming:{})||(params.get('source')?restoreWorksheetSource(owner,params.get('source')!):null));
