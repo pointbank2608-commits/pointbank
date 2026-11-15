@@ -65,16 +65,14 @@
 }
 @media(max-width:600px){.ad-vocab-board{gap:22px 18px;padding:16px 8px}.ad-word{width:100%;min-width:0}.ad-balloon{min-height:140px}}
 
-/* Responsive adventure scenes size themselves within the available stage. */
-.game-fs-stage[data-game-fit="responsive"] {
-  container-type: size;
-  overflow: auto;
-  align-items: flex-start;
+[data-game-fullscreen="true"] .game-fs-stage .ad-treasurehunt {
+  width: min(100%, 100rem, max(48rem, 177.78cqh));
+  aspect-ratio: 16 / 9;
+  min-height: auto;
+  overflow: clip;
 }
-.game-fs-stage[data-game-fit="responsive"] .game-fs-scale {
-  margin-block: auto;
-  flex-shrink: 0;
-  will-change: auto;
+@media (max-width: 600px) {
+  [data-game-fullscreen="true"] .game-fs-stage .ad-treasurehunt { aspect-ratio: auto; }
 }
 
 .ad-game:is(.ad-balloonpop, .ad-wordtrain, .ad-wordfishing) {

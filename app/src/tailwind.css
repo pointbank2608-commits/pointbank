@@ -4816,6 +4816,20 @@ html[data-game-focus] [data-app-main] { margin-left: 0; padding-top: 0; }
   width: 100%;
 }
 
+.game-fs-stage[data-game-fit="responsive"] {
+  container-type: size;
+  overflow: auto;
+  align-items: flex-start;
+}
+.game-fs-stage[data-game-fit="responsive"] .game-fs-scale {
+  margin-block: auto;
+  flex-shrink: 0;
+  will-change: auto;
+}
+[data-game-fullscreen="true"] .game-fs-stage[data-game-fit="responsive"] :is(.ad-game, .sb-game) {
+  zoom: var(--game-fullscreen-zoom, 1);
+}
+
 /* 랜딩: 둥근 산세리프 제목 + 본문 산세리프 */
 .landing {
   font-family: 'Noto Sans KR', 'IBM Plex Sans KR', sans-serif;

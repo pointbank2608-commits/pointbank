@@ -11,3 +11,13 @@
 
 /* Editor defaults yield to shared controls with their own background/text pair. */
 @layer components{.sb-editor button,.sb-editor .sb-edit-button{background:#f6f3fc}}
+
+[data-game-fullscreen="true"] .game-fs-stage .sb-game {
+  width: min(100%, 100rem, max(48rem, 177.78cqh));
+  min-height: auto;
+  aspect-ratio: 16 / 9;
+  overflow: clip;
+}
+@media (max-width: 600px) {
+  [data-game-fullscreen="true"] .game-fs-stage .sb-game { aspect-ratio: auto; }
+}

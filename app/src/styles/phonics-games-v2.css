@@ -165,7 +165,8 @@
 .pg-v2 .pg-journey{background:var(--pg-paper);padding:11px 16px;border:2px solid var(--color-outline-variant);border-radius:20px;margin-bottom:12px}.pg-v2 .pg-journey li{font-size:15px}.pg-v2 .pg-journey li[aria-current]{border-color:var(--pg-blue);padding-bottom:4px}
 .pg-v2 .pg-mission{background:var(--color-primary-fixed);display:table;border-radius:20px;padding:6px 15px;margin:10px auto;font-size:15px;color:var(--pg-ink)}
 .pg-v2 .pg-results,.pg-v2 .pg-pause{max-width:1060px;margin:20px auto}.pg-result-friend{width:180px;height:180px;animation:pg-clay-cheer .7s ease-in-out 2}.pg-results .pg-village{margin:24px 0;background:var(--color-surface-container-low)}
-.pg-v2 .pg-fullscreen{position:fixed;inset:0;z-index:1200;border-radius:0;overflow:auto;min-height:100dvh;padding:15px max(18px,calc((100vw - 1300px)/2));background-size:cover;background-position:center}
+.pg-v2 .pg-session.pg-fullscreen{position:fixed;inset:0;z-index:1200;border-radius:0;overflow:auto;height:100dvh;min-height:0;padding:15px 18px;background-size:cover;background-position:center}
+.pg-fullscreen .pg-game-board{display:flow-root;width:min(100%,1100px);margin-inline:auto;zoom:var(--game-fullscreen-zoom,1)}
 .pg-fullscreen .pg-playground{max-width:1100px;margin:auto}.pg-fullscreen .pg-learning-stage{padding-top:2px}.pg-fullscreen .pg-learning-content{margin-top:0}
 .pg-play-world:has(.pg-fullscreen){min-height:70vh}
 @keyframes pg-clay-arrive{from{transform:translateY(8px) scale(.9);opacity:.3}to{transform:translateY(0) scale(1);opacity:1}}

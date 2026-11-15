@@ -1,7 +1,4 @@
 .ad-game.ad-wordclaw { min-height: auto; overflow: clip; background: #f9d1e5; }
-[data-game="wordclaw"][data-game-fullscreen="true"] .ad-wordclaw {
-  zoom: var(--claw-fullscreen-zoom, 1);
-}
 .ad-wordclaw .ad-play { flex: 1 0 auto; }
 .ad-wordclaw .ad-prompt img { max-height: 5rem; object-fit: contain; }
 .ad-wordclaw .ad-prompt > span { white-space: nowrap; }

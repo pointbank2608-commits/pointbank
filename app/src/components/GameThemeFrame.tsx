@@ -18,6 +18,8 @@ import AccessibleDialog from './AccessibleDialog';
 import TeamOrderPanel from './TeamOrderPanel';
 import { PictureWordTurnProvider } from './PictureWordTurn';
 import { pictureWordModeKind } from '../lib/pictureWordQuestions';
+import { fitFullscreenZoom, fullscreenContentSpace } from '../lib/fullscreenFit';
+import { STORY_NAMES } from '../lib/storybook';
 import '../gameSkins.css';
 import type { GameType, GameItem } from '../lib/types';
 import { COMMON_SFX, playSfx, setGameSoundOn, useGameSoundOn } from '../lib/gameSfx';
@@ -162,7 +164,8 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
   const fill = fullOn || presenting || !!workspace?.playing;
   const responsiveScene = gameType === 'grammardetective' || gameType === 'balloonpop'
     || gameType === 'wordtrain' || gameType === 'wordfishing' || gameType === 'sentencerocket'
-    || gameType === 'wordclaw';
+    || gameType === 'wordclaw'
+    || (fullOn && !!gameType && (gameType === 'treasurehunt' || Object.hasOwn(STORY_NAMES, gameType)));
   const reportFullscreen=workspace?.setFullscreen;
   useEffect(()=>{reportFullscreen?.(fullOn);return ()=>reportFullscreen?.(false);},[fullOn,reportFullscreen]);
   const [scrollContent, setScrollContent] = useState(false);
@@ -284,18 +287,13 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
       const wrap = scaleRef.current;
       if (!stage || !wrap) return;
 
-      if (fullOn && gameType === 'wordclaw') {
-        const scene = wrap.querySelector<HTMLElement>('.ad-wordclaw');
-        if (scene?.offsetWidth && scene.offsetHeight) {
-          // Measure the unzoomed scene so the cabinet, text and hit areas grow together.
-          const style = getComputedStyle(stage);
-          const width = stage.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-          const height = stage.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
-          const zoom = Math.min(width / scene.offsetWidth, height / scene.offsetHeight);
-          stage.style.setProperty('--claw-fullscreen-zoom', String(Math.max(1, Math.floor(zoom * 1000) / 1000)));
+      if (responsiveScene && fullOn) {
+        const scene = wrap.querySelector<HTMLElement>('.ad-game, .sb-game');
+        if (scene) {
+          fitFullscreenZoom(stage, scene);
         }
       } else {
-        stage.style.removeProperty('--claw-fullscreen-zoom');
+        stage.style.removeProperty('--game-fullscreen-zoom');
       }
 
       if (responsiveScene || (!fill && window.innerWidth < DESKTOP_BREAKPOINT)) {
@@ -305,14 +303,13 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
         return;
       }
 
-      const stageStyle = getComputedStyle(stage);
-      const availW = stage.clientWidth - parseFloat(stageStyle.paddingLeft) - parseFloat(stageStyle.paddingRight);
+      const { width: availW, height: stageHeight } = fullscreenContentSpace(stage);
       // 전체화면(·발표 중)에선 스테이지 자체가 채울 영역 전체라 clientHeight가 곧 가용 높이지만,
       // 일반 화면에선 스테이지가 문서 흐름 속 카드일 뿐이라 "뷰포트 아래쪽 끝까지 남은 높이"를
       // 따로 재야 한다(지금 스크롤 위치 기준 — 사용자가 이미 스크롤해서 보고 있는 상태를
       // 쫓아다니며 다시 축소하진 않는다, 새로고침·리사이즈 시점에만 재계산).
       const availH = fill
-        ? stage.clientHeight - parseFloat(stageStyle.paddingTop) - parseFloat(stageStyle.paddingBottom)
+        ? stageHeight
         : Math.max(240, window.innerHeight - stage.getBoundingClientRect().top - 24);
       const targets = (Array.from(wrap.children) as HTMLElement[]).length > 0 ? Array.from(wrap.children) as HTMLElement[] : [wrap];
 
@@ -343,7 +340,9 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
       // 콘텐츠가 얼마나 좁은지 잴 때만 쓰고, 축소 후 문서에 얼마만큼 공간을 예약할지는
       // scaleRef 자체의 폭(availW) 기준이어야 실제로 줄어드는 시각적 크기와 맞아떨어진다.
       setNaturalSize((old) => old.w === availW && Math.abs(old.h-h) < 0.5 ? old : { w: availW, h });
-      const next = Math.min(availW / w, availH / h) * 0.96;
+      const next = fullOn
+        ? Math.min((availW - 4) / w, (availH - 4) / h)
+        : Math.min(availW / w, availH / h) * 0.96;
       // 전체화면에선 작은 콘텐츠를 키워서라도 화면을 채우지만(최대 5배), 일반 화면에선
       // 각 게임이 이미 자기 최대 크기를 스스로 정해뒀으므로 "화면보다 크면 줄이기"만
       // 하고 원래 크기보다 더 키우진 않는다(1배 상한).
@@ -577,7 +576,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
         </div>
   );
   const frame = (
-    <GamePlayContext.Provider value={{ fullscreen: fill, itemsHidden: itemsHidden || lockHidden, itemsLocked: lockHidden, toggleItems: () => { if (!lockHidden) setItemsHidden((v) => !v); } }}>
+    <GamePlayContext.Provider value={{ fullscreen: fill, fullscreenControl: { active: fullOn, toggle: presenting ? undefined : toggleFullscreen }, itemsHidden: itemsHidden || lockHidden, itemsLocked: lockHidden, toggleItems: () => { if (!lockHidden) setItemsHidden((v) => !v); } }}>
       <div
         ref={containerRef}
         data-game={gameType ?? bg}

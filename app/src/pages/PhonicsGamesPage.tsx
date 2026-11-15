@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PHONICS_STAGES } from '../data/phonicsCurriculum';
 import { type CourseUnit } from '../data/phonicsLessons';
 import { fetchPhonicsBank } from '../lib/api';
+import { fitFullscreenZoom } from '../lib/fullscreenFit';
 import { courseUnits } from '../data/phonicsLessons';
 import { PHONICS_GAMES, alphabetGlyph, gameAvailability, gameName, gamePool, blankOf, makeRound, patternKey, patternLabel, phonicsGameUnits, pictureEligible, shuffled, targetText, type PhonicsGame } from '../lib/phonicsGames';
 import type { PhonicsBankEntry } from '../lib/types';
@@ -266,7 +267,21 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
   setResults(old=>[...old,first]);setDone(true);
  }
  const panel=useRef<HTMLDivElement>(null);
+ const toolbar=useRef<HTMLDivElement>(null);
+ const board=useRef<HTMLDivElement>(null);
  const pseudoFull=useRef(false);
+ useLayoutEffect(()=>{
+  const stage=panel.current, tools=toolbar.current, content=board.current;
+  if(!large||!stage||!tools||!content)return;
+  const fit=()=>fitFullscreenZoom(stage,content,tools.offsetHeight+parseFloat(getComputedStyle(tools).marginBottom));
+  fit();
+  let frame=0;
+  const observer=new ResizeObserver(()=>{
+   if(!frame)frame=requestAnimationFrame(()=>{frame=0;fit();});
+  });
+  for(const element of [stage,tools,content])observer.observe(element);
+  return ()=>{observer.disconnect();cancelAnimationFrame(frame);stage.style.removeProperty('--game-fullscreen-zoom');};
+ },[large]);
  function exitSession() {
   if (panel.current && document.fullscreenElement === panel.current) {
    void document.exitFullscreen().catch(() => {
@@ -306,7 +321,7 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
  },[game,index,unit]);
  const milestones:Record<string,[string[],string[]]>={farm:[['씨앗 심기','물 주기','수확'],['Plant','Water','Harvest']],dino:[['발자국 찾기','알 발견','공룡 만나기'],['Tracks','Egg','Dinosaur']],space:[['연료 모으기','우주선 수리','친구 구조'],['Fuel','Repair','Rescue']],island:[['해변','숲','보물'],['Beach','Forest','Treasure']],book:[['첫 장','다음 장','책 완성'],['First page','Next page','Book complete']]};
  return <PlayWorld world={gameVisual(game).world}><div ref={panel} className={'pg-session '+(large?'pg-fullscreen':'')} data-phonics-session={game.id} data-paused={paused}>
-  <div className="pg-toolbar"><strong>{gameName(game,en)} · Unit {unit.number}</strong>{settings&&<button type="button" className="pg-button" onClick={()=>setSettingsOpen(true)}>{l(en,'게임 설정','Game settings')}</button>}<button type="button" className={paused ? 'pg-primary' : 'pg-button'} onClick={()=>setPaused(v=>!v)}>{l(en,paused?'계속하기':'잠시 멈춤',paused?'Resume':'Pause')}</button><button type="button" className="pg-button" onClick={()=>void toggleFullscreen()}>{l(en,large?'전체화면 종료':'전체화면',large?'Exit fullscreen':'Fullscreen')}</button><button type="button" className="pg-button pg-exit" onClick={()=>setLeaving(true)}>{l(en,'게임 나가기','Leave game')}</button>
+  <div ref={toolbar} className="pg-toolbar"><strong>{gameName(game,en)} · Unit {unit.number}</strong>{settings&&<button type="button" className="pg-button" onClick={()=>setSettingsOpen(true)}>{l(en,'게임 설정','Game settings')}</button>}<button type="button" className={paused ? 'pg-primary' : 'pg-button'} onClick={()=>setPaused(v=>!v)}>{l(en,paused?'계속하기':'잠시 멈춤',paused?'Resume':'Pause')}</button><button type="button" className="pg-button" onClick={()=>void toggleFullscreen()}>{l(en,large?'전체화면 종료':'전체화면',large?'Exit fullscreen':'Fullscreen')}</button><button type="button" className="pg-button pg-exit" onClick={()=>setLeaving(true)}>{l(en,'게임 나가기','Leave game')}</button>
     <GameReportButton gameName={`${gameName(game,en)} · Level ${unit.step} · Unit ${unit.number}`} className="pg-button" onOpenChange={setReportOpen} />
   </div>
   {settingsOpen&&<AccessibleDialog label={l(en,'게임 설정','Game settings')} onClose={()=>setSettingsOpen(false)}>
@@ -329,6 +344,7 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
     </div>
    </div>
   </AccessibleDialog>}
+  <div ref={board} className="pg-game-board">
   <PhonicsSoundControls en={en}/>
   <div className="pg-progress"><span>{Math.min(index+1,rounds)} / {rounds}</span><progress value={index} max={rounds} aria-label={l(en,'게임 진행','Game progress')}/>{lives>0&&<span className="pg-hearts" aria-label={l(en,`하트 ${hearts}개`,`${hearts} hearts`)}>{Array.from({length:lives},(_,i)=><b key={i} className={i<hearts?'on':''}>{icon('favorite')}</b>)}</span>}<span className="pg-hud-stars" key={'s'+stars} aria-label={l(en,`모은 별 ${stars}개`,`${stars} stars`)}>{icon('star')}{stars} / {starGoal}</span>{combo>=2&&<span className="pg-hud-combo" key={'c'+combo}>{icon('local_fire_department')}{combo}</span>}<span className="pg-first">{l(en,'첫 시도 정답','First try')}: {results.filter(Boolean).length}</span></div>
   {teams>1&&<div className="pg-teams" aria-label={l(en,'팀 점수','Team scores')}>{teamStars.map((v,i)=><span key={i} className={i===teamNow&&!finish?'pg-team-on':''} style={{'--team':TEAM_COLORS[i]} as React.CSSProperties}>{TEAM_NAMES[en?1:0][i]} {icon('star')}{v}</span>)}{!finish&&<strong>{l(en,`${TEAM_NAMES[0][teamNow]} 차례예요!`,`${TEAM_NAMES[1][teamNow]} team's turn!`)}</strong>}</div>}
@@ -343,6 +359,7 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
    <RoundActivity key={`${index}:${activity.id}`} game={activity} visualGame={game} unit={unit} en={en} index={index} seed={seed} level={roundLevel} autoSpeak={autoSpeak} last={index+1===rounds} paused={interrupted} onNext={()=>{window.speechSynthesis?.cancel();setDone(false);setBurst(null);setIndex(n=>n+1);}} onComplete={finishRound}/>
    {done&&burst&&<div className="pg-burst" key={burst.key} aria-hidden="true"><b className="pg-burst-praise">{burst.praise}</b><span className="pg-burst-gain">+{burst.gain}{icon('star')}</span>{Array.from({length:12},(_,i)=><span key={i} className="pg-burst-star" style={{'--a':`${i*30}deg`} as React.CSSProperties}>{icon('star')}</span>)}</div>}
   </div>}
+  </div>
  </div></PlayWorld>;
 }
 
