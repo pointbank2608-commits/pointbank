@@ -3,6 +3,7 @@ import {builderParts,courseWord,readerSentence,type CourseUnit,type CourseSlide}
 import {Stage1Lines,Stage1Picture,Stage1Speaker,Stage1Word} from './Stage1Art';
 import type {PhonicsBankEntry} from '../../lib/types';
 import {ClaySprite} from '../PhonicsGameArt';
+import ReadyClassUnitOneActivity, { sortBoardEntries, unitOneActivity } from './ReadyClassUnitOneActivity';
 import '../../styles/phonics-lessons.css';
 
 const rotate=<T,>(items:T[])=>items.length>1?[...items.slice(1),items[0]]:items;
@@ -13,6 +14,7 @@ function MarkedSentence({text,unit}:{text:string;unit:CourseUnit}){return <>{tex
 export default function PhonicsCourseSlide({unit:u,slide:s,index,total}:{unit:CourseUnit;slide:CourseSlide;index:number;total:number}){
  const {t}=useTranslation();
  const activityGuide=['builder','choose','sort'].includes(s.kind);
+ const unitOne=unitOneActivity(u.id,s);
  const words=s.entryIds.map(id=>courseWord(u,id)),groups=s.groupIds.length?u.groups.filter(g=>s.groupIds.includes(g.id)):u.groups;
  const answer=s.phase>0,gameAnswer=s.phase===2;
  const tile=(entry:PhonicsBankEntry,label=true,speaker=true)=> <div className={'pc-word-card '+(answer&&s.answerIds.includes(entry.id)?'pc-answer':'')} key={entry.id} data-entry={entry.id}>{u.id==='course-4-7'&&entry.word==='fish'&&s.kind==='readChoose'?<div className="pc-plural-fish"><Stage1Picture entry={entry}/><Stage1Picture entry={entry}/></div>:<Stage1Picture entry={entry}/>} {label&&<Stage1Word entry={entry}/>} {speaker&&<Stage1Speaker entry={entry}/>}</div>;
@@ -28,8 +30,8 @@ export default function PhonicsCourseSlide({unit:u,slide:s,index,total}:{unit:Co
    {targetIndex>=0&&<svg viewBox="0 0 100 56" aria-hidden className="pc-reader-arrow"><line x1={coordinates[targetIndex][0]-9} y1={coordinates[targetIndex][1]*.56-10} x2={coordinates[targetIndex][0]} y2={coordinates[targetIndex][1]*.56} stroke="#df3048" strokeWidth="1.2"/><polygon points={`${coordinates[targetIndex][0]},${coordinates[targetIndex][1]*.56} ${coordinates[targetIndex][0]-4},${coordinates[targetIndex][1]*.56-1.8} ${coordinates[targetIndex][0]-1.4},${coordinates[targetIndex][1]*.56-4.2}`} fill="#df3048"/></svg>}
   </div>;
  };
- let body;
- switch(s.kind){
+ let body=unitOne?<ReadyClassUnitOneActivity activity={unitOne} slide={s} words={words} groups={groups}/>:null;
+ switch(unitOne?null:s.kind){
   case 'cover':case 'lesson':case 'finish':case 'extra':case 'end':case 'transition':body=<><strong className="pc-big-title">{s.kind==='cover'?`Unit ${u.number}`:s.title}</strong>{s.kind==='cover'&&ruleBlocks()}<p className="pc-large-hint">{s.hint}</p></>;break;
   case 'sounds':case 'letter':body=<>{s.text?<strong className="pc-big-title">{s.text}</strong>:ruleBlocks()}{s.kind==='sounds'&&words.length>0&&<div className="pc-small-pictures">{cards()}</div>}</>;break;
   case 'introduce':body=<div className="pc-introduce">{ruleBlocks()}{tile(words[0])}</div>;break;
@@ -53,10 +55,8 @@ export default function PhonicsCourseSlide({unit:u,slide:s,index,total}:{unit:Co
   case 'write':body=<div className="pc-writing">{words.map(e=><div key={e.id}><Stage1Picture entry={e}/><Stage1Word entry={e}/><Stage1Lines text={e.word} trace/><Stage1Lines/></div>)}</div>;break;
   case 'complete':body=<div className="pc-word-grid">{words.map(e=><div className="pc-word-card" key={e.id}><Stage1Picture entry={e}/><Stage1Word entry={e} blank={!answer}/></div>)}</div>;break;
   case 'sort': {
-   const bins=groups.map(group=>({label:group.label,id:group.id,entries:words.filter(word=>group.entries.some(entry=>entry.id===word.id))}));
-   const rows=Math.max(0,...bins.map(bin=>bin.entries.length));
-   const mixed=rotate(Array.from({length:rows},(_,row)=>bins.flatMap(bin=>bin.entries.slice(row,row+1))).flat());
-   body=<><div className="pc-sort-bank"><ActivityGuide kind="sort"/><div className="pc-sort-tiles">{mixed.map(e=><span className="pc-sort-tile" key={e.id}>{answer?<Stage1Word entry={e}/>:e.word}</span>)}</div></div><div className="pc-sort-bins">{bins.map((bin,i)=><div className={'pc-pastel pc-tone-'+i%4} key={bin.id}><strong>{bin.label}</strong>{answer&&bin.entries.map(e=><Stage1Word entry={e} key={e.id}/>)}</div>)}</div></>;
+   const {bins,mixed}=sortBoardEntries(words,groups);
+   body=<><div className="pc-sort-bank"><ActivityGuide kind="sort"/><div className="pc-sort-tiles">{mixed.map(e=><span className="pc-sort-tile" key={e.id}>{answer?<Stage1Word entry={e}/>:e.word}</span>)}</div></div><div className="pc-sort-bins">{bins.map((bin,i)=><div className={'pc-pastel pc-tone-'+i%4} key={bin.id}><strong>{bin.label}</strong>{answer&&bin.words.map(e=><Stage1Word entry={e} key={e.id}/>)}</div>)}</div></>;
    break;
   }
   case 'puzzle':body=<div className="pc-game" data-game-phase={s.phase}><div className={'pc-puzzle pc-puzzle-'+s.phase}>{[0,1,2,3].map(i=><div key={i} className={'pc-piece pc-piece-'+i} style={{backgroundImage:`url("${words[0].image_url}")`}}/>)}</div>{gameAnswer&&<Stage1Word entry={words[0]}/>}</div>;break;
@@ -74,9 +74,10 @@ export default function PhonicsCourseSlide({unit:u,slide:s,index,total}:{unit:Co
    body=<><div className="pc-sentence-parts">{order.map((w,i)=><span className={'pc-pastel pc-tone-'+i%4} key={i}>{w}</span>)}</div><div className="pc-small-pictures">{cards(false)}</div></>;break;
   }
  }
- return <article className={'s1-slide pc-lesson-slide pc-level-'+u.step} data-course-slide={s.id} data-course-kind={s.kind}>
-  <header className="s1-slide-brand"><strong>수업뚝딱</strong><span>LEVEL {u.step} · UNIT {u.number} · {u.groups.map(g=>g.label).join(' · ')}</span>{!activityGuide&&s.kind!=='readAlone'&&<ClaySprite kind="robot" className="pc-slide-guide"/>}</header>
-  <h2 className="s1-slide-title">{s.title}</h2><div className="s1-slide-body">{s.draft&&<span className="pc-draft-badge">{t('phonicsLesson.readDraft')}</span>}<p className="pc-slide-hint">{!['cover','lesson','finish','extra','end','readIntro'].includes(s.kind)&&s.hint}</p>{body}</div>
+ return <article className={'s1-slide pc-lesson-slide pc-level-'+u.step+(unitOne?' pc-unit-one-slide':'')} data-course-slide={s.id} data-course-kind={s.kind}>
+  <header className="s1-slide-brand"><strong>수업뚝딱</strong><span>LEVEL {u.step} · UNIT {u.number} · {u.groups.map(g=>g.label).join(' · ')}</span>{!unitOne&&!activityGuide&&s.kind!=='readAlone'&&<ClaySprite kind="robot" className="pc-slide-guide"/>}</header>
+  {!unitOne&&<h2 className="s1-slide-title">{s.title}</h2>}
+  <div className="s1-slide-body">{s.draft&&<span className="pc-draft-badge">{t('phonicsLesson.readDraft')}</span>}{!unitOne&&<p className="pc-slide-hint">{!['cover','lesson','finish','extra','end','readIntro'].includes(s.kind)&&s.hint}</p>}{body}</div>
   <footer className="s1-slide-footer"><span>{s.lesson==='extra'?'Extra Practice':`Lesson ${s.lesson}`} · {u.groups.map(g=>g.label).join(' · ')}</span><progress value={index+1} max={total}/><span>{index+1} / {total}</span></footer>
  </article>;
 }
