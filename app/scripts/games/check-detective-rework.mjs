@@ -12,6 +12,7 @@ const rows=JSON.parse(sessionStorage.getItem('adventure-test-rows')||'[]');
 const lessons=JSON.parse(sessionStorage.getItem('adventure-test-lessons')||'[]');
 const flush=()=>{sessionStorage.setItem('adventure-test-rows',JSON.stringify(rows));sessionStorage.setItem('adventure-test-lessons',JSON.stringify(lessons));};
 const lists=[{id:'farm-test',kind:'word',name:'검증 농장 동물',items:'dog cat chicken cow duck hen horse pig sheep puppy'.split(' ').map(word=>({id:word,word,meaning:'동물',image_url:null}))},{id:'words-test',kind:'word',name:'검증 단어장',items:['apple','banana','milk'].map((word,i)=>({id:String(i),word,meaning:['사과','바나나','우유'][i],image_url:null}))},{id:'sentences-test',kind:'sentence',name:'검증 문장',items:[{id:'s',word:'She goes to school.',meaning:'그녀는 학교에 가요.',image_url:null}]}];
+lists.push({id:'unsupported-test',kind:'sentence',name:'검증 출제 불가 문장',items:[{id:'unsupported',word:'She stopped talking.'}]});
 const fn={fetchClasses:async()=>[{id:'class-test',academy_id:'academy-test',name:'검증 반'}],fetchMyStudentRow:async()=>({class_id:'class-test'}),fetchAllWordLists:async()=>lists,fetchWordLists:async()=>lists,
 fetchGameTemplates:async(a,c,t)=>structuredClone(rows.filter(r=>r.game_type===t)),fetchGameTemplateById:async id=>structuredClone(rows.find(r=>r.id===id)),
 createGameTemplate:async p=>{if(window.__failStorySave)throw Error('합성 저장 실패');const row={id:crypto.randomUUID(),academy_id:p.academyId,class_id:p.classId,game_type:p.gameType,name:p.name,items:p.items,config:p.config,created_by:p.teacherId,updated_at:'test'};rows.push(row);flush();return structuredClone(row)},
@@ -43,6 +44,9 @@ try {
   assert.deepEqual(grammar.detectiveVariants('She has better books than mine.',['comparison']),[]);
   assert.equal(grammar.detectiveVariants('She has a bigger bag than mine.',['comparison'])[0].incorrect,'She has a more bigger bag than mine.');
   const mixed=grammar.previewDetectiveDraft('She eats an apple every morning.\nShe can swim.\nShe stopped talking.', ['articles','verb-form','comparison']);
+  const overlapping=grammar.previewDetectiveDraft('She eats an apple every morning.', ['articles','agreement']);
+  assert.equal(overlapping.ready.length,1);
+  assert.deepEqual([...overlapping.applicableRules].sort(),['agreement','articles']);
   assert.deepEqual(mixed.ready.map(r=>r.variant.rule),['articles','verb-form']);
   assert.deepEqual(mixed.review.map(r=>r.correct),['She stopped talking.']);
   assert.equal(mixed.counts.get('comparison').length,0);
@@ -178,6 +182,26 @@ try {
   const grammarSettings=settings.locator('[data-detective-grammar]');
   const applySettings=page.locator('[data-preparation-submit]').getByRole('button',{name:'적용',exact:true});
   const wordEvidence=scene.locator('.ad-evidence');
+  await listPicker.selectOption('unsupported-test');
+  await contentPanel.getByText('출제 가능 0문제',{exact:true}).waitFor();
+  await contentPanel.getByText('해당 문법에 출제 가능한 문제가 없습니다.',{exact:true}).waitFor();
+  await contentPanel.getByRole('button',{name:'출제 문법 확인',exact:true}).click();
+  const grammarOptions = grammarSettings.getByRole('checkbox');
+  assert.equal((await grammarOptions.all()).length, grammar.defaultDetectiveRules.length);
+  for (const option of await grammarOptions.all()) assert.equal(await option.isDisabled(),true);
+  await page.locator('dialog.game-workspace-dialog[open]').getByRole('button',{name:'닫기',exact:true}).click();
+  await page.getByRole('button',{name:'내 단어/문장',exact:true}).click();
+  await listPicker.selectOption('sentences-test');
+  await contentPanel.getByText('출제 가능 1문제',{exact:true}).waitFor();
+  await chooseList('sentences-test');
+  await openSettings();
+  assert.equal(await grammarSettings.getByRole('checkbox',{name:'주어·동사 일치',exact:true}).isChecked(),true);
+  assert.equal(await grammarSettings.getByRole('checkbox',{name:'관사 a/an',exact:true}).isDisabled(),true);
+  await page.locator('dialog.game-workspace-dialog[open]').getByRole('button',{name:'닫기',exact:true}).click();
+  await page.getByRole('button',{name:'내 단어/문장',exact:true}).click();
+  await listPicker.selectOption('words-test');
+  await contentPanel.getByText('출제 가능 2문제',{exact:true}).waitFor();
+  console.log('PASS list counts appear before applying, and unavailable grammar topics are disabled');
   await chooseList('words-test');
   await page.getByRole('button',{name:'내 단어/문장',exact:true}).click();
   assert.equal(await listPicker.inputValue(),'words-test');
@@ -256,7 +280,7 @@ try {
   await page.getByRole('button',{name:'내 단어/문장',exact:true}).click();
   await chooseList('');
   await openSettings();
-  await grammarSettings.getByText('클래스뱅크 기본 문장',{exact:false}).waitFor();
+  await grammarSettings.getByText('수업뚝딱 기본 문장',{exact:false}).waitFor();
   await grammarSettings.getByText('출제 가능 27문제',{exact:true}).waitFor();
   for (const checkbox of await grammarSettings.getByRole('checkbox').all()) await checkbox.uncheck();
   await grammarSettings.getByRole('checkbox',{name:'관사 a/an',exact:true}).check();

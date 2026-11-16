@@ -42,11 +42,17 @@ export interface GameWorkspaceBridge {
 }
 export type WorkspacePanel = "settings" | "content" | "games" | "teacher" | "video" | "guide" | "detective-authoring" | null;
 
+export interface DetectiveListPicker {
+  select: (list: WordList | null) => boolean;
+  countQuestions: (list: WordList) => number;
+}
+
 export interface WorkspaceContextValue {
   info?: GameWorkspaceBridge | null;
   registerPreparation?: (commit:()=>Promise<boolean>)=>()=>void;
-  registerDetectiveListImporter?: (importList: (list: WordList | null) => boolean) => () => void;
+  registerDetectiveListPicker?: (picker: DetectiveListPicker) => () => void;
   selectDetectiveList?: (list: WordList | null) => boolean;
+  countDetectiveListQuestions?: (list: WordList) => number | undefined;
   commitPreparation?: ()=>Promise<boolean>;
   fullscreen: boolean;
   setFullscreen: (value: boolean) => void;

@@ -5,7 +5,7 @@ import { guideProblem, preparePlayableList, NUMBER_GAMES, type GuideKind } from 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { GameWorkspaceContext, useGameWorkspace, type GameWorkspaceBridge, type WorkspacePanel } from '../context/GameWorkspaceContext';
+import { GameWorkspaceContext, useGameWorkspace, type DetectiveListPicker, type GameWorkspaceBridge, type WorkspacePanel } from '../context/GameWorkspaceContext';
 import { useAuth } from '../context/AuthContext';
 import { usePresenting } from '../context/LessonRunnerContext';
 import { GAME_CATALOG, isFreeTierGame } from '../lib/gameCatalog';
@@ -76,12 +76,13 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     setPanelAnchor(anchor ?? null);
     setPanelName(name);
   }, []);
-  const detectiveListImporter = useRef<((list: WordList | null) => boolean) | null>(null);
-  const registerDetectiveListImporter = useCallback((importList: (list: WordList | null) => boolean) => {
-    detectiveListImporter.current = importList;
-    return () => { if (detectiveListImporter.current === importList) detectiveListImporter.current = null; };
+  const detectiveListPicker = useRef<DetectiveListPicker | null>(null);
+  const registerDetectiveListPicker = useCallback((picker: DetectiveListPicker) => {
+    detectiveListPicker.current = picker;
+    return () => { if (detectiveListPicker.current === picker) detectiveListPicker.current = null; };
   }, []);
-  const selectDetectiveList = useCallback((list: WordList | null) => detectiveListImporter.current?.(list) ?? false, []);
+  const selectDetectiveList = useCallback((list: WordList | null) => detectiveListPicker.current?.select(list) ?? false, []);
+  const countDetectiveListQuestions = useCallback((list: WordList) => detectiveListPicker.current?.countQuestions(list), []);
   const [guideNative,setGuideNative]=useState(false);
   const [editRevision,setEditRevision]=useState(0);
   function editContent(){setEditRevision(n=>n+1);setPanel('guide');}
@@ -293,7 +294,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const demo = game && demoForGame(game.path);
   const defaultMaterialName = defaultActivityName('',t(sourceKind==='sentence'?'flow.defaultSentences':'flow.defaultWords'),info?.lists.map(row=>row.name));
   const defaultGameName = defaultActivityName('',game ? t(game.nameKey) : t('flow.defaultActivity'),info?.templates.filter(row=>!isActivityDraft(row.id)).map(row=>row.name));
-  const value = useMemo(() => ({ info, registerPreparation,commitPreparation,registerDetectiveListImporter,selectDetectiveList,fullscreen, setFullscreen, canStart, waitingForSampleStart, validation, stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), pauseLocked, setPauseLocked, panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, startAppliedGame, applyListAndPlay, applyGuideAndPlay, exitPlay, turn }), [info, stage, running, playing, pauseLocked, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, waitingForSampleStart, validation, fullscreen, capabilities.manualTurns,registerPreparation,commitPreparation,registerDetectiveListImporter,selectDetectiveList,startAppliedGame,applyListAndPlay,applyGuideAndPlay]); // eslint-disable-line react-hooks/exhaustive-deps
+  const value = useMemo(() => ({ info, registerPreparation,commitPreparation,registerDetectiveListPicker,selectDetectiveList,countDetectiveListQuestions,fullscreen, setFullscreen, canStart, waitingForSampleStart, validation, stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), pauseLocked, setPauseLocked, panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, startAppliedGame, applyListAndPlay, applyGuideAndPlay, exitPlay, turn }), [info, stage, running, playing, pauseLocked, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, waitingForSampleStart, validation, fullscreen, capabilities.manualTurns,registerPreparation,commitPreparation,registerDetectiveListPicker,selectDetectiveList,countDetectiveListQuestions,startAppliedGame,applyListAndPlay,applyGuideAndPlay]); // eslint-disable-line react-hooks/exhaustive-deps
   const contentName = source?.name || info?.selected?.name || t('quick.sampleTitle');
   const materialButtons = (includeLoad = true) => <div className="flex flex-wrap gap-2" data-material-actions>
     {capabilities.kinds.map(kind => <button key={kind} className={btn} disabled={busy || !info?.temporary || !!info.sharedView} onClick={() => void begin(kind)}>{t(kind === 'word' ? 'flow.createWords' : 'flow.createSentences')}</button>)}

@@ -183,6 +183,7 @@ export function previewDetectiveDraft(text:string, rules:readonly string[], sour
    return correct?[{index,correct,context:context.join('|').trim(),variants:source==='words'?wordVariants(correct,rules):detectiveVariants(correct,rules)}]:[];
  });
  const byRule=new Map(rules.map(rule=>[rule,[] as {variant:Variant;context:string;index:number}[]]));
+ const applicableRules = new Set(rows.flatMap(row => row.variants.map(variant => variant.rule)));
  // Assign sentences with fewer eligible rules first, then balance the rule totals.
  for(const row of [...rows].sort((a,b)=>new Set(a.variants.map(v=>v.rule)).size-new Set(b.variants.map(v=>v.rule)).size)){
    const eligible=[...new Set(row.variants.map(variant=>variant.rule))];
@@ -195,5 +196,5 @@ export function previewDetectiveDraft(text:string, rules:readonly string[], sour
  }
  const groups=[...byRule.values()];
  const ready=Array.from({length:Math.max(0,...groups.map(group=>group.length))},(_,index)=>groups.flatMap(group=>group[index]?[group[index]]:[])).flat();
- return {ready,review:rows.filter(row=>!row.variants.length),counts:byRule};
+ return {ready,review:rows.filter(row=>!row.variants.length),counts:byRule,applicableRules};
 }

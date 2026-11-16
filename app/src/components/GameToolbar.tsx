@@ -225,6 +225,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const detectiveSource = info?.selected?.config.adventure?.detectiveSource;
   const detectiveListId = detectiveSource && detectiveSource.kind !== 'default'
     && info?.lists.some(row => row.id === detectiveSource.listId) ? detectiveSource.listId : '';
+  const detectiveList = isDetective && open === 'content' ? info?.lists.find(row => row.id === pList) : undefined;
+  const detectiveQuestionCount = detectiveList ? workspace.countDetectiveListQuestions?.(detectiveList) : undefined;
   const roster = useMemo(() => fullRoster.filter((row) => !absentIds.includes(row.id)), [fullRoster, absentIds]);
   const turnScope = `${session?.user.id}:${academy?.id}`;
   const turnState = useMemo(() => { void orderRev; return roster.length > 0 ? loadTeamOrder(roster, turnScope) : null; }, [roster, turnScope, orderRev]);
@@ -694,13 +696,18 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             ))}
           </select>
         </label>
+        {detectiveQuestionCount !== undefined && <div className="rounded-xl bg-surface-container-low px-3 py-2 text-sm" role="status">
+          <p className="font-bold">{text(`출제 가능 ${detectiveQuestionCount}문제`, `${detectiveQuestionCount} available questions`)}</p>
+          {detectiveQuestionCount === 0 && <p>{text('해당 문법에 출제 가능한 문제가 없습니다.', 'No questions can be made for the selected grammar topics.')}</p>}
+        </div>}
         {panelAction(()=>{
-          const list=pList ? info?.lists.find(row=>row.id===pList) : null;
+          const list = pList ? detectiveList : null;
           if(list!==undefined&&workspace.selectDetectiveList?.(list)){
             selectedDetectiveList.current={templateId:info?.selected?.id,listId:pList};
             close();
+            if (detectiveQuestionCount === 0) workspace.open('settings', settingsButton.current ?? undefined);
           }else notify(text('자료를 불러오지 못했어요. 다시 시도해 주세요.','Could not load the list. Please try again.'),'error');
-        }, text('선택','Select'), !!info?.loading || !!info?.sharedView)}
+        }, detectiveQuestionCount === 0 ? text('출제 문법 확인', 'Review grammar topics') : text('선택','Select'), !!info?.loading || !!info?.sharedView)}
         <button type="button" className={btn} disabled={!!info?.sharedView} onClick={() => {
           close();
           workspace.open('detective-authoring',panelAnchor??undefined);

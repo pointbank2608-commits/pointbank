@@ -17,7 +17,15 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
   const [c,setC]=useState(()=>structuredClone(value));const [wordText,setWordText]=useState(()=>value.words.map(w=>`${w.word} / ${w.meaning} / ${w.tags.join(', ')}`).join('\n'));
   const [nextSource,setNextSource]=useState<DetectiveSource>();
   const source=nextSource??c.detectiveSource;
-  const selectedRules=source?.rules??defaultDetectiveRules;
+  const listText = source && source.kind !== 'default' ? source.text : undefined;
+  const listKind = source && source.kind !== 'default' ? source.kind : undefined;
+  const applicableRules = useMemo(() => listText !== undefined && listKind
+    ? previewDetectiveDraft(listText, defaultDetectiveRules, listKind).applicableRules
+    : undefined, [listText, listKind]);
+  const sourceRules = source?.rules ?? defaultDetectiveRules;
+  const selectedRules = useMemo(() => applicableRules
+    ? defaultDetectiveRules.filter(rule => applicableRules.has(rule) && sourceRules.includes(rule))
+    : sourceRules, [applicableRules, sourceRules]);
   const sourceQuestions=useMemo(()=>{
     if(!nextSource)return [];
     return nextSource.kind==='default'
@@ -93,23 +101,29 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
   }
   const workspace=usePreparationCommit(commit),preparing=workspace?.panel==='guide';
   const showAuthoring=type==='grammardetective'&&(!workspace||preparing||workspace.panel==='detective-authoring');
-  const registerListImporter=workspace?.registerDetectiveListImporter;
+  const registerListPicker = workspace?.registerDetectiveListPicker;
   useEffect(()=>{
     if(type!=='grammardetective')return;
-    return registerListImporter?.(list=>{
-      if(!list){
-        selectSource({kind:'default',rules:source?.kind==='default'?selectedRules:defaultDetectiveRules});
-        return true;
-      }
-      const rows=list.items.map(item=>item.word.trim()).filter(Boolean);
-      if(!rows.length)return false;
+    function prepareList(list: WordList) {
       const kind=isSentenceList(list)?'sentences':'words';
-      const rules=source?.kind===kind?source.rules:
-        (kind==='sentences'?c.detectiveDraft?.rules:c.detectiveWordDraft?.rules)??defaultDetectiveRules;
-      selectSource({kind,listId:list.id,name:list.name,text:rows.join('\n'),rules});
-      return true;
+      const text = list.items.map(item => item.word.trim()).filter(Boolean).join('\n');
+      const preview = previewDetectiveDraft(text, defaultDetectiveRules, kind);
+      const sameList = source && source.kind !== 'default' && source.listId === list.id;
+      const rules = defaultDetectiveRules.filter(rule => preview.applicableRules.has(rule) && (!sameList || selectedRules.includes(rule)));
+      const next: DetectiveSource = { kind, listId: list.id, name: list.name, text, rules };
+      const count = sameList ? previewDetectiveDraft(text, rules, kind).ready.length : preview.ready.length;
+      return { next, count };
+    }
+    return registerListPicker?.({
+      countQuestions: list => prepareList(list).count,
+      select(list) {
+        const next = list ? prepareList(list).next : { kind: 'default' as const, rules: source?.kind === 'default' ? selectedRules : defaultDetectiveRules };
+        if (next.kind !== 'default' && !next.text) return false;
+        selectSource(next);
+        return true;
+      },
     });
-  },[registerListImporter,type,source,selectedRules,c.detectiveDraft,c.detectiveWordDraft,selectSource]);
+  },[registerListPicker,type,source,selectedRules,selectSource]);
   const draftError = wordPreview && sentencePreview
     ? '단어와 문장 미리보기를 둘 다 수정했어요. 사용할 미리보기에서 ‘이 문제로 게임 시작’을 눌러 주세요.'
     : draft && !draftQuestions.length
@@ -177,9 +191,10 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
         <p><strong>{en?'Source':'문제 출처'}</strong> · {source&&source.kind!=='default'?source.name:source?.kind==='default'?(en?'수업뚝딱 sample sentences':'수업뚝딱 기본 문장'):(en?'Current questions':'현재 문제')}</p>
         <fieldset className="ad-detective-rule-set">
           <legend>{en?'Grammar topics':'적용할 문법'}</legend>
+          {applicableRules && <p>{en?'Only grammar topics that work with this list are available.':'이 자료로 문제를 만들 수 있는 문법만 선택할 수 있어요.'}</p>}
           <div className="ad-detective-rules">
             {DETECTIVE_RULES.map(rule=><label key={rule.id}>
-              <input type="checkbox" checked={selectedRules.includes(rule.id)} onChange={event=>selectSource({
+              <input type="checkbox" disabled={applicableRules ? !applicableRules.has(rule.id) : false} checked={selectedRules.includes(rule.id)} onChange={event=>selectSource({
                 ...(source??{kind:'default'}),rules:event.target.checked?[...selectedRules,rule.id]:selectedRules.filter(id=>id!==rule.id),
               })}/>
               <span>{en?rule.en:rule.ko}</span>
@@ -196,7 +211,8 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
         {roundSize===null
           ? <p role="alert">{en?'Enter a whole number of at least 1.':'1 이상의 정수를 입력하세요.'}</p>
           : <p role="status">{en?`${roundSize} questions in this game. Leave blank to use all questions.`:`이번 게임 ${roundSize}문제 · 비워두면 전체 문제를 사용해요.`}</p>}
-        {nextSource&&!questionCount&&<p>{!selectedRules.length
+        {applicableRules?.size === 0 && <p>{en?'No questions can be made for the selected grammar topics.':'해당 문법에 출제 가능한 문제가 없습니다.'}</p>}
+        {nextSource&&!questionCount&&applicableRules?.size!==0&&<p>{!selectedRules.length
           ? (en?'Select at least one grammar topic.':'적용할 문법을 한 가지 이상 선택하세요.')
           : (en?'Choose a grammar topic that matches this list.':'이 자료로 만들 수 있는 문제가 없어요. 다른 문법을 골라 보세요.')}</p>}
       </section>
