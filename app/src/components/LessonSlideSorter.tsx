@@ -38,17 +38,17 @@ import { isSentenceList, prepareClassroomGame } from '../lib/gameWorkspace';
 import { enrichCards, loadWordBank, useWordBankEnriched } from '../lib/wordBankCache';
 import SlideHelpersEditor from './SlideHelpersEditor';
 import BlockOptionsPanel from './BlockOptionsPanel';
-import LessonActivityPicker, { printSections, worksheetCards } from './LessonActivityPicker';
+import LessonActivityPicker, { printSections, worksheetCards, type ActivityWorksheetOptions } from './LessonActivityPicker';
 import { rememberActivity } from '../lib/lessonActivities';
 import { blockOfSlide } from '../lib/blocks/registry';
 import type { BlockDef } from '../lib/blocks/types';
 import { newHelper, type HelperType } from '../lib/slideHelpers';
 import { MATERIALS_CATALOG, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
-import { CvcUnitPicker } from './worksheets/CvcWorkbookSheets';
+import LessonWorkbookUnits from './worksheets/LessonWorkbookUnits';
 import PhonicsSlidePreview from './worksheets/PhonicsSlidePreview';
 import Stage1LessonOptions from './phonicsStage1/Stage1LessonOptions';
 import { PHONICS_TEACHING_PREVIEW } from '../data/phonicsTeachingCourse';
-import { workbookOfMaterial, workbookNumbers, stableWorkbookRefs, resolveWorkbookSelection } from '../data/cvcWorkbook';
+import { workbookOfMaterial, resolveWorkbookSelection } from '../data/cvcWorkbook';
 import { DEFAULT_COLORING_OPTIONS, type AskTemplate, type ColoringOptions } from '../lib/worksheetGenerators';
 import type {
   FullCardItem,
@@ -100,7 +100,6 @@ import { PhonicsGameCover } from './PhonicsGameArt';
 import GrammarWordWorksheet from './worksheets/GrammarWordWorksheet';
 import { GRAMMAR_WORD_SHEET } from '../lib/grammarCoreWords';
 import { loadPhonicsBank } from '../lib/phonicsFill';
-import { buildPhonicsWorkbook, workbookPrintable } from '../data/phonicsWorkbook';
 import type { PhonicsBankEntry } from '../lib/types';
 
 /** WorksheetOptionsFields 가 쓰는 "다루기 쉬운" 런타임 모양 — MaterialSlide.worksheetOptions(평탄화
@@ -460,7 +459,7 @@ export default function LessonSlideSorter({
     onChange(arrayMove(slides, oldIndex, newIndex));
   }
 
-  function pickBlock(block: BlockDef, layout?: CanvasExample, theme: string | null = null, worksheet?: Pick<MaterialSlide,'words'|'topic'|'worksheetTab'>) {
+  function pickBlock(block: BlockDef, layout?: CanvasExample, theme: string | null = null, worksheet?: ActivityWorksheetOptions) {
     setPickerOpen(false);
     pendingActivity.current = block.id;
     if (block.category === 'helper') {
@@ -1266,24 +1265,6 @@ function SlideDetail({
   return <MaterialSlideDetail key={slide.id} slide={slide.materialId==='library'?{...slide,materialId:'worksheet'}:slide} cards={cards} entries={phonicsEntries} onUpdate={onUpdate} replace={worksheetReplacementOpen} setReplace={onWorksheetReplacementChange}/>;
 }
 
-function WorkbookUnits({slide,entries,onUpdate}:{slide:MaterialSlide;entries:PhonicsBankEntry[];onUpdate:(patch:Partial<MaterialSlide>)=>void}) {
-  const {t}=useTranslation();
-  const book=workbookOfMaterial(slide.materialId);
-  const step=workbookStep(slide.materialId);
-  if(book)return <CvcUnitPicker book={book.id}
-    selected={slide.phonicsUnitIds ? workbookNumbers(book.id,slide.phonicsUnitIds) : slide.cvcUnits??[]}
-    onChange={cvcUnits=>onUpdate({cvcUnits,phonicsUnitIds:stableWorkbookRefs(book.id,cvcUnits)})}
-    vowelLabel={vowel=>t(book.id==='cvc'?'materials.cvc.vowel':'materials.cvc.longVowel',{vowel})}/>;
-  if(!step)return null;
-  const units=buildPhonicsWorkbook(entries,step).filter(workbookPrintable);
-  return <label className="grid gap-1 font-bold">{t('lessonUx.unit')}
-    <select className="min-w-0 rounded-lg border bg-white p-2" value={slide.phonicsUnitIds?.[0]??''} onChange={event=>onUpdate({phonicsUnitIds:event.target.value?[event.target.value]:[]})}>
-      <option value="">{t('lessonUx.needUnit')}</option>
-      {units.map(unit=><option key={unit.id} value={unit.id}>{unit.family} · {unit.words.join(' / ')}</option>)}
-    </select>
-  </label>;
-}
-
 function MaterialSlideDetail({slide,cards,entries,onUpdate,replace,setReplace}:{slide:MaterialSlide;cards:FullCardItem[];entries:PhonicsBankEntry[];onUpdate:(patch:Partial<MaterialSlide>)=>void;replace:boolean;setReplace:(open:boolean)=>void}) {
   const {t}=useTranslation();
   const [settings,setSettings]=useState(false);
@@ -1337,7 +1318,7 @@ function MaterialSlideDetail({slide,cards,entries,onUpdate,replace,setReplace}:{
           <PreviewFrame title={title}>{material?.cover?<img src={material.cover} alt="" className="h-full w-full object-contain"/>:null}</PreviewFrame>}
       </div>
       {settings&&<aside className="space-y-3 rounded-xl border bg-white p-3" aria-label={t('lessonUx.worksheetSettings')}>
-        <WorkbookUnits slide={slide} entries={entries} onUpdate={onUpdate}/>
+        <LessonWorkbookUnits slide={slide} entries={entries} onUpdate={onUpdate}/>
         {slide.materialId==='phonics'?<PhonicsSlideDetail slide={slide} cards={cards} onUpdate={onUpdate} settingsOnly/>:
           usesWords&&<WordSourcePicker kind="topic" lessonCount={cards.length} words={slide.words} topic={slide.topic} onChange={next=>onUpdate({words:next.words,topic:next.topic})}/>}
         {optionFields}
@@ -1380,7 +1361,7 @@ function MaterialSlideDetail({slide,cards,entries,onUpdate,replace,setReplace}:{
           })}
         </div>
         <footer>
-        {candidate&&<WorkbookUnits slide={candidate} entries={entries} onUpdate={patch=>setCandidate({...candidate,...patch})}/>}
+        {candidate&&<LessonWorkbookUnits slide={candidate} entries={entries} onUpdate={patch=>setCandidate({...candidate,...patch})}/>}
         <div className="flex flex-wrap justify-end gap-2">
           <button type="button" className="rounded-lg border px-3 py-2" onClick={closeReplacement}>{t('common.cancel')}</button>
           <button type="button" disabled={!candidate||!candidateReady} className="rounded-lg bg-primary px-3 py-2 text-white disabled:opacity-40" onClick={()=>{

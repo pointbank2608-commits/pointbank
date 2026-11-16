@@ -81,7 +81,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     detectiveListPicker.current = picker;
     return () => { if (detectiveListPicker.current === picker) detectiveListPicker.current = null; };
   }, []);
-  const selectDetectiveList = useCallback((list: WordList | null) => detectiveListPicker.current?.select(list) ?? false, []);
+  const selectDetectiveList = useCallback<DetectiveListPicker['select']>(async list => detectiveListPicker.current?.select(list) ?? false, []);
   const countDetectiveListQuestions = useCallback((list: WordList) => detectiveListPicker.current?.countQuestions(list), []);
   const [guideNative,setGuideNative]=useState(false);
   const [editRevision,setEditRevision]=useState(0);

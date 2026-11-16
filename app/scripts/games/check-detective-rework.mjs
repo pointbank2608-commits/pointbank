@@ -13,6 +13,7 @@ const lessons=JSON.parse(sessionStorage.getItem('adventure-test-lessons')||'[]')
 const flush=()=>{sessionStorage.setItem('adventure-test-rows',JSON.stringify(rows));sessionStorage.setItem('adventure-test-lessons',JSON.stringify(lessons));};
 const lists=[{id:'farm-test',kind:'word',name:'검증 농장 동물',items:'dog cat chicken cow duck hen horse pig sheep puppy'.split(' ').map(word=>({id:word,word,meaning:'동물',image_url:null}))},{id:'words-test',kind:'word',name:'검증 단어장',items:['apple','banana','milk'].map((word,i)=>({id:String(i),word,meaning:['사과','바나나','우유'][i],image_url:null}))},{id:'sentences-test',kind:'sentence',name:'검증 문장',items:[{id:'s',word:'She goes to school.',meaning:'그녀는 학교에 가요.',image_url:null}]}];
 lists.push({id:'unsupported-test',kind:'sentence',name:'검증 출제 불가 문장',items:[{id:'unsupported',word:'She stopped talking.'}]});
+lists.push({id:'direct-start-test',kind:'sentence',name:'바로 시작 검증',items:['She can swim.','I ate an apple.','She goes to school.'].map((word,i)=>({id:'direct-'+i,word}))});
 const fn={fetchClasses:async()=>[{id:'class-test',academy_id:'academy-test',name:'검증 반'}],fetchMyStudentRow:async()=>({class_id:'class-test'}),fetchAllWordLists:async()=>lists,fetchWordLists:async()=>lists,
 fetchGameTemplates:async(a,c,t)=>structuredClone(rows.filter(r=>r.game_type===t)),fetchGameTemplateById:async id=>structuredClone(rows.find(r=>r.id===id)),
 createGameTemplate:async p=>{if(window.__failStorySave)throw Error('합성 저장 실패');const row={id:crypto.randomUUID(),academy_id:p.academyId,class_id:p.classId,game_type:p.gameType,name:p.name,items:p.items,config:p.config,created_by:p.teacherId,updated_at:'test'};rows.push(row);flush();return structuredClone(row)},
@@ -126,6 +127,22 @@ try {
   }
   console.log('PASS word and sentence list labels, apply footer and Balloon Pop controls');
   await page.goto(base+'?game=grammardetective&mode=teacher');
+  await page.getByRole('button',{name:'게임 시작',exact:true}).waitFor();
+  await toolbar.getByRole('button',{name:'내 단어/문장',exact:true}).click();
+  await contentPanel.getByRole('combobox').selectOption('direct-start-test');
+  await contentPanel.getByText('출제 가능 3문제',{exact:true}).waitFor();
+  await contentPanel.getByRole('button',{name:'선택',exact:true}).click();
+  await contentPanel.waitFor({state:'hidden'});
+  await page.locator('.ad-grammardetective.ad-phase-playing').getByText('1 / 3',{exact:true}).waitFor();
+  const firstProblem = await page.locator('.ad-evidence .ad-detective-token').allTextContents();
+  assert.equal(firstProblem.map(token=>token.replace(/^·/,'')).join(' '),'I ate a apple.');
+  await page.locator('.ad-evidence').getByRole('button',{name:'a',exact:true}).click();
+  await page.locator('.ad-choices').getByRole('button',{name:'an',exact:true}).click();
+  await page.locator('.ad-review').getByText('I ate an apple.',{exact:true}).waitFor();
+  await page.evaluate(() => sessionStorage.removeItem('activity-draft:teacher-test:academy-test:grammardetective'));
+  console.log('PASS Select starts the saved sentence collection from the initial game screen');
+
+  await page.goto(base+'?game=grammardetective&mode=teacher');
   await page.setViewportSize({width:2560,height:1000});
   await page.getByRole('button',{name:'게임 시작',exact:true}).click();
   const scene=page.locator('.ad-grammardetective');
@@ -203,6 +220,7 @@ try {
   await contentPanel.getByText('출제 가능 2문제',{exact:true}).waitFor();
   console.log('PASS list counts appear before applying, and unavailable grammar topics are disabled');
   await chooseList('words-test');
+  await wordEvidence.getByRole('button',{name:/^(apple|banana)$/}).waitFor();
   await page.getByRole('button',{name:'내 단어/문장',exact:true}).click();
   assert.equal(await listPicker.inputValue(),'words-test');
   await contentPanel.getByRole('button',{name:'닫기',exact:true}).click();

@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next';
 import AccessibleDialog from './AccessibleDialog';
 import { GROUP_ACTIVITIES, activityCategory, readRecentActivities, type ActivityCategory } from '../lib/lessonActivities';
 import { BoardThemeChips } from './CanvasSlideEditor';
-import { LessonActivityExample, type CanvasExample } from './LessonActivityExample';
+import { activityMaterial, LessonActivityExample, type CanvasExample } from './LessonActivityExample';
+import { workbookOfMaterial } from '../data/cvcWorkbook';
+import { workbookStep } from './LessonPrintPreview';
+import LessonWorkbookUnits, { type LessonWorkbookSelection } from './worksheets/LessonWorkbookUnits';
 import { materialSections, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
 import { GAME_BROWSE_GROUPS, gameBrowseGroups, type GameBrowseGroup } from '../lib/gameBrowse';
 import { GAME_CATALOG } from '../lib/gameCatalog';
@@ -46,9 +49,15 @@ export const printSections = materialSections().map(section => ({
   ]),
 }));
 const canvasLayouts: CanvasExample[] = ['title', 'word', 'blank'];
+export type ActivityWorksheetOptions = Pick<MaterialSlide, 'words' | 'topic' | 'worksheetTab'> & LessonWorkbookSelection;
+
+function isWorkbook(block: BlockDef) {
+  const materialId = block.slide?.materialId;
+  return !!materialId && !!(workbookOfMaterial(materialId) || workbookStep(materialId));
+}
 
 export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClose,canAttachHelper,storageKey,cards,gameSources,slides,replaceTargetId,selected,sourceName,entries,lessonName,academyId}:{
- onPick:(b:BlockDef,layout?:CanvasExample,theme?:string|null, worksheet?:Pick<MaterialSlide,'words'|'topic'|'worksheetTab'>)=>void;onBundle:()=>void;onClose:()=>void;canAttachHelper:boolean;storageKey:string;
+ onPick:(b:BlockDef,layout?:CanvasExample,theme?:string|null, worksheet?:ActivityWorksheetOptions)=>void;onBundle:()=>void;onClose:()=>void;canAttachHelper:boolean;storageKey:string;
  cards:FullCardItem[];gameSources:ReturnType<typeof lessonGameSources>;slides:LessonSlide[];replaceTargetId:string|null;
  selected:LessonSlide|null;sourceName:string;entries:PhonicsBankEntry[];lessonName:string;
  academyId:string;onPdf:(asset:Omit<PdfSlide,'id'|'kind'>)=>void;
@@ -88,16 +97,21 @@ export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClo
    }
  }
  const [theme, setTheme] = useState<string | null>('green');
- const [preview, setPreview] = useState<{ block: BlockDef; layout?: CanvasExample } | null>(null);
+ const [preview, setPreview] = useState<{ block: BlockDef; layout?: CanvasExample; workbook?: MaterialSlide } | null>(null);
  const previewOrigin = useRef<HTMLButtonElement | null>(null);
  const back = useRef<HTMLButtonElement>(null);
+ const openPreview = (block: BlockDef, layout: CanvasExample | undefined, trigger: HTMLButtonElement) => {
+   previewOrigin.current = trigger;
+   setPreview({block, layout, workbook: isWorkbook(block) ? activityMaterial(block, null) : undefined});
+ };
  const closePreview = () => {
    setPreview(null);
    requestAnimationFrame(() => previewOrigin.current?.focus());
  };
- useEffect(() => { if (preview) back.current?.focus(); }, [preview]);
+ const previewId = preview?.block.id;
+ useEffect(() => { if (previewId) back.current?.focus(); }, [previewId]);
  const listRef=useRef<HTMLElement>(null);
- useEffect(()=>{if(listRef.current)listRef.current.scrollTop=0;},[cat,query,preview]);
+ useEffect(()=>{if(listRef.current)listRef.current.scrollTop=0;},[cat,query,previewId]);
  const recent=useMemo(()=>readRecentActivities(storageKey).filter(id=>id==='wordset'||activities.some(b=>b.id===id)),[storageKey]);
  const name=(b:BlockDef)=>b.id==='learn.shadow'?t('lessonUx.shadow'):b.nameKey?t(b.nameKey):b.name?.[ko?'ko':'en']??b.id;
  const q=query.trim().toLocaleLowerCase();
@@ -142,10 +156,13 @@ export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClo
      return id ? [[id, phonicsSlideState(id, undefined, gameSources.cards, !ko, undefined, topic)] as const] : [];
    }));
  }, [slides, replaceTargetId, gameSources.cards, ko]);
- const example = (block: BlockDef, layout?: CanvasExample, large = false) => <LessonActivityExample
+ const example = (block: BlockDef, layout?: CanvasExample, large = false, material: LessonSlide | null = selected) => <LessonActivityExample
+   key={material?.kind === 'material' ? material.phonicsUnitIds?.join(',') : undefined}
    block={block} cards={cards} gameMatch={block.slide?.gameType ? gameExamples.get(block.slide.gameType) : undefined}
    phonicsMatch={block.slide?.phonicsGameId ? phonicsMatches.get(block.slide.phonicsGameId) : undefined}
-   selected={selected} entries={entries} layout={layout} theme={theme} title={canvasTitle} large={large} sampleVideo={clips?.[0]} />;
+   selected={material} entries={entries} layout={layout} theme={theme} title={canvasTitle} large={large} sampleVideo={clips?.[0]} />;
+ const workbook = preview?.workbook;
+ const workbookReady = !!workbook?.phonicsUnitIds?.length;
  useEffect(()=>{const previous=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=previous;};},[]);
  return <AccessibleDialog label={t('lessonUx.add')} onClose={pdfBusy ? () => {} : worksheetBlock ? ()=>setWorksheetBlock(null) : stemPreview ? ()=>setStemPreview(null) : stemOpen ? ()=>setStemOpen(false) : preview ? closePreview : onClose}>
   <div className="lesson-activity-picker">
@@ -181,13 +198,16 @@ export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClo
          : block.descriptionKey ? t(block.descriptionKey) : undefined;
        return <article className="activity-card" key={block.id + (layout ?? '')}>
          <button ref={block.id==='media.pdf'?pdfButton:undefined} type="button" className="activity-card-main" data-activity-id={block.id} data-canvas-layout={layout}
-           aria-label={label} disabled={disabled || pdfBusy} onClick={() => choose(block,layout)}>
+           aria-label={label} disabled={disabled || pdfBusy} onClick={event => {
+             if (isWorkbook(block)) openPreview(block,layout,event.currentTarget);
+             else choose(block,layout);
+           }}>
            <span className="activity-card-label"><span className="material-symbols-outlined activity-icon" aria-hidden>{block.icon}</span><strong>{label}</strong></span>
            {!helper && example(block, layout)}
            {description && <small className="activity-description">{description}</small>}
          </button>
          {!helper && block.id!=='media.pdf' && <button type="button" className="activity-preview-button" aria-label={t('lessonUx.previewActivity', { name: label })}
-           onClick={event => { previewOrigin.current=event.currentTarget;if(block.slide?.kind==='stem')setStemOpen(true);else setPreview({block,layout}); }}>
+           onClick={event => {if(block.slide?.kind==='stem')setStemOpen(true);else openPreview(block,layout,event.currentTarget);}}>
            {t('lessonUx.preview')}
          </button>}
        </article>;
@@ -227,7 +247,22 @@ export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClo
      {preview && <div className="activity-expanded">
        <button ref={back} type="button" className="activity-preview-button" onClick={closePreview}>← {t('lessonUx.backToActivities')}</button>
        <h3>{preview.layout ? t(`curriculum.canvas.layout_${preview.layout}`) : name(preview.block)}</h3>
-       {example(preview.block, preview.layout, true)}
+       {workbook && <>
+         <LessonWorkbookUnits slide={workbook} entries={entries} onUpdate={patch => {
+           setPreview({...preview, workbook: {...workbook, ...patch}});
+         }} />
+         <div>
+           <button type="button" className="rounded-lg bg-primary px-4 py-2 font-bold text-white disabled:bg-slate-200 disabled:text-slate-600"
+             disabled={!workbookReady} onClick={() => {
+               if (locked.current || !workbookReady) return;
+               locked.current = true;
+               onPick(preview.block, undefined, theme, {cvcUnits: workbook.cvcUnits, phonicsUnitIds: workbook.phonicsUnitIds});
+             }}>{t('lessonUx.addWorksheet')}</button>
+         </div>
+       </>}
+       {example(preview.block, preview.layout, true, workbook
+         ? workbookReady ? workbook : activityMaterial(preview.block, null)
+         : selected)}
      </div>}
      {!preview&&!stemOpen&&!worksheetBlock&&((q&&bundleShown)||(!q&&cat==='recent'&&recent.includes('wordset')))&&<button type="button" className="activity-bundle" onClick={()=>{if(!locked.current){locked.current=true;onBundle();}}}>{t('lessonUx.bundle')} · {t('lessonUx.bundleCount')}</button>}
     </section>

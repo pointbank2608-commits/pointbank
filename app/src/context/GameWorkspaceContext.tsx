@@ -43,7 +43,7 @@ export interface GameWorkspaceBridge {
 export type WorkspacePanel = "settings" | "content" | "games" | "teacher" | "video" | "guide" | "detective-authoring" | null;
 
 export interface DetectiveListPicker {
-  select: (list: WordList | null) => boolean;
+  select: (list: WordList | null) => Promise<'applied' | 'review' | false>;
   countQuestions: (list: WordList) => number;
 }
 
@@ -51,7 +51,7 @@ export interface WorkspaceContextValue {
   info?: GameWorkspaceBridge | null;
   registerPreparation?: (commit:()=>Promise<boolean>)=>()=>void;
   registerDetectiveListPicker?: (picker: DetectiveListPicker) => () => void;
-  selectDetectiveList?: (list: WordList | null) => boolean;
+  selectDetectiveList?: DetectiveListPicker['select'];
   countDetectiveListQuestions?: (list: WordList) => number | undefined;
   commitPreparation?: ()=>Promise<boolean>;
   fullscreen: boolean;

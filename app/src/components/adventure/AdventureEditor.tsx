@@ -11,6 +11,10 @@ import WordListPicker from '../WordListPicker';
 import SentenceBankPicker from '../SentenceBankPicker';
 import './editor.css';
 
+function casesFromQuestions(questions: ReturnType<typeof builtInDetectiveQuestions>) {
+  return questions.map(({variant,context})=>detectiveCaseFromVariant(variant,undefined,context||undefined));
+}
+
 export default function AdventureEditor({type,value,lists,loading,busy,onApply,onDirty}:{type:AdventureType;value:AdventureConfig;lists:WordList[];loading:boolean;busy:boolean;onApply:(value:AdventureConfig,start?:boolean)=>Promise<void>;onDirty:(dirty:boolean)=>void}){
   const {t,i18n}=useTranslation();const root=useRef<HTMLElement>(null);
   const en=i18n.resolvedLanguage?.startsWith('en');
@@ -74,13 +78,13 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
         root.current?.querySelector<HTMLElement>('[data-detective-grammar] input')?.focus();
         return false;
       }
-      const cases=sourceQuestions.map(({variant,context})=>detectiveCaseFromVariant(variant,undefined,context||undefined));
+      const cases=casesFromQuestions(sourceQuestions);
       await onApply({...c,detectiveSource:nextSource,cases});
       onDirty(false);
       return true;
     }
     if(showAuthoring && draft && draftQuestions.length){
-      const cases=draftQuestions.map(({variant,context})=>detectiveCaseFromVariant(variant,undefined,context||undefined));
+      const cases=casesFromQuestions(draftQuestions);
       await onApply(withCases({cases}));
       onDirty(false);
       return true;
@@ -111,19 +115,28 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
       const sameList = source && source.kind !== 'default' && source.listId === list.id;
       const rules = defaultDetectiveRules.filter(rule => preview.applicableRules.has(rule) && (!sameList || selectedRules.includes(rule)));
       const next: DetectiveSource = { kind, listId: list.id, name: list.name, text, rules };
-      const count = sameList ? previewDetectiveDraft(text, rules, kind).ready.length : preview.ready.length;
-      return { next, count };
+      const questions = sameList ? previewDetectiveDraft(text, rules, kind).ready : preview.ready;
+      return { next, questions };
     }
     return registerListPicker?.({
-      countQuestions: list => prepareList(list).count,
-      select(list) {
-        const next = list ? prepareList(list).next : { kind: 'default' as const, rules: source?.kind === 'default' ? selectedRules : defaultDetectiveRules };
+      countQuestions: list => prepareList(list).questions.length,
+      async select(list) {
+        if (busy) return false;
+        const defaultRules = source?.kind === 'default' ? selectedRules : defaultDetectiveRules;
+        const { next, questions } = list ? prepareList(list) : {
+          next: { kind: 'default' as const, rules: defaultRules },
+          questions: builtInDetectiveQuestions(defaultRules),
+        };
         if (next.kind !== 'default' && !next.text) return false;
-        selectSource(next);
-        return true;
+        if (!questions.length) {
+          selectSource(next);
+          return 'review';
+        }
+        await onApply({...value, detectiveSource:next, cases:casesFromQuestions(questions)}, true);
+        return 'applied';
       },
     });
-  },[registerListPicker,type,source,selectedRules,selectSource]);
+  },[registerListPicker,type,source,selectedRules,selectSource,busy,onApply,value]);
   const draftError = wordPreview && sentencePreview
     ? '단어와 문장 미리보기를 둘 다 수정했어요. 사용할 미리보기에서 ‘이 문제로 게임 시작’을 눌러 주세요.'
     : draft && !draftQuestions.length

@@ -389,6 +389,26 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     }
   }
 
+  async function applyDetectiveList() {
+    if (busy) return;
+    const list = pList ? detectiveList : null;
+    setBusy(true);
+    try {
+      const result = list !== undefined && await workspace.selectDetectiveList?.(list);
+      if (!result) {
+        notify(text('자료를 불러오지 못했어요. 다시 시도해 주세요.','Could not load the list. Please try again.'),'error');
+        return;
+      }
+      selectedDetectiveList.current={templateId:info?.selected?.id,listId:pList};
+      close();
+      if (result === 'review') workspace.open('settings', settingsButton.current ?? undefined);
+    } catch {
+      // The editor reports a configuration save failure; keep this panel open for retry.
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const applyContent = () => run(async () => {
     if (!info) return;
     if (isBomb && info.selected) {
@@ -704,14 +724,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           close();
           workspace.open('detective-authoring',panelAnchor??undefined);
         }}>{text('직접 입력 · 문제 편집','Enter text or edit questions')}</button>
-        {panelAction(()=>{
-          const list = pList ? detectiveList : null;
-          if(list!==undefined&&workspace.selectDetectiveList?.(list)){
-            selectedDetectiveList.current={templateId:info?.selected?.id,listId:pList};
-            close();
-            if (detectiveQuestionCount === 0) workspace.open('settings', settingsButton.current ?? undefined);
-          }else notify(text('자료를 불러오지 못했어요. 다시 시도해 주세요.','Could not load the list. Please try again.'),'error');
-        }, detectiveQuestionCount === 0 ? text('출제 문법 확인', 'Review grammar topics') : text('선택','Select'), !!info?.loading || !!info?.sharedView)}
+        {panelAction(()=>void applyDetectiveList(), detectiveQuestionCount === 0 ? text('출제 문법 확인', 'Review grammar topics') : text('선택','Select'), !!info?.loading || !!info?.sharedView)}
       </>)}
       {open === 'content' && !isDetective && panel(<>
         <PanelHead title={isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words / sentences')} onClose={close} text={text} />
