@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams } from 'react-router-dom';
+import RemoteTouchpad from '../components/RemoteTouchpad';
 import {
   fetchRemotePhoneState, fetchRemotePoints, giveRemotePoints, sendRemoteCmd,
   type RemoteAction, type RemotePairing, type RemotePoints, type RemoteState,
@@ -217,7 +218,7 @@ function PairedRemote({ id, pairingKey }: { id: string; pairingKey: string }) {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col gap-4 bg-background p-4">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col gap-4 bg-background p-4">
       <header className="flex items-center gap-2">
         <span className="material-symbols-outlined text-[22px] text-primary">phone_iphone</span>
         <div className="min-w-0 flex-1">
@@ -307,6 +308,8 @@ function PairedRemote({ id, pairingKey }: { id: string; pairingKey: string }) {
               {pointsOpen && <PointsSection pair={pair} />}
             </>
           ) : null}
+
+          {state?.pointerEnabled && <RemoteTouchpad pair={pair} />}
 
           {/* 넘기기 */}
           <div className="mt-auto grid grid-cols-2 gap-3">

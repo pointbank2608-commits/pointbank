@@ -2244,6 +2244,8 @@ const en: Ko = {
     hint: 'Keep the QR and link with the teacher running the lesson. The remote disconnects when the lesson ends.',
     needSetup: 'Could not turn on the remote. Contact your admin if the problem continues.',
     connectionError: 'Check the connection to the lesson remote.',
+    touchpad: 'Touchpad',
+    touchpadHint: 'Swipe to move the cursor on the board.',
     connected: 'Connected',
     waiting: 'Checking...',
     waitingStart: 'It appears here when the lesson starts',

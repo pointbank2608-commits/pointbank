@@ -51,6 +51,7 @@ export interface RemoteState {
   classId: string | null;
   ended: boolean;
   at: number;
+  pointerEnabled?: boolean;
 }
 
 export type RemoteCmdName = 'next' | 'prev' | 'goto' | 'exit' | 'action';
@@ -67,6 +68,13 @@ export interface RemoteRow {
   id: string;
   state: Partial<RemoteState>;
   cmd: Partial<RemoteCmd>;
+  pointer: RemotePointer | null;
+}
+
+export interface RemotePointer {
+  seq: number;
+  x: number;
+  y: number;
 }
 
 export function remoteUrl(pair: RemotePairing): string {
@@ -85,7 +93,7 @@ export async function deleteRemoteSession(id: string): Promise<void> {
 }
 
 export async function fetchRemoteSession(id: string): Promise<RemoteRow | null> {
-  const { data, error } = await supabase.from('remote_sessions').select('id, state, cmd').eq('id', id).maybeSingle();
+  const { data, error } = await supabase.from('remote_sessions').select('id, state, cmd, pointer').eq('id', id).maybeSingle();
   if (error || !data) return null;
   return data as RemoteRow;
 }
@@ -110,6 +118,13 @@ export async function sendRemoteCmd(pair: RemotePairing, name: RemoteCmdName, ar
     ...remotePhoneArgs(pair), p_name: name, p_arg: arg ?? null, p_action: actionId ?? null,
   });
   if (error || !data) throw error ?? new Error('remote unavailable');
+}
+
+export async function moveRemotePointer(pair: RemotePairing, dx: number, dy: number, signal: AbortSignal): Promise<void> {
+  const { data, error } = await remotePhone.rpc('remote_qr_move_pointer', {
+    ...remotePhoneArgs(pair), p_dx: dx, p_dy: dy,
+  }).abortSignal(signal);
+  if (error || data !== true) throw error ?? new Error('remote pointer unavailable');
 }
 
 export async function fetchRemotePoints(pair: RemotePairing): Promise<RemotePoints> {

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import QRCode from 'qrcode';
 import { useLessonRunner } from '../context/LessonRunnerContext';
@@ -16,6 +17,8 @@ import {
   subscribeRemoteSecret,
   type RemoteCmd,
   type RemotePairing,
+  type RemotePointer,
+  type RemoteRow,
 } from '../lib/remote';
 
 /**
@@ -29,7 +32,18 @@ export function RemoteBridge({ id }: { id: string }) {
   const act = useRef({ goTo, exit });
   act.current = { goTo, exit };
   const lastSeq = useRef(0);
+  const lastPointerSeq = useRef(0);
   const published = useRef(false);
+  const [pointer, setPointer] = useState<RemotePointer | null>(null);
+  const [pointerRoot, setPointerRoot] = useState(() => document.fullscreenElement ?? document.body);
+
+  useEffect(() => {
+    function syncPointerRoot() {
+      setPointerRoot(document.fullscreenElement ?? document.body);
+    }
+    document.addEventListener('fullscreenchange', syncPointerRoot);
+    return () => document.removeEventListener('fullscreenchange', syncPointerRoot);
+  }, []);
 
   // 지금 상태를 폰에 알린다
   useEffect(() => {
@@ -46,6 +60,7 @@ export function RemoteBridge({ id }: { id: string }) {
         classId: runner.classId ?? null,
         ended: false,
         at: Date.now(),
+        pointerEnabled: true,
       });
     }
     const timer = window.setTimeout(publish, 120);
@@ -68,6 +83,7 @@ export function RemoteBridge({ id }: { id: string }) {
   // 폰의 명령을 받는다
   useEffect(() => {
     let alive = true;
+    let hidePointer: number | undefined;
     function run(cmd: Partial<RemoteCmd> | undefined) {
       if (!cmd || typeof cmd.seq !== 'number' || !cmd.name) return;
       if (cmd.seq <= lastSeq.current) return;
@@ -82,17 +98,41 @@ export function RemoteBridge({ id }: { id: string }) {
         runRemoteAction(cmd.id);
       }
     }
-    void fetchRemoteSession(id).then((row) => {
-      if (alive) run(row?.cmd);
-    });
-    const stop = subscribeRemote(id, (row) => run(row.cmd));
+    function receive(row: RemoteRow | null) {
+      if (!alive || !row) return;
+      run(row.cmd);
+      const point = row.pointer;
+      if (!point || point.seq <= lastPointerSeq.current || row.state.ended) return;
+      lastPointerSeq.current = point.seq;
+      setPointer(point);
+      window.clearTimeout(hidePointer);
+      hidePointer = window.setTimeout(() => setPointer(null), 3000);
+    }
+    void fetchRemoteSession(id).then(receive);
+    const stop = subscribeRemote(id, receive);
     return () => {
       alive = false;
+      window.clearTimeout(hidePointer);
       stop();
     };
   }, [id]);
 
-  return null;
+  return pointer && createPortal(
+    <svg
+      aria-hidden="true"
+      data-remote-pointer
+      className="pointer-events-none fixed z-[100] h-8 w-7 drop-shadow-md motion-safe:transition-[left,top] motion-safe:duration-100 motion-safe:ease-linear"
+      style={{
+        left: `min(${pointer.x / 10}%, calc(100% - 28px))`,
+        top: `min(${pointer.y / 10}%, calc(100% - 32px))`,
+      }}
+      viewBox="0 0 28 32"
+      fill="none"
+    >
+      <path d="M2 2v24l6-5 4 9 5-2-4-9h9L2 2Z" fill="#0869f7" stroke="white" strokeWidth="2" strokeLinejoin="round" />
+    </svg>,
+    pointerRoot,
+  );
 }
 
 /** 진행바 "리모컨" 창 — 켜면 QR이 뜨고, 폰으로 찍으면 연결된다. */

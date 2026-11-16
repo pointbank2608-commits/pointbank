@@ -2241,6 +2241,8 @@ const ko = {
     hint: 'QR과 링크는 수업을 진행하는 선생님만 사용해 주세요. 수업을 마치면 리모컨 연결도 끝나요.',
     needSetup: '리모컨을 켜지 못했어요. 문제가 계속되면 관리자에게 알려 주세요.',
     connectionError: '리모컨 연결을 확인해 주세요.',
+    touchpad: '터치패드',
+    touchpadHint: '손가락으로 쓸어 칠판 커서를 움직여요.',
     connected: '연결됨',
     waiting: '연결 확인 중…',
     waitingStart: '수업이 시작되면 여기에 나와요',
