@@ -1,6 +1,5 @@
 import { supabase } from './supabase';
 import { parseWorksheetFile, type WorksheetDocument } from './worksheetStudio';
-import type { WordListItem } from './types';
 
 export const TEXTBOOK_MAX_BYTES = 10 * 1024 * 1024;
 export const TEXTBOOK_MAX_FILES = 6;
@@ -115,32 +114,9 @@ export async function extractTextbook(academy: string, files: File[], first: num
   return data;
 }
 
-export function textbookListItems(items: TextbookItem[]): WordListItem[] {
-  return items.map(item => ({
-    id: crypto.randomUUID(), word: item.text.trim(), meaning: item.meaning.trim(),
-    image_url: null, category: null, textbookPage: item.page,
-  }));
-}
-
-export async function saveTextbookUnit(input: {
-  id: string; academy: string; owner: string; textbook: string; title: string;
-  files: File[]; words: WordListItem[]; sentences: WordListItem[];
-}): Promise<TextbookUnit> {
-  const existing = await supabase.from('textbook_units').select('*').eq('id', input.id).maybeSingle();
-  if (existing.error) throw existing.error;
-  if (existing.data) return existing.data;
-
-  const originals: TextbookOriginal[] = [];
-  for (const [index, file] of input.files.entries()) {
-    const suffix = file.type === 'application/pdf' ? 'pdf' : file.type.split('/')[1];
-    const path = `${input.owner}/${input.academy}/${input.id}/${index + 1}.${suffix}`;
-    const { error } = await supabase.storage.from(TEXTBOOK_BUCKET).upload(path, file, { contentType: file.type, upsert: true });
-    if (error) throw error;
-    originals.push({ name: file.name.slice(0, 240), path, mime: file.type });
-  }
-  const { data, error } = await supabase.rpc('save_textbook_unit', {
-    p_id: input.id, p_academy_id: input.academy, p_textbook: input.textbook, p_title: input.title,
-    p_files: originals, p_words: input.words, p_sentences: input.sentences,
+export async function createTextbookCatalogUnit(id: string, book: string, title: string): Promise<TextbookUnit> {
+  const { data, error } = await supabase.rpc('create_textbook_catalog_unit', {
+    p_id: id, p_book_id: book, p_title: title.trim(),
   });
   if (error) throw error;
   return data as TextbookUnit;

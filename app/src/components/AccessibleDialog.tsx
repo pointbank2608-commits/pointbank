@@ -1,11 +1,12 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 
 /** Native top layer keeps keyboard focus and remains visible over fullscreen games. */
-export default function AccessibleDialog({ label, onClose, children, className = '' }: {
+export default function AccessibleDialog({ label, onClose, children, className = '', nativeDismiss }: {
   label: string;
   onClose: () => void;
   children: ReactNode;
   className?: string;
+  nativeDismiss?: 'enabled' | 'disabled';
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -19,7 +20,14 @@ export default function AccessibleDialog({ label, onClose, children, className =
   }, []);
   return (
     <dialog ref={ref} className={`classroom-dialog ${className}`} aria-label={label}
-      onCancel={(event) => { event.preventDefault(); onClose(); }}>
+      onCancel={(event) => {
+        if (nativeDismiss === 'enabled') return;
+        event.preventDefault();
+        if (!nativeDismiss) onClose();
+      }}
+      onClose={nativeDismiss ? (event) => {
+        if (!event.currentTarget.open) onClose();
+      } : undefined}>
       {children}
     </dialog>
   );
