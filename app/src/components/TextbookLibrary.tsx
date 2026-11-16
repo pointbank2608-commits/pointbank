@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
+import MaterialDraftReview, { type MaterialDraftItem } from './MaterialDraftReview';
 import {
   createTextbookBook, extractTextbook, fetchTextbookBook, fetchTextbookBooks, fetchTextbookUnit, fetchTextbookWorksheets, saveTextbookUnit,
   textbookBookPath, textbookLibraryPath, textbookListItems, textbookOriginalUrl, textbookUnitPath, textbookWorksheetPath,
@@ -207,7 +208,7 @@ function TextbookImport({ academy, owner, book, onSaved, onClose }: {
     }
   }
 
-  function edit(kind: 'words' | 'sentences', index: number, update: Partial<ReviewedItem>) {
+  function edit(kind: 'words' | 'sentences', index: number, update: Partial<MaterialDraftItem>) {
     setReview(current => current && { ...current, [kind]: current[kind].map((item, i) => i === index ? { ...item, ...update } : item) });
   }
 
@@ -268,19 +269,15 @@ function TextbookImport({ academy, owner, book, onSaved, onClose }: {
       {review && <div>
         <h4>{t('textbook.review')}</h4><p className="textbook-note">{t('textbook.reviewHelp')}</p>
         {!!review.unclearPages.length && <p role="status" className="textbook-error">{t('textbook.unclear', { pages: review.unclearPages.join(', ') })}</p>}
-        {(['words', 'sentences'] as const).map(kind => <fieldset key={kind} disabled={!!status}>
-          <legend>{t(`textbook.${kind}`)}</legend>
-          {!review[kind].length && <p>{t('textbook.noItems')}</p>}
-          {review[kind].map((item, i) => <div className="textbook-item" key={i}>
-            <div className="textbook-actions">
-              <label className="textbook-check"><input type="checkbox" checked={item.included} onChange={e => edit(kind, i, { included: e.target.checked })} />{t('textbook.include')}</label>
+        {(['words', 'sentences'] as const).map(kind => <MaterialDraftReview key={kind}
+          title={t(`textbook.${kind}`)} items={review[kind]} disabled={!!status} onEdit={(index, update) => edit(kind, index, update)}
+          source={index => {
+            const item = review[kind][index];
+            return <>
               <button type="button" className={button} aria-pressed={page === item.page} onClick={() => setPage(item.page)}>{t('textbook.page', { count: item.page })}</button>
               {item.meaningSuggested && <small>{t('textbook.suggested')}</small>}
-            </div>
-            <div className="textbook-fields"><label>{t('textbook.english')}<input value={item.text} maxLength={100} onChange={e => edit(kind, i, { text: e.target.value })} /></label>
-              <label>{t('textbook.meaning')}<input value={item.meaning} maxLength={160} onChange={e => edit(kind, i, { meaning: e.target.value })} /></label></div>
-          </div>)}
-        </fieldset>)}
+            </>;
+          }} />)}
       </div>}
     </div>}
     {!!files.length && <div>

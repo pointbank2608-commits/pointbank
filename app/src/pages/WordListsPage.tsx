@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import WordListGameLauncher from '../components/WordListGameLauncher';
 import TextbookLibrary from '../components/TextbookLibrary';
+import AiMaterialsDialog from '../components/AiMaterialsDialog';
 import SentenceListEditor from '../components/SentenceListEditor';
 import { isFreeTierGame, GAME_CATALOG } from '../lib/gameCatalog';
 import { prepareClassroomGame } from '../lib/gameWorkspace';
@@ -509,6 +510,7 @@ export default function WordListsPage() {
   const textbooks = params.get('tab') === 'textbooks';
   const linkedList = params.get('list');
   const [materialFilter, setMaterialFilter] = useState<'all' | 'word' | 'sentence'>('all');
+  const [aiOwner, setAiOwner] = useState<string | null>(null);
   const [launchListId, setLaunchListId] = useState<string | null>(null);
   const [launchBusy, setLaunchBusy] = useState(false);
   const [launchError, setLaunchError] = useState(false);
@@ -718,8 +720,14 @@ export default function WordListsPage() {
       <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
         {t('textbook.materials')}
       </h2>
-            {!textbooks && <div className="flex flex-wrap gap-2">
-              {(['word', 'sentence'] as const).map((kind) => (
+            <div className="flex flex-wrap gap-2">
+              {academy?.id && profile?.id && <button type="button"
+                onClick={() => setAiOwner(accountScope.current)}
+                className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 font-label-md text-label-md text-on-primary transition-colors hover:brightness-95">
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">auto_awesome</span>
+                {t('aiMaterials.title')}
+              </button>}
+              {!textbooks && (['word', 'sentence'] as const).map((kind) => (
                 <button
                   key={kind}
                   type="button"
@@ -735,8 +743,17 @@ export default function WordListsPage() {
                   {t(kind === 'sentence' ? 'flow.createSentences' : 'flow.createWords')}
                 </button>
               ))}
-            </div>}
+            </div>
       </div>
+      {academy?.id && profile?.id && aiOwner === accountScope.current &&
+        <AiMaterialsDialog key={aiOwner} academy={academy.id} owner={profile.id} onClose={() => setAiOwner(null)}
+          onSaved={id => {
+            if (aiOwner !== accountScope.current) return;
+            setAiOwner(null);
+            setParams({ list: id });
+            void load();
+            notify(t('aiMaterials.saved'));
+          }} />}
       <div className="flex flex-wrap gap-2" aria-label={t('flow.materialFilter')}>
         {(['all','word','sentence'] as const).map(kind => <button type="button" key={kind} className={`min-h-11 rounded-xl border px-4 font-bold ${!textbooks && materialFilter===kind?'bg-primary text-white':'bg-white text-deep-navy'}`} aria-pressed={!textbooks && materialFilter===kind} onClick={() => { setMaterialFilter(kind); if (textbooks || linkedList) setParams({}); }}>{t(kind==='all'?'flow.allMaterials':kind==='word'?'flow.words':'flow.sentences')}</button>)}
         <button type="button" className={`min-h-11 rounded-xl border px-4 font-bold ${textbooks?'bg-primary text-white':'bg-white text-deep-navy'}`} aria-pressed={textbooks} onClick={() => { if (!textbooks) setParams({ tab: 'textbooks' }); }}>{t('textbook.tab')}</button>
