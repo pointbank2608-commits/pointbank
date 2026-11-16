@@ -52,6 +52,7 @@ export interface RemoteState {
   ended: boolean;
   at: number;
   pointerEnabled?: boolean;
+  pointerClickEnabled?: boolean;
 }
 
 export type RemoteCmdName = 'next' | 'prev' | 'goto' | 'exit' | 'action';
@@ -75,6 +76,15 @@ export interface RemotePointer {
   seq: number;
   x: number;
   y: number;
+  click?: RemotePointerClick;
+}
+
+export interface RemotePointerClick {
+  seq: number;
+  x: number;
+  y: number;
+  count: 1 | 2;
+  step: number;
 }
 
 export function remoteUrl(pair: RemotePairing): string {
@@ -125,6 +135,13 @@ export async function moveRemotePointer(pair: RemotePairing, dx: number, dy: num
     ...remotePhoneArgs(pair), p_dx: dx, p_dy: dy,
   }).abortSignal(signal);
   if (error || data !== true) throw error ?? new Error('remote pointer unavailable');
+}
+
+export async function clickRemotePointer(pair: RemotePairing, count: 1 | 2, step: number, signal: AbortSignal): Promise<void> {
+  const { data, error } = await remotePhone.rpc('remote_qr_click_pointer', {
+    ...remotePhoneArgs(pair), p_count: count, p_step: step,
+  }).abortSignal(signal);
+  if (error || data !== true) throw error ?? new Error('remote pointer click unavailable');
 }
 
 export async function fetchRemotePoints(pair: RemotePairing): Promise<RemotePoints> {

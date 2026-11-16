@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import QRCode from 'qrcode';
 import { useLessonRunner } from '../context/LessonRunnerContext';
+import RemoteCursor, { clickPresentationAt } from './RemoteCursor';
 import {
   createRemoteSession,
   deleteRemoteSession,
@@ -29,10 +29,11 @@ export function RemoteBridge({ id }: { id: string }) {
   const { runner, goTo, exit } = useLessonRunner();
   const secret = useSyncExternalStore(subscribeRemoteSecret, getRemoteSecret, getRemoteSecret);
   const actions = useSyncExternalStore(subscribeRemoteActions, getRemoteActions, getRemoteActions);
-  const act = useRef({ goTo, exit });
-  act.current = { goTo, exit };
+  const act = useRef({ goTo, exit, step: runner?.stepIndex });
+  act.current = { goTo, exit, step: runner?.stepIndex };
   const lastSeq = useRef(0);
   const lastPointerSeq = useRef(0);
+  const lastPointerClickSeq = useRef(0);
   const published = useRef(false);
   const [pointer, setPointer] = useState<RemotePointer | null>(null);
   const [pointerRoot, setPointerRoot] = useState(() => document.fullscreenElement ?? document.body);
@@ -61,6 +62,7 @@ export function RemoteBridge({ id }: { id: string }) {
         ended: false,
         at: Date.now(),
         pointerEnabled: true,
+        pointerClickEnabled: true,
       });
     }
     const timer = window.setTimeout(publish, 120);
@@ -102,7 +104,14 @@ export function RemoteBridge({ id }: { id: string }) {
       if (!alive || !row) return;
       run(row.cmd);
       const point = row.pointer;
-      if (!point || point.seq <= lastPointerSeq.current || row.state.ended) return;
+      if (!point || row.state.ended) return;
+      const click = point.click;
+      const isNewClick = click && click.seq > lastPointerClickSeq.current;
+      if (isNewClick) {
+        lastPointerClickSeq.current = click.seq;
+        if (click.step === act.current.step) clickPresentationAt(click);
+      }
+      if (!isNewClick && point.seq <= lastPointerSeq.current) return;
       lastPointerSeq.current = point.seq;
       setPointer(point);
       window.clearTimeout(hidePointer);
@@ -117,22 +126,7 @@ export function RemoteBridge({ id }: { id: string }) {
     };
   }, [id]);
 
-  return pointer && createPortal(
-    <svg
-      aria-hidden="true"
-      data-remote-pointer
-      className="pointer-events-none fixed z-[100] h-8 w-7 drop-shadow-md motion-safe:transition-[left,top] motion-safe:duration-100 motion-safe:ease-linear"
-      style={{
-        left: `min(${pointer.x / 10}%, calc(100% - 28px))`,
-        top: `min(${pointer.y / 10}%, calc(100% - 32px))`,
-      }}
-      viewBox="0 0 28 32"
-      fill="none"
-    >
-      <path d="M2 2v24l6-5 4 9 5-2-4-9h9L2 2Z" fill="#0869f7" stroke="white" strokeWidth="2" strokeLinejoin="round" />
-    </svg>,
-    pointerRoot,
-  );
+  return <RemoteCursor point={pointer} root={pointerRoot} />;
 }
 
 /** 진행바 "리모컨" 창 — 켜면 QR이 뜨고, 폰으로 찍으면 연결된다. */

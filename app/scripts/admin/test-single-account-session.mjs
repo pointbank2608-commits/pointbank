@@ -63,10 +63,12 @@ try {
   await db.query("insert into presets (id, academy_id, label, delta) values ($1, $2, 'Work', 2)", [preset, academy]);
   await run('121_remote_qr_pairing.sql');
   await run('123_remote_touchpad.sql');
+  await run('124_remote_pointer_click.sql');
   await as('authenticated', user, first);
   const pair = await value('select remote_qr_open($1) as value', [classroom]);
   await db.query('update remote_sessions set state = $1 where id = $2', [{
-    lessonName: 'Test', ended: false, steps: [{}], actions: [{ id: 'good' }], classId: classroom, pointerEnabled: true,
+    lessonName: 'Test', ended: false, stepIndex: 0, steps: [{}], actions: [{ id: 'good' }], classId: classroom,
+    pointerEnabled: true, pointerClickEnabled: true,
   }, pair.id]);
 
   await as('anon');
@@ -77,6 +79,8 @@ try {
     value('select remote_qr_give($1, $2, $3, $4, $5) as value', [pair.id, pair.key, request, preset, students]);
   const move = (dx, dy, key = pair.key) =>
     value('select remote_qr_move_pointer($1, $2, $3, $4) as value', [pair.id, key, dx, dy]);
+  const click = (count, step = 0, key = pair.key) =>
+    value('select remote_qr_click_pointer($1, $2, $3, $4) as value', [pair.id, key, count, step]);
   assert.equal(await poll(randomUUID()), null);
   assert.equal((await poll()).state.lessonName, 'Test');
   assert.equal(await send('action', null, 'missing'), false);
@@ -87,7 +91,12 @@ try {
   assert.equal(await move(1001, 0), false);
   assert.equal(await move(null, 1), false);
   assert.equal(await move(0, 0), false);
+  assert.equal(await click(1), false);
   assert.equal(await move(150, -200), true);
+  assert.equal(await click(1, 0, randomUUID()), false);
+  assert.equal(await click(1, 1), false);
+  assert.equal(await click(3), false);
+  assert.equal(await click(1), true);
   assert.equal(await move(500, -500), true);
   assert.deepEqual((await value('select remote_qr_points($1, $2) as value', [pair.id, pair.key])).students.map((s) => s.id), [student]);
   await assert.rejects(give(randomUUID(), [student, otherStudent]), /remote_points_unavailable/);
@@ -103,7 +112,9 @@ try {
   await run('122_single_account_session.sql');
   await as('authenticated', user, first);
   await db.exec('select classbank_check_request()');
-  assert.deepEqual(await value('select pointer as value from remote_sessions where id = $1', [pair.id]), { seq: 2, x: 1000, y: 0 });
+  assert.deepEqual(await value('select pointer as value from remote_sessions where id = $1', [pair.id]), {
+    seq: 2, x: 1000, y: 0, click: { seq: 1, x: 650, y: 300, count: 1, step: 0 },
+  });
   assert.equal(await value("select cmd->>'name' as value from remote_sessions where id = $1", [pair.id]), 'action');
   assert.equal(await value('select count(*)::integer as value from storage.objects'), 1);
   await db.exec('reset role');
@@ -118,6 +129,7 @@ try {
   assert.equal(await poll(), null);
   assert.equal(await send('next'), false);
   assert.equal(await move(-100, 100), false);
+  assert.equal(await click(2), false);
   await as('authenticated', user, second);
   await db.exec('select classbank_check_request()');
   await as('authenticated', anotherUser, anotherSession);

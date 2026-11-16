@@ -1,10 +1,14 @@
-import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { moveRemotePointer, type RemotePairing } from '../lib/remote';
+import { clickRemotePointer, moveRemotePointer, type RemotePairing } from '../lib/remote';
 
-const SEND_INTERVAL_MS = 90;
+const SEND_INTERVAL_MS = 60;
 
-export default function RemoteTouchpad({ pair }: { pair: RemotePairing }) {
+export default function RemoteTouchpad({ pair, step, clickEnabled }: {
+  pair: RemotePairing;
+  step: number;
+  clickEnabled: boolean;
+}) {
   const { t } = useTranslation();
   const finger = useRef<{ id: number; x: number; y: number; width: number } | null>(null);
   const movement = useRef({ x: 0, y: 0 });
@@ -12,6 +16,10 @@ export default function RemoteTouchpad({ pair }: { pair: RemotePairing }) {
   const controller = useRef<AbortController | null>(null);
   const sending = useRef(false);
   const lastSend = useRef(-Infinity);
+  const pendingClick = useRef<{ count: 1 | 2; step: number } | null>(null);
+  const lastTouchClick = useRef<{ button: HTMLButtonElement; at: number } | null>(null);
+  const [hasMoved, setHasMoved] = useState(false);
+  const [clicking, setClicking] = useState(false);
   const [error, setError] = useState(false);
 
   useEffect(() => {
@@ -23,6 +31,7 @@ export default function RemoteTouchpad({ pair }: { pair: RemotePairing }) {
       if (timer.current !== null) window.clearTimeout(timer.current);
       timer.current = null;
       movement.current = { x: 0, y: 0 };
+      pendingClick.current = null;
       sending.current = false;
     };
   }, []);
@@ -30,7 +39,7 @@ export default function RemoteTouchpad({ pair }: { pair: RemotePairing }) {
   function scheduleMovement() {
     const signal = controller.current?.signal;
     if (!signal || signal.aborted || sending.current || timer.current !== null) return;
-    if (!Math.round(movement.current.x) && !Math.round(movement.current.y)) return;
+    if (!Math.round(movement.current.x) && !Math.round(movement.current.y) && !pendingClick.current) return;
 
     const delay = Math.max(0, SEND_INTERVAL_MS - (performance.now() - lastSend.current));
     timer.current = window.setTimeout(async () => {
@@ -38,17 +47,35 @@ export default function RemoteTouchpad({ pair }: { pair: RemotePairing }) {
       const { x, y } = movement.current;
       const dx = Math.max(-1000, Math.min(1000, Math.round(x)));
       const dy = Math.max(-1000, Math.min(1000, Math.round(y)));
+      // Send every pending movement before taking the click's position on the server.
+      const click = dx || dy ? null : pendingClick.current;
+      if (click) pendingClick.current = null;
       movement.current = { x: x - dx, y: y - dy };
       lastSend.current = performance.now();
       sending.current = true;
       try {
-        await moveRemotePointer(pair, dx, dy, signal);
-        if (!signal.aborted) setError(false);
+        if (click) {
+          await clickRemotePointer(pair, click.count, click.step, signal);
+        } else {
+          await moveRemotePointer(pair, dx, dy, signal);
+        }
+        if (!signal.aborted) {
+          if (!click) setHasMoved(true);
+          setError(false);
+        }
       } catch {
-        if (!signal.aborted) setError(true);
+        if (!signal.aborted) {
+          setError(true);
+          if (!click) {
+            pendingClick.current = null;
+            setHasMoved(false);
+            setClicking(false);
+          }
+        }
       } finally {
         if (!signal.aborted) {
           sending.current = false;
+          if (click) setClicking(false);
           scheduleMovement();
         }
       }
@@ -56,7 +83,7 @@ export default function RemoteTouchpad({ pair }: { pair: RemotePairing }) {
   }
 
   function start(event: PointerEvent<HTMLElement>) {
-    if (finger.current || event.button !== 0) return;
+    if (finger.current || clicking || event.button !== 0) return;
     const { pointerId, clientX, clientY, currentTarget } = event;
     const width = currentTarget.getBoundingClientRect().width;
     if (width <= 0) return;
@@ -78,22 +105,68 @@ export default function RemoteTouchpad({ pair }: { pair: RemotePairing }) {
     if (finger.current?.id === event.pointerId) finger.current = null;
   }
 
+  function click(count: 1 | 2) {
+    if (!clickEnabled || !hasMoved || clicking || finger.current || pendingClick.current) return;
+    pendingClick.current = { count, step };
+    setClicking(true);
+    scheduleMovement();
+  }
+
+  function touchClick(event: PointerEvent<HTMLButtonElement>, count: 1 | 2) {
+    if (event.pointerType !== 'touch' || event.currentTarget.disabled) return;
+    const { left, right, top, bottom } = event.currentTarget.getBoundingClientRect();
+    if (event.clientX < left || event.clientX >= right || event.clientY < top || event.clientY >= bottom) return;
+    lastTouchClick.current = { button: event.currentTarget, at: performance.now() };
+    click(count);
+  }
+
+  function buttonClick(event: MouseEvent<HTMLButtonElement>, count: 1 | 2) {
+    const previous = lastTouchClick.current;
+    // Some touch browsers also emit a compatibility click after pointerup.
+    if (event.detail > 0 && previous?.button === event.currentTarget && performance.now() - previous.at < 500) return;
+    click(count);
+  }
+
   return (
-    <section
-      aria-label={t('remote.touchpad')}
-      className="flex min-h-28 flex-1 cursor-crosshair touch-none select-none flex-col items-center justify-center gap-1 rounded-2xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-center text-on-surface-variant"
-      onPointerDown={start}
-      onPointerMove={move}
-      onPointerUp={stop}
-      onPointerCancel={stop}
-      onLostPointerCapture={stop}
-      onContextMenu={(event) => event.preventDefault()}
-    >
-      <span aria-hidden="true" className="material-symbols-outlined text-[26px] text-primary">touchpad_mouse</span>
-      <span className="font-label-md text-label-md text-deep-navy">{t('remote.touchpad')}</span>
-      <span role={error ? 'status' : undefined} className="font-caption text-caption">
-        {error ? t('remote.connectionError') : t('remote.touchpadHint')}
-      </span>
-    </section>
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest">
+      <section
+        aria-label={t('remote.touchpad')}
+        className="flex min-h-28 flex-1 cursor-crosshair touch-none select-none flex-col items-center justify-center gap-1 px-4 py-3 text-center text-on-surface-variant"
+        onPointerDown={start}
+        onPointerMove={move}
+        onPointerUp={stop}
+        onPointerCancel={stop}
+        onLostPointerCapture={stop}
+        onContextMenu={(event) => event.preventDefault()}
+      >
+        <span aria-hidden="true" className="material-symbols-outlined text-[26px] text-primary">touchpad_mouse</span>
+        <span className="font-label-md text-label-md text-deep-navy">{t('remote.touchpad')}</span>
+        <span role={error ? 'status' : undefined} className="font-caption text-caption">
+          {error ? t('remote.connectionError') : t('remote.touchpadHint')}
+        </span>
+      </section>
+      {clickEnabled && (
+        <div className="grid grid-cols-2 divide-x divide-outline-variant border-t border-outline-variant bg-surface-container-low">
+          <button
+            type="button"
+            disabled={!hasMoved || clicking}
+            onPointerUp={(event) => touchClick(event, 1)}
+            onClick={(event) => buttonClick(event, 1)}
+            className="min-h-12 touch-manipulation font-label-md text-label-md text-deep-navy active:bg-secondary-container disabled:opacity-50"
+          >
+            {t('remote.pointerClick')}
+          </button>
+          <button
+            type="button"
+            disabled={!hasMoved || clicking}
+            onPointerUp={(event) => touchClick(event, 2)}
+            onClick={(event) => buttonClick(event, 2)}
+            className="min-h-12 touch-manipulation font-label-md text-label-md text-deep-navy active:bg-secondary-container disabled:opacity-50"
+          >
+            {t('remote.pointerDoubleClick')}
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

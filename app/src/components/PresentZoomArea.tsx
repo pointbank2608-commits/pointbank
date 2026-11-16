@@ -388,6 +388,7 @@ export default function PresentZoomArea({ children }: { children: ReactNode }) {
   return (
     <div
       ref={outerRef}
+      data-remote-click-area
       // 브라우저 기본 핀치 확대(페이지 전체)는 막고, 한 손가락 세로·가로 스크롤은 그대로 둔다.
       style={{ touchAction: 'pan-x pan-y' }}
       className={`relative min-h-0 flex-1 print:overflow-visible ${zoomed ? 'overflow-hidden' : 'overflow-y-auto'} ${

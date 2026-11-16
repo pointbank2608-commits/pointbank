@@ -309,7 +309,9 @@ function PairedRemote({ id, pairingKey }: { id: string; pairingKey: string }) {
             </>
           ) : null}
 
-          {state?.pointerEnabled && <RemoteTouchpad pair={pair} />}
+          {state?.pointerEnabled && (
+            <RemoteTouchpad pair={pair} step={idx} clickEnabled={state.pointerClickEnabled === true} />
+          )}
 
           {/* 넘기기 */}
           <div className="mt-auto grid grid-cols-2 gap-3">
