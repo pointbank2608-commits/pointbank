@@ -33,6 +33,7 @@ create table private.classbank_remote_point_requests (
   result integer not null,
   primary key (remote_id, request_id)
 );
+alter table private.classbank_remote_point_requests enable row level security;
 revoke all on private.classbank_remote_point_requests from public, anon, authenticated;
 
 create function public.remote_qr_open(p_class uuid)

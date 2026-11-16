@@ -11,6 +11,7 @@ create table private.classbank_account_sessions (
   session_id uuid not null,
   created_at timestamptz not null
 );
+alter table private.classbank_account_sessions enable row level security;
 revoke all on private.classbank_account_sessions from public, anon, authenticated;
 
 create function private.classbank_record_session()
