@@ -2,8 +2,9 @@ import { activityName } from '../lib/activityNames';
 import { useRecoverableField } from '../lib/useRecoverableField';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import WordListGameLauncher from '../components/WordListGameLauncher';
+import TextbookLibrary from '../components/TextbookLibrary';
 import SentenceListEditor from '../components/SentenceListEditor';
 import { isFreeTierGame, GAME_CATALOG } from '../lib/gameCatalog';
 import { prepareClassroomGame } from '../lib/gameWorkspace';
@@ -504,6 +505,9 @@ export default function WordListsPage() {
   const { academy, profile, hasFullAccess } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [params, setParams] = useSearchParams();
+  const textbooks = params.get('tab') === 'textbooks';
+  const linkedList = params.get('list');
   const [materialFilter, setMaterialFilter] = useState<'all' | 'word' | 'sentence'>('all');
   const [launchListId, setLaunchListId] = useState<string | null>(null);
   const [launchBusy, setLaunchBusy] = useState(false);
@@ -520,6 +524,9 @@ export default function WordListsPage() {
   const listSequence=useRef(0);
   const accountScope=useRef(''); accountScope.current=`${profile?.id}:${academy?.id}`;
   const [openId, setOpenId] = useState<string | null>(null);
+  useEffect(() => {
+    if (linkedList) { setOpenId(linkedList); setMaterialFilter('all'); }
+  }, [linkedList]);
   /** 펼쳐 둔 그룹(기본은 모두 접힘) */
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const groupNames = useMemo(() => [...new Set(lists.map((l) => l.group_name).filter((g): g is string => !!g))], [lists]);
@@ -709,9 +716,9 @@ export default function WordListsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
       <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-        {t('wordLists.title')}
+        {t('textbook.materials')}
       </h2>
-            <div className="flex flex-wrap gap-2">
+            {!textbooks && <div className="flex flex-wrap gap-2">
               {(['word', 'sentence'] as const).map((kind) => (
                 <button
                   key={kind}
@@ -728,8 +735,13 @@ export default function WordListsPage() {
                   {t(kind === 'sentence' ? 'flow.createSentences' : 'flow.createWords')}
                 </button>
               ))}
-            </div>
+            </div>}
       </div>
+      <div className="flex flex-wrap gap-2" aria-label={t('flow.materialFilter')}>
+        {(['all','word','sentence'] as const).map(kind => <button type="button" key={kind} className={`min-h-11 rounded-xl border px-4 font-bold ${!textbooks && materialFilter===kind?'bg-primary text-white':'bg-white text-deep-navy'}`} aria-pressed={!textbooks && materialFilter===kind} onClick={() => { setMaterialFilter(kind); if (textbooks || linkedList) setParams({}); }}>{t(kind==='all'?'flow.allMaterials':kind==='word'?'flow.words':'flow.sentences')}</button>)}
+        <button type="button" className={`min-h-11 rounded-xl border px-4 font-bold ${textbooks?'bg-primary text-white':'bg-white text-deep-navy'}`} aria-pressed={textbooks} onClick={() => { if (!textbooks) setParams({ tab: 'textbooks' }); }}>{t('textbook.tab')}</button>
+      </div>
+      {textbooks ? academy?.id && profile?.id && <TextbookLibrary key={accountScope.current} academy={academy.id} owner={profile.id} onSaved={() => void load()} /> : <>
       {showCreateForm && (
             <div className="bg-surface-container-lowest rounded-xl p-4 shadow-card flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-secondary-container px-3 py-1 font-label-md text-label-md text-on-secondary-container">
@@ -801,8 +813,6 @@ export default function WordListsPage() {
         {!viewAll && <ClassChipRow classes={classes} selectedId={selectedId} onSelect={select} onReorder={reorder} />}
       </div>
       {viewAll && <p className="font-caption text-caption text-on-surface-variant">{t('wordLists.viewAllHint')}</p>}
-
-      <div className="flex flex-wrap gap-2" aria-label={t('flow.materialFilter')}>{(['all','word','sentence'] as const).map(kind => <button key={kind} className={`min-h-11 rounded-xl border px-4 font-bold ${materialFilter===kind?'bg-primary text-white':'bg-white text-deep-navy'}`} aria-pressed={materialFilter===kind} onClick={()=>setMaterialFilter(kind)}>{t(kind==='all'?'flow.allMaterials':kind==='word'?'flow.words':'flow.sentences')}</button>)}</div>
 
       {loading ? (
         <div className="text-center py-16 font-body-md text-on-surface-variant">{t('common.loading')}</div>
@@ -1038,6 +1048,7 @@ export default function WordListsPage() {
           onClose={() => setStudyingListId(null)}
         />
       )}
+      </>}
     </div>
   );
 }

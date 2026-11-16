@@ -4,14 +4,15 @@ import { initReactI18next } from 'react-i18next';
 import en from './locales/en';
 import ko from './locales/ko';
 import { lessonUxKo, lessonUxEn } from './lessonUxLocales';
+import { textbookKo, textbookEn } from './textbookLocales';
 
 void i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
-      ko: { translation: { ...ko, lessonUx: lessonUxKo } },
-      en: { translation: { ...en, lessonUx: lessonUxEn } },
+      ko: { translation: { ...ko, lessonUx: lessonUxKo, textbook: textbookKo } },
+      en: { translation: { ...en, lessonUx: lessonUxEn, textbook: textbookEn } },
     },
     fallbackLng: 'ko',
     supportedLngs: ['ko', 'en'],
