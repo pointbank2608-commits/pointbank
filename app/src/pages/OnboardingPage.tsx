@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import BrandMark from '../components/BrandMark';
 import { useAuth } from '../context/AuthContext';
 import { claimAdmin, createAcademy, joinAsTeacher } from '../lib/api';
-import { supabase } from '../lib/supabase';
 import i18n from '../i18n';
 
 // 이 이메일로 로그인한 사람에게는 일반 온보딩 대신 "관리자로 시작하기"를 보여준다.
@@ -21,7 +20,7 @@ type Choice = 'owner' | 'teacher';
 
 export default function OnboardingPage() {
   const { t } = useTranslation();
-  const { refresh, session } = useAuth();
+  const { refresh, session, signOut } = useAuth();
   const [choice, setChoice] = useState<Choice | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -239,7 +238,7 @@ export default function OnboardingPage() {
         )}
 
         <button
-          onClick={() => void supabase.auth.signOut()}
+          onClick={() => void signOut()}
           className="w-full mt-4 font-caption text-caption text-on-surface-variant hover:text-primary transition-colors"
         >
           {t('onboarding.signInOtherAccount')}

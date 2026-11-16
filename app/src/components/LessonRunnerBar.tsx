@@ -1,7 +1,8 @@
 import LessonVideoActivityNav from './LessonVideoActivityNav';
 import { useEffect, useState } from 'react';
 import OnlineClassPanel from './OnlineClassPanel';
-import { RemoteBridge, RemotePanel, loadRemoteId } from './RemoteControl';
+import { RemoteBridge, RemotePanel } from './RemoteControl';
+import type { RemotePairing } from '../lib/remote';
 import { useTranslation } from 'react-i18next';
 import { PRESENT_ZOOM_IDENTITY, PRESENT_ZOOM_MAX, PRESENT_ZOOM_MIN, useLessonRunner } from '../context/LessonRunnerContext';
 import LessonPointsPanel from './LessonPointsPanel';
@@ -42,7 +43,7 @@ export default function LessonRunnerBar() {
   const [moreOpen, setMoreOpen] = useState(false);
   const [onlineOpen, setOnlineOpen] = useState(false);
   const [remoteOpen, setRemoteOpen] = useState(false);
-  const [remoteId, setRemoteId] = useState<string | null>(() => loadRemoteId());
+  const [remotePair, setRemotePair] = useState<RemotePairing | null>(null);
 
   useEffect(() => {
     setAnnotationOpen(false);
@@ -176,7 +177,7 @@ export default function LessonRunnerBar() {
       >
         <span className="material-symbols-outlined text-[20px]">phone_iphone</span>
         <span className="font-caption text-caption">{t('remote.button')}</span>
-        {remoteId && <span className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full bg-[#2e9e5b] ring-2 ring-deep-navy" />}
+        {remotePair && <span className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full bg-[#2e9e5b] ring-2 ring-deep-navy" />}
       </button>
       <button
         type="button"
@@ -221,8 +222,8 @@ export default function LessonRunnerBar() {
       </button>
     </div>
     {onlineOpen && <OnlineClassPanel onClose={() => setOnlineOpen(false)} />}
-    {remoteId && <RemoteBridge id={remoteId} />}
-    {remoteOpen && <RemotePanel id={remoteId} onChange={setRemoteId} onClose={() => setRemoteOpen(false)} />}
+    {remotePair && <RemoteBridge key={remotePair.id} id={remotePair.id} />}
+    {remoteOpen && <RemotePanel pair={remotePair} classId={runner.classId} onChange={setRemotePair} onClose={() => setRemoteOpen(false)} />}
     {keysOpen && (
       <div className="no-print fixed inset-0 z-40 flex items-start justify-end p-4 pt-16" onClick={() => setKeysOpen(false)}>
         <div

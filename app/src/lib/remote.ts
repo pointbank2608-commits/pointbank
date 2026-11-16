@@ -1,11 +1,22 @@
 import { useEffect, useRef } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 
-/**
- * 선생님 폰 리모컨(2026-10-14, 1단계) — 칠판(노트북·태블릿·전자칠판) 화면과 선생님 폰이 같은 계정으로 주고받는다.
- * `remote_sessions` 한 줄(supabase/077)에 칠판이 state(지금 슬라이드·정답 등)를, 폰이 cmd(다음·이전 …)를 쓴다.
- * RLS 가 user_id = auth.uid() 라서 다른 사람은 읽지도 쓰지도 못한다. 실시간 변경을 받고, 못 받아도 2.5초마다 확인한다.
- */
+const remotePhone = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY, {
+  accessToken: async () => null,
+});
+
+export interface RemotePairing {
+  id: string;
+  key: string;
+}
+
+export interface RemotePoints {
+  unit: string;
+  locked: boolean;
+  students: { id: string; name: string; today: number }[];
+  presets: { id: string; label: string; delta: number }[];
+}
 
 export interface RemoteStep {
   label: string;
@@ -58,22 +69,19 @@ export interface RemoteRow {
   cmd: Partial<RemoteCmd>;
 }
 
-export const REMOTE_STORAGE_KEY = 'classbank.remoteSession';
-
-export function remoteUrl(id: string): string {
-  return `${window.location.origin}/remote/${id}`;
+export function remoteUrl(pair: RemotePairing): string {
+  return `${window.location.origin}/remote/${pair.id}#${pair.key}`;
 }
 
-export async function createRemoteSession(): Promise<string> {
-  // 하루 지난 연결은 정리한다(실패해도 상관없음)
-  void supabase.from('remote_sessions').delete().lt('created_at', new Date(Date.now() - 24 * 3600 * 1000).toISOString());
-  const { data, error } = await supabase.from('remote_sessions').insert({}).select('id').single();
+export async function createRemoteSession(classId: string | null): Promise<RemotePairing> {
+  const { data, error } = await supabase.rpc('remote_qr_open', { p_class: classId });
   if (error || !data) throw error ?? new Error('remote session');
-  return data.id as string;
+  return data as RemotePairing;
 }
 
 export async function deleteRemoteSession(id: string): Promise<void> {
-  await supabase.from('remote_sessions').delete().eq('id', id);
+  const { error } = await supabase.from('remote_sessions').delete().eq('id', id);
+  if (error) throw error;
 }
 
 export async function fetchRemoteSession(id: string): Promise<RemoteRow | null> {
@@ -83,12 +91,38 @@ export async function fetchRemoteSession(id: string): Promise<RemoteRow | null> 
 }
 
 export async function publishRemoteState(id: string, state: RemoteState): Promise<void> {
-  await supabase.from('remote_sessions').update({ state, updated_at: new Date().toISOString() }).eq('id', id);
+  await supabase.from('remote_sessions').update({ state, updated_at: new Date().toISOString() })
+    .eq('id', id).or('state->>ended.is.null,state->>ended.eq.false');
 }
 
-export async function sendRemoteCmd(id: string, name: RemoteCmdName, arg?: number, actionId?: string): Promise<void> {
-  const cmd: RemoteCmd = { seq: Date.now(), name, ...(arg !== undefined ? { arg } : {}), ...(actionId ? { id: actionId } : {}) };
-  await supabase.from('remote_sessions').update({ cmd, updated_at: new Date().toISOString() }).eq('id', id);
+function remotePhoneArgs(pair: RemotePairing) {
+  return { p_id: pair.id, p_key: pair.key };
+}
+
+export async function fetchRemotePhoneState(pair: RemotePairing, signal: AbortSignal): Promise<Partial<RemoteState> | null> {
+  const { data, error } = await remotePhone.rpc('remote_qr_poll', remotePhoneArgs(pair)).abortSignal(signal);
+  if (error) throw error;
+  return data?.state ?? null;
+}
+
+export async function sendRemoteCmd(pair: RemotePairing, name: RemoteCmdName, arg?: number, actionId?: string): Promise<void> {
+  const { data, error } = await remotePhone.rpc('remote_qr_send', {
+    ...remotePhoneArgs(pair), p_name: name, p_arg: arg ?? null, p_action: actionId ?? null,
+  });
+  if (error || !data) throw error ?? new Error('remote unavailable');
+}
+
+export async function fetchRemotePoints(pair: RemotePairing): Promise<RemotePoints> {
+  const { data, error } = await remotePhone.rpc('remote_qr_points', remotePhoneArgs(pair));
+  if (error || !data) throw error ?? new Error('remote points unavailable');
+  return data as RemotePoints;
+}
+
+export async function giveRemotePoints(pair: RemotePairing, requestId: string, presetId: string, studentIds: string[]): Promise<void> {
+  const { data, error } = await remotePhone.rpc('remote_qr_give', {
+    ...remotePhoneArgs(pair), p_request: requestId, p_preset: presetId, p_students: studentIds,
+  });
+  if (error || data !== studentIds.length) throw error ?? new Error('remote points unavailable');
 }
 
 /** 연결 줄이 바뀌면 알려 준다 — 실시간 + 2.5초 확인. 돌려주는 함수를 부르면 끝낸다. */

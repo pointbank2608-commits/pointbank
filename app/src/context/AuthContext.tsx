@@ -17,6 +17,7 @@ interface AuthValue {
   /** 세션/프로필을 처음 확인하는 중인지 */
   loading: boolean;
   session: Session | null;
+  sessionReplaced: boolean;
   profile: Profile | null;
   academy: Academy | null;
   isStaff: boolean;
@@ -36,6 +37,7 @@ const AuthContext = createContext<AuthValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const [session, setSession] = useState<Session | null>(null);
+  const [sessionReplaced, setSessionReplaced] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [academy, setAcademy] = useState<Academy | null>(null);
   const [sessionReady, setSessionReady] = useState(false);
@@ -51,12 +53,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
+      if (_event === 'SIGNED_IN' && next) setSessionReplaced(false);
       setSession(next);
       setSessionReady(true);
     });
 
     return () => sub.subscription.unsubscribe();
   }, []);
+
+  const accessToken = session?.access_token;
+  useEffect(() => {
+    if (!accessToken) return;
+    const controller = new AbortController();
+    let checking = false;
+    async function check() {
+      if (checking || document.hidden) return;
+      checking = true;
+      try {
+        const { error } = await supabase.rpc('classbank_current_session').abortSignal(controller.signal);
+        if (controller.signal.aborted || error?.code !== 'PT409' || error.message !== 'classbank_session_replaced') return;
+        const { data } = await supabase.auth.getSession();
+        if (controller.signal.aborted || data.session?.access_token !== accessToken) return;
+        setSessionReplaced(true);
+        await supabase.auth.signOut({ scope: 'local' });
+      } finally {
+        checking = false;
+      }
+    }
+    void check();
+    const timer = window.setInterval(check, 15000);
+    document.addEventListener('visibilitychange', check);
+    return () => {
+      controller.abort();
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', check);
+    };
+  }, [accessToken]);
 
   const userId = session?.user.id ?? null;
 
@@ -75,6 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .maybeSingle();
 
     if (error) {
+      if (error.code === 'PT409' && error.message === 'classbank_session_replaced') return;
       console.error('프로필 조회 실패', error);
     }
 
@@ -101,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [loadProfile]);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'local' });
     setProfile(null);
     setAcademy(null);
   }, []);
@@ -110,6 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       loading: !sessionReady || !profileReady,
       session,
+      sessionReplaced,
       profile,
       academy,
       isStaff: profile?.role === 'owner' || profile?.role === 'teacher',
@@ -121,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refresh: loadProfile,
       signOut,
     }),
-    [sessionReady, profileReady, session, profile, academy, loadProfile, signOut, t],
+    [sessionReady, profileReady, session, sessionReplaced, profile, academy, loadProfile, signOut, t],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
