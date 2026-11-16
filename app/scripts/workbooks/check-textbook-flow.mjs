@@ -43,7 +43,13 @@ const bundle = await build({
 });
 const assets = new Map(bundle.output.map(file => ['/' + file.fileName, file.type === 'chunk' ? file.code : file.source]));
 
-const units = [], lists = [], sheets = [];
+const books = [{ id: 'legacy-book', title: 'Existing workbook' }];
+const units = [
+  { id: 'old-10', book_id: 'legacy-book', textbook: 'Existing workbook', title: 'Unit 10', files: [] },
+  { id: 'old-2', book_id: 'legacy-book', textbook: 'Existing workbook', title: 'Unit 2', files: [],
+    word_list_id: 'old-word-list', sentence_list_id: 'old-sentence-list' },
+];
+const lists = [], sheets = [];
 const extraction = {
   words: [
     { text: 'river', meaning: '강', page: 1, meaningSuggested: false },
@@ -82,17 +88,33 @@ try {
       return respond(extraction);
     }
     if (pathname.includes('/object/textbook-originals/')) { uploadCount++; return respond({ Key: pathname }); }
+    if (pathname.endsWith('/textbook_books')) {
+      if (request.method() === 'POST') {
+        const book = { id: 'new-book', title: request.postDataJSON().title };
+        books.push(book);
+        return respond(book, 201);
+      }
+      const selected = books.filter(book => !searchParams.has('id') || searchParams.get('id') === `eq.${book.id}`);
+      return respond(selected.map(book => {
+        const children = units.filter(unit => unit.book_id === book.id);
+        return { ...book, textbook_units: searchParams.get('select').includes('(count)')
+          ? [{ count: children.length }] : children.map(({ id, title }) => ({ id, title })) };
+      }));
+    }
     if (pathname.endsWith('/save_textbook_unit')) {
       if (failSave) { failSave = false; return respond({ message: 'temporary failure' }, 503); }
       const input = request.postDataJSON();
-      const unit = { id: input.p_id, textbook: input.p_textbook, title: input.p_title, files: input.p_files,
+      const book = books.find(book => book.title === input.p_textbook);
+      assert.equal(book.id, 'new-book');
+      const unit = { id: input.p_id, book_id: book.id, textbook: input.p_textbook, title: input.p_title, files: input.p_files,
         word_list_id: 'word-list', sentence_list_id: 'sentence-list' };
       units.push(unit);
       lists.push({ id: 'word-list', kind: 'word', name: 'Field Trip · Unit 1', items: input.p_words },
         { id: 'sentence-list', kind: 'sentence', name: 'Field Trip · Unit 1', items: input.p_sentences });
       return respond(unit);
     }
-    if (pathname.endsWith('/textbook_units')) return respond(units);
+    if (pathname.endsWith('/textbook_units')) return respond(
+      units.filter(unit => !searchParams.has('id') || searchParams.get('id') === `eq.${unit.id}`));
     if (pathname.endsWith('/textbook_worksheets')) {
       if (request.method() === 'POST') {
         const next = request.postDataJSON();
@@ -109,8 +131,26 @@ try {
   const go = path => page.goto(base + encodeURIComponent(path));
   await go('/wordlists');
   await page.getByRole('button', { name: '내 교재', exact: true }).click();
-  await page.getByRole('button', { name: '교재 단원 추가' }).click();
+  const library = page.getByRole('region', { name: '내 교재', exact: true });
+  await library.getByRole('link', { name: 'Existing workbook 2개 단원' }).click();
+  const contents = library.getByRole('region', { name: '단원 목차', exact: true });
+  await contents.getByRole('link', { name: 'Unit 2', exact: true }).waitFor();
+  assert.deepEqual(await contents.getByRole('link').allTextContents(), ['Unit 2', 'Unit 10']);
+  await go('/wordlists?tab=textbooks&unit=old-2');
+  assert.equal(await library.getByRole('link', { name: '단어장', exact: true }).getAttribute('href'), '/wordlists?list=old-word-list');
+  assert.equal(await library.getByRole('link', { name: '문장 모음', exact: true }).getAttribute('href'), '/wordlists?list=old-sentence-list');
+  await library.getByRole('link', { name: '교재 목차로' }).click();
+  await library.getByRole('link', { name: '교재 목록으로' }).click();
+  assert.equal(await library.getByRole('link', { name: 'Unit 2', exact: true }).count(), 0);
+  assert.equal(await library.getByRole('button', { name: '단원 추가', exact: true }).count(), 0);
+  await library.getByRole('button', { name: '새 교재 만들기', exact: true }).click();
   await page.getByLabel('교재 이름').fill('Field Trip');
+  await library.getByRole('button', { name: '교재 만들기', exact: true }).click();
+  await library.getByText('등록한 단원이 없어요.').waitFor();
+  await go('/wordlists?tab=textbooks&book=new-book');
+  await library.getByText('등록한 단원이 없어요.').waitFor();
+  await library.getByRole('button', { name: '단원 추가', exact: true }).click();
+  assert.equal(await page.getByLabel('교재 이름', { exact: true }).count(), 0);
   await page.getByLabel('단원 이름').fill('Unit 1');
   assert.equal(await page.getByLabel('교재 촬영').getAttribute('capture'), 'environment');
   await page.getByLabel('이미지·PDF 선택').setInputFiles({
@@ -129,7 +169,12 @@ try {
   assert.equal(uploadCount, 2);
   assert.deepEqual(lists[0].items.map(item => [item.word, item.meaning]), [['river', '강'], ['forest', '숲속']]);
   assert.equal(lists[1].items[0].word, 'We walk by the river.');
-  assert.equal(units.length, 1);
+  const createdUnit = units.find(unit => unit.book_id === 'new-book');
+  assert.ok(createdUnit);
+  await library.getByRole('link', { name: '교재 목차로' }).click();
+  await library.getByRole('link', { name: 'Unit 1', exact: true }).waitFor();
+  await library.getByRole('link', { name: '교재 목록으로' }).click();
+  await library.getByRole('link', { name: 'Field Trip 1개 단원' }).waitFor();
 
   await go('/materials/worksheet');
   await page.getByRole('button', { name: '내 교재에서 만들기' }).click();
@@ -139,7 +184,7 @@ try {
   await page.getByRole('button', { name: '단원에 활동지 담기' }).click();
   await page.getByRole('button', { name: '단원 활동지 업데이트' }).waitFor();
   assert.equal(sheets.length, 1);
-  assert.equal(sheets[0].unit_id, units[0].id);
+  assert.equal(sheets[0].unit_id, createdUnit.id);
   assert.equal(sheets[0].document.words[0].word, 'We walk by the river.');
   await page.getByRole('link', { name: /저장할 단원/ }).click();
   await page.getByRole('link', { name: sheets[0].document.title, exact: true }).click();
@@ -149,7 +194,7 @@ try {
   await page.getByRole('button', { name: '단원 활동지 업데이트' }).waitFor();
   assert.equal(sheets.length, 1);
   assert.deepEqual(errors, []);
-  console.log('PASS mobile textbook import, review, retry, worksheet creation and reopen');
+  console.log('PASS textbook catalog, legacy links, persistent empty book, unit import and worksheet reopen');
 } finally {
   await browser?.close();
 }
