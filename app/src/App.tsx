@@ -163,7 +163,7 @@ const LessonSlideViewerPage = lazyPage(() => import('./pages/LessonSlideViewerPa
 
 function AppRoutes() {
   const { t } = useTranslation();
-  const { loading, session, profile, isStaff, isAdmin } = useAuth();
+  const { loading, session, sessionReplaced, profile, isStaff, isAdmin } = useAuth();
   const { pathname } = useLocation();
 
   // 대회 퀴즈쇼 학생 입장 — 로그인 없이 휴대폰으로 들어온다(로그인 여부·로딩과 상관없이 먼저).
@@ -227,16 +227,13 @@ function AppRoutes() {
     );
   }
 
-  // 선생님 폰 리모컨 — 로그인한 선생님 계정이어야 한다(로그인 전이면 같은 주소에서 로그인 화면을 보여 준다)
+  // 폰 리모컨은 발표별 QR로 연결한다.
   if (pathname.startsWith('/remote/')) {
-    if (!loading && !session) return <AuthPage />;
-    if (!loading && session && profile) {
-      return (
-        <Routes>
-          <Route path="/remote/:id" element={<RemotePage />} />
-        </Routes>
-      );
-    }
+    return (
+      <Routes>
+        <Route path="/remote/:id" element={<RemotePage />} />
+      </Routes>
+    );
   }
 
   if (loading) {
@@ -256,7 +253,7 @@ function AppRoutes() {
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/refund-policy" element={<RefundPolicyPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to={sessionReplaced ? '/login' : '/'} replace />} />
       </Routes>
     );
   }

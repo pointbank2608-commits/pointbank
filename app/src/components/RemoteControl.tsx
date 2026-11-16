@@ -14,27 +14,9 @@ import {
   remoteUrl,
   subscribeRemote,
   subscribeRemoteSecret,
-  REMOTE_STORAGE_KEY,
   type RemoteCmd,
+  type RemotePairing,
 } from '../lib/remote';
-
-/** 이 브라우저에 기억해 둔 리모컨 연결(새로고침해도 이어진다) */
-export function loadRemoteId(): string | null {
-  try {
-    return sessionStorage.getItem(REMOTE_STORAGE_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function saveRemoteId(id: string | null) {
-  try {
-    if (id) sessionStorage.setItem(REMOTE_STORAGE_KEY, id);
-    else sessionStorage.removeItem(REMOTE_STORAGE_KEY);
-  } catch {
-    /* 저장 실패해도 이번 수업 동안은 그대로 쓴다 */
-  }
-}
 
 /**
  * 칠판 쪽 다리(2026-10-14) — 켜져 있는 동안 지금 슬라이드·정답을 폰에 알리고, 폰의 명령(다음·이전·이동·마치기)을 실행한다.
@@ -46,12 +28,15 @@ export function RemoteBridge({ id }: { id: string }) {
   const actions = useSyncExternalStore(subscribeRemoteActions, getRemoteActions, getRemoteActions);
   const act = useRef({ goTo, exit });
   act.current = { goTo, exit };
-  const lastSeq = useRef<number | null>(null);
+  const lastSeq = useRef(0);
+  const published = useRef(false);
 
   // 지금 상태를 폰에 알린다
   useEffect(() => {
     if (!runner) return;
-    const timer = window.setTimeout(() => {
+    function publish() {
+      if (!runner) return;
+      published.current = true;
       void publishRemoteState(id, {
         lessonName: runner.lessonName,
         stepIndex: runner.stepIndex,
@@ -62,14 +47,21 @@ export function RemoteBridge({ id }: { id: string }) {
         ended: false,
         at: Date.now(),
       });
-    }, 120);
-    return () => window.clearTimeout(timer);
+    }
+    const timer = window.setTimeout(publish, 120);
+    const heartbeat = window.setInterval(publish, 30000);
+    return () => {
+      window.clearTimeout(timer);
+      window.clearInterval(heartbeat);
+    };
   }, [id, runner, secret, actions]);
 
   // 수업이 끝나면 폰에도 알린다(이 컴포넌트가 사라질 때)
   useEffect(() => {
     return () => {
-      void publishRemoteState(id, { lessonName: '', stepIndex: 0, steps: [], secret: null, actions: [], classId: null, ended: true, at: Date.now() });
+      if (published.current) {
+        void publishRemoteState(id, { lessonName: '', stepIndex: 0, steps: [], secret: null, actions: [], classId: null, ended: true, at: Date.now() });
+      }
     };
   }, [id]);
 
@@ -78,10 +70,6 @@ export function RemoteBridge({ id }: { id: string }) {
     let alive = true;
     function run(cmd: Partial<RemoteCmd> | undefined) {
       if (!cmd || typeof cmd.seq !== 'number' || !cmd.name) return;
-      if (lastSeq.current === null) {
-        lastSeq.current = cmd.seq; // 연결 전에 있던 명령은 실행하지 않는다
-        return;
-      }
       if (cmd.seq <= lastSeq.current) return;
       lastSeq.current = cmd.seq;
       if (cmd.name === 'next' || cmd.name === 'prev') {
@@ -108,7 +96,12 @@ export function RemoteBridge({ id }: { id: string }) {
 }
 
 /** 진행바 "리모컨" 창 — 켜면 QR이 뜨고, 폰으로 찍으면 연결된다. */
-export function RemotePanel({ id, onChange, onClose }: { id: string | null; onChange: (id: string | null) => void; onClose: () => void }) {
+export function RemotePanel({ pair, classId, onChange, onClose }: {
+  pair: RemotePairing | null;
+  classId: string | null;
+  onChange: (pair: RemotePairing | null) => void;
+  onClose: () => void;
+}) {
   const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -116,38 +109,48 @@ export function RemotePanel({ id, onChange, onClose }: { id: string | null; onCh
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (!id) {
-      setQr(null);
-      return;
-    }
-    void QRCode.toDataURL(remoteUrl(id), { margin: 1, width: 360 }).then(setQr);
-  }, [id]);
+    setQr(null);
+    if (!pair) return;
+    let active = true;
+    void QRCode.toDataURL(remoteUrl(pair), { margin: 1, width: 360 }).then((value) => {
+      if (active) setQr(value);
+    }).catch(() => {
+      if (active) setError(t('remote.needSetup'));
+    });
+    return () => { active = false; };
+  }, [pair, t]);
 
   async function turnOn() {
     setBusy(true);
     setError(null);
     try {
-      const newId = await createRemoteSession();
-      saveRemoteId(newId);
-      onChange(newId);
+      onChange(await createRemoteSession(classId));
     } catch (e) {
       const msg = String((e as { message?: string })?.message ?? e);
-      setError(/remote_sessions|relation|schema cache/i.test(msg) ? t('remote.needSetup') : msg);
+      setError(/remote_|relation|schema cache/i.test(msg) ? t('remote.needSetup') : msg);
     } finally {
       setBusy(false);
     }
   }
 
   async function turnOff() {
-    if (id) await deleteRemoteSession(id).catch(() => {});
-    saveRemoteId(null);
-    onChange(null);
+    if (!pair) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await deleteRemoteSession(pair.id);
+      onChange(null);
+    } catch {
+      setError(t('remote.connectionError'));
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function copy() {
-    if (!id) return;
+    if (!pair) return;
     try {
-      await navigator.clipboard.writeText(remoteUrl(id));
+      await navigator.clipboard.writeText(remoteUrl(pair));
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -166,7 +169,7 @@ export function RemotePanel({ id, onChange, onClose }: { id: string | null; onCh
           </button>
         </div>
 
-        {!id ? (
+        {!pair ? (
           <section className="space-y-3">
             <p className="font-body-sm text-body-sm text-on-surface-variant">{t('remote.intro')}</p>
             <ul className="list-disc space-y-1 pl-5 font-body-sm text-body-sm text-on-surface-variant">
@@ -200,7 +203,7 @@ export function RemotePanel({ id, onChange, onClose }: { id: string | null; onCh
               <button type="button" onClick={() => void copy()} className="flex-1 rounded-full bg-secondary-container py-2 font-label-md text-label-md text-on-secondary-container">
                 {copied ? t('online.copied') : t('remote.copyLink')}
               </button>
-              <button type="button" onClick={() => void turnOff()} className="rounded-full border border-error px-4 py-2 font-label-md text-label-md text-error hover:bg-error/10">
+              <button type="button" disabled={busy} onClick={() => void turnOff()} className="rounded-full border border-error px-4 py-2 font-label-md text-label-md text-error hover:bg-error/10 disabled:opacity-50">
                 {t('remote.off')}
               </button>
             </div>

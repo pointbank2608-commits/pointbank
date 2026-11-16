@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import BrandLogo from '../components/BrandLogo';
 import BrandMark from '../components/BrandMark';
 import LanguageToggle from '../components/LanguageToggle';
+import { useAuth } from '../context/AuthContext';
 import { friendlyError, supabase } from '../lib/supabase';
 
 type Mode = 'login' | 'signup';
@@ -22,6 +23,7 @@ const INPUT =
 /** 로그인·회원가입 — 시안(01_login_selected): 왼쪽 브랜드 문구·삽화, 오른쪽 흰 카드. 인증 흐름은 그대로다. */
 export default function AuthPage() {
   const { t } = useTranslation();
+  const { sessionReplaced } = useAuth();
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -138,6 +140,11 @@ export default function AuthPage() {
               {info && (
                 <div role="status" className="mb-4 rounded-lg bg-primary-fixed px-4 py-3 font-body-md text-sm text-deep-navy">
                   {info}
+                </div>
+              )}
+              {sessionReplaced && (
+                <div role="status" className="mb-4 rounded-lg bg-primary-fixed px-4 py-3 font-body-md text-sm text-deep-navy">
+                  {t('auth.sessionReplaced')}
                 </div>
               )}
 

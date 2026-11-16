@@ -184,7 +184,7 @@ function AppLayoutInner() {
       <div data-lesson-presenter className={`flex h-[100dvh] flex-col bg-background font-body-md text-on-background print:block print:h-auto print:pb-0 ${runner.steps.some(s=>s.kind==='video'||s.kind==='shadow')?'pb-14':''}`}>
         <PrintWatermark />
         {isMaterialsPrint && <PrintBrandFooter />}
-        <LessonRunnerBar />
+        <LessonRunnerBar key={runner.startedAt} />
         <PresentZoomArea>
           <PlanRouteGuard />
           <Suspense fallback={<PageLoading />}><Outlet /></Suspense>
