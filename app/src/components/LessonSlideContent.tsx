@@ -3,6 +3,8 @@ import { useVideoClips } from '../lib/videoClips';
 import { lazy, Suspense, useMemo } from 'react';
 import StemFrameView from './stem/StemFrameView';
 import { useTranslation } from 'react-i18next';
+import { lessonPhonicsTopic, phonicsSlideState } from '../lib/phonicsLessonGame';
+import { lessonSlideWords } from '../lib/gameFromWords';
 import { buildWordListSentences, grammarPoint, useGrammarCards } from '../lib/grammar';
 import { usePhonicsFilled } from '../lib/phonicsFill';
 import { useClipPack, useClipTakenDown, withFreshQuestionTimes } from '../lib/videoClips';
@@ -39,6 +41,8 @@ export default function LessonSlideContent({
   attendance,
   student = false,
   grammarWordObservation,
+  lessonSlides = [],
+  phonicsObservation,
 }: {
   slide: LessonSlide;
   /** 수업 단어(카드로 외우기·단어 소개·문법 "우리 단어장 예문") */
@@ -50,6 +54,8 @@ export default function LessonSlideContent({
   attendance: { academyId: string; classId: string | null; teacherId: string | null } | null;
   student?: boolean;
   grammarWordObservation?: { lessonId: string; position: number };
+  lessonSlides?: LessonSlide[];
+  phonicsObservation?: { lessonId: string; position: number };
 }) {
   const { t } = useTranslation();
   // 단어 소개·카드로 외우기는 이 슬라이드만의 단어가 있으면 그것으로
@@ -297,9 +303,16 @@ export default function LessonSlideContent({
   }
 
   if (slide.kind === 'pdf') return <LessonPdfView key={slide.pdfPath} slide={slide} fill={fill} />;
-  if (slide.kind === 'phonicsGame') return <div className={fill ? 'absolute inset-0 overflow-auto p-3' : 'p-3'}>
-    <Suspense fallback={t('common.loading')}><PhonicsLessonGame key={slide.id+slide.unitId} gameId={slide.gameId} unitId={slide.unitId} /></Suspense>
-  </div>;
+  if (slide.kind === 'phonicsGame') {
+    const cards = words.length ? words : lessonSlideWords(lessonSlides);
+    const result = phonicsSlideState(slide.gameId, slide.unitId, cards, t('lessonUx.language') === 'en', undefined, lessonPhonicsTopic(lessonSlides, slide));
+    return <div className={fill ? 'absolute inset-0 overflow-auto p-3' : 'p-3'}>
+      {result.unit && !result.reason
+        ? <Suspense fallback={t('common.loading')}><PhonicsLessonGame key={`${slide.id}:${result.unit.id}`}
+            gameId={slide.gameId} unitId={result.unit.id} options={slide} autoStart={!!phonicsObservation} observation={phonicsObservation} /></Suspense>
+        : <p role="status">{result.reason || t('lessonUx.needPhonicsUnit')}</p>}
+    </div>;
+  }
 
   if (slide.kind === 'image') {
     // 발표 중엔 부모 전체를 채우고 이미지는 그 안에서 최대한 크게. 평소엔 부모 높이가 콘텐츠에 따라 달라서 vh 로.

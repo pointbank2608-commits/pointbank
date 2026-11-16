@@ -781,7 +781,10 @@ export interface PhonicsGameSlide {
   id: string;
   kind: 'phonicsGame';
   gameId: string;
-  unitId: string;
+  unitId?: string;
+  rounds?: 3 | 6 | 10;
+  level?: 'easy' | 'normal' | 'hard';
+  teams?: 1 | 2 | 3 | 4;
 }
 
 export interface VideoSlide {

@@ -159,7 +159,7 @@ export default function LessonWatchPage() {
     onSlide = true;
     body = (
       <PresentSyncContext.Provider value={syncApi}>
-        <LessonSlideContent slide={slide} words={snapshot.words} fill lessonName={title} attendance={null} student />
+        <LessonSlideContent slide={slide} words={snapshot.words} lessonSlides={snapshot.slides} fill lessonName={title} attendance={null} student />
       </PresentSyncContext.Provider>
     );
   }

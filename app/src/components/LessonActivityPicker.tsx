@@ -12,6 +12,7 @@ import { READY_STEM } from '../data/stemLessons';
 import type { StemLesson } from '../lib/stemTypes';
 import StemFrameView from './stem/StemFrameView';
 import { resolveLessonGame, type lessonGameSources, type LessonGameMatch } from '../lib/lessonGameContent';
+import { lessonPhonicsTopic, matchUnitForWords, phonicsSlideState } from '../lib/phonicsLessonGame';
 import type { FullCardItem, GameType, LessonSlide, MaterialSlide, PdfSlide, PhonicsBankEntry } from '../lib/types';
 import LessonWorksheetChooser from './worksheets/LessonWorksheetChooser';
 import type { BlockDef } from '../lib/blocks/types';
@@ -129,8 +130,21 @@ export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClo
  };
  const shown = !q && cat === 'games' ? [...filtered].sort((a, b) => gamePriority(a) - gamePriority(b)) : filtered;
  const canvasVisible = shown.some(b => b.id === 'free.canvas');
+ const phonicsMatches = useMemo(() => {
+   const candidate = { id: 'phonics-activity-preview', kind: 'phonicsGame', gameId: '' } as const;
+   const playlist = [...slides];
+   const replacing = slides.findIndex(slide => slide.id === replaceTargetId);
+   playlist.splice(replacing < 0 ? playlist.length : replacing, replacing < 0 ? 0 : 1, candidate);
+   const workbookTopic = lessonPhonicsTopic(playlist, candidate);
+   const topic = workbookTopic === undefined ? matchUnitForWords(gameSources.cards) : workbookTopic;
+   return new Map(gameCards.flatMap(block => {
+     const id = block.slide?.phonicsGameId;
+     return id ? [[id, phonicsSlideState(id, undefined, gameSources.cards, !ko, undefined, topic)] as const] : [];
+   }));
+ }, [slides, replaceTargetId, gameSources.cards, ko]);
  const example = (block: BlockDef, layout?: CanvasExample, large = false) => <LessonActivityExample
    block={block} cards={cards} gameMatch={block.slide?.gameType ? gameExamples.get(block.slide.gameType) : undefined}
+   phonicsMatch={block.slide?.phonicsGameId ? phonicsMatches.get(block.slide.phonicsGameId) : undefined}
    selected={selected} entries={entries} layout={layout} theme={theme} title={canvasTitle} large={large} sampleVideo={clips?.[0]} />;
  useEffect(()=>{const previous=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=previous;};},[]);
  return <AccessibleDialog label={t('lessonUx.add')} onClose={pdfBusy ? () => {} : worksheetBlock ? ()=>setWorksheetBlock(null) : stemPreview ? ()=>setStemPreview(null) : stemOpen ? ()=>setStemOpen(false) : preview ? closePreview : onClose}>

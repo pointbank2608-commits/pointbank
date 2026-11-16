@@ -4,7 +4,8 @@ import { GAME_CATALOG } from '../lib/gameCatalog';
 
 
 import { lessonGameRequirement, type LessonGameMatch } from '../lib/lessonGameContent';
-import { gameAvailability, PHONICS_GAMES, phonicsGameUnits } from '../lib/phonicsGames';
+import { gameAvailability, PHONICS_GAMES } from '../lib/phonicsGames';
+import { lessonPhonicsUnits, type PhonicsSlideState } from '../lib/phonicsLessonGame';
 import { PhonicsGameCover } from './PhonicsGameArt';
 import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
 import { extractYoutubeId } from '../lib/youtube';
@@ -20,7 +21,6 @@ import LessonPrintPreview, { dedicatedPrintMaterials, wordPrintMaterials, workbo
 import PhonicsSlidePreview from './worksheets/PhonicsSlidePreview';
 const NativeGamePreview = lazy(() => import('./LessonNativeGamePreview'));
 const PhonicsGamePreview = lazy(() => import('../pages/PhonicsGamesPage').then(m => ({ default: m.PhonicsLessonGame })));
-const phonicsUnits = phonicsGameUnits();
 
 export type CanvasExample = 'title' | 'word' | 'blank';
 export const LESSON_SAMPLE_WORDS: FullCardItem[] = [
@@ -70,10 +70,11 @@ export function activityMaterial(block: BlockDef, selected: LessonSlide | null):
   };
 }
 
-export function LessonActivityExample({ block, cards, gameMatch, selected, entries, layout, theme, title, sampleVideo, large = false }: {
+export function LessonActivityExample({ block, cards, gameMatch, phonicsMatch, selected, entries, layout, theme, title, sampleVideo, large = false }: {
   block: BlockDef;
   cards: FullCardItem[];
   gameMatch?: LessonGameMatch;
+  phonicsMatch?: PhonicsSlideState;
   selected: LessonSlide | null;
   entries: PhonicsBankEntry[];
   layout?: CanvasExample;
@@ -129,12 +130,14 @@ export function LessonActivityExample({ block, cards, gameMatch, selected, entri
   } else if (kind === 'pdf') {
     picture = <div className="activity-generic-example"><span className="material-symbols-outlined text-4xl" aria-hidden>picture_as_pdf</span><b>{t('lessonUx.pdfSelect')}</b></div>;
   } else if (phonicsGame) {
-    const selectedUnit = selected?.kind === 'phonicsGame' && selected.gameId === phonicsGame.id ? selected.unitId : '';
-    const unit = selectedUnit || (large ? phonicsUnits.find(candidate => !gameAvailability(phonicsGame, candidate))?.id : undefined);
-    actual = !!selectedUnit;
-    next = actual ? undefined : 'needPhonicsUnit';
-    picture = large && unit ? <Suspense fallback={t('common.loading')}><PhonicsGamePreview gameId={phonicsGame.id} unitId={unit} /></Suspense>
-      : <PhonicsGameCover game={phonicsGame} />;
+    actual = !!phonicsMatch?.linked;
+    const recommended = actual ? phonicsMatch?.unit : undefined;
+    const unit = recommended ?? (large ? lessonPhonicsUnits().find(candidate => !gameAvailability(phonicsGame, candidate)) : undefined);
+    requirement = actual ? undefined : phonicsMatch?.reason ?? undefined;
+    picture = large && unit ? <Suspense fallback={t('common.loading')}><PhonicsGamePreview gameId={phonicsGame.id} unitId={unit.id} /></Suspense>
+      : <div className="activity-phonics-scene"><PhonicsGameCover game={phonicsGame} />
+          {recommended && <span className="activity-phonics-unit">Level {recommended.step} · Unit {recommended.number} · {recommended.groups.map(group=>group.label).join(' / ')}</span>}
+        </div>;
   } else if (kind === 'web') {
     const web = selected?.kind === 'web' ? selected : null;
     actual = !!web?.url;

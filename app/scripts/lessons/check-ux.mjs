@@ -340,7 +340,7 @@ try{
   const catalog = page.locator('.teacher-games-catalog');
   const allPaths = await catalog.locator('a.group').evaluateAll(links=>links.map(link=>link.getAttribute('href')));
   assert.equal(allPaths.length,new Set(allPaths).size);
-  assert.equal(allPaths.filter(path=>path.startsWith('/phonics-games/')).length,40);
+  assert.equal(allPaths.filter(path=>path.startsWith('/phonics-games/')).length,48);
   for (const tab of ['단어','문장']) {
     await tabs.getByRole('button',{name:new RegExp(`^${tab} `)}).click();
     assert.equal(await catalog.locator('a.group[href="/games/flashcards"]').count(),1);

@@ -7,7 +7,10 @@ import { fetchPhonicsBank } from '../lib/api';
 import { fitFullscreenZoom } from '../lib/fullscreenFit';
 import { courseUnits } from '../data/phonicsLessons';
 import { PHONICS_GAMES, alphabetGlyph, gameAvailability, gameName, gamePool, blankOf, makeRound, patternKey, patternLabel, phonicsGameUnits, pictureEligible, shuffled, targetText, type PhonicsGame } from '../lib/phonicsGames';
-import type { PhonicsBankEntry } from '../lib/types';
+import type { PhonicsBankEntry, PhonicsGameSlide } from '../lib/types';
+import { lessonPhonicsUnits, phonicsLessonOptions } from '../lib/phonicsLessonGame';
+import { useLearningActivity } from '../lib/learningSensors/useLearningActivity';
+import type { SensorAction } from '../lib/learningSensors/core';
 import {ClaySprite,ClassroomVillage,LearningStage,PhonicsGameCover,PlayWorld} from '../components/PhonicsGameArt';
 import {PHONICS_WORLDS,addVillageReward,gameVisual,readVillageRewards,type PhonicsWorld,type VillageReward} from '../lib/phonicsGameVisuals';
 import {PhonicsSoundContext,usePhonicsGameSound,usePhonicsSound} from '../lib/phonicsGameSound';
@@ -18,7 +21,8 @@ import GameReportButton from '../components/GameReportButton';
 import GameCatalogNav from '../components/GameCatalogNav';
 import {GameFavoriteButton, useGameFavorites} from '../components/GameFavoriteButton';
 import {DragBox,DragButton} from '../components/PhonicsDrag';
-import {hasPhoneme,playPhoneme} from '../lib/phonicsPhonemes';
+import {hasPhoneme} from '../lib/phonicsPhonemes';
+import LearningAudioButton from '../components/LearningAudioButton';
 import {clockSeconds,formFor,twistOf,type PlayForm} from '../lib/phonicsTwists';
 import '../styles/phonics-games.css';
 import '../styles/phonics-games-v2.css';
@@ -37,29 +41,13 @@ function BlankWord({text,filled,answer,label}:{text:string;filled:boolean;answer
  const m=text.match(/_+/);if(!m)return <>{text}</>;const i=m.index??0;
  return <>{text.slice(0,i)}<span className={'pg-blank '+(filled?'pg-blank-filled':'')} data-drop="blank" role="img" aria-label={label}>{filled?answer:'\u00a0'.repeat(Math.max(2,m[0].length))}</span>{text.slice(i+m[0].length)}</>;
 }
-/** 목표 소리(음가)를 들려 준다. 녹음 파일이 있는 규칙에만 보인다. */
-function PhonemeButton({ruleId,label,en}:{ruleId:string;label:string;en:boolean}){
- const {player}=usePhonicsSound();
- const [failed,setFailed]=useState(false);
- if(!hasPhoneme(ruleId))return null;
- const play = () => {
-  player.stop();
-  player.cancelSpeech();
-  setFailed(false);
-  void playPhoneme(ruleId).then(ok=>setFailed(!ok));
- };
- return <button className="pg-button pg-phoneme" type="button" data-learning-audio onClick={play}>{icon('graphic_eq')}{l(en,'소리 듣기','Hear the sound')} <b lang="en">{label}</b>{failed&&<small role="status">{l(en,'소리를 재생할 수 없어요.','Could not play the sound.')}</small>}</button>;
+function PhonemeButton({ruleId,label,en,onPlayback}:{ruleId:string;label:string;en:boolean;onPlayback?:()=>void}){
+ return <LearningAudioButton text={label} ruleId={ruleId} en={en} onPlayback={onPlayback}/>;
 }
 function WordPicture({entry,en}:{entry:PhonicsBankEntry;en:boolean}){
  const [broken,setBroken]=useState(false);
  return entry.image_url&&!broken?<img className="pg-picture" src={entry.image_url} alt="" onError={()=>setBroken(true)}/>:<span className="pg-picture-fallback">{l(en,'그림 대신 단어로 읽어요','Read the word instead')}<strong lang="en">{entry.word}</strong></span>;
 }
-function Audio({text,en,onHelp}:{text:string;en:boolean;onHelp?:()=>void}){
- const {player}=usePhonicsSound();
- const [failed,setFailed]=useState(false);
- return <><button className="pg-button" type="button" data-learning-audio onClick={()=>{onHelp?.();player.stop();if(!('speechSynthesis' in window)){setFailed(true);return;}setFailed(false);const end=player.speechStart(text);window.speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(text);utterance.lang='en-US';utterance.rate=.85;const voice=window.speechSynthesis.getVoices().find(v=>v.lang.startsWith('en'));if(voice)utterance.voice=voice;utterance.onend=end;utterance.onerror=e=>{end();if(!['canceled','interrupted'].includes(e.error))setFailed(true);};try{window.speechSynthesis.speak(utterance);}catch{end();setFailed(true);}}}>{icon('volume_up')}{l(en,'단어·문장 듣기','Hear word / sentence')}</button>{failed&&<p role="status">{l(en,'이 기기에서 음성을 재생할 수 없어요. 선생님이 읽어 주세요.','Speech is unavailable. Ask your teacher to read it.')}</p>}</>;
-}
-
 export default function PhonicsGamesPage(){
  const {t,i18n}=useTranslation();const en=i18n.resolvedLanguage?.startsWith('en')??false;
  const {gameId}=useParams();const [params,setParams]=useSearchParams();
@@ -212,31 +200,42 @@ export default function PhonicsGamesPage(){
  </main></PhonicsSoundContext.Provider>;
 }
 
-export function PhonicsLessonGame({gameId,unitId}:{gameId:string;unitId:string}) {
+type LessonObservation = { lessonId: string; position: number };
+
+export function PhonicsLessonGame({gameId,unitId,options,autoStart=false,observation}:{
+ gameId:string;unitId:string;options?:Pick<PhonicsGameSlide,'rounds'|'level'|'teams'>;autoStart?:boolean;observation?:LessonObservation;
+}) {
  const {i18n}=useTranslation();
  const en=i18n.resolvedLanguage?.startsWith('en')??false;
  const game=PHONICS_GAMES.find(candidate=>candidate.id===gameId);
- const unit=useMemo(()=>phonicsGameUnits().find(candidate=>candidate.id===unitId),[unitId]);
- const [playing,setPlaying]=useState(false);
+ const unit=lessonPhonicsUnits().find(candidate=>candidate.id===unitId);
+ const [playing,setPlaying]=useState(autoStart);
+ const [seed,setSeed]=useState(()=>autoStart ? crypto.getRandomValues(new Uint32Array(1))[0] : 1);
+ const config=phonicsLessonOptions(options);
  const sound=usePhonicsGameSound(game??PHONICS_GAMES[0],playing);
  if(!game||!unit)return <p>{l(en,'파닉스 유닛을 찾을 수 없어요.','This phonics unit is unavailable.')}</p>;
  const reason=gameAvailability(game,unit,en);
  if(reason)return <p>{reason}</p>;
  return <PhonicsSoundContext.Provider value={sound}>
   <div className="phonics-games pg-v2 activity-native-game">
-   {playing ? <GameSession game={game} unit={unit} en={en} rounds={6} seed={1} teams={1} level="normal"
+   {playing ? <GameSession game={game} unit={unit} en={en} {...config} seed={seed} observation={observation}
       autoSpeak={false} onExit={()=>setPlaying(false)} settings={null} onReward={()=>{}} rewards={[]}/>
     : <div className="relative isolate grid min-h-60 w-full place-items-center overflow-hidden rounded-2xl">
        <div className="pointer-events-none absolute inset-0" aria-hidden><PhonicsGameCover game={game} large/></div>
-       <GameStartCard name={gameName(game,en)} description={game.goal[en?1:0]} onStart={()=>setPlaying(true)}/>
+       <GameStartCard name={gameName(game,en)} description={game.goal[en?1:0]} onStart={()=>{
+        if(observation)setSeed(crypto.getRandomValues(new Uint32Array(1))[0]);
+        setPlaying(true);
+       }}/>
       </div>}
   </div>
  </PhonicsSoundContext.Provider>;
 }
 
-function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onReward,rewards,settings}:{game:PhonicsGame;unit:CourseUnit;en:boolean;rounds:number;seed:number;teams:number;level:PlayLevel;autoSpeak:boolean;onExit:()=>void;settings:ReactNode;onReward:(reward:VillageReward)=>void;rewards:VillageReward[]}){
+function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onReward,rewards,settings,observation}:{game:PhonicsGame;unit:CourseUnit;en:boolean;rounds:number;seed:number;teams:number;level:PlayLevel;autoSpeak:boolean;onExit:()=>void;settings:ReactNode;onReward:(reward:VillageReward)=>void;rewards:VillageReward[];observation?:LessonObservation}){
  const {player}=usePhonicsSound();
  const [index,setIndex]=useState(0),[done,setDone]=useState(false),[paused,setPaused]=useState(false),[large,setLarge]=useState(false);
+ const observe=useLearningActivity(observation ? {source:'group',credential:'',resource:observation.lessonId} : undefined,
+  index<rounds ? observation?.position ?? null : null,index);
  const [results,setResults]=useState<boolean[]>([]);const [leaving,setLeaving]=useState(false);
  const [settingsOpen,setSettingsOpen]=useState(false);
  const [reportOpen,setReportOpen]=useState(false);
@@ -256,6 +255,7 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
  useEffect(()=>{if(!heartNote)return;const id=window.setTimeout(()=>setHeartNote(''),3200);return()=>window.clearTimeout(id);},[heartNote]);
  /** 한 문제의 별: 첫 시도 ★3, 한 번 다시 ★2, 그 밖 ★1. 도전 난이도 첫 시도 +1, 3연속 첫 시도부터 콤보 +1. */
  function finishRound(first:boolean,errors:number){
+  observe('submitted');
   const base=first?3:errors<=1?2:1;
   const nextCombo=first?combo+1:0;
   const gain=(base+(first&&level==='hard'?1:0)+(first&&nextCombo>=3?1:0))*(isBoss?2:1);
@@ -356,15 +356,16 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
    {game.mechanic==='adventure'&&<p className="pg-mission">{l(en,'이번 미션','Mission')}: {gameName(activity,en)}</p>}
    {isBoss&&<p className="pg-boss" role="status">{icon('swords')}{l(en,'보스 문제! 그림 없이 풀어요. 첫 시도로 맞히면 별이 2배예요.','Boss round! No pictures. Win on the first try for double stars.')}</p>}
    {heartNote&&<p className="pg-heart-note" role="status">{icon('favorite')}{heartNote}</p>}
-   <RoundActivity key={`${index}:${activity.id}`} game={activity} visualGame={game} unit={unit} en={en} index={index} seed={seed} level={roundLevel} autoSpeak={autoSpeak} last={index+1===rounds} paused={interrupted} onNext={()=>{window.speechSynthesis?.cancel();setDone(false);setBurst(null);setIndex(n=>n+1);}} onComplete={finishRound}/>
+   <RoundActivity key={`${index}:${activity.id}`} game={activity} visualGame={game} unit={unit} en={en} index={index} seed={seed} level={roundLevel} autoSpeak={autoSpeak} last={index+1===rounds} paused={interrupted} observe={observe} onNext={()=>{player.cancelSpeech();setDone(false);setBurst(null);setIndex(n=>n+1);}} onComplete={finishRound}/>
    {done&&burst&&<div className="pg-burst" key={burst.key} aria-hidden="true"><b className="pg-burst-praise">{burst.praise}</b><span className="pg-burst-gain">+{burst.gain}{icon('star')}</span>{Array.from({length:12},(_,i)=><span key={i} className="pg-burst-star" style={{'--a':`${i*30}deg`} as React.CSSProperties}>{icon('star')}</span>)}</div>}
   </div>}
   </div>
  </div></PlayWorld>;
 }
 
-interface ActivityProps {game:PhonicsGame;visualGame?:PhonicsGame;unit:CourseUnit;en:boolean;index:number;seed:number;level?:PlayLevel;autoSpeak?:boolean;last?:boolean;paused?:boolean;onNext:()=>void;onComplete:(first:boolean,errors:number)=>void}
-function RoundActivity({game,visualGame,unit,en,index,seed,level='normal',autoSpeak=false,last=false,paused=false,onNext,onComplete}:ActivityProps){
+interface ActivityProps {game:PhonicsGame;visualGame?:PhonicsGame;unit:CourseUnit;en:boolean;index:number;seed:number;level?:PlayLevel;autoSpeak?:boolean;last?:boolean;paused?:boolean;observe?:(action:SensorAction)=>void;onNext:()=>void;onComplete:(first:boolean,errors:number)=>void}
+function RoundActivity({game,visualGame,unit,en,index,seed,level='normal',autoSpeak=false,last=false,paused=false,observe,onNext,onComplete}:ActivityProps){
+ const heardAudio=()=>observe?.('audio');
  const {player}=usePhonicsSound();
  const round=useMemo(()=>makeRound(game,unit,index,seed),[game,unit,index,seed]);
  const [errors,setErrors]=useState(0),[help,setHelp]=useState(false),[solved,setSolved]=useState(false),[wrong,setWrong]=useState(false);
@@ -387,7 +388,9 @@ function RoundActivity({game,visualGame,unit,en,index,seed,level='normal',autoSp
  const cards=useMemo(()=>batchN>1?[round.entry,...shuffled(uniquePool.filter(e=>e.id!==round.entry.id&&e.word!==round.entry.word),seed+index+5)].slice(0,batchN):[round.entry],[batchN,round.entry,uniquePool,seed,index]);
  const cur=cards[Math.min(step,cards.length-1)];
  const speakTarget=round.sentence??cur.word;
- const form:PlayForm|undefined=formFor(twist,index,level,pictureEligible(round.entry));
+ const form: PlayForm | undefined = game.id === 'diner-orders' ? 'hear-word'
+  : game.id === 'diner-ingredients' ? (level === 'hard' || !pictureEligible(round.entry) ? 'hear-word' : 'picture-word')
+  : formFor(twist,index,level,pictureEligible(round.entry));
  const secs=clockSeconds(twist,level);
  const [left,setLeft]=useState(secs),[timedOut,setTimedOut]=useState(false);
  useEffect(()=>{if(!secs||solved||paused||timedOut)return;const id=window.setInterval(()=>setLeft(v=>v-1),1000);return()=>window.clearInterval(id);},[secs,solved,paused,timedOut]);
@@ -425,22 +428,23 @@ function RoundActivity({game,visualGame,unit,en,index,seed,level='normal',autoSp
  const partialWork=tiles.length+matched.length+selected.length+covered.length+connected.length;
  const previousWork=useRef(0);
  useEffect(()=>{if(partialWork>previousWork.current&&!solved)player.play('place');previousWork.current=partialWork;},[partialWork,solved,player]);
+ const storybook=visualGame?.id==='our-storybook';
  const hintWord=game.mechanic==='missing'?shuffled(uniquePool,seed+index).slice(0,4)[index%Math.min(4,uniquePool.length)].word:speakTarget;
  const hintText=game.mechanic==='odd'?oddOptions.map(e=>`${e.word}: ${patternLabel(unit,e)}`).join(' / '):game.mechanic==='pairs'?l(en,'같은 글자의 대문자와 소문자를 연결하세요.','Match the two cases of the same letter.'):game.mechanic==='bingo'&&bingoTarget!==undefined?bingoEntries[bingoTarget].word:hintWord;
  /** 1단계: 친구가 귓속말(말풍선에 힌트 + 단어 읽어 주기). 2단계: 정답이 반짝인다. 힌트를 쓴 문제는 도움 후 완성(별 최대 ★2)으로 기록한다. */
- const pressHint=()=>{if(solved)return;setHelp(true);setHintLevel(v=>Math.min(2,v+1));setHintShow(true);if(!['odd','pairs'].includes(game.mechanic))speakText(hintText,'en-US');};
+ const pressHint=()=>{if(solved)return;observe?.('hint');setHelp(true);setHintLevel(v=>Math.min(2,v+1));setHintShow(true);if(!['odd','pairs'].includes(game.mechanic))speakText(hintText,'en-US');};
  const glow=(ok:boolean):object=>hintLevel>=2&&!solved&&ok?{'data-hint':'true'}:{};
  const markedWord=game.mechanic==='bridge'||game.mechanic==='lab';
  const showsWord=!['pairs','memory','trace','hunt','bingo','sort','odd'].includes(game.mechanic);
  const dock=<div className="pg-dock" aria-live="polite">
   {solved&&<div className="pg-dock-card" data-state="solved" role="status">
    <div className="pg-dock-text"><strong>{l(en,'완성했어요! 함께 읽어요.','You did it! Read it together.')}</strong>{showsWord&&(markedWord?<MarkedWord entry={round.entry}/>:<span className="pg-dock-word" lang="en">{round.sentence??round.entry.word}</span>)}</div>
-   {markedWord&&<Audio text={round.entry.word} en={en}/>}
+   {markedWord&&<LearningAudioButton onPlayback={heardAudio} text={round.entry.word} en={en}/>}
    <button type="button" className="pg-primary pg-next" disabled={!ready} ref={nextRef} onClick={onNext}>{l(en,last?'결과 보기':'다음 문제',last?'See results':'Next round')}{icon('arrow_forward')}</button>
   </div>}
   {!solved&&toast&&<div className="pg-dock-card pg-dock-wrong" data-state="wrong" role="status"><strong>{timedOut?l(en,'시간이 다 됐어요! 정답이 반짝여요.','Time is up! The answer is glowing.'):l(en,'다시 살펴볼까요?','Take another look. You can retry.')}</strong></div>}
  </div>;
- const cue=(showWord=false,e=round.entry)=><div className="pg-cue">{level==='hard'||twist.blind?<p className="pg-note pg-listen-only">{icon('hearing')}{l(en,'그림 없이 소리를 듣고 풀어요.','No picture — listen and solve.')}</p>:pictureEligible(e)?<WordPicture entry={e} en={en}/>:<p className="pg-note">{l(en,'선생님이 단어를 읽고 뜻을 설명해 주세요.','Ask your teacher to read and explain this word.')}</p>}{(showWord||level==='easy')&&<MarkedWord entry={e}/>}<Audio text={e.word} en={en}/>{e.ruleId&&<PhonemeButton ruleId={e.ruleId} label={targetText(e)} en={en}/>}</div>;
+ const cue=(showWord=false,e=round.entry)=><div className="pg-cue">{level==='hard'||twist.blind?<p className="pg-note pg-listen-only">{icon('hearing')}{l(en,'그림 없이 소리를 듣고 풀어요.','No picture — listen and solve.')}</p>:pictureEligible(e)?<WordPicture entry={e} en={en}/>:<p className="pg-note">{l(en,'선생님이 단어를 읽고 뜻을 설명해 주세요.','Ask your teacher to read and explain this word.')}</p>}{(showWord||level==='easy')&&<MarkedWord entry={e}/>}<LearningAudioButton onPlayback={heardAudio} text={e.word} en={en}/>{e.ruleId&&<PhonemeButton onPlayback={heardAudio} ruleId={e.ruleId} label={targetText(e)} en={en}/>}</div>;
  const contentRef=useRef<HTMLDivElement>(null);
  /** 글을 못 읽는 친구를 위해 이번 문제의 설명을 소리로 읽어 준다(첫 설명 문단, 없으면 게임 종류별 기본 문장). */
  const speakText=(text:string,lang:string)=>{
@@ -468,19 +472,19 @@ function RoundActivity({game,visualGame,unit,en,index,seed,level='normal',autoSp
  if(game.mechanic==='pairs'||game.mechanic==='memory')content=<><p>{l(en,game.mechanic==='pairs'?'대문자와 소문자를 연결하세요.':'카드 두 장을 열어 그림과 단어를 연결하세요.',game.mechanic==='pairs'?'Match uppercase and lowercase letters.':'Turn two cards to pair a picture and a word.')}</p><div className="pg-memory-grid">{pairCards.map((c,i)=>{const revealed=game.mechanic==='pairs'||opened.includes(i)||matched.includes(i)||hintLevel>=2;return <button type="button" className={'pg-memory-card '+(matched.includes(i)?'pg-matched':'')} key={i} disabled={solved||matched.includes(i)} aria-label={revealed?c.text:l(en,`${i+1}번 카드`, `Card ${i+1}`)} aria-pressed={opened.includes(i)} onClick={()=>pairClick(i)}>{revealed?game.mechanic==='memory'&&c.kind===0?<WordPicture entry={memoryEntries[c.id]} en={en}/>:<span lang="en">{c.text}</span>:'?'}</button>;})}</div></>;
  else if(game.mechanic==='sort'){
   const sortGo=(key:string)=>{if(solved)return;if(key!==patternKey(unit,cur)){good(false);return;}if(step+1<cards.length){player.answer();setWrong(false);setStep(step+1);return;}good(true);};
-  content=<><DragBox className="pg-drag-card" key={step} disabled={solved} onDropOn={sortGo}>{twist.listenOnly?<div className="pg-cue"><p className="pg-note pg-listen-only">{icon('hearing')}{l(en,'글자 없이 소리만 듣고 골라요.','No letters — listen and choose.')}</p><Audio text={cur.word} en={en}/></div>:cue(true,cur)}</DragBox><p>{l(en,twist.listenOnly?'소리를 듣고 카드를 알맞은 길에 놓아요.':'단어 카드를 끌어서 알맞은 곳에 놓아요.',twist.listenOnly?'Listen, then drag the card to its road.':'Drag the word card to its group.')}</p><p className="pg-note pg-drag-tip">{l(en,'눌러서 고를 수도 있어요.','You can also tap a group.')}</p>{soundGroups.length>=2&&<div className="pg-compare" role="group" aria-label={l(en,'소리 비교','Compare the sounds')}>{soundGroups.map(e=><PhonemeButton key={e.ruleId} ruleId={e.ruleId!} label={patternLabel(unit,e)} en={en}/>)}</div>}<div className="pg-options pg-baskets">{groupEntries.map(e=><button type="button" key={e.id} data-drop={patternKey(unit,e)} {...glow(patternKey(unit,e)===patternKey(unit,cur))} disabled={solved} onClick={()=>sortGo(patternKey(unit,e))}>{icon(game.icon)}<span lang="en">{patternLabel(unit,e)}</span></button>)}</div></>;
+  content=<><DragBox className="pg-drag-card" key={step} disabled={solved} onDropOn={sortGo}>{twist.listenOnly?<div className="pg-cue"><p className="pg-note pg-listen-only">{icon('hearing')}{l(en,'글자 없이 소리만 듣고 골라요.','No letters — listen and choose.')}</p><LearningAudioButton onPlayback={heardAudio} text={cur.word} en={en}/></div>:cue(true,cur)}</DragBox><p>{l(en,twist.listenOnly?'소리를 듣고 카드를 알맞은 길에 놓아요.':'단어 카드를 끌어서 알맞은 곳에 놓아요.',twist.listenOnly?'Listen, then drag the card to its road.':'Drag the word card to its group.')}</p><p className="pg-note pg-drag-tip">{l(en,'눌러서 고를 수도 있어요.','You can also tap a group.')}</p>{soundGroups.length>=2&&<div className="pg-compare" role="group" aria-label={l(en,'소리 비교','Compare the sounds')}>{soundGroups.map(e=><PhonemeButton onPlayback={heardAudio} key={e.ruleId} ruleId={e.ruleId!} label={patternLabel(unit,e)} en={en}/>)}</div>}<div className="pg-options pg-baskets">{groupEntries.map(e=><button type="button" key={e.id} data-drop={patternKey(unit,e)} {...glow(patternKey(unit,e)===patternKey(unit,cur))} disabled={solved} onClick={()=>sortGo(patternKey(unit,e))}>{icon(game.icon)}<span lang="en">{patternLabel(unit,e)}</span></button>)}</div></>;
  }
- else if(game.mechanic==='hunt')content=<><p>{l(en,'같은 대소문자를 모두 찾아요.','Find every matching uppercase and lowercase letter.')}</p><strong className="pg-display" lang="en">{huntTarget.toUpperCase()} {huntTarget}</strong>{round.entry.ruleId&&<PhonemeButton ruleId={round.entry.ruleId} label={huntTarget} en={en}/>}<div className="pg-letter-field">{huntLetters.map((letter,i)=><button type="button" key={i} {...glow(letter.toLowerCase()===huntTarget&&!selected.includes(i))} disabled={solved||selected.includes(i)} className={selected.includes(i)?'pg-picked':''} onClick={()=>{if(letter.toLowerCase()!==huntTarget){good(false);return;}const next=[...selected,i];setSelected(next);if(next.length===huntLetters.filter(x=>x.toLowerCase()===huntTarget).length)good(true);}}>{letter}</button>)}</div></>;
- else if(game.mechanic==='trace')content=<><p>{l(en,'글자를 따라 쓰세요. 쓰기 평가는 선생님이 확인해요.','Trace the letter. Your teacher checks the writing.')}</p>{round.entry.ruleId&&<PhonemeButton ruleId={round.entry.ruleId} label={huntTarget} en={en}/>}<svg className="pg-trace" viewBox="0 0 600 300" aria-label={l(en,'글자 따라 쓰기 판','Letter tracing board')} onPointerDown={e=>{if(solved)return;player.play('pick');drawing.current=true;e.currentTarget.setPointerCapture(e.pointerId);const r=e.currentTarget.getBoundingClientRect();setTracePoints(a=>[...a,`M ${(e.clientX-r.left)*600/r.width} ${(e.clientY-r.top)*300/r.height}`]);}} onPointerMove={e=>{if(!drawing.current||solved)return;const r=e.currentTarget.getBoundingClientRect();setDrawn(true);setTracePoints(a=>[...a,`L ${(e.clientX-r.left)*600/r.width} ${(e.clientY-r.top)*300/r.height}`]);}} onPointerUp={()=>{drawing.current=false;}} onPointerCancel={()=>{drawing.current=false;}}><text x="300" y="225" textAnchor="middle">{huntTarget.toUpperCase()} {huntTarget}</text><path d={tracePoints.join(' ')} fill="none" stroke="#136bce" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round"/></svg><div className="pg-actions"><button className="pg-button" disabled={solved} onClick={()=>{setTracePoints([]);setDrawn(false);}}>{l(en,'지우기','Clear')}</button><button className="pg-primary" disabled={solved||!drawn} onClick={()=>{player.answer();setHelp(true);setSolved(true);onComplete(false,0);}}>{l(en,'선생님 확인 · 완료','Teacher checked · Done')}</button></div></>;
- else if(game.mechanic==='build'||game.mechanic==='sentence')content=<>{game.mechanic==='sentence'?<><p>{l(en,'읽은 문장을 기억하고 단어를 순서대로 놓아요.','Remember the sentence and arrange its words.')}</p>{preview?<><p className="pg-display pg-sentence" lang="en">{round.sentence}</p><button className="pg-button" onClick={()=>setPreview(false)}>{l(en,'문장 가리고 시작','Hide sentence and begin')}</button></>:<WordPicture entry={round.entry} en={en}/>}</>:cue()}{(game.mechanic!=='sentence'||!preview)&&<><div className={'pg-build-track '+(game.id==='sound-steps'?'pg-steps':'')} aria-label={l(en,'조립한 단어','Built word')} lang="en">{buildTokens.map((_,i)=><span key={i} className={tiles[i]!==undefined?'pg-filled':''}>{tiles[i]!==undefined?tokenChoices.find(x=>x.id===tiles[i])?.text:'·'}</span>)}</div><div className="pg-options pg-token-bank">{tokenChoices.map(c=><button type="button" key={c.id} {...glow(tokenChoices.find(x=>!tiles.includes(x.id)&&x.text===buildTokens[tiles.length])?.id===c.id)} disabled={solved||tiles.includes(c.id)} onClick={()=>{const built=[...tiles,c.id];if(c.text!==buildTokens[tiles.length]){good(false);return;}setTiles(built);if(built.length===buildTokens.length)good(true);}}>{c.text}</button>)}</div><button type="button" className="pg-button" disabled={solved||!tiles.length} onClick={()=>setTiles(a=>a.slice(0,-1))}>{l(en,'한 칸 되돌리기','Undo one tile')}</button>{game.id==='blend-launch'&&<p>{l(en,'자음군의 두 소리를 각각 말한 뒤 연결하세요.','Say both consonant sounds, then blend.')}</p>}</>}</>;
+ else if(game.mechanic==='hunt')content=<><p>{l(en,'같은 대소문자를 모두 찾아요.','Find every matching uppercase and lowercase letter.')}</p><strong className="pg-display" lang="en">{huntTarget.toUpperCase()} {huntTarget}</strong>{round.entry.ruleId&&<PhonemeButton onPlayback={heardAudio} ruleId={round.entry.ruleId} label={huntTarget} en={en}/>}<div className="pg-letter-field">{huntLetters.map((letter,i)=><button type="button" key={i} {...glow(letter.toLowerCase()===huntTarget&&!selected.includes(i))} disabled={solved||selected.includes(i)} className={selected.includes(i)?'pg-picked':''} onClick={()=>{if(letter.toLowerCase()!==huntTarget){good(false);return;}const next=[...selected,i];setSelected(next);if(next.length===huntLetters.filter(x=>x.toLowerCase()===huntTarget).length)good(true);}}>{letter}</button>)}</div></>;
+ else if(game.mechanic==='trace')content=<><p>{l(en,'글자를 따라 쓰세요. 쓰기 평가는 선생님이 확인해요.','Trace the letter. Your teacher checks the writing.')}</p>{round.entry.ruleId&&<PhonemeButton onPlayback={heardAudio} ruleId={round.entry.ruleId} label={huntTarget} en={en}/>}<svg className="pg-trace" viewBox="0 0 600 300" aria-label={l(en,'글자 따라 쓰기 판','Letter tracing board')} onPointerDown={e=>{if(solved)return;player.play('pick');drawing.current=true;e.currentTarget.setPointerCapture(e.pointerId);const r=e.currentTarget.getBoundingClientRect();setTracePoints(a=>[...a,`M ${(e.clientX-r.left)*600/r.width} ${(e.clientY-r.top)*300/r.height}`]);}} onPointerMove={e=>{if(!drawing.current||solved)return;const r=e.currentTarget.getBoundingClientRect();setDrawn(true);setTracePoints(a=>[...a,`L ${(e.clientX-r.left)*600/r.width} ${(e.clientY-r.top)*300/r.height}`]);}} onPointerUp={()=>{drawing.current=false;}} onPointerCancel={()=>{drawing.current=false;}}><text x="300" y="225" textAnchor="middle">{huntTarget.toUpperCase()} {huntTarget}</text><path d={tracePoints.join(' ')} fill="none" stroke="#136bce" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round"/></svg><div className="pg-actions"><button className="pg-button" disabled={solved} onClick={()=>{setTracePoints([]);setDrawn(false);}}>{l(en,'지우기','Clear')}</button><button className="pg-primary" disabled={solved||!drawn} onClick={()=>{player.answer();setHelp(true);setSolved(true);onComplete(false,0);}}>{l(en,'선생님 확인 · 완료','Teacher checked · Done')}</button></div></>;
+ else if(game.mechanic==='build'||game.mechanic==='sentence')content=<>{game.mechanic==='sentence'?<><p>{l(en,'읽은 문장을 기억하고 단어를 순서대로 놓아요.','Remember the sentence and arrange its words.')}</p>{preview?<><div className="pg-display pg-sentence" lang="en">{round.sentence} {storybook&&round.sentence&&<LearningAudioButton en={en} text={round.sentence} onPlayback={heardAudio} compact/>}</div><button className="pg-button" onClick={()=>setPreview(false)}>{l(en,'문장 가리고 시작','Hide sentence and begin')}</button></>:<WordPicture entry={round.entry} en={en}/>}</>:cue()}{(game.mechanic!=='sentence'||!preview)&&<><div className={'pg-build-track '+(game.id==='sound-steps'?'pg-steps':'')} aria-label={l(en,'조립한 단어','Built word')} lang="en">{buildTokens.map((_,i)=><span key={i} className={tiles[i]!==undefined?'pg-filled':''}>{tiles[i]!==undefined?tokenChoices.find(x=>x.id===tiles[i])?.text:'·'}</span>)}</div><div className="pg-options pg-token-bank">{tokenChoices.map(c=><button type="button" key={c.id} {...glow(tokenChoices.find(x=>!tiles.includes(x.id)&&x.text===buildTokens[tiles.length])?.id===c.id)} disabled={solved||tiles.includes(c.id)} onClick={()=>{const built=[...tiles,c.id];if(c.text!==buildTokens[tiles.length]){good(false);return;}setTiles(built);if(built.length===buildTokens.length)good(true);}}>{c.text}</button>)}</div><button type="button" className="pg-button" disabled={solved||!tiles.length} onClick={()=>setTiles(a=>a.slice(0,-1))}>{l(en,'한 칸 되돌리기','Undo one tile')}</button>{game.id==='blend-launch'&&<p>{l(en,'자음군의 두 소리를 각각 말한 뒤 연결하세요.','Say both consonant sounds, then blend.')}</p>}</>}</>;
  else if(game.mechanic==='fill'||game.mechanic==='change'){
   const opts=game.mechanic==='change'?[...new Set(gamePool(game,unit).map(e=>e.word[0]))]:fillChoices;
   const blankAnswer=game.mechanic==='change'?round.entry.word[0]:blank.answer;
   const fillGo=(ok:boolean)=>{if(solved)return;if(!ok){good(false);return;}if(step+1<cards.length){player.answer();setWrong(false);setStep(step+1);return;}good(true);};
   content=<>{cue(false,cur)}<p className="pg-display" lang="en" key={step}>{game.mechanic==='change'?<>{round.source?.word} → <BlankWord text={'_'+round.entry.word.slice(1)} filled={solved} answer={blankAnswer} label={l(en,'빈칸','blank')}/></>:<BlankWord text={blank.masked} filled={solved||false} answer={blankAnswer} label={l(en,'빈칸','blank')}/>}</p><p className="pg-note pg-drag-tip">{l(en,'글자 조각을 끌어서 빈칸에 놓아요. 눌러서 고를 수도 있어요.','Drag a letter piece into the blank, or tap one.')}</p><div className="pg-options pg-token-bank">{shuffled(opts,seed+index).map(c=><DragButton type="button" key={c} {...glow(c===blankAnswer)} disabled={solved} onDropOn={zone=>{if(zone==='blank')fillGo(c===blankAnswer);}} onClick={()=>fillGo(c===blankAnswer)}>{c}</DragButton>)}</div></>;
  }
- else if(game.mechanic==='bridge'||game.mechanic==='lab')content=<><p>{l(en,game.mechanic==='bridge'?'모음과 끝 e를 차례로 선택해 다리를 연결하세요.':'끝 e를 누르고 모음과 함께 확인하세요.',game.mechanic==='bridge'?'Connect the vowel and final e, in order.':'Tap final e and notice its vowel partner.')}</p>{round.entry.ruleId&&<PhonemeButton ruleId={round.entry.ruleId} label={targetText(round.entry)} en={en}/>}<div className="pg-magic-word" lang="en">{[...round.entry.word].map((c,i)=><button type="button" className={connected.includes(i)?'pg-connected':''} key={i} {...glow(i===(game.mechanic==='lab'?[round.entry.word.length-1]:round.entry.targets??[])[connected.length])} disabled={solved} onClick={()=>{const targets=game.mechanic==='lab'?[round.entry.word.length-1]:round.entry.targets??[];if(i!==targets[connected.length]){good(false);return;}const next=[...connected,i];setConnected(next);if(next.length===targets.length)good(true);}}>{c}</button>)}</div></>;
- else if(game.mechanic==='position')content=<><MarkedWord entry={round.entry}/>{round.entry.ruleId&&<PhonemeButton ruleId={round.entry.ruleId} label={targetText(round.entry)} en={en}/>}<p>{l(en,'강조된 철자의 위치는 어디인가요?','Where is the highlighted spelling?')}</p><div className="pg-options">{['start','end','middle'].map((pos,i)=><button type="button" key={pos} {...glow(pos===((round.entry.targets??[])[0]===0?'start':(round.entry.targets??[]).at(-1)===round.entry.word.length-1?'end':'middle'))} disabled={solved} onClick={()=>{const t=round.entry.targets??[];good(pos===(t[0]===0?'start':t[t.length-1]===round.entry.word.length-1?'end':'middle'));}}>{[l(en,'앞','Start'),l(en,'뒤','End'),l(en,'가운데','Middle')][i]}</button>)}</div></>;
+ else if(game.mechanic==='bridge'||game.mechanic==='lab')content=<><p>{l(en,game.mechanic==='bridge'?'모음과 끝 e를 차례로 선택해 다리를 연결하세요.':'끝 e를 누르고 모음과 함께 확인하세요.',game.mechanic==='bridge'?'Connect the vowel and final e, in order.':'Tap final e and notice its vowel partner.')}</p>{round.entry.ruleId&&<PhonemeButton onPlayback={heardAudio} ruleId={round.entry.ruleId} label={targetText(round.entry)} en={en}/>}<div className="pg-magic-word" lang="en">{[...round.entry.word].map((c,i)=><button type="button" className={connected.includes(i)?'pg-connected':''} key={i} {...glow(i===(game.mechanic==='lab'?[round.entry.word.length-1]:round.entry.targets??[])[connected.length])} disabled={solved} onClick={()=>{const targets=game.mechanic==='lab'?[round.entry.word.length-1]:round.entry.targets??[];if(i!==targets[connected.length]){good(false);return;}const next=[...connected,i];setConnected(next);if(next.length===targets.length)good(true);}}>{c}</button>)}</div></>;
+ else if(game.mechanic==='position')content=<><MarkedWord entry={round.entry}/>{round.entry.ruleId&&<PhonemeButton onPlayback={heardAudio} ruleId={round.entry.ruleId} label={targetText(round.entry)} en={en}/>}<p>{l(en,'강조된 철자의 위치는 어디인가요?','Where is the highlighted spelling?')}</p><div className="pg-options">{['start','end','middle'].map((pos,i)=><button type="button" key={pos} {...glow(pos===((round.entry.targets??[])[0]===0?'start':(round.entry.targets??[]).at(-1)===round.entry.word.length-1?'end':'middle'))} disabled={solved} onClick={()=>{const t=round.entry.targets??[];good(pos===(t[0]===0?'start':t[t.length-1]===round.entry.word.length-1?'end':'middle'));}}>{[l(en,'앞','Start'),l(en,'뒤','End'),l(en,'가운데','Middle')][i]}</button>)}</div></>;
  else if(game.mechanic==='odd')content=<><p>{l(en,'목표 철자 규칙이 다른 단어 하나를 찾아요.','Find the word with a different target spelling pattern.')}</p><div className="pg-options">{oddOptions.map(e=><button type="button" key={e.id} {...glow(oddOptions.filter(x=>patternKey(unit,x)===patternKey(unit,e)).length===1)} disabled={solved} onClick={()=>good(oddOptions.filter(x=>patternKey(unit,x)===patternKey(unit,e)).length===1)}><MarkedWord entry={e}/><small>{patternLabel(unit,e)}</small></button>)}</div></>;
  else if(game.mechanic==='missing'){
   const list=shuffled(uniquePool,seed+index).slice(0,4);const missing=index%list.length;
@@ -488,12 +492,12 @@ function RoundActivity({game,visualGame,unit,en,index,seed,level='normal',autoSp
  }
  else if(game.mechanic==='bingo'){
   const side=bingoEntries.length===9?3:2;
-  content=<><p>{l(en,'단어를 듣고 칸을 골라 한 줄을 완성하세요.','Hear a word and complete a row, column or diagonal.')}</p>{bingoTarget!==undefined&&<Audio text={bingoEntries[bingoTarget].word} en={en}/>}<div className="pg-bingo" style={{gridTemplateColumns:`repeat(${side},1fr)`}}>{bingoEntries.map((e,i)=><button key={e.id} {...glow(i===bingoTarget)} disabled={solved||covered.includes(i)} className={covered.includes(i)?'pg-picked':''} onClick={()=>{if(i!==bingoTarget){good(false);return;}const next=[...covered,i];setCovered(next);const lines=[...Array.from({length:side},(_,r)=>Array.from({length:side},(_,c)=>r*side+c)),...Array.from({length:side},(_,c)=>Array.from({length:side},(_,r)=>r*side+c)),Array.from({length:side},(_,j)=>j*side+j),Array.from({length:side},(_,j)=>j*side+side-1-j)];if(lines.some(line=>line.every(n=>next.includes(n)))||next.length===bingoEntries.length)good(true);}}>{e.word}{covered.includes(i)&&icon('check_circle')}</button>)}</div></>;
+  content=<><p>{l(en,'단어를 듣고 칸을 골라 한 줄을 완성하세요.','Hear a word and complete a row, column or diagonal.')}</p>{bingoTarget!==undefined&&<LearningAudioButton onPlayback={heardAudio} text={bingoEntries[bingoTarget].word} en={en}/>}<div className="pg-bingo" style={{gridTemplateColumns:`repeat(${side},1fr)`}}>{bingoEntries.map((e,i)=><button key={e.id} {...glow(i===bingoTarget)} disabled={solved||covered.includes(i)} className={covered.includes(i)?'pg-picked':''} onClick={()=>{if(i!==bingoTarget){good(false);return;}const next=[...covered,i];setCovered(next);const lines=[...Array.from({length:side},(_,r)=>Array.from({length:side},(_,c)=>r*side+c)),...Array.from({length:side},(_,c)=>Array.from({length:side},(_,r)=>r*side+c)),Array.from({length:side},(_,j)=>j*side+j),Array.from({length:side},(_,j)=>j*side+side-1-j)];if(lines.some(line=>line.every(n=>next.includes(n)))||next.length===bingoEntries.length)good(true);}}>{e.word}{covered.includes(i)&&icon('check_circle')}</button>)}</div></>;
  }
  else {
   const balloons=game.id==='sound-balloons';const read=game.mechanic==='read';
   const formText:Record<PlayForm,[string,string]>={'hear-picture':['단어를 듣고 알맞은 그림을 찾아요.','Listen and find the picture.'],'picture-word':['그림을 보고 알맞은 단어를 찾아요.','Look at the picture and find the word.'],'word-picture':['단어를 읽고 알맞은 그림을 찾아요.','Read the word and find the picture.'],'hear-word':['단어를 듣고 알맞은 단어를 찾아요.','Listen and find the word.']};
-  content=<>{form?<><p>{l(en,formText[form][0],formText[form][1])}</p>{form.startsWith('picture')&&<WordPicture entry={round.entry} en={en}/>}{form.startsWith('word')&&<p className="pg-display pg-sentence" lang="en">{round.entry.word}</p>}{form.startsWith('hear')&&<Audio text={round.entry.word} en={en}/>}{game.id==='r-journey'&&round.entry.ruleId&&<PhonemeButton ruleId={round.entry.ruleId} label={targetText(round.entry)} en={en}/>}</>:balloons?<><p>{l(en,'선생님이 대표 단어를 들려준 뒤 목표 글자를 고르세요.','Listen to the sample word and choose its target letter.')}</p><Audio text={round.entry.word} en={en}/>{round.entry.ruleId&&<PhonemeButton ruleId={round.entry.ruleId} label={alphabetGlyph(round.entry)} en={en}/>}<p className="pg-note">{hasPhoneme(round.entry.ruleId)?l(en,'소리 듣기 버튼으로 목표 글자의 소리를 들어요. X는 단어 끝의 소리예요.','Use the sound button to hear the target letter. X occurs at the end of these words.'):l(en,'개별 소리는 선생님이 들려주세요. X는 단어 끝의 소리예요.','Ask your teacher to model the individual sound. X occurs at the end of these words.')}</p></>:game.mechanic==='puzzle'?<><p>{l(en,'그림 조각을 눌러 열고 단어를 찾아요.','Uncover picture pieces, then choose the word.')}</p><div className="pg-puzzle"><WordPicture entry={round.entry} en={en}/><div className="pg-puzzle-covers">{[0,1,2,3].map(i=><button type="button" disabled={solved} style={{visibility:opened.includes(i)?'hidden':'visible'}} key={i} aria-label={l(en,`${i+1}번 조각 열기`,`Uncover piece ${i+1}`)} onClick={()=>setOpened(a=>[...a,i])}>{i+1}</button>)}</div></div></>:read?<><p className="pg-display pg-sentence" lang="en">{round.sentence??round.entry.word}</p>{!preview||game.id!=='word-treasure'?null:<button className="pg-primary" onClick={()=>setPreview(false)}>{l(en,'읽었어요 · 상자 열기','I read it · Open chests')}</button>}</>:<><p>{l(en,'단어를 듣고 알맞은 그림을 친구에게 끌어다 줘요.','Listen, then drag the matching picture to your friend.')}</p><p className="pg-note pg-drag-tip">{l(en,'눌러서 고를 수도 있어요.','You can also tap a picture.')}</p><Audio text={round.entry.word} en={en}/>{game.id==='r-journey'&&round.entry.ruleId&&<PhonemeButton ruleId={round.entry.ruleId} label={targetText(round.entry)} en={en}/>}</>}
+  content=<>{form?<><p>{l(en,formText[form][0],formText[form][1])}</p>{form.startsWith('picture')&&<WordPicture entry={round.entry} en={en}/>}{form.startsWith('word')&&<p className="pg-display pg-sentence" lang="en">{round.entry.word}</p>}{form.startsWith('hear')&&<LearningAudioButton onPlayback={heardAudio} text={round.entry.word} en={en}/>}{game.id==='r-journey'&&round.entry.ruleId&&<PhonemeButton onPlayback={heardAudio} ruleId={round.entry.ruleId} label={targetText(round.entry)} en={en}/>}</>:balloons?<><p>{l(en,'선생님이 대표 단어를 들려준 뒤 목표 글자를 고르세요.','Listen to the sample word and choose its target letter.')}</p><LearningAudioButton onPlayback={heardAudio} text={round.entry.word} en={en}/>{round.entry.ruleId&&<PhonemeButton onPlayback={heardAudio} ruleId={round.entry.ruleId} label={alphabetGlyph(round.entry)} en={en}/>}<p className="pg-note">{hasPhoneme(round.entry.ruleId)?l(en,'소리 듣기 버튼으로 목표 글자의 소리를 들어요. X는 단어 끝의 소리예요.','Use the sound button to hear the target letter. X occurs at the end of these words.'):l(en,'개별 소리는 선생님이 들려주세요. X는 단어 끝의 소리예요.','Ask your teacher to model the individual sound. X occurs at the end of these words.')}</p></>:game.mechanic==='puzzle'?<><p>{l(en,'그림 조각을 눌러 열고 단어를 찾아요.','Uncover picture pieces, then choose the word.')}</p><div className="pg-puzzle"><WordPicture entry={round.entry} en={en}/><div className="pg-puzzle-covers">{[0,1,2,3].map(i=><button type="button" disabled={solved} style={{visibility:opened.includes(i)?'hidden':'visible'}} key={i} aria-label={l(en,`${i+1}번 조각 열기`,`Uncover piece ${i+1}`)} onClick={()=>setOpened(a=>[...a,i])}>{i+1}</button>)}</div></div></>:read?<><div className="pg-display pg-sentence" lang="en">{round.sentence??round.entry.word} {storybook&&round.sentence&&<LearningAudioButton en={en} text={round.sentence} onPlayback={heardAudio} compact/>}</div>{!preview||game.id!=='word-treasure'?null:<button className="pg-primary" onClick={()=>setPreview(false)}>{l(en,'읽었어요 · 상자 열기','I read it · Open chests')}</button>}</>:<><p>{l(en,'단어를 듣고 알맞은 그림을 친구에게 끌어다 줘요.','Listen, then drag the matching picture to your friend.')}</p><p className="pg-note pg-drag-tip">{l(en,'눌러서 고를 수도 있어요.','You can also tap a picture.')}</p><LearningAudioButton onPlayback={heardAudio} text={round.entry.word} en={en}/>{game.id==='r-journey'&&round.entry.ruleId&&<PhonemeButton onPlayback={heardAudio} ruleId={round.entry.ruleId} label={targetText(round.entry)} en={en}/>}</>}
    {balloons?<div className="pg-options pg-balloons">{shuffled([...new Map(gamePool(game,unit).map(e=>[targetText(e).toLowerCase(),e])).values()],seed+index).map(e=><button type="button" key={e.id} {...glow(targetText(e).toLowerCase()===targetText(round.entry).toLowerCase())} disabled={solved} onClick={()=>good(targetText(e).toLowerCase()===targetText(round.entry).toLowerCase())}>{alphabetGlyph(e).toUpperCase()} {alphabetGlyph(e).toLowerCase()}</button>)}</div>:read&&preview&&game.id==='word-treasure'&&!form?null:<div className={'pg-options '+(game.id==='sound-fishing'?'pg-fish':'')}>{round.options.map(e=><DragButton type="button" key={e.id} {...glow(e.id===round.entry.id)} disabled={solved} onDropOn={zone=>{if(zone==='stage')good(e.id===round.entry.id);}} onClick={()=>good(e.id===round.entry.id)}>{(form?form.endsWith('picture'):read||game.mechanic==='choice')?pictureEligible(e)?<WordPicture entry={e} en={en}/>:<span lang="en">{e.word}</span>:<span lang="en">{e.word}</span>}</DragButton>)}</div>}
   </>;
  }

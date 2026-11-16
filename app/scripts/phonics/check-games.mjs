@@ -6,6 +6,9 @@ import {chromium} from '../../node_modules/homework-test-tools/node_modules/@pla
 
 const audioChecks=process.argv.includes('--sound');
 const buttonChecks=process.argv.includes('--buttons');
+const qaRef='phonics-qa';
+process.env.VITE_SUPABASE_URL=`https://${qaRef}.supabase.co`;
+process.env.VITE_SUPABASE_ANON_KEY='phonics-qa-browser-stub';
 const port=Number(process.env.PHONICS_QA_PORT||5264);
 const out=buttonChecks?'../output/phonics-game-buttons':audioChecks?'../output/phonics-games-sound':'../output/phonics-games-v2';await mkdir(out,{recursive:true});
 const server=await createServer({cacheDir:`node_modules/.vite/qa-phonics-games-${port}`,server:{host:'127.0.0.1',port,strictPort:true,hmr:false},logLevel:'error'});await server.listen();
@@ -13,7 +16,23 @@ let browser;
 try {
  const model=await server.ssrLoadModule('/src/lib/phonicsGames.ts');
  const {PHONICS_GAMES:games,phonicsGameUnits,gameAvailability,gamePool,makeRound,patternKey,shuffled,targetText,pictureEligible,alphabetGlyph}=model;
- const units=phonicsGameUnits();assert.equal(games.length,40);assert.equal(new Set(games.map(g=>g.id)).size,40);assert.equal(units.length,42);
+ const units=phonicsGameUnits();assert.equal(games.length,48);assert.equal(new Set(games.map(g=>g.id)).size,48);assert.equal(units.length,42);
+ const { matchUnitForWords, lessonPhonicsTopic, phonicsSlideState, phonicsLessonOptions } = await server.ssrLoadModule('/src/lib/phonicsLessonGame.ts');
+ const wordUnit = units.find(unit => unit.id === 'course-2-6');
+ const otherUnit = units.find(unit => unit.id === 'course-1-1');
+ const slide = { id: 'game', kind: 'phonicsGame', gameId: 'diner-orders' };
+ assert.equal(matchUnitForWords(wordUnit.entries)?.id, wordUnit.id);
+ assert.equal(matchUnitForWords([{ word: wordUnit.entries[0].word }]), null);
+ assert.equal(matchUnitForWords(wordUnit.entries, [wordUnit, {...wordUnit, id: 'duplicate-unit'}]), null);
+ const workbook = { id: 'workbook', kind: 'material', materialId: 'phonicsstage1', phonicsStage1: {unitId: otherUnit.id, view:'workbook', lesson:1} };
+ const topic = lessonPhonicsTopic([workbook, slide], slide);
+ assert.equal(topic?.id, otherUnit.id);
+ const cvc = { id:'cvc-workbook', kind:'material', materialId:'cvcworkbook', phonicsUnitIds:[wordUnit.entries[0].unitId] };
+ assert.equal(lessonPhonicsTopic([cvc, slide], slide)?.id, wordUnit.id);
+ assert.equal(phonicsSlideState(slide.gameId, undefined, wordUnit.entries, false, units, topic).unit?.id, otherUnit.id);
+ assert.equal(phonicsSlideState(slide.gameId, wordUnit.id, [], false, units, topic).unit?.id, wordUnit.id);
+ assert.deepEqual(phonicsLessonOptions({rounds:3, level:'hard', teams:4}), {rounds:3, level:'hard', teams:4});
+ assert.deepEqual(phonicsLessonOptions({rounds:0, level:'unknown', teams:5}), {rounds:6, level:'normal', teams:1});
  const twists=await server.ssrLoadModule('/src/lib/phonicsTwists.ts');
  const visuals=await server.ssrLoadModule('/src/lib/phonicsGameVisuals.ts');
  assert.deepEqual(Object.keys(visuals.PHONICS_VISUALS).sort(),games.map(g=>g.id).sort());
@@ -49,17 +68,16 @@ try {
  const blend=games.find(g=>g.id==='blend-launch');assert(makeRound(blend,units.find(u=>u.id==='course-4-1'),0,123).tokens.every(t=>t.length===1));
  assert.equal(alphabetGlyph(units.find(u=>u.id==='course-1-6').entries.find(e=>e.word==='queen')),'q');
  assert.equal(targetText(units.find(u=>u.id==='course-1-8').entries.find(e=>e.word==='box')),'x');
- console.log(`PASS ${checked} game/unit/round combinations; 40 games, approved readers, OO/OW, target tiles`);
+ console.log(`PASS ${checked} game/unit/round combinations; ${games.length} games, lesson recommendations and settings, approved readers, OO/OW, target tiles`);
  if(process.argv.includes('--data-only'))process.exitCode=0;
  else {
-  const env=await readFile('.env.local','utf8'),ref=env.match(/VITE_SUPABASE_URL=https:\/\/([^.]+)/)[1];
   const uid='00000000-0000-4000-8000-000000000001',aid='00000000-0000-4000-8000-0000000000aa',exp=Math.floor(Date.now()/1000)+86400;
   const b64=o=>Buffer.from(JSON.stringify(o)).toString('base64url');
   const user={id:uid,aud:'authenticated',role:'authenticated',email:'phonics-qa@example.test',app_metadata:{},user_metadata:{}};
   const session={access_token:`${b64({alg:'HS256',typ:'JWT'})}.${b64({sub:uid,role:'authenticated',exp,aud:'authenticated'})}.test-only`,refresh_token:'test-only',expires_at:exp,expires_in:86400,token_type:'bearer',user};
   const profile={id:uid,academy_id:aid,role:'owner',display_name:'Phonics QA'},academy={id:aid,name:'Phonics QA',point_unit:'별',plan:'paid',plan_status:'active',deletion_requested_at:null,features:{group:true,solo:true,homework:true}};
   browser=await chromium.launch({channel:'chrome',headless:true});const context=await browser.newContext({viewport:{width:1440,height:1100}});
-  await context.addInitScript(({key,session})=>{localStorage.setItem(key,JSON.stringify(session));if(!localStorage.getItem('classbank.lang'))localStorage.setItem('classbank.lang','ko');crypto.getRandomValues=a=>{a.fill(123);return a;};window.__spoken=[];speechSynthesis.speak=u=>{window.__spoken.push(u.text);u.onend?.();};},{key:`sb-${ref}-auth-token`,session});
+  await context.addInitScript(({key,session})=>{localStorage.setItem(key,JSON.stringify(session));if(!localStorage.getItem('classbank.lang'))localStorage.setItem('classbank.lang','ko');crypto.getRandomValues=a=>{a.fill(window.__qaSeed??123);return a;};window.__spoken=[];speechSynthesis.speak=u=>{window.__spoken.push(u.text);u.onstart?.();u.onend?.();};},{key:`sb-${qaRef}-auth-token`,session});
   if(buttonChecks)await context.addInitScript(()=>{
    const play = HTMLMediaElement.prototype.play;
    HTMLMediaElement.prototype.play = async function (...args) {
@@ -149,6 +167,16 @@ try {
    await page.waitForFunction(()=>document.querySelector('.pg-next:enabled'));
   };
   const startButton=()=>page.getByRole('button',{name:'게임 시작',exact:true});
+  async function startWithRounds(rounds) {
+   await page.evaluate(()=>{window.__qaSeed=122;});
+   await startButton().click();
+   await page.getByRole('button',{name:'게임 설정',exact:true}).click();
+   const settings=page.getByRole('dialog',{name:'게임 설정'});
+   await settings.getByLabel('문제 수',{exact:true}).selectOption(String(rounds));
+   await page.evaluate(()=>{window.__qaSeed=123;});
+   await settings.getByRole('button',{name:'적용',exact:true}).click();
+   await settings.waitFor({state:'hidden'});
+  }
   const leaveDialog=()=>page.getByRole('dialog',{name:'게임 나가기'});
   const openLeave=()=>page.getByRole('button',{name:'게임 나가기',exact:true}).click();
   async function checkRoundButtons() {
@@ -217,13 +245,13 @@ try {
    if(buttonChecks)await page.setViewportSize(cases.indexOf(c)%2?{width:390,height:844}:{width:1440,height:900});
    let step='setup',phonemeButtons=0;
    try {
-   await page.goto(`${root}/phonics-games/${g.id}?unit=${u.id}`,{waitUntil:'domcontentloaded'});await startButton().waitFor();await page.getByLabel('문제 수',{exact:true}).selectOption(String(rounds));
+   await page.goto(`${root}/phonics-games/${g.id}?unit=${u.id}`,{waitUntil:'domcontentloaded'});await startButton().waitFor();
    if(buttonChecks){
     const guide=page.getByRole('button',{name:'선생님 안내',exact:true});
     await guide.click();assert.equal(await guide.getAttribute('aria-expanded'),'true');
     await guide.click();assert.equal(await guide.getAttribute('aria-expanded'),'false');
    }
-   await startButton().click();
+   await startWithRounds(rounds);
    assert.equal(await page.locator('[data-play-world]').getAttribute('data-play-world'),visuals.gameVisual(g).world);
    if(g.id==='letter-partners')assert(Number.parseFloat(await page.locator('.pg-memory-card').first().evaluate(el=>getComputedStyle(el).fontSize))>=38);
    if(buttonChecks){
@@ -351,7 +379,7 @@ try {
   await page.getByRole('button',{name:'전체화면',exact:true}).click();await page.keyboard.press('Escape');await page.getByRole('button',{name:'이어서 하기',exact:true}).click();await page.locator('.pg-next').waitFor();
   // Retry + help must not become a first-attempt success. Pause must preserve a partly built word.
   const train=games.find(g=>g.id==='sound-train'),trainUnit=units.find(u=>u.id==='course-2-1');
-  await page.goto(root+'/phonics-games/sound-train?unit=course-2-1');await page.getByLabel('문제 수',{exact:true}).selectOption('3');await page.getByRole('button',{name:'게임 시작',exact:true}).click();
+  await page.goto(root+'/phonics-games/sound-train?unit=course-2-1');await startWithRounds(3);
   const first=makeRound(train,trainUnit,0,123),tokens=shuffled(first.tokens.map((text,id)=>({text,id})),147);
   await page.locator('.pg-token-bank button').nth(tokens.findIndex(t=>t.id===1)).click();await page.getByText('다시 살펴볼까요?',{exact:false}).waitFor();
   await page.locator('.pg-token-bank button').nth(tokens.findIndex(t=>t.id===0)).click();assert.equal(await page.locator('.pg-filled').count(),1);
@@ -370,7 +398,7 @@ try {
   await page.getByRole('button',{name:'새 마을 시작',exact:true}).click();assert.equal(await rewardCount(),0);
   for(const id of ['course-1-6','course-1-8']){
    const unit=units.find(u=>u.id===id),hunt=games.find(g=>g.id==='letter-explorers');
-   await page.goto(root+`/phonics-games/letter-explorers?unit=${id}`);await page.getByLabel('문제 수',{exact:true}).selectOption('10');await page.getByRole('button',{name:'게임 시작',exact:true}).click();
+   await page.goto(root+`/phonics-games/letter-explorers?unit=${id}`);await startWithRounds(10);
    for(let i=0;i<9;i++){await solve(hunt,unit,i);await page.locator('.pg-next').click();}
   }
   await page.goto(root+'/phonics-games/sound-fishing?unit=course-2-1');await page.getByRole('button',{name:'게임 시작',exact:true}).click();
@@ -380,7 +408,7 @@ try {
   // Broken images fall back to readable text instead of an empty answer card.
   await page.route('**/*.webp',route=>route.abort());await page.goto(root+'/phonics-games/monster-diner?unit=course-2-1');await page.getByRole('button',{name:'Start game',exact:true}).click();await page.locator('.pg-picture-fallback').filter({hasText:'Read the word instead'}).first().waitFor();
   assert.deepEqual(errors,[]);assert.deepEqual(writes,[]);
-  await writeFile(out+(process.argv.includes('--edges-only')?'/edge-checks.json':'/checks.json'),JSON.stringify({passed:true,checked,cases,browserGames:browserCases.length,errors,writes,audioAll40:audioChecks&&browserCases.length===40,audioLifecycle:audioChecks,mobile:true,pausePreservesState:true,retryScoring:true,qAndX:true,speechFailure:true,brokenImages:true,english:true,worldFilters:true,villageReplayDedupAndReset:true,actualCarriageLetters:true},null,2));
+  await writeFile(out+(process.argv.includes('--edges-only')?'/edge-checks.json':'/checks.json'),JSON.stringify({passed:true,checked,cases,browserGames:browserCases.length,errors,writes,audioAllGames:audioChecks&&browserCases.length===games.length,audioLifecycle:audioChecks,mobile:true,pausePreservesState:true,retryScoring:true,qAndX:true,speechFailure:true,brokenImages:true,english:true,worldFilters:true,villageReplayDedupAndReset:true,actualCarriageLetters:true},null,2));
   console.log('PASS edge cases: retry/help scoring, pause state, Q/X, speech errors, broken images, English and mobile');
   }
  }

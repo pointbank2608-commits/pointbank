@@ -177,7 +177,8 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
           const game = slide.kind === 'phonicsGame' ? PHONICS_GAMES.find(g => g.id === slide.gameId) : undefined;
           push({ kind: slide.kind, path: `/curriculum/${lesson.id}/slide/${slide.id}`,
             label: slide.kind === 'pdf' ? slide.title : game?.[t('lessonUx.language') === 'en' ? 'en' : 'ko'] ?? t('gameBrowse.phonics'),
-            icon: slide.kind === 'pdf' ? 'picture_as_pdf' : 'hearing' });
+            icon: slide.kind === 'pdf' ? 'picture_as_pdf' : 'hearing',
+            navState: slide.kind === 'phonicsGame' ? { materialsWords: gameSources.cards } : undefined });
         } else if (slide.kind === 'image') {
           push({
             kind: 'image',

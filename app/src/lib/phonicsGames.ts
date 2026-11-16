@@ -49,6 +49,14 @@ export const PHONICS_GAMES:PhonicsGame[]=[
  game(38,'space-rescue','우주 구조대','Space Rescue',[1,2,3,4,5],'adventure','rocket_launch',['연료·수리·구조 미션을 해결해요.','Complete fuel, repair and rescue missions.'],undefined,'space'),
  game(39,'phonics-island','파닉스 섬','Phonics Island',[1,2,3,4,5],'adventure','map',['해변에서 숲을 지나 보물에 도착해요.','Travel from the beach through the forest to treasure.'],undefined,'island'),
  game(40,'our-storybook','우리 이야기책','Our Storybook',[1,4],'adventure','auto_stories',['승인된 문장을 읽고 이야기책을 완성해요.','Read approved sentences and complete a storybook.'],undefined,'book'),
+ game(41,'diner-ingredients','재료 고르기','Pick an Ingredient',[1,2,3,4,5],'choice','restaurant',['재료 그림을 보고 알맞은 단어표를 골라요.','Read the labels and choose the right ingredient.']),
+ game(42,'diner-orders','몬스터 주문 듣기','Listen to the Order',[1,2,3,4,5],'choice','hearing',['몬스터의 주문을 듣고 단어표를 골라요.','Listen to the monster and choose the order ticket.']),
+ game(43,'diner-recipe','레시피 조립','Build a Recipe',[1,2,3,4,5],'build','extension',['들리는 단어를 철자 조각으로 조립해요.','Build the spoken word with spelling pieces.']),
+ game(44,'diner-spice','빈칸 양념통','Fill the Spice Jar',[1,2,3,4,5],'fill','restaurant_menu',['빠진 소리의 철자 조각을 요리에 넣어요.','Add the missing spelling to the recipe.']),
+ game(45,'coast-shell-pairs','조개 짝 맞추기','Shell Pairs',[1,2,3,4,5],'memory','view_carousel',['조개를 열어 단어와 그림 짝을 찾아요.','Open shells to pair a word with its picture.']),
+ game(46,'coast-treasure-sort','보물 분류','Sort the Treasure',[1,2,3,4,5],'sort','diamond',['단어를 목표 철자에 맞는 보물함에 넣어요.','Put each word in its spelling treasure chest.']),
+ game(47,'coast-tide-bingo','밀물 소리 빙고','Tide Bingo',[1,2,3,4,5],'bingo','grid_on',['소리를 듣고 바닷가 빙고판에 표시해요.','Hear each word and mark the tide board.']),
+ game(48,'coast-lost-shell','사라진 조개','The Missing Shell',[1,2,3,4,5],'missing','visibility_off',['조개에 적힌 단어를 기억해 사라진 조개를 찾아요.','Remember the words on the shells and find the missing one.']),
 ];
 
 export const phonicsGameUnits=()=>courseUnits(curriculumEntries(false));
@@ -80,8 +88,9 @@ export function gameAvailability(g:PhonicsGame,u:CourseUnit,en=false):string|nul
   if(g.mechanic==='change')return en?'Choose a unit with two words that differ only in their first letter.':'첫 글자만 다른 단어가 두 개 이상 있는 유닛을 선택해 주세요.';
   return en?'Choose a unit with this spelling pattern.':'해당 규칙이 있는 유닛을 선택해 주세요.';
  }
- if(['sound-fishing','monster-diner','word-treasure','picture-puzzle','memory-cards'].includes(g.id)&&pool.filter(pictureEligible).length<2)return en?'This game needs two words with clear pictures.':'명확한 그림이 있는 단어가 2개 이상 필요해요.';
+ if(['sound-fishing','monster-diner','word-treasure','picture-puzzle','memory-cards','diner-ingredients','coast-shell-pairs'].includes(g.id)&&new Set(pool.filter(pictureEligible).map(entry=>entry.word.toLowerCase())).size<2)return en?'This game needs two words with clear pictures.':'명확한 그림이 있는 단어가 2개 이상 필요해요.';
  const distinct=new Set(pool.map(e=>e.word.toLowerCase())).size;
+ if(g.id==='coast-tide-bingo'&&distinct<4)return en?'Choose a unit with at least four different words.':'서로 다른 단어가 4개 이상 있는 유닛을 선택해 주세요.';
  if(['choice','read','memory','missing','puzzle','bingo'].includes(g.mechanic)&&distinct<2)return en?'This game needs two different words.':'서로 다른 단어가 2개 이상 필요해요.';
  if(['sort','odd'].includes(g.mechanic)){
   const groups=new Set(pool.map(e=>patternKey(u,e)));

@@ -5,13 +5,14 @@ import LessonSlideContent from '../components/LessonSlideContent';
 import { useAuth } from '../context/AuthContext';
 import { useLessonRunner, usePresenting } from '../context/LessonRunnerContext';
 import { useToast } from '../context/ToastContext';
-import { fetchCurriculumLessonById } from '../lib/api';
+import { fetchCurriculumLessonById, fetchWordListById } from '../lib/api';
+import { wordListToCards } from '../lib/gameFromWords';
 import { effectiveSlides } from '../lib/lessonSlides';
 import { wordsFromLocationState } from '../lib/materialsHandoff';
 import { restoreReadingCues } from '../lib/readingLines';
 import { GRAMMAR_WORD_SHEET } from '../lib/grammarCoreWords';
 import GrammarWordWorksheet from '../components/worksheets/GrammarWordWorksheet';
-import type { CurriculumLesson } from '../lib/types';
+import type { CurriculumLesson, WordList } from '../lib/types';
 
 /**
  * 수업 슬라이드(그림·직접 만들기·문법·노래·단어 소개·출석·카드·영상·웹페이지)의 실제 화면. 단계 이동(◀ ▶)·풀스크린은
@@ -32,7 +33,22 @@ export default function LessonSlideViewerPage() {
   const stateWords = useMemo(() => wordsFromLocationState(location.state), [location.state]);
 
   const [lesson, setLesson] = useState<CurriculumLesson | null>(null);
+  const slides = useMemo(() => lesson ? effectiveSlides(lesson) : [], [lesson]);
+  const slide = slides.find(candidate => candidate.id === slideId);
   const [loading, setLoading] = useState(true);
+  const [directWordList, setDirectWordList] = useState<WordList | null>(null);
+  const [checkedList, setCheckedList] = useState<string | null>(null);
+  const directListId = !isPresenting && lesson?.id === id && slide?.kind === 'phonicsGame' && !slide.unitId
+    ? lesson?.word_list_id : null;
+
+  useEffect(() => {
+    if (!directListId) return;
+    let active = true;
+    void fetchWordListById(directListId).then(list => { if (active) setDirectWordList(list); })
+      .catch(() => { if (active) setDirectWordList(null); })
+      .finally(() => { if (active) setCheckedList(directListId); });
+    return () => { active = false; };
+  }, [directListId]);
 
   useEffect(() => {
     if (!id) return;
@@ -44,11 +60,9 @@ export default function LessonSlideViewerPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  if (loading) {
+  if (loading || (directListId && checkedList !== directListId)) {
     return <div className="font-body-md text-body-md text-on-surface-variant">{t('common.loading')}</div>;
   }
-  const slides = lesson ? effectiveSlides(lesson) : [];
-  const slide = slides.find((s) => s.id === slideId);
   if (slide?.kind === 'material' && slide.materialId === GRAMMAR_WORD_SHEET && slide.grammarWords) {
     return <div className={isPresenting ? 'absolute inset-0 overflow-auto bg-white' : ''}><GrammarWordWorksheet selection={slide.grammarWords} /></div>;
   }
@@ -72,10 +86,14 @@ export default function LessonSlideViewerPage() {
   return (
     <LessonSlideContent
       slide={presentedSlide}
-      words={stateWords}
+      words={directListId && directWordList?.id === directListId ? wordListToCards(directWordList) : stateWords}
+      lessonSlides={slides}
       fill={isPresenting}
       lessonName={lesson.name}
       grammarWordObservation={slide.kind === 'qna' && slide.grammarWordSource && runner?.lessonId === lesson.id
+        && runner.steps[runner.stepIndex]?.slideId === slide.id
+        ? { lessonId: lesson.id, position: runner.stepIndex } : undefined}
+      phonicsObservation={slide.kind === 'phonicsGame' && isPresenting && runner?.lessonId === lesson.id
         && runner.steps[runner.stepIndex]?.slideId === slide.id
         ? { lessonId: lesson.id, position: runner.stepIndex } : undefined}
       attendance={{ academyId: academy?.id ?? '', classId: runnerClassId ?? lesson.class_id ?? null, teacherId: profile?.id ?? null }}

@@ -55,6 +55,14 @@ export const PHONICS_VISUALS:Record<string,PhonicsVisual>={
  'space-rescue':v('island','rocket','travel','로켓을 준비해 친구를 구하러 가요','Prepare your rocket for a rescue'),
  'phonics-island':v('island','chest','travel','해변과 숲을 지나 보물에 도착해요','Cross the island and reach the treasure'),
  'our-storybook':v('garden','book','read','한 장씩 읽어 우리 책을 완성해요','Read one page at a time to finish our book'),
+ 'diner-ingredients':v('diner','basket','collect','재료에 단어표를 붙여요','Label the ingredients'),
+ 'diner-orders':v('diner','monster','feed','몬스터의 주문을 들어요','Listen to the monster’s order'),
+ 'diner-recipe':v('diner','book','connect','철자 레시피를 조립해요','Build the spelling recipe'),
+ 'diner-spice':v('diner','monster','repair','요리에 빠진 철자를 넣어요','Add the missing spelling'),
+ 'coast-shell-pairs':v('coast','boat','pair','조개 속 짝을 찾아요','Find the matching shells'),
+ 'coast-treasure-sort':v('coast','chest','collect','보물함마다 같은 철자를 모아요','Sort words into treasure chests'),
+ 'coast-tide-bingo':v('coast','boat','fish','소리를 듣고 빙고판을 채워요','Fill the tide bingo board'),
+ 'coast-lost-shell':v('coast','chest','discover','파도가 가져간 조개를 찾아요','Find the shell carried away by the tide'),
 };
 export const worldBackground=(world:PhonicsWorld)=>`/skins/phonics-v2/${world}.webp`;
 export const gameVisual=(game:PhonicsGame)=>PHONICS_VISUALS[game.id];

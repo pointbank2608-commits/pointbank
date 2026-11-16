@@ -1,0 +1,12 @@
+/* 수업 슬라이드 안의 파닉스 게임: 카드·썸네일에서는 고정 높이 표지를 칸 크기에 맞춘다. */
+.phonics-slide-detail .phonics-slide-cover { max-width:520px; overflow:hidden; border-radius:16px; }
+.phonics-slide-detail .pg-scene-cover { border-radius:16px; height:220px; }
+.activity-example .pg-scene-cover, .phonics-thumb .pg-scene-cover { height:100%; min-height:0; border-radius:0; }
+.activity-example .pg-cover-prop, .phonics-thumb .pg-cover-prop { width:30%; height:auto; aspect-ratio:1/1; left:10%; bottom:4%; }
+.activity-example .pg-cover-companion, .phonics-thumb .pg-cover-companion { width:24%; height:auto; aspect-ratio:1/1; left:44%; bottom:6%; }
+.activity-example .pg-cover-tile, .phonics-thumb .pg-cover-tile { right:8%; top:22%; padding:4px 10px; min-width:0; font-size:15px; border-radius:10px; }
+.activity-example-large .pg-cover-tile { font-size:26px; padding:8px 16px; }
+
+.activity-phonics-scene { position:relative; width:100%; height:100%; }
+.activity-example-large .activity-phonics-scene { height:300px; }
+.activity-phonics-unit { position:absolute; left:0; right:0; bottom:0; padding:4px 8px; background:#142f53e8; color:#fff; font-size:12px; font-weight:700; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }

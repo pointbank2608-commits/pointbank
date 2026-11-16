@@ -92,7 +92,10 @@ import WorksheetOptionsFields from './worksheets/WorksheetOptionsFields';
 import LessonPrintPreview, { dedicatedPrintMaterials, wordPrintMaterials, workbookStep } from './LessonPrintPreview';
 import { activityMaterial, canvasExample, LessonWordThumbnail, LESSON_SAMPLE_WORDS, LESSON_BINGO_SAMPLE_WORDS, type CanvasExample } from './LessonActivityExample';
 import LessonPdfView, { LessonPdfThumbnail } from './LessonPdfView';
-import { gameAvailability, PHONICS_GAMES, phonicsGameUnits } from '../lib/phonicsGames';
+import { PHONICS_GAMES } from '../lib/phonicsGames';
+import { lessonPhonicsTopic } from '../lib/phonicsLessonGame';
+import PhonicsGameSlideDetail from './PhonicsGameSlideDetail';
+import type { CourseUnit } from '../data/phonicsLessons';
 import { PhonicsGameCover } from './PhonicsGameArt';
 import GrammarWordWorksheet from './worksheets/GrammarWordWorksheet';
 import { GRAMMAR_WORD_SHEET } from '../lib/grammarCoreWords';
@@ -484,9 +487,7 @@ export default function LessonSlideSorter({
       case 'phonicsGame': {
         const game = PHONICS_GAMES.find(candidate => candidate.id === ref.phonicsGameId);
         if (!game) return;
-        const unit = phonicsGameUnits().find(candidate => !gameAvailability(game, candidate));
-        if (!unit) return;
-        slide = { id, kind: 'phonicsGame', gameId: game.id, unitId: unit.id };
+        slide = { id, kind: 'phonicsGame', gameId: game.id };
         break;
       }
       case 'pdf': return; // Added only after the file and thumbnail are stored.
@@ -711,6 +712,7 @@ export default function LessonSlideSorter({
               cards={cards}
               gameCards={gameBase}
               gameMatch={gameMatches.get(selected.id)}
+              phonicsTopic={selected.kind === 'phonicsGame' ? lessonPhonicsTopic(slides, selected) : undefined}
               wordListId={wordListId}
               wordLists={wordLists}
               onWordListChange={onWordListChange}
@@ -952,6 +954,7 @@ function SlideDetail({
   cards,
   gameCards,
   gameMatch,
+  phonicsTopic,
   wordListId,
   wordLists,
   onWordListChange,
@@ -971,6 +974,7 @@ function SlideDetail({
   /** 게임 슬라이드가 쓰는 낱말 — 수업 단어장이 없으면 단어 슬라이드의 낱말 */
   gameCards: FullCardItem[];
   gameMatch?: LessonGameMatch;
+  phonicsTopic?: CourseUnit | null;
   wordListId: string;
   wordLists: WordList[];
   onWordListChange: (id: string) => void;
@@ -985,19 +989,7 @@ function SlideDetail({
 
   if (slide.kind === 'pdf') return <LessonPdfView key={slide.pdfPath} slide={slide} />;
   if (slide.kind === 'phonicsGame') {
-    const game = PHONICS_GAMES.find(candidate => candidate.id === slide.gameId);
-    if (!game) return null;
-    return <div className="space-y-3">
-      <label className="flex flex-wrap items-center gap-2 font-bold">{t('lessonUx.needPhonicsUnit')}
-        <select className="min-h-11 rounded-xl border border-outline-variant bg-white px-3" value={slide.unitId}
-          onChange={event=>onUpdate({unitId:event.target.value})}>
-          {phonicsGameUnits().filter(unit=>!gameAvailability(game,unit)).map(unit=><option key={unit.id} value={unit.id}>
-            Level {unit.step} · Unit {unit.number} · {unit.groups.map(group=>group.label).join(' / ')}
-          </option>)}
-        </select>
-      </label>
-      <div className="mx-auto max-w-lg overflow-hidden rounded-xl"><PhonicsGameCover game={game} large /></div>
-    </div>;
+    return <PhonicsGameSlideDetail slide={slide} cards={gameCards} topic={phonicsTopic} onUpdate={onUpdate} />;
   }
 
   if (slide.kind === 'shadow') {

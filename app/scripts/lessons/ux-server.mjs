@@ -23,6 +23,7 @@ const funcs={fetchCurriculumLessonById:async id=>structuredClone(window.__lesson
   window.__saveLessonQA();
 },createGameTemplate:async p=>{const row={id:crypto.randomUUID(),academy_id:p.academyId,class_id:p.classId,game_type:p.gameType,items:p.items,config:p.config,name:p.name};window.__lessonQA.templates.push(row);window.__saveLessonQA();return row;},createCurriculumLesson:async p=>{if(window.__lessonQA.failSave)throw Error('Test save failure');const row={id:crypto.randomUUID(),name:p.name,class_id:p.classId,academy_id:p.academyId,word_list_id:p.wordListId,playlist:p.playlist,created_at:new Date().toISOString(),updated_at:new Date().toISOString()};window.__lessonQA.lessons.push(row);window.__saveLessonQA();return structuredClone(row);},updateCurriculumLesson:async(id,patch)=>{const row=window.__lessonQA.lessons.find(x=>x.id===id);Object.assign(row,structuredClone(patch));window.__saveLessonQA();return row;}};
 Object.assign(funcs, {
+  fetchWordListById: async id => structuredClone(window.__lessonQA.lists.find(row => row.id === id)),
   fetchAllCurriculumLessons: async () => {
     const db = window.__lessonQA;
     const rows = structuredClone(db.lessons);
