@@ -26,7 +26,7 @@ export const STAFF_NAV_GROUPS: NavGroup[] = [
   },
   { id: 'games', labelKey: 'nav.gameCenter', icon: 'sports_esports', children: [{ to: '/games', labelKey: 'nav.gameCenter', icon: 'sports_esports' }, { to: '/phonics-games', labelKey: 'phonicsGamesTitle', icon: 'spellcheck' }] },
   { id: 'materials', labelKey: 'nav.classroomMaterials', icon: 'print', children: [{ to: '/materials', labelKey: 'nav.classroomMaterials', icon: 'print' }] },
-  { id: 'wordlists', labelKey: 'nav.wordLists', icon: 'library_books', children: [{ to: '/wordlists', labelKey: 'nav.wordLists', icon: 'library_books' }] },
+  { id: 'wordlists', labelKey: 'textbook.materials', icon: 'library_books', children: [{ to: '/wordlists', labelKey: 'textbook.materials', icon: 'library_books' }] },
   {
     id: 'lesson',
     labelKey: 'launchUx.lessons',
