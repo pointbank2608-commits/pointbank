@@ -1,5 +1,11 @@
 .textbook-library, .textbook-card { display: grid; gap: 1rem; min-width: 0; }
 .textbook-card { border: 1px solid #d7e0eb; border-radius: 1rem; padding: clamp(1rem, 3vw, 1.5rem); background: #fff; }
+.textbook-books, .textbook-contents { display: grid; gap: .75rem; padding: 0; margin: 0; list-style: none; }
+.textbook-book { grid-template-columns: minmax(0, 1fr) auto; align-items: center; color: #192a44; font-weight: 750; overflow-wrap: anywhere; }
+.textbook-book:hover { background: #f5f8fd; border-color: #3974bc; }
+.textbook-book:focus-visible { outline: 2px solid #195fbb; outline-offset: 2px; }
+.textbook-book small { white-space: nowrap; }
+.textbook-contents a { width: 100%; justify-content: start; text-align: left; }
 .textbook-heading, .textbook-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem; }
 .textbook-heading { justify-content: space-between; }
 .textbook-heading h3, .textbook-card h4, .textbook-card legend { font-weight: 750; color: #192a44; }

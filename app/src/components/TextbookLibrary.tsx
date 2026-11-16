@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import {
-  extractTextbook, fetchTextbookUnits, fetchTextbookWorksheets, saveTextbookUnit,
-  textbookListItems, textbookOriginalUrl, textbookUnitPath, textbookWorksheetPath,
+  createTextbookBook, extractTextbook, fetchTextbookBook, fetchTextbookBooks, fetchTextbookUnit, fetchTextbookWorksheets, saveTextbookUnit,
+  textbookBookPath, textbookLibraryPath, textbookListItems, textbookOriginalUrl, textbookUnitPath, textbookWorksheetPath,
   TEXTBOOK_FILE_TYPES, TEXTBOOK_MAX_BYTES, TEXTBOOK_MAX_FILES, TEXTBOOK_MAX_PDF_PAGES,
-  type TextbookItem, type TextbookUnit, type TextbookWorksheet,
+  type TextbookBook, type TextbookItem, type TextbookUnit, type TextbookWorksheet,
 } from '../lib/textbooks';
 import '../styles/textbooks.css';
 
@@ -19,74 +19,137 @@ const fileTypesByExtension: Record<string, string> = {
   jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', pdf: 'application/pdf',
 };
 
-export default function TextbookLibrary({ academy, owner, onSaved }: {
+type LibraryOwner = {
   academy: string; owner: string; onSaved: () => void;
+};
+type Screen =
+  | { kind: 'loading' | 'failed' }
+  | { kind: 'library'; books: Awaited<ReturnType<typeof fetchTextbookBooks>> }
+  | { kind: 'book'; book: Awaited<ReturnType<typeof fetchTextbookBook>> }
+  | { kind: 'unit'; unit: TextbookUnit | null };
+
+export default function TextbookLibrary(props: LibraryOwner) {
+  const { t } = useTranslation();
+  const [params] = useSearchParams();
+  const unitId = params.get('unit');
+  const bookId = unitId ? null : params.get('book');
+  return <section className="textbook-library" aria-label={t('textbook.tab')}>
+    <TextbookLibraryScreen key={unitId ? `unit:${unitId}` : bookId ? `book:${bookId}` : 'library'}
+      {...props} unitId={unitId} bookId={bookId} />
+  </section>;
+}
+
+function TextbookLibraryScreen({ academy, owner, unitId, bookId, onSaved }: LibraryOwner & {
+  unitId: string | null; bookId: string | null;
 }) {
   const { t } = useTranslation();
   const { notify } = useToast();
-  const [params, setParams] = useSearchParams();
-  const [units, setUnits] = useState<TextbookUnit[] | null>(null);
-  const [failed, setFailed] = useState(false);
+  const navigate = useNavigate();
+  const [screen, setScreen] = useState<Screen>({ kind: 'loading' });
   const [creating, setCreating] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const active = useRef(false);
-  const sequence = useRef(0);
-  const reload = useCallback(async () => {
-    const request = ++sequence.current;
-    setFailed(false);
-    try {
-      const rows = await fetchTextbookUnits(academy, owner);
-      if (active.current && request === sequence.current) setUnits(rows);
-    } catch {
-      if (active.current && request === sequence.current) setFailed(true);
-    }
-  }, [academy, owner]);
+  const load = useCallback(async (): Promise<Screen> => {
+    if (unitId) return { kind: 'unit', unit: await fetchTextbookUnit(academy, owner, unitId) };
+    if (bookId) return { kind: 'book', book: await fetchTextbookBook(academy, owner, bookId) };
+    return { kind: 'library', books: await fetchTextbookBooks(academy, owner) };
+  }, [academy, owner, bookId, unitId]);
   useEffect(() => {
+    let current = true;
     active.current = true;
-    void reload();
-    return () => { active.current = false; };
-  }, [reload]);
+    load().then(result => { if (current) setScreen(result); }, () => { if (current) setScreen({ kind: 'failed' }); });
+    return () => { current = false; active.current = false; };
+  }, [load, attempt]);
 
-  const selectedId = params.get('unit');
-  const selected = units?.find(unit => unit.id === selectedId);
-  const books = [...new Set(units?.map(unit => unit.textbook))];
-  function saved(unit: TextbookUnit) {
+  function unitSaved(unit: TextbookUnit) {
     if (!active.current) return;
-    ++sequence.current;
-    setFailed(false);
-    setUnits(prev => [unit, ...(prev ?? []).filter(row => row.id !== unit.id)]);
-    setParams({ tab: 'textbooks', unit: unit.id });
-    setCreating(false);
+    navigate(textbookUnitPath(unit.id));
     onSaved();
     notify(t('textbook.saved'));
   }
 
-  return <section className="textbook-library" aria-label={t('textbook.tab')}>
-    {creating ? <TextbookImport academy={academy} owner={owner} books={books} onSaved={saved} onClose={() => setCreating(false)} /> :
-      selected ? <TextbookUnitView key={selected.id} unit={selected} /> : <>
-        <header className="textbook-heading">
-          <h3>{t('textbook.library')}</h3>
-          <button type="button" className={primary} onClick={() => setCreating(true)}>{t('textbook.add')}</button>
-        </header>
-        {failed ? <p role="alert">{t('textbook.loadFailed')} <button type="button" className={button} onClick={() => void reload()}>{t('textbook.retry')}</button></p> :
-          units === null ? <p role="status">{t('common.loading')}</p> : <>
-            {selectedId && <p role="alert">{t('textbook.unitMissing')}</p>}
-            {!books.length && <p>{t('textbook.empty')}</p>}
-            {books.map(book => <section key={book} className="textbook-card">
-              <h4>{book}</h4>
-              <div className="textbook-actions">{units.filter(unit => unit.textbook === book).map(unit =>
-                <Link className={button} key={unit.id} to={textbookUnitPath(unit.id)}>{unit.title}</Link>)}</div>
-            </section>)}
-          </>}
-      </>}
-  </section>;
+  if (screen.kind === 'loading') return <p role="status">{t('common.loading')}</p>;
+  if (screen.kind === 'failed') return <>
+    {(bookId || unitId) && <Link to={textbookLibraryPath}>{t('textbook.back')}</Link>}
+    <p role="alert">{t('textbook.loadFailed')}</p>
+    <button type="button" className={button} onClick={() => { setScreen({ kind: 'loading' }); setAttempt(n => n + 1); }}>{t('textbook.retry')}</button>
+  </>;
+  if (screen.kind === 'unit' && screen.unit) return <TextbookUnitView unit={screen.unit} />;
+  if (screen.kind === 'book' && screen.book) {
+    const book = screen.book;
+    if (creating) return <TextbookImport academy={academy} owner={owner} book={book} onSaved={unitSaved} onClose={() => setCreating(false)} />;
+    return <>
+      <Link to={textbookLibraryPath}>{t('textbook.back')}</Link>
+      <header className="textbook-heading">
+        <h3>{book.title}</h3>
+        <button type="button" className={primary} onClick={() => setCreating(true)}>{t('textbook.add')}</button>
+      </header>
+      <section className="textbook-card" aria-label={t('textbook.contents')}>
+        <h4>{t('textbook.contents')}</h4>
+        {book.units.length ? <ol className="textbook-contents">{book.units.map(unit =>
+          <li key={unit.id}><Link className={button} to={textbookUnitPath(unit.id)}>{unit.title}</Link></li>
+        )}</ol> : <p>{t('textbook.noUnits')}</p>}
+      </section>
+    </>;
+  }
+  if (screen.kind !== 'library') return <>
+    <Link to={textbookLibraryPath}>{t('textbook.back')}</Link>
+    <p role="alert">{t(screen.kind === 'unit' ? 'textbook.unitMissing' : 'textbook.bookMissing')}</p>
+  </>;
+  if (creating) return <TextbookBookForm academy={academy} owner={owner} onClose={() => setCreating(false)}
+    onSaved={book => { if (active.current) navigate(textbookBookPath(book.id)); }} />;
+  return <>
+    <header className="textbook-heading">
+      <h3>{t('textbook.library')}</h3>
+      <button type="button" className={primary} onClick={() => setCreating(true)}>{t('textbook.newBook')}</button>
+    </header>
+    {screen.books.length ? <ul className="textbook-books">{screen.books.map(book =>
+      <li key={book.id}><Link className="textbook-card textbook-book" to={textbookBookPath(book.id)}>
+        <span>{book.title}</span>
+        <small>{t('textbook.unitCount', { count: book.unitCount })}</small>
+      </Link></li>
+    )}</ul> : <p>{t('textbook.empty')}</p>}
+  </>;
 }
 
-function TextbookImport({ academy, owner, books, onSaved, onClose }: {
-  academy: string; owner: string; books: string[]; onSaved: (unit: TextbookUnit) => void; onClose: () => void;
+function TextbookBookForm({ academy, owner, onSaved, onClose }: {
+  academy: string; owner: string; onSaved: (book: TextbookBook) => void; onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const [title, setTitle] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [failed, setFailed] = useState(false);
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    if (saving || !title.trim()) return;
+    setSaving(true);
+    setFailed(false);
+    try {
+      onSaved(await createTextbookBook(academy, owner, title));
+    } catch {
+      setFailed(true);
+    } finally {
+      setSaving(false);
+    }
+  }
+  return <form className="textbook-card" onSubmit={submit}>
+    <h3>{t('textbook.newBook')}</h3>
+    <div className="textbook-fields">
+      <label>{t('textbook.book')}<input value={title} maxLength={120} required disabled={saving} onChange={e => setTitle(e.target.value)} /></label>
+    </div>
+    {failed && <p role="alert" className="textbook-error">{t('textbook.saveFailed')}</p>}
+    <div className="textbook-actions">
+      <button type="submit" className={primary} disabled={saving || !title.trim()}>{t(saving ? 'textbook.saving' : 'textbook.createBook')}</button>
+      <button type="button" className={button} disabled={saving} onClick={onClose}>{t('common.cancel')}</button>
+    </div>
+  </form>;
+}
+
+function TextbookImport({ academy, owner, book, onSaved, onClose }: {
+  academy: string; owner: string; book: TextbookBook; onSaved: (unit: TextbookUnit) => void; onClose: () => void;
 }) {
   const { t } = useTranslation();
   const [id] = useState(() => crypto.randomUUID());
-  const [book, setBook] = useState('');
   const [title, setTitle] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [first, setFirst] = useState('1');
@@ -150,7 +213,7 @@ function TextbookImport({ academy, owner, books, onSaved, onClose }: {
 
   async function save(event: FormEvent) {
     event.preventDefault();
-    if (status || !book.trim() || !title.trim() || !files.length) return;
+    if (status || !title.trim() || !files.length) return;
     const words = review?.words.filter(item => item.included) ?? [];
     const sentences = review?.sentences.filter(item => item.included) ?? [];
     if ([...words, ...sentences].some(item => !item.text.trim() || !item.meaning.trim())) {
@@ -160,7 +223,7 @@ function TextbookImport({ academy, owner, books, onSaved, onClose }: {
     setStatus('saving'); setError('');
     try {
       onSaved(await saveTextbookUnit({
-        id, academy, owner, textbook: book, title, files, words: textbookListItems(words), sentences: textbookListItems(sentences),
+        id, academy, owner, textbook: book.title, title, files, words: textbookListItems(words), sentences: textbookListItems(sentences),
       }));
     } catch {
       setError('saveFailed');
@@ -172,9 +235,8 @@ function TextbookImport({ academy, owner, books, onSaved, onClose }: {
   return <form className="textbook-card" onSubmit={save}>
     <header className="textbook-heading"><h3>{t('textbook.add')}</h3>
       <button type="button" className={button} disabled={!!status} onClick={onClose}>{t('common.cancel')}</button></header>
+    <p>{book.title}</p>
     <div className="textbook-fields">
-      <label>{t('textbook.book')}<input value={book} list="textbook-names" maxLength={120} required disabled={!!status} onChange={e => setBook(e.target.value)} /></label>
-      <datalist id="textbook-names">{books.map(name => <option key={name} value={name} />)}</datalist>
       <label>{t('textbook.unit')}<input value={title} maxLength={120} required disabled={!!status} onChange={e => setTitle(e.target.value)} /></label>
     </div>
     <div className="textbook-actions">
@@ -223,7 +285,7 @@ function TextbookImport({ academy, owner, books, onSaved, onClose }: {
     </div>}
     {!!files.length && <div>
       {hasSelected && <p className="textbook-note">{t('textbook.listSharing')}</p>}
-      <button type="submit" className={primary} disabled={!!status || !book.trim() || !title.trim()}>
+      <button type="submit" className={primary} disabled={!!status || !title.trim()}>
         {t(status === 'saving' ? 'textbook.saving' : hasSelected ? 'textbook.save' : 'textbook.saveOriginal')}</button>
     </div>}
   </form>;
@@ -253,7 +315,7 @@ function TextbookUnitView({ unit }: { unit: TextbookUnit }) {
     }
   }
   return <>
-    <Link to="/wordlists?tab=textbooks">{t('textbook.back')}</Link>
+    <Link to={textbookBookPath(unit.book_id)}>{t('textbook.backToBook')}</Link>
     <header className="textbook-heading"><h3>{unit.title}</h3><span>{unit.textbook}</span></header>
     <section className="textbook-card">
       <h4>{t('textbook.created')}</h4>

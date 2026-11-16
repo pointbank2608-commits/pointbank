@@ -1,6 +1,8 @@
 export const textbookKo = {
-  materials: '내 자료', tab: '내 교재', add: '교재 단원 추가', camera: '교재 촬영', files: '이미지·PDF 선택',
+  materials: '내 자료', tab: '내 교재', add: '단원 추가', camera: '교재 촬영', files: '이미지·PDF 선택',
   book: '교재 이름', unit: '단원 이름', library: '교재 목록', upload: '교재 원본',
+  newBook: '새 교재 만들기', createBook: '교재 만들기', unitCount_one: '{{count}}개 단원', unitCount_other: '{{count}}개 단원',
+  contents: '단원 목차', noUnits: '등록한 단원이 없어요.', bookMissing: '이 교재를 열 수 없어요.', backToBook: '교재 목차로',
   empty: '등록한 교재가 없어요.', unitMissing: '이 단원을 열 수 없어요.',
   fileLimits: 'JPG·PNG·WebP 최대 6장 또는 PDF 1개, 합계 10MB까지 올릴 수 있어요.',
   invalidFiles: '이미지와 PDF는 따로 올려 주세요. 파일 형식과 용량을 확인해 주세요.',
@@ -30,8 +32,10 @@ export const textbookKo = {
 };
 
 export const textbookEn: Record<keyof typeof textbookKo, string> = {
-  materials: 'My materials', tab: 'My textbooks', add: 'Add a textbook unit', camera: 'Take a photo', files: 'Choose images or PDF',
+  materials: 'My materials', tab: 'My textbooks', add: 'Add a unit', camera: 'Take a photo', files: 'Choose images or PDF',
   book: 'Textbook name', unit: 'Unit name', library: 'Textbook library', upload: 'Original pages',
+  newBook: 'New textbook', createBook: 'Create textbook', unitCount_one: '{{count}} unit', unitCount_other: '{{count}} units',
+  contents: 'Table of contents', noUnits: 'No units yet.', bookMissing: 'This textbook could not be opened.', backToBook: 'Back to contents',
   empty: 'You haven’t added a textbook yet.', unitMissing: 'This unit could not be opened.',
   fileLimits: 'Upload up to 6 JPG, PNG, or WebP images, or one PDF. Total limit is 10 MB.',
   invalidFiles: 'Upload images or a PDF separately. Check the file types and sizes.',

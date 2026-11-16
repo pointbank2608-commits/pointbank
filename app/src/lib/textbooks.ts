@@ -13,8 +13,14 @@ interface TextbookOriginal {
   path: string;
   mime: string;
 }
+export interface TextbookBook {
+  id: string;
+  title: string;
+}
+
 export interface TextbookUnit {
   id: string;
+  book_id: string;
   textbook: string;
   title: string;
   files: TextbookOriginal[];
@@ -38,7 +44,9 @@ export interface TextbookWorksheet {
 }
 
 export const textbookUnitName = (unit: TextbookUnit) => `${unit.textbook} · ${unit.title}`;
-export const textbookUnitPath = (unit: string) => `/wordlists?tab=textbooks&unit=${encodeURIComponent(unit)}`;
+export const textbookLibraryPath = '/wordlists?tab=textbooks';
+export const textbookBookPath = (book: string) => `${textbookLibraryPath}&book=${encodeURIComponent(book)}`;
+export const textbookUnitPath = (unit: string) => `${textbookLibraryPath}&unit=${encodeURIComponent(unit)}`;
 export function textbookWorksheetPath(unit: string, source?: string, sheet?: string) {
   const query = new URLSearchParams({ unit });
   if (source) query.set('source', source);
@@ -48,10 +56,46 @@ export function textbookWorksheetPath(unit: string, source?: string, sheet?: str
 
 export async function fetchTextbookUnits(academy: string, owner: string): Promise<TextbookUnit[]> {
   const { data, error } = await supabase.from('textbook_units')
-    .select('id,textbook,title,files,word_list_id,sentence_list_id')
+    .select('id,book_id,textbook,title,files,word_list_id,sentence_list_id')
     .eq('academy_id', academy).eq('created_by', owner).order('created_at', { ascending: false });
   if (error) throw error;
   return data;
+}
+
+export async function fetchTextbookBooks(academy: string, owner: string): Promise<(TextbookBook & { unitCount: number })[]> {
+  const { data, error } = await supabase.from('textbook_books').select('id,title,textbook_units(count)')
+    .eq('academy_id', academy).eq('created_by', owner).order('created_at', { ascending: false }).order('id');
+  if (error) throw error;
+  return data.map(({ id, title, textbook_units }) => ({ id, title, unitCount: textbook_units[0]?.count ?? 0 }));
+}
+
+export async function fetchTextbookBook(academy: string, owner: string, bookId: string) {
+  const { data, error } = await supabase.from('textbook_books').select('id,title,textbook_units(id,title)')
+    .eq('academy_id', academy).eq('created_by', owner).eq('id', bookId).maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  const units = data.textbook_units.sort((a, b) => a.title.localeCompare(b.title, undefined, { numeric: true })
+    || a.id.localeCompare(b.id));
+  return { id: data.id, title: data.title, units };
+}
+
+export async function fetchTextbookUnit(academy: string, owner: string, id: string): Promise<TextbookUnit | null> {
+  const { data, error } = await supabase.from('textbook_units').select('id,book_id,textbook,title,files,word_list_id,sentence_list_id')
+    .eq('academy_id', academy).eq('created_by', owner).eq('id', id).maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function createTextbookBook(academy: string, owner: string, title: string): Promise<TextbookBook> {
+  const name = title.trim();
+  const { data, error } = await supabase.from('textbook_books')
+    .insert({ academy_id: academy, created_by: owner, title: name }).select('id,title').single();
+  if (!error) return data;
+  if (error.code !== '23505') throw error;
+  const existing = await supabase.from('textbook_books').select('id,title')
+    .eq('academy_id', academy).eq('created_by', owner).eq('title', name).single();
+  if (existing.error) throw existing.error;
+  return existing.data;
 }
 
 export async function extractTextbook(academy: string, files: File[], first: number, last: number): Promise<TextbookExtraction> {
