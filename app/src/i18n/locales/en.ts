@@ -2246,6 +2246,7 @@ const en: Ko = {
     connectionError: 'Check the connection to the lesson remote.',
     touchpad: 'Touchpad',
     touchpadHint: 'Swipe to move the cursor on the board.',
+    scrollStrip: 'Scroll',
     pointerClick: 'Click',
     pointerDoubleClick: 'Double-click',
     textInput: 'Text input',

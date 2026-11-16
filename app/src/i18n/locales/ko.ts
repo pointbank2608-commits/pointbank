@@ -2243,6 +2243,7 @@ const ko = {
     connectionError: '리모컨 연결을 확인해 주세요.',
     touchpad: '터치패드',
     touchpadHint: '손가락으로 쓸어 칠판 커서를 움직여요.',
+    scrollStrip: '스크롤',
     pointerClick: '클릭',
     pointerDoubleClick: '더블 클릭',
     textInput: '텍스트 입력',

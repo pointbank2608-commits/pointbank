@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import { useTranslation } from 'react-i18next';
 import QRCode from 'qrcode';
 import { useLessonRunner } from '../context/LessonRunnerContext';
-import RemoteCursor, { clickPresentationAt } from './RemoteCursor';
+import RemoteCursor, { clickPresentationAt, scrollPresentationAt } from './RemoteCursor';
 import { applyRemoteTextDraft, canWriteRemoteText, startRemoteTextSession, type RemoteTextSession } from '../lib/remoteTextTarget';
 import {
   acknowledgeRemoteText,
@@ -21,6 +21,7 @@ import {
   type RemotePairing,
   type RemotePointer,
   type RemoteRow,
+  type RemoteScrollUpdate,
   type RemoteTextTarget,
 } from '../lib/remote';
 
@@ -37,6 +38,7 @@ export function RemoteBridge({ id }: { id: string }) {
   const lastSeq = useRef(0);
   const lastPointerSeq = useRef(0);
   const lastPointerClickSeq = useRef(0);
+  const lastScroll = useRef<RemoteScrollUpdate | null>(null);
   const published = useRef(false);
   const [pointer, setPointer] = useState<RemotePointer | null>(null);
   const [pointerRoot, setPointerRoot] = useState(() => document.fullscreenElement ?? document.body);
@@ -104,6 +106,7 @@ export function RemoteBridge({ id }: { id: string }) {
         at: Date.now(),
         pointerEnabled: true,
         pointerClickEnabled: true,
+        scrollEnabled: true,
         textTarget: textSession.current?.step === runner.stepIndex ? textTarget : null,
       });
     }
@@ -147,6 +150,15 @@ export function RemoteBridge({ id }: { id: string }) {
       if (!alive || !row || row.state.ended) return;
       run(row.cmd);
       const point = row.pointer;
+      const scroll = row.scroll;
+      const previousScroll = lastScroll.current;
+      if (scroll && (!previousScroll || scroll.seq > previousScroll.seq)) {
+        lastScroll.current = scroll;
+        if (scroll.step === act.current.step) {
+          const priorTotal = previousScroll?.step === scroll.step ? previousScroll.total : 0;
+          scrollPresentationAt(point ?? { x: 500, y: 500 }, scroll.total - priorTotal);
+        }
+      }
       const click = point?.click;
       const isNewClick = click && click.seq > lastPointerClickSeq.current;
       if (isNewClick) {

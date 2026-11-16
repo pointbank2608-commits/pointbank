@@ -54,6 +54,7 @@ export interface RemoteState {
   pointerEnabled?: boolean;
   pointerClickEnabled?: boolean;
   textTarget?: RemoteTextTarget | null;
+  scrollEnabled?: boolean;
 }
 
 export type RemoteCmdName = 'next' | 'prev' | 'goto' | 'exit' | 'action';
@@ -73,6 +74,7 @@ export interface RemoteRow {
   pointer: RemotePointer | null;
   text_seq: number;
   text_input: RemoteTextMessage | null;
+  scroll: RemoteScrollUpdate | null;
 }
 
 export interface RemoteTextTarget {
@@ -92,6 +94,12 @@ export interface RemotePointer {
   x: number;
   y: number;
   click?: RemotePointerClick;
+}
+
+export interface RemoteScrollUpdate {
+  seq: number;
+  step: number;
+  total: number;
 }
 
 export interface RemotePointerClick {
@@ -119,7 +127,7 @@ export async function deleteRemoteSession(id: string): Promise<void> {
 
 export async function fetchRemoteSession(id: string): Promise<RemoteRow | null> {
   const { data, error } = await supabase.from('remote_sessions')
-    .select('id, state, cmd, pointer, text_seq, text_input').eq('id', id).maybeSingle();
+    .select('id, state, cmd, pointer, text_seq, text_input, scroll').eq('id', id).maybeSingle();
   if (error || !data) return null;
   return data as RemoteRow;
 }
@@ -158,6 +166,13 @@ export async function clickRemotePointer(pair: RemotePairing, count: 1 | 2, step
     ...remotePhoneArgs(pair), p_count: count, p_step: step,
   }).abortSignal(signal);
   if (error || data !== true) throw error ?? new Error('remote pointer click unavailable');
+}
+
+export async function scrollRemotePresentation(pair: RemotePairing, delta: number, step: number, signal: AbortSignal): Promise<void> {
+  const { data, error } = await remotePhone.rpc('remote_qr_scroll', {
+    ...remotePhoneArgs(pair), p_delta: delta, p_step: step,
+  }).abortSignal(signal);
+  if (error || data !== true) throw error ?? new Error('remote presentation scroll unavailable');
 }
 
 export async function writeRemoteText(pair: RemotePairing, target: string, draft: string, signal: AbortSignal): Promise<void> {

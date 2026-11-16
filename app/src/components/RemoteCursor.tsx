@@ -13,6 +13,25 @@ function cursorPosition(point: { x: number; y: number }) {
   };
 }
 
+export function scrollPresentationAt(point: { x: number; y: number }, delta: number): void {
+  const stage = document.querySelector('[data-remote-click-area]');
+  if (!stage || !delta) return;
+  const { x, y } = cursorPosition(point);
+  const hit = document.elementFromPoint(x, y);
+  let element = hit && stage.contains(hit) ? hit : stage;
+  let remaining = delta;
+  while (element && stage.contains(element) && Math.abs(remaining) >= 1) {
+    const overflow = getComputedStyle(element).overflowY;
+    if (element.scrollHeight > element.clientHeight && /^(auto|scroll|overlay)$/.test(overflow)) {
+      const before = element.scrollTop;
+      element.scrollTop += remaining;
+      remaining -= element.scrollTop - before;
+    }
+    if (element === stage || !element.parentElement) break;
+    element = element.parentElement;
+  }
+}
+
 /** The tip of the arrow is two pixels in from the edge of the SVG. */
 export function clickPresentationAt(point: RemotePointerClick): HTMLElement | null {
   const stage = document.querySelector('[data-remote-click-area]');

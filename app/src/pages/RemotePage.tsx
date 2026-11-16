@@ -311,7 +311,7 @@ function PairedRemote({ id, pairingKey }: { id: string; pairingKey: string }) {
           ) : null}
 
           {state?.pointerEnabled && (
-            <RemoteTouchpad pair={pair} step={idx} clickEnabled={state.pointerClickEnabled === true} />
+            <RemoteTouchpad pair={pair} step={idx} clickEnabled={state.pointerClickEnabled === true} scrollEnabled={state.scrollEnabled === true} />
           )}
           {state?.textTarget !== undefined && (
             <RemoteTextInput key={state.textTarget?.id ?? 'none'} pair={pair} target={state.textTarget} />
