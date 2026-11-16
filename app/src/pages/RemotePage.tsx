@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams } from 'react-router-dom';
 import RemoteTouchpad from '../components/RemoteTouchpad';
+import RemoteTextInput from '../components/RemoteTextInput';
 import {
   fetchRemotePhoneState, fetchRemotePoints, giveRemotePoints, sendRemoteCmd,
   type RemoteAction, type RemotePairing, type RemotePoints, type RemoteState,
@@ -311,6 +312,9 @@ function PairedRemote({ id, pairingKey }: { id: string; pairingKey: string }) {
 
           {state?.pointerEnabled && (
             <RemoteTouchpad pair={pair} step={idx} clickEnabled={state.pointerClickEnabled === true} />
+          )}
+          {state?.textTarget !== undefined && (
+            <RemoteTextInput key={state.textTarget?.id ?? 'none'} pair={pair} target={state.textTarget} />
           )}
 
           {/* 넘기기 */}

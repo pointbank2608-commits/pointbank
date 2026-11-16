@@ -53,6 +53,7 @@ export interface RemoteState {
   at: number;
   pointerEnabled?: boolean;
   pointerClickEnabled?: boolean;
+  textTarget?: RemoteTextTarget | null;
 }
 
 export type RemoteCmdName = 'next' | 'prev' | 'goto' | 'exit' | 'action';
@@ -70,6 +71,20 @@ export interface RemoteRow {
   state: Partial<RemoteState>;
   cmd: Partial<RemoteCmd>;
   pointer: RemotePointer | null;
+  text_seq: number;
+  text_input: RemoteTextMessage | null;
+}
+
+export interface RemoteTextTarget {
+  id: string;
+  limit: number;
+  multiline: boolean;
+}
+
+export interface RemoteTextMessage {
+  target: string;
+  draft: string;
+  expiresAt: number;
 }
 
 export interface RemotePointer {
@@ -103,7 +118,8 @@ export async function deleteRemoteSession(id: string): Promise<void> {
 }
 
 export async function fetchRemoteSession(id: string): Promise<RemoteRow | null> {
-  const { data, error } = await supabase.from('remote_sessions').select('id, state, cmd, pointer').eq('id', id).maybeSingle();
+  const { data, error } = await supabase.from('remote_sessions')
+    .select('id, state, cmd, pointer, text_seq, text_input').eq('id', id).maybeSingle();
   if (error || !data) return null;
   return data as RemoteRow;
 }
@@ -142,6 +158,17 @@ export async function clickRemotePointer(pair: RemotePairing, count: 1 | 2, step
     ...remotePhoneArgs(pair), p_count: count, p_step: step,
   }).abortSignal(signal);
   if (error || data !== true) throw error ?? new Error('remote pointer click unavailable');
+}
+
+export async function writeRemoteText(pair: RemotePairing, target: string, draft: string, signal: AbortSignal): Promise<void> {
+  const { data, error } = await remotePhone.rpc('remote_qr_write_text', {
+    ...remotePhoneArgs(pair), p_target: target, p_text: draft,
+  }).abortSignal(signal);
+  if (error || data !== true) throw error ?? new Error('remote text target unavailable');
+}
+
+export async function acknowledgeRemoteText(id: string, seq: number): Promise<void> {
+  await supabase.from('remote_sessions').update({ text_input: null }).eq('id', id).eq('text_seq', seq);
 }
 
 export async function fetchRemotePoints(pair: RemotePairing): Promise<RemotePoints> {

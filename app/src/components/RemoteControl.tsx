@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 import QRCode from 'qrcode';
 import { useLessonRunner } from '../context/LessonRunnerContext';
 import RemoteCursor, { clickPresentationAt } from './RemoteCursor';
+import { applyRemoteTextDraft, canWriteRemoteText, startRemoteTextSession, type RemoteTextSession } from '../lib/remoteTextTarget';
 import {
+  acknowledgeRemoteText,
   createRemoteSession,
   deleteRemoteSession,
   fetchRemoteSession,
@@ -19,6 +21,7 @@ import {
   type RemotePairing,
   type RemotePointer,
   type RemoteRow,
+  type RemoteTextTarget,
 } from '../lib/remote';
 
 /**
@@ -37,6 +40,44 @@ export function RemoteBridge({ id }: { id: string }) {
   const published = useRef(false);
   const [pointer, setPointer] = useState<RemotePointer | null>(null);
   const [pointerRoot, setPointerRoot] = useState(() => document.fullscreenElement ?? document.body);
+  const textSession = useRef<RemoteTextSession | null>(null);
+  const lastTextSeq = useRef(0);
+  const [textTarget, setTextTarget] = useState<RemoteTextTarget | null>(null);
+  const selectText = useCallback((session: RemoteTextSession | null) => {
+    textSession.current = session;
+    setTextTarget(session?.target ?? null);
+  }, []);
+
+  useEffect(() => {
+    const session = textSession.current;
+    if (!session || !textTarget) return;
+    if (!canWriteRemoteText(session, runner?.stepIndex)) {
+      selectText(null);
+      return;
+    }
+    function dropSelection(event: Event) {
+      if (event.target === session?.field && (event.type === 'focusout' || event.isTrusted)) selectText(null);
+    }
+    const stage = session.field.closest('[data-remote-click-area]');
+    const observer = new MutationObserver(() => {
+      if (textSession.current === session && !canWriteRemoteText(session, act.current.step)) selectText(null);
+    });
+    if (stage) observer.observe(stage, {
+      childList: true, subtree: true, attributes: true,
+      attributeFilter: ['type', 'disabled', 'readonly', 'inert', 'data-remote-text-key'],
+    });
+    session.field.addEventListener('focusout', dropSelection);
+    session.field.addEventListener('input', dropSelection);
+    session.field.addEventListener('pointerdown', dropSelection);
+    session.field.addEventListener('keydown', dropSelection);
+    return () => {
+      observer.disconnect();
+      session.field.removeEventListener('focusout', dropSelection);
+      session.field.removeEventListener('input', dropSelection);
+      session.field.removeEventListener('pointerdown', dropSelection);
+      session.field.removeEventListener('keydown', dropSelection);
+    };
+  }, [textTarget, runner?.stepIndex, selectText]);
 
   useEffect(() => {
     function syncPointerRoot() {
@@ -63,6 +104,7 @@ export function RemoteBridge({ id }: { id: string }) {
         at: Date.now(),
         pointerEnabled: true,
         pointerClickEnabled: true,
+        textTarget: textSession.current?.step === runner.stepIndex ? textTarget : null,
       });
     }
     const timer = window.setTimeout(publish, 120);
@@ -71,7 +113,7 @@ export function RemoteBridge({ id }: { id: string }) {
       window.clearTimeout(timer);
       window.clearInterval(heartbeat);
     };
-  }, [id, runner, secret, actions]);
+  }, [id, runner, secret, actions, textTarget]);
 
   // 수업이 끝나면 폰에도 알린다(이 컴포넌트가 사라질 때)
   useEffect(() => {
@@ -90,6 +132,7 @@ export function RemoteBridge({ id }: { id: string }) {
       if (!cmd || typeof cmd.seq !== 'number' || !cmd.name) return;
       if (cmd.seq <= lastSeq.current) return;
       lastSeq.current = cmd.seq;
+      if (cmd.name !== 'action') selectText(null);
       if (cmd.name === 'next' || cmd.name === 'prev') {
         document.dispatchEvent(new KeyboardEvent('keydown', { key: cmd.name === 'next' ? 'PageDown' : 'PageUp', bubbles: true, cancelable: true }));
       } else if (cmd.name === 'goto' && typeof cmd.arg === 'number') {
@@ -101,21 +144,32 @@ export function RemoteBridge({ id }: { id: string }) {
       }
     }
     function receive(row: RemoteRow | null) {
-      if (!alive || !row) return;
+      if (!alive || !row || row.state.ended) return;
       run(row.cmd);
       const point = row.pointer;
-      if (!point || row.state.ended) return;
-      const click = point.click;
+      const click = point?.click;
       const isNewClick = click && click.seq > lastPointerClickSeq.current;
       if (isNewClick) {
         lastPointerClickSeq.current = click.seq;
-        if (click.step === act.current.step) clickPresentationAt(click);
+        if (click.step === act.current.step) selectText(startRemoteTextSession(clickPresentationAt(click), click.step));
       }
-      if (!isNewClick && point.seq <= lastPointerSeq.current) return;
-      lastPointerSeq.current = point.seq;
-      setPointer(point);
-      window.clearTimeout(hidePointer);
-      hidePointer = window.setTimeout(() => setPointer(null), 3000);
+      if (row.text_input) {
+        if (row.text_seq > lastTextSeq.current) {
+          lastTextSeq.current = row.text_seq;
+          const session = textSession.current;
+          if (session?.target.id === row.text_input.target) {
+            if (!canWriteRemoteText(session, act.current.step)) selectText(null);
+            else if (row.text_input.expiresAt > Date.now()) applyRemoteTextDraft(session, row.text_input.draft);
+          }
+        }
+        void acknowledgeRemoteText(id, row.text_seq);
+      }
+      if (point && (isNewClick || point.seq > lastPointerSeq.current)) {
+        lastPointerSeq.current = point.seq;
+        setPointer(point);
+        window.clearTimeout(hidePointer);
+        hidePointer = window.setTimeout(() => setPointer(null), 3000);
+      }
     }
     void fetchRemoteSession(id).then(receive);
     const stop = subscribeRemote(id, receive);
@@ -124,7 +178,7 @@ export function RemoteBridge({ id }: { id: string }) {
       window.clearTimeout(hidePointer);
       stop();
     };
-  }, [id]);
+  }, [id, selectText]);
 
   return <RemoteCursor point={pointer} root={pointerRoot} />;
 }

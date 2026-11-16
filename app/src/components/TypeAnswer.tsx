@@ -152,6 +152,7 @@ export default function TypeAnswer({ entries: textEntries, mode, boardStyle = 'n
       }}
       placeholder={t('gameTypeAnswer.answerPlaceholder')}
       data-skin-object="answer-input"
+      data-remote-text-key={`${pos}:${order[pos]}`}
       className={`ta-input ${mark}`}
       style={{ width: `${Math.max(8, inputValue.length + 2)}ch` }}
     />

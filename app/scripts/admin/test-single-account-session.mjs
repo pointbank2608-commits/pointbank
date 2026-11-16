@@ -64,11 +64,13 @@ try {
   await run('121_remote_qr_pairing.sql');
   await run('123_remote_touchpad.sql');
   await run('124_remote_pointer_click.sql');
+  await run('125_remote_text_input.sql');
   await as('authenticated', user, first);
   const pair = await value('select remote_qr_open($1) as value', [classroom]);
+  const textTarget = randomUUID();
   await db.query('update remote_sessions set state = $1 where id = $2', [{
     lessonName: 'Test', ended: false, stepIndex: 0, steps: [{}], actions: [{ id: 'good' }], classId: classroom,
-    pointerEnabled: true, pointerClickEnabled: true,
+    pointerEnabled: true, pointerClickEnabled: true, textTarget: { id: textTarget, limit: 12, multiline: false },
   }, pair.id]);
 
   await as('anon');
@@ -81,6 +83,8 @@ try {
     value('select remote_qr_move_pointer($1, $2, $3, $4) as value', [pair.id, key, dx, dy]);
   const click = (count, step = 0, key = pair.key) =>
     value('select remote_qr_click_pointer($1, $2, $3, $4) as value', [pair.id, key, count, step]);
+  const writeText = (draft, target = textTarget, key = pair.key) =>
+    value('select remote_qr_write_text($1, $2, $3, $4) as value', [pair.id, key, target, draft]);
   assert.equal(await poll(randomUUID()), null);
   assert.equal((await poll()).state.lessonName, 'Test');
   assert.equal(await send('action', null, 'missing'), false);
@@ -98,6 +102,13 @@ try {
   assert.equal(await click(3), false);
   assert.equal(await click(1), true);
   assert.equal(await move(500, -500), true);
+  assert.equal(await writeText('안녕', textTarget, randomUUID()), false);
+  assert.equal(await writeText('안녕', randomUUID()), false);
+  assert.equal(await writeText('abcdefghijklmn'), false);
+  assert.equal(await writeText('줄\n바꿈'), false);
+  assert.equal(await writeText('안녕'), true);
+  assert.equal(await writeText('반가워!'), true);
+  assert.equal(JSON.stringify(await poll()).includes('반가워!'), false);
   assert.deepEqual((await value('select remote_qr_points($1, $2) as value', [pair.id, pair.key])).students.map((s) => s.id), [student]);
   await assert.rejects(give(randomUUID(), [student, otherStudent]), /remote_points_unavailable/);
   const request = randomUUID();
@@ -116,6 +127,13 @@ try {
     seq: 2, x: 1000, y: 0, click: { seq: 1, x: 650, y: 300, count: 1, step: 0 },
   });
   assert.equal(await value("select cmd->>'name' as value from remote_sessions where id = $1", [pair.id]), 'action');
+  await db.query('update remote_sessions set text_input = null where id = $1 and text_seq = 1', [pair.id]);
+  assert.equal(await value("select text_input->>'draft' as value from remote_sessions where id = $1", [pair.id]), '반가워!');
+  await db.query("update remote_sessions set state = state || '{\"stepIndex\":1,\"textTarget\":null}' where id = $1", [pair.id]);
+  assert.equal(await value('select text_input as value from remote_sessions where id = $1', [pair.id]), null);
+  await as('anon');
+  assert.equal(await writeText('이전 칸'), false);
+  await as('authenticated', user, first);
   assert.equal(await value('select count(*)::integer as value from storage.objects'), 1);
   await db.exec('reset role');
   await db.query('insert into auth.sessions values ($1, $2, now())', [second, user]);
@@ -130,6 +148,7 @@ try {
   assert.equal(await send('next'), false);
   assert.equal(await move(-100, 100), false);
   assert.equal(await click(2), false);
+  assert.equal(await writeText('이전 로그인'), false);
   await as('authenticated', user, second);
   await db.exec('select classbank_check_request()');
   await as('authenticated', anotherUser, anotherSession);

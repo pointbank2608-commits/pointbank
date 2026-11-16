@@ -14,12 +14,12 @@ function cursorPosition(point: { x: number; y: number }) {
 }
 
 /** The tip of the arrow is two pixels in from the edge of the SVG. */
-export function clickPresentationAt(point: RemotePointerClick) {
+export function clickPresentationAt(point: RemotePointerClick): HTMLElement | null {
   const stage = document.querySelector('[data-remote-click-area]');
   const { x: clientX, y: clientY } = cursorPosition(point);
   const target = document.elementFromPoint(clientX, clientY);
   if (!target || !stage?.contains(target) ||
-      target.closest('a[href], iframe, input[type="file"], input[type="password"], [data-no-remote-click]')) return;
+      target.closest('a[href], iframe, input[type="file"], input[type="password"], [data-no-remote-click]')) return null;
 
   const focusable = target.closest<HTMLElement>('input, textarea, select, [contenteditable="true"]');
   focusable?.focus({ preventScroll: true });
@@ -36,6 +36,7 @@ export function clickPresentationAt(point: RemotePointerClick) {
     dispatch('click', 2);
     dispatch('dblclick', 2);
   }
+  return focusable ?? null;
 }
 
 export default function RemoteCursor({ point, root }: { point: RemotePointer | null; root: Element }) {
