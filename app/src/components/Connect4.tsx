@@ -11,6 +11,7 @@ import { GAME_SFX, playSfx, useStepSounds } from '../lib/gameSfx';
 
 interface Props {
   items: GameItem[];
+  onMove?: () => void;
   /** true면 상단 이름 수정 + 오른쪽 항목 개수 조절/이름 수정 목록 패널을 보여준다(선생님용 실제 플레이 화면에서만). */
   editable?: boolean;
   onEditItem?: (id: string, label: string) => void;
@@ -112,7 +113,7 @@ interface Dropping {
  * 4 in a row. 열 아래에 단어를 두고, 원판을 위에서 떨어뜨려 아래부터 쌓는다.
  */
 const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
-  { items, editable, onEditItem, templateName, onRenameTemplate, onAddItem, onRemoveItem },
+  { items, onMove, editable, onEditItem, templateName, onRenameTemplate, onAddItem, onRemoveItem },
   ref,
 ) {
   const pictureTurn = usePictureWordTurn();
@@ -199,6 +200,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
       });
       setTurn(team === 'blue' ? 'red' : 'blue');
       setDropping(null);
+      onMove?.();
     }, dropMs(targetRow));
   }
 

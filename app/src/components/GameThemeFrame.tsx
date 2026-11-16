@@ -21,9 +21,9 @@ import { pictureWordModeKind } from '../lib/pictureWordQuestions';
 import { fitFullscreenZoom, fullscreenContentSpace } from '../lib/fullscreenFit';
 import { STORY_NAMES } from '../lib/storybook';
 import '../gameSkins.css';
-import type { GameType, GameItem } from '../lib/types';
+import type { GameTemplate, GameType, GameItem } from '../lib/types';
 import { COMMON_SFX, playSfx, setGameSoundOn, useGameSoundOn } from '../lib/gameSfx';
-import { TEAM_ORDER_EVENT, isShowOrderOn, loadTeamOrder, saveTeamOrder, setShowOrderOn, type TeamOrderState } from '../lib/teamOrder';
+import { ROUND_DONE_EVENT, TEAM_ORDER_EVENT, isAutoTurnOn, isShowOrderOn, loadTeamOrder, saveTeamOrder, setShowOrderOn, type TeamOrderState } from '../lib/teamOrder';
 
 interface Props {
   gameType?: GameType;
@@ -41,6 +41,9 @@ interface Props {
    * 안 넘기거나 명단이 비어 있으면 버튼 자체가 안 보인다.
    */
   roster?: GameItem[];
+  /** Share the class's turn order between the game's own page and lesson play. */
+  lessonTurnScope?: string;
+  template?: GameTemplate | null;
   /**
    * "다시하기" 버튼을 누르면 호출된다. 게임마다 내부 상태 모양이 다 달라서, 페이지 쪽에서
    * key를 바꿔 게임 컴포넌트를 통째로 다시 마운트시키는 방식으로 구현하는 걸 전제로 한다
@@ -109,15 +112,14 @@ export function GameManagement({ children }: { children: ReactNode }) {
  * 모든 게임에 동시 적용된다.
  */
 export default function GameThemeFrame(props: Props) { return <GameTurnProvider><GameThemeFrameContent {...props} /></GameTurnProvider>; }
-function GameThemeFrameContent({ gameType, bg, className, children, onRestart, onUndo, roster: suppliedRoster, autoStartForSelection }: Props) {
+function GameThemeFrameContent({ gameType, bg, className, children, onRestart, onUndo, roster: suppliedRoster, lessonTurnScope, template: suppliedTemplate, autoStartForSelection }: Props) {
   const nativeTurn = useContext(GameTurnContext)?.turn;
   const started = useRef<string | null>(null);
 
   const workspace = useGameWorkspace();
-  const template = workspace?.info?.selected;
+  const template = suppliedTemplate ?? workspace?.info?.selected;
   const frameGame = gameType ?? bg;
   const pictureModeTemplate = template?.config.pictureWordMode && template.game_type === frameGame && pictureWordModeKind(frameGame) !== null ? template : null;
-  const roster = workspace?.roster ?? suppliedRoster;
   const selection = autoStartForSelection ? template?.id ?? '' : '';
   useEffect(() => {
     if (!workspace?.running) {
@@ -155,7 +157,11 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
   // 같은 "채우기" 배치·확대 규칙(fill)을 쓰되, 브라우저 전체화면 대신 발표 영역(PresentZoomArea)을
   // absolute inset-0 으로 덮는다(2026-09-25 "수업 시작할 때 게임 화면도 전체 화면에 맞춰줘").
   const presenting = usePresenting();
-  const activityPreview = !!useGameEmbed()?.preview;
+  const embed = useGameEmbed();
+  const activityPreview = !!embed?.preview;
+  const lessonClassTurns = !!lessonTurnScope && (presenting || (!!embed && !activityPreview));
+  const turnScope = lessonClassTurns ? lessonTurnScope : '';
+  const roster = lessonClassTurns ? suppliedRoster : (workspace?.roster ?? suppliedRoster);
   const soundOn = useGameSoundOn();
   // 아이폰 사파리는 웹 페이지 요소의 전체화면(Fullscreen API)을 지원하지 않는다(아이패드·컴퓨터만) — 그럴 땐
   // 오류를 띄우는 대신 앱 안에서 화면 전체를 덮는 "화면 가득" 모드로 대신한다(2026-09-27).
@@ -181,17 +187,27 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
       setTeamOrder(null);
       return;
     }
-    const read = () => { setTeamOrder(loadTeamOrder(roster)); setShowOrder(isShowOrderOn()); };
+    const read = () => { setTeamOrder(loadTeamOrder(roster, turnScope)); setShowOrder(isShowOrderOn()); };
     read();
     window.addEventListener(TEAM_ORDER_EVENT, read);
     return () => window.removeEventListener(TEAM_ORDER_EVENT, read);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rosterKey]);
+  }, [rosterKey, turnScope]);
   function setTurn(turn: number) {
     if (!roster || !teamOrder || teamOrder.order.length === 0) return;
     const n = teamOrder.order.length;
-    saveTeamOrder(roster, { ...teamOrder, turn: ((turn % n) + n) % n });
+    saveTeamOrder(roster, { ...teamOrder, turn: ((turn % n) + n) % n }, turnScope);
   }
+  useEffect(() => {
+    if (!lessonClassTurns || !roster?.length) return;
+    const advance = () => {
+      if (!isShowOrderOn() || !isAutoTurnOn()) return;
+      const order = loadTeamOrder(roster, turnScope);
+      saveTeamOrder(roster, { ...order, turn: (order.turn + 1) % order.order.length }, turnScope);
+    };
+    window.addEventListener(ROUND_DONE_EVENT, advance);
+    return () => window.removeEventListener(ROUND_DONE_EVENT, advance);
+  }, [lessonClassTurns, roster, turnScope]);
   // 반 전체가 보는 화면(전체화면·발표 중)에선 정답이 미리 보이지 않게 항목 목록을 기본으로 숨긴다.
   const [itemsHidden, setItemsHidden] = useState(presenting);
   // 새 도구줄을 쓰는 게임은 들어오자마자 시작되므로(playing) 항목을 자동으로 숨기면 선생님이 항목을 못 고친다 — 도구줄의 "항목 숨기기"로 직접 숨긴다.
@@ -496,7 +512,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
           >
             {itemsHidden ? t('gamePlay.showItems') : t('gamePlay.hideItems')}
           </button>
-          {roster && roster.length > 0 && (
+          {!lessonClassTurns && roster && roster.length > 0 && (
             <button
               type="button"
               onClick={() => workspace ? workspace.openTeams() : setTeamOrderOpen(true)}
@@ -507,7 +523,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
               {t('gamePlay.teamOrder')}
             </button>
           )}
-          {roster && roster.length > 0 && (
+          {!lessonClassTurns && roster && roster.length > 0 && (
             <button
               type="button"
               onClick={() => {
@@ -612,8 +628,12 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
           />
         )}
         {!activityPreview && (workspace ? workspace.teacherToolsTarget ? createPortal(toolbar, workspace.teacherToolsTarget) : null : toolbar)}
-        {!nativeTurn && !workspace && showOrder && roster && teamOrder && teamOrder.order.length > 0 && (
-          <div className="game-order-strip relative z-10 mb-3 flex shrink-0 items-center gap-2 rounded-2xl bg-surface-container-lowest/95 px-2 py-2 shadow-sm">
+        {lessonClassTurns && !!roster?.length && <div className="relative z-10 mb-2 flex shrink-0 flex-wrap gap-2" data-play-controls>
+          <button type="button" className="min-h-11 rounded-xl border border-outline-variant bg-white px-3 font-bold" onClick={() => setTeamOrderOpen(true)}>{t('gamePlay.teamOrder')}</button>
+          <button type="button" className="min-h-11 rounded-xl border border-outline-variant bg-white px-3 font-bold" onClick={() => setShowOrderOn(!showOrder)}>{t(showOrder ? 'gamePlay.hideOrder' : 'gamePlay.showOrder')}</button>
+        </div>}
+        {(lessonClassTurns || (!nativeTurn && !workspace)) && showOrder && roster && teamOrder && teamOrder.order.length > 0 && (
+          <div data-class-turn-strip className="game-order-strip relative z-10 mb-3 flex shrink-0 items-center gap-2 rounded-2xl bg-surface-container-lowest/95 px-2 py-2 shadow-sm">
             <button
               type="button"
               onClick={() => setTurn(teamOrder.turn - 1)}
@@ -658,7 +678,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
             </button>
           </div>
         )}
-        {gameType !== 'twodice' && <GameTurnDisplay />}
+        {gameType !== 'twodice' && !(lessonClassTurns && showOrder && teamOrder?.order.length) && <GameTurnDisplay />}
         {fullscreenError && <p role="alert" className="mb-3 rounded-lg bg-error-container p-3 text-on-error-container">{t('classroomUx.fullscreenError')}</p>}
         {/* Keep the same parent chain so view changes never remount a running game. */}
         <div className="relative flex min-h-0 flex-1 flex-col" data-game-preview>
@@ -705,7 +725,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
           </AccessibleDialog>
         )}
       {teamOrderOpen && roster && (
-        <TeamOrderPanel roster={roster} onClose={() => setTeamOrderOpen(false)} />
+        <TeamOrderPanel roster={roster} scope={turnScope} onApply={lessonClassTurns ? () => setShowOrderOn(true) : undefined} onClose={() => setTeamOrderOpen(false)} />
       )}
       </div>
     </GamePlayContext.Provider>

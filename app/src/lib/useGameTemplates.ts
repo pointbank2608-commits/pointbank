@@ -97,7 +97,7 @@ export function useGameTemplates(params: {
     }
   }, [classesError, reloadClasses]);
   /** 정말로 반이 하나도 없을 때만 true — 불러오는 중이거나, 수업 편집 화면(반이 레슨 반으로 정해짐)에선 false. */
-  const noClasses = !workspace && isStaff && !classesLoading && !classesError && classes.length === 0 && !embed?.classId;
+  const noClasses = !workspace && !embed && !presenting && isStaff && !classesLoading && !classesError && classes.length === 0;
   const [studentClassId, setStudentClassId] = useState<string | null>(null);
   const [studentClassName, setStudentClassName] = useState('');
 
@@ -116,8 +116,9 @@ export function useGameTemplates(params: {
 
   const [withoutClass, setWithoutClass] = useState(true);
   const chooseClass = (id: string) => { setWithoutClass(!id); if (id) selectClass(id); };
-  const presentationClassId = presenting ? (location.state as OpenState | null)?.openClassId : undefined;
-  const classId = preview ? null : !embed && !presenting && workspace && isStaff && withoutClass ? null : embed ? (embed.classId ?? staffClassId) : isStaff ? (presentationClassId ?? staffClassId) : studentClassId;
+  const classId = preview ? null : embed ? (embed.classId ?? staffClassId)
+    : presenting && isStaff ? (location.state as OpenState | null)?.openClassId ?? lessonRunner.runner?.classId ?? null
+    : workspace && isStaff && withoutClass ? null : isStaff ? staffClassId : studentClassId;
 
   // 참가자를 매번 직접 입력하지 않도록, 이 반/학원 전체 학생 명단을 게임 항목 후보로 불러온다.
   const [rosterScope, setRosterScope] = useState<RosterScope>('class');
@@ -230,19 +231,27 @@ export function useGameTemplates(params: {
     const sequence = ++loadSequence.current;
     if (preview || !academy?.id || (!classId && !temporary && !embedRef.current && !presenting)) {
       setTemplates([]);
+      setLoadedWorkspaceKey(workspaceKey);
       setLoading(false);
       return;
     }
     setLoading(true);
+    const state = routeState.current as OpenState | null;
+    const linkedId = embedRef.current ? embedRef.current.templateId : presenting ? state?.openTemplateId : undefined;
     try {
-      const rows = await fetchGameTemplates(academy.id, classId || '', gameType);
+      let rows = await fetchGameTemplates(academy.id, classId || '', gameType);
+      // A lesson's saved game can be outside the class's template list but still in the academy.
+      if (isStaff && linkedId && !rows.some(row => row.id === linkedId)) {
+        const linked = await fetchGameTemplateById(linkedId);
+        if (linked?.academy_id !== academy.id || linked.game_type !== gameType) throw new Error(t('quick.failed'));
+        rows = [...rows, linked];
+      }
       if (sequence !== loadSequence.current) return;
-      const source = ownedQuickSource((routeState.current as OpenState | null)?.quickSource, session?.user.id, academy?.id);
+      const source = ownedQuickSource(state?.quickSource, session?.user.id, academy?.id);
       const hasNewSource = !!source && consumedSource.current !== location.key;
       const openId = openTemplateIdRef.current;
       const opened=rows.find(row=>row.id===openId);
       if (presenting) {
-        const state = routeState.current as OpenState | null;
         const content = state?.lessonGameContent;
         const saved = rows.find(row => row.id === state?.openTemplateId);
         const grammarId = content?.config?.grammarId;
@@ -277,13 +286,15 @@ export function useGameTemplates(params: {
       if (presenting) {
         setTemplates([]);
         setSelectedId(null);
+      } else if (linkedId) {
+        setTemplates([]);
       }
       if (temporary && temporaryId) chooseDraft(readActivityDraft(temporaryId) || draftFactory.current());
-      notify(err instanceof Error ? err.message : String(err), 'error');
+      notify(linkedId ? t('quick.failed') : err instanceof Error ? err.message : String(err), 'error');
     } finally {
       if (sequence === loadSequence.current) { setLoadedWorkspaceKey(workspaceKey); setLoading(false); }
     }
-  }, [preview, academy?.id, session?.user.id, classId, gameType, notify, temporary, temporaryId, location.key, presenting, lessonDraftId, workspaceKey]);
+  }, [preview, academy?.id, session?.user.id, classId, gameType, notify, temporary, temporaryId, location.key, presenting, lessonDraftId, workspaceKey, isStaff, t]);
 
   useEffect(() => {
     void load();
@@ -296,8 +307,8 @@ export function useGameTemplates(params: {
     if (embedRef.current) return; // 편집 화면 안에서는 주소가 커리큘럼 페이지라 읽을 게 없다.
     const state = location.state as OpenState | null;
     openTemplateIdRef.current = state?.openTemplateId;
-    if (isStaff && state?.openClassId) chooseClass(state.openClassId);
     if (presenting) return;
+    if (isStaff && state?.openClassId) chooseClass(state.openClassId);
     const openId = state?.openTemplateId;
     if (openId && templates.some((r) => r.id === openId)) {
       openTemplateIdRef.current = undefined;
@@ -608,7 +619,7 @@ export function useGameTemplates(params: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (preview || !workspace || !isStaff) return;
-    workspace.publish({ settingsPending:!!params.hasPendingSettings?.(), gameType, classId, sharedView:!!lessonRunner.runner?.view, academyId: academy?.id || '', classes, roster, lists: allWordLists, templates, selected, loading,
+    workspace.publish({ settingsPending:!!params.hasPendingSettings?.(), gameType, classId, sharedView:!!lessonRunner.runner?.view, academyId: academy?.id || '', classes, roster, lists: allWordLists, templates, selected, loading: loading || loadedWorkspaceKey !== workspaceKey,
       applyGuide: async (content) => {
         if (!temporary || !selected || lessonRunner.runner?.view) throw new Error('guide_not_available');
         const draft = isActivityDraft(selected.id) ? readActivityDraft(selected.id)||selected : {...makeDraft(),name:selected.name,class_id:selected.class_id};

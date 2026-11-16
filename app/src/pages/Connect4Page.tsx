@@ -1,6 +1,7 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
@@ -8,6 +9,8 @@ import Connect4 from '../components/Connect4';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import { updateGameTemplate } from '../lib/api';
+import { ABSENT_EVENT, loadAbsent } from '../lib/absent';
+import { announceRoundDone } from '../lib/teamOrder';
 import i18n from '../i18n';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, UndoHandle } from '../lib/types';
@@ -52,6 +55,16 @@ export default function Connect4Page() {
     reload,
   } = g;
   const { notify } = useToast();
+  const { session, academy } = useAuth();
+  const lessonTurnScope = isStaff ? `${session?.user.id}:${academy?.id}` : undefined;
+  const [absent, setAbsent] = useState<string[]>([]);
+  useEffect(() => {
+    const read = () => setAbsent(loadAbsent(classId ?? ''));
+    read();
+    window.addEventListener(ABSENT_EVENT, read);
+    return () => window.removeEventListener(ABSENT_EVENT, read);
+  }, [classId]);
+  const attendingRoster = useMemo(() => roster.filter(student => !absent.includes(student.id)), [roster, absent]);
 
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
@@ -234,7 +247,7 @@ export default function Connect4Page() {
         <div className="space-y-6">
           <EditOnly>{classPicker}</EditOnly>
           <div>
-            <GameThemeFrame gameType="connect4" roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
+            <GameThemeFrame gameType="connect4" roster={attendingRoster} lessonTurnScope={lessonTurnScope} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
               <Connect4 items={demoItems} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
@@ -253,7 +266,9 @@ export default function Connect4Page() {
           )}
 
           <GameThemeFrame gameType="connect4"
-            roster={roster}
+            roster={attendingRoster}
+            lessonTurnScope={lessonTurnScope}
+            template={selected}
             onRestart={() => setRoundKey((k) => k + 1)}
             onUndo={() => gameRef.current?.undo()}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
@@ -262,6 +277,7 @@ export default function Connect4Page() {
               key={roundKey}
               ref={gameRef}
               items={selected.items}
+              onMove={isStaff ? announceRoundDone : undefined}
               editable={false}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}

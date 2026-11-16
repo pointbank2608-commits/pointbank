@@ -1532,10 +1532,11 @@ function GameSlideEditor({
   const { notify } = useToast();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [creating, setCreating] = useState(false);
-  // 게임 내용을 새로 만들면 게임 화면을 다시 그려 그 템플릿을 연다.
-  const [reloadKey, setReloadKey] = useState(0);
-  const templateRef = useRef(slide.templateId);
-  templateRef.current = slide.templateId;
+  const [gameMount, setGameMount] = useState({ templateId: slide.templateId, revision: 0 });
+  if (gameMount.templateId !== slide.templateId) {
+    // A template linked outside the game (for example by choosing a slide word list) needs a new player.
+    setGameMount({ templateId: slide.templateId, revision: gameMount.revision + 1 });
+  }
   /** Both sentence-building games can use a saved sentence list. */
   const [sentenceLists, setSentenceLists] = useState<WordList[]>([]);
   const [sentenceDraft, setSentenceDraft] = useState('');
@@ -1565,7 +1566,6 @@ function GameSlideEditor({
         teacherId: profile.id,
       });
       onUpdate({ templateId: tpl.id, autoWordListId: wordListId, ownWordListId: undefined });
-      setReloadKey((k) => k + 1);
       notify(t(reason === 'changed' ? 'curriculum.slides.gameContentRemade' : 'curriculum.slides.gameContentCreated'));
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
@@ -1620,7 +1620,6 @@ function GameSlideEditor({
         teacherId: profile.id,
       });
       onUpdate({ templateId: tpl.id, ownWordListId: list?.id, autoWordListId: !list && kind === 'word' ? wordListId : undefined });
-      setReloadKey((k) => k + 1);
       setSentenceEditorOpen(false);
       notify(t('curriculum.slides.gameContentCreated'));
     } catch (err) {
@@ -1630,22 +1629,16 @@ function GameSlideEditor({
     }
   }
 
-  // 슬라이드의 templateId 는 onSelect 로만 바뀐다 — 매 렌더 새 객체를 만들어도 useGameTemplates 는
-  // 바뀐 값만 보고하므로 되먹임 반복이 없다.
-  const embed = useMemo(
-    () => ({
-      classId,
-      templateId: slide.templateId,
-      onSelect: (id: string | null) => {
-        // 우리가 방금 붙인 내용을 게임 화면이 다시 알려 주는 경우는 그대로 둔다
-        if (id === (templateRef.current ?? null)) return;
-        onUpdate({ templateId: id ?? undefined, autoWordListId: undefined });
-      },
-    }),
-    // templateId 는 처음 열 때만 쓴다 — 선택할 때마다 새 값으로 다시 그리지 않게 뺀다.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [classId, slide.id, slide.gameType, reloadKey],
-  );
+  const embed = {
+    classId,
+    templateId: slide.templateId,
+    onSelect: (id: string | null) => {
+      if (id === (slide.templateId ?? null)) return;
+      // The game already loaded this selection. Keep its current round when attaching it to the lesson.
+      setGameMount(current => ({ ...current, templateId: id ?? undefined }));
+      onUpdate({ templateId: id ?? undefined, autoWordListId: undefined });
+    },
+  };
 
   return (
     <div className="space-y-3">
@@ -1750,7 +1743,7 @@ function GameSlideEditor({
       {GamePage && (!tiedGrammar || content) ? (
         <div className="game-embed relative isolate rounded-xl bg-background p-3 md:p-4">
           <GameEmbedContext.Provider value={tiedGrammar && content ? { ...embed, preview: { content, title: content.items[0]?.label ?? '' } } : embed}>
-            <GamePage key={`${slide.id}:${slide.gameType}:${reloadKey}`} />
+            <GamePage key={`${slide.id}:${slide.gameType}:${gameMount.revision}`} />
           </GameEmbedContext.Provider>
         </div>
       ) : null}

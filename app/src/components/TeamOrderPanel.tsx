@@ -71,7 +71,7 @@ function useSlotSpin() {
  * 관여하지 않는 순수 진행 보조 도구로 만들었다 — 결과를 저장하지 않고(그때그때 새로 뽑는
  * 용도), 화면에 크게 띄워서 학생들에게 보여주는 게 목적이다.
  */
-export default function TeamOrderPanel({ roster, onClose, children, fixedTeams, fixedMode, scope = '' }: { roster: GameItem[]; onClose: () => void; children?: ReactNode; fixedTeams?: number; /** 참여 방식을 이미 정했으면 개인/팀 선택 없이 그 방식으로만 정한다 */ fixedMode?: 'individual' | 'team'; scope?: string }) {
+export default function TeamOrderPanel({ roster, onClose, onApply, children, fixedTeams, fixedMode, scope = '' }: { roster: GameItem[]; onClose: () => void; onApply?: () => void; children?: ReactNode; fixedTeams?: number; /** 참여 방식을 이미 정했으면 개인/팀 선택 없이 그 방식으로만 정한다 */ fixedMode?: 'individual' | 'team'; scope?: string }) {
   const { t, i18n } = useTranslation();
   const { notify } = useToast();
   // 지난번에 정한 팀·순서로 시작한다 — 랜덤 버튼을 다시 누르거나 직접 바꾸기 전까지 그대로 남는다.
@@ -213,7 +213,8 @@ export default function TeamOrderPanel({ roster, onClose, children, fixedTeams, 
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => { if (!startChosen.current && order.length > 0) { currentId.current = order[0]; setTurn(0); saveTeamOrder(roster, { mode, teamCount, teamOf, order, turn: 0, teamNames }, scope); } onClose(); notify(i18n.language.startsWith('en') ? 'Your settings have been applied.' : '설정이 적용되었습니다.'); }}
+              disabled={spinning}
+              onClick={() => { if (!startChosen.current && order.length > 0) { currentId.current = order[0]; setTurn(0); saveTeamOrder(roster, { mode, teamCount, teamOf, order, turn: 0, teamNames }, scope); } onApply?.(); onClose(); notify(i18n.language.startsWith('en') ? 'Your settings have been applied.' : '설정이 적용되었습니다.'); }}
               className="min-h-11 rounded-xl bg-primary px-5 py-2 text-base font-bold text-white focus-visible:outline-4 focus-visible:outline-primary"
             >
               {i18n.language.startsWith('en') ? 'Apply' : '적용'}
