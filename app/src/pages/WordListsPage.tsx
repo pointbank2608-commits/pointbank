@@ -510,7 +510,7 @@ export default function WordListsPage() {
   const textbooks = params.get('tab') === 'textbooks';
   const linkedList = params.get('list');
   const [materialFilter, setMaterialFilter] = useState<'all' | 'word' | 'sentence'>('all');
-  const [aiOwner, setAiOwner] = useState<string | null>(null);
+  const [aiDialog, setAiDialog] = useState<{ scope: string; mode: 'source' | 'topic' } | null>(null);
   const [launchListId, setLaunchListId] = useState<string | null>(null);
   const [launchBusy, setLaunchBusy] = useState(false);
   const [launchError, setLaunchError] = useState(false);
@@ -721,12 +721,15 @@ export default function WordListsPage() {
         {t('textbook.materials')}
       </h2>
             <div className="flex flex-wrap gap-2">
-              {academy?.id && profile?.id && <button type="button"
-                onClick={() => setAiOwner(accountScope.current)}
-                className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 font-label-md text-label-md text-on-primary transition-colors hover:brightness-95">
-                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">auto_awesome</span>
-                {t('aiMaterials.title')}
-              </button>}
+              {!textbooks && academy?.id && profile?.id && <>
+                <button type="button" onClick={() => setAiDialog({ scope: accountScope.current, mode: 'source' })}
+                  className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 font-label-md text-label-md text-on-primary transition-colors hover:brightness-95">
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">auto_awesome</span>
+                  {t('aiMaterials.sourceTitle')}
+                </button>
+                <button type="button" className="textbook-button"
+                  onClick={() => setAiDialog({ scope: accountScope.current, mode: 'topic' })}>{t('aiMaterials.title')}</button>
+              </>}
               {!textbooks && (['word', 'sentence'] as const).map((kind) => (
                 <button
                   key={kind}
@@ -745,11 +748,12 @@ export default function WordListsPage() {
               ))}
             </div>
       </div>
-      {academy?.id && profile?.id && aiOwner === accountScope.current &&
-        <AiMaterialsDialog key={aiOwner} academy={academy.id} owner={profile.id} onClose={() => setAiOwner(null)}
+      {academy?.id && profile?.id && aiDialog?.scope === accountScope.current &&
+        <AiMaterialsDialog key={aiDialog.scope + aiDialog.mode} academy={academy.id} owner={profile.id} mode={aiDialog.mode}
+          preferredKind={materialFilter === 'all' ? undefined : materialFilter} onClose={() => setAiDialog(null)}
           onSaved={id => {
-            if (aiOwner !== accountScope.current) return;
-            setAiOwner(null);
+            if (aiDialog.scope !== accountScope.current) return;
+            setAiDialog(null);
             setParams({ list: id });
             void load();
             notify(t('aiMaterials.saved'));
