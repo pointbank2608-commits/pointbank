@@ -700,6 +700,10 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           <p className="font-bold">{text(`출제 가능 ${detectiveQuestionCount}문제`, `${detectiveQuestionCount} available questions`)}</p>
           {detectiveQuestionCount === 0 && <p>{text('해당 문법에 출제 가능한 문제가 없습니다.', 'No questions can be made for the selected grammar topics.')}</p>}
         </div>}
+        <button type="button" className={btn} disabled={!!info?.sharedView} onClick={() => {
+          close();
+          workspace.open('detective-authoring',panelAnchor??undefined);
+        }}>{text('직접 입력 · 문제 편집','Enter text or edit questions')}</button>
         {panelAction(()=>{
           const list = pList ? detectiveList : null;
           if(list!==undefined&&workspace.selectDetectiveList?.(list)){
@@ -708,10 +712,6 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             if (detectiveQuestionCount === 0) workspace.open('settings', settingsButton.current ?? undefined);
           }else notify(text('자료를 불러오지 못했어요. 다시 시도해 주세요.','Could not load the list. Please try again.'),'error');
         }, detectiveQuestionCount === 0 ? text('출제 문법 확인', 'Review grammar topics') : text('선택','Select'), !!info?.loading || !!info?.sharedView)}
-        <button type="button" className={btn} disabled={!!info?.sharedView} onClick={() => {
-          close();
-          workspace.open('detective-authoring',panelAnchor??undefined);
-        }}>{text('직접 입력 · 문제 편집','Enter text or edit questions')}</button>
       </>)}
       {open === 'content' && !isDetective && panel(<>
         <PanelHead title={isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words / sentences')} onClose={close} text={text} />
