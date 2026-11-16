@@ -11,26 +11,6 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
   status, headers: { ...headers, 'Content-Type': 'application/json' },
 });
 
-const itemSchema = {
-  type: 'object',
-  required: ['text', 'meaning', 'page', 'meaningSuggested'],
-  properties: {
-    text: { type: 'string' },
-    meaning: { type: 'string' },
-    page: { type: 'integer' },
-    meaningSuggested: { type: 'boolean' },
-  },
-};
-const responseSchema = {
-  type: 'object',
-  required: ['words', 'sentences', 'unclearPages'],
-  properties: {
-    words: { type: 'array', items: itemSchema, maxItems: 40 },
-    sentences: { type: 'array', items: itemSchema, maxItems: 40 },
-    unclearPages: { type: 'array', items: { type: 'integer' } },
-  },
-};
-
 async function hasFileSignature(file: File) {
   const bytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
   const ascii = new TextDecoder().decode(bytes);
@@ -109,6 +89,7 @@ Deno.serve(async (req: Request) => {
     return json({ error: 'invalidPageRange' }, 400);
   }
 
+  let stage = 'reserve';
   try {
     const access = await fetch(`${supabaseUrl}/rest/v1/rpc/reserve_textbook_extraction`, {
       method: 'POST',
@@ -131,24 +112,58 @@ Deno.serve(async (req: Request) => {
       + 'Prefer short classroom examples. Omit items whose English is over 100 characters or whose Korean is over 160 characters. '
       + 'Page numbers are 1-based physical pages or image numbers, independent of printed numbering. '
       + 'Only include requested pages and report hard-to-read pages in unclearPages. Empty arrays are allowed.';
+    stage = 'prepare';
     const parts = pdf
       ? [await inlineFile(files[0]), { text: `Extract only physical PDF pages ${first} through ${last}. If the pages do not exist, return empty arrays.` }]
       : await Promise.all(files.map(async (file, index) => [{ text: `Image page ${index + 1}` }, await inlineFile(file)])).then(pages => pages.flat());
-    const model = Deno.env.get('TEXTBOOK_GEMINI_MODEL') || 'gemini-3.5-flash';
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-      method: 'POST',
-      headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: system }] },
-        contents: [{ role: 'user', parts }],
-        generationConfig: { responseMimeType: 'application/json', responseJsonSchema: responseSchema, maxOutputTokens: 10000 },
-      }),
-      signal: AbortSignal.timeout(65000),
+    const configuredModel = Deno.env.get('TEXTBOOK_GEMINI_MODEL');
+    const model = configuredModel || 'gemini-3.5-flash';
+    const format = 'Return a JSON object with arrays words, sentences and unclearPages. '
+      + 'Each words or sentences item has text, meaning, page (integer), and meaningSuggested (boolean). '
+      + 'unclearPages contains integers. Limit each list to 40 items.';
+    // The production Gemini endpoint accepts JSON mode without a response schema.
+    // The output is checked below before it is returned to the author's review screen.
+    const body = JSON.stringify({
+      contents: [{ role: 'user', parts: [{ text: system + ' ' + format }, ...parts] }],
+      generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 10000 },
     });
-    if (!response.ok) return json({ error: 'extractionFailed' }, 502);
+    stage = 'generate';
+    const signal = AbortSignal.timeout(65000);
+    const requestModel = (name: string) =>
+      fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(name)}:generateContent`, {
+        method: 'POST',
+        headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' },
+        body,
+        signal,
+      });
+    let response = await requestModel(model);
+    if (!configuredModel && [400, 404].includes(response.status)) {
+      response = await requestModel('gemini-2.5-flash-lite');
+    }
+    if (!response.ok) {
+      const failure = await response.json().catch(() => null);
+      const error = failure?.error;
+      const reason = error?.status;
+      const details = Array.isArray(error?.details) ? error.details : [];
+      const codes = details.flatMap((detail: { reason?: unknown }) =>
+        typeof detail?.reason === 'string' && /^[A-Z_]{1,64}$/.test(detail.reason) ? [detail.reason] : []);
+      const message = typeof error?.message === 'string' ? error.message : '';
+      const category = /api key|api_key/i.test(message) ? 'key'
+        : /schema/i.test(message) ? 'schema'
+        : /image|mime|inline.data/i.test(message) ? 'media'
+        : /country|region|billing/i.test(message) ? 'region-or-billing' : 'other';
+      console.warn('[extract-textbook] Gemini request failed', response.status,
+        typeof reason === 'string' && /^[A-Z_]{1,64}$/.test(reason) ? reason : '', codes.join(','), category);
+      return json({ error: 'extractionFailed' }, 502);
+    }
+    stage = 'parse';
     const { candidates } = await response.json();
     const answer = candidates?.[0];
-    if (answer?.finishReason !== 'STOP') return json({ error: 'extractionFailed' }, 502);
+    if (answer?.finishReason !== 'STOP') {
+      const reason = answer?.finishReason;
+      console.warn('[extract-textbook] Gemini did not complete', typeof reason === 'string' && /^[A-Z_]+$/.test(reason) ? reason : 'unknown');
+      return json({ error: 'extractionFailed' }, 502);
+    }
     const output = JSON.parse(answer.content.parts
       .filter((part: { thought?: boolean }) => !part.thought)
       .map((part: { text?: string }) => part.text ?? '').join(''));
@@ -159,7 +174,9 @@ Deno.serve(async (req: Request) => {
       sentences: normalizeItems(output.sentences, inRange),
       unclearPages: [...new Set<number>(output.unclearPages.filter(inRange))].sort((a, b) => a - b),
     });
-  } catch {
+  } catch (error) {
+    const name = error instanceof Error && /^[A-Za-z]+$/.test(error.name) ? error.name : 'Error';
+    console.warn('[extract-textbook] failed at', stage, name);
     return json({ error: 'extractionFailed' }, 502);
   }
 });
