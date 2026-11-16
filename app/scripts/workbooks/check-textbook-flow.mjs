@@ -61,6 +61,7 @@ const extraction = {
 };
 let uploadCount = 0;
 let failSave = true;
+const aiSaveAttempts = [];
 let browser;
 try {
   browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -83,9 +84,28 @@ try {
     if (request.method() === 'OPTIONS') return respond(null);
     if (pathname === '/word_lists') return respond(lists);
     if (pathname.endsWith('/extract-textbook')) {
+      if (request.headers()['content-type']?.startsWith('application/json')) {
+        assert.deepEqual(request.postDataJSON(), {
+          mode: 'generate', academy: 'academy', topic: 'At the zoo', grade: 4, wordCount: 3, sentenceCount: 1,
+        });
+        return respond({
+          words: [{ text: 'zebra', meaning: '얼룩말' }, { text: 'giraffe', meaning: '기린' }],
+          sentences: [{ text: 'I can see a zebra.', meaning: '얼룩말이 보여요.' }],
+        });
+      }
       const body = request.postData();
       assert.match(body, /name="files"; filename="pages.png"/);
       return respond(extraction);
+    }
+    if (pathname.endsWith('/rest/v1/word_lists') && request.method() === 'POST') {
+      const rows = request.postDataJSON();
+      aiSaveAttempts.push(rows);
+      assert.match(request.headers().prefer, /resolution=ignore-duplicates/);
+      if (aiSaveAttempts.length === 1) {
+        lists.push(...rows);
+        return respond({ message: 'response lost after commit' }, 503);
+      }
+      return route.fulfill({ status: 201, body: '', headers: { 'access-control-allow-origin': '*' } });
     }
     if (pathname.includes('/object/textbook-originals/')) { uploadCount++; return respond({ Key: pathname }); }
     if (pathname.endsWith('/textbook_books')) {
@@ -193,8 +213,41 @@ try {
   await updated;
   await page.getByRole('button', { name: '단원 활동지 업데이트' }).waitFor();
   assert.equal(sheets.length, 1);
+
+  await go('/wordlists?tab=textbooks');
+  await page.getByRole('button', { name: 'AI로 만들기', exact: true }).click();
+  const ai = page.getByRole('dialog', { name: 'AI로 만들기', exact: true });
+  await ai.getByLabel('주제', { exact: true }).fill('At the zoo');
+  await ai.getByLabel('학년', { exact: true }).selectOption('4');
+  await ai.getByLabel('단어 수', { exact: true }).fill('3');
+  await ai.getByLabel('문장 수', { exact: true }).fill('1');
+  await ai.getByRole('button', { name: '단어·문장 초안 만들기', exact: true }).click();
+  const aiWords = ai.getByRole('group', { name: '단어장 (3개 요청 · 2개 생성)' });
+  const aiSentences = ai.getByRole('group', { name: '문장 모음 (1개 요청 · 1개 생성)' });
+  await aiWords.waitFor();
+  await aiSentences.waitFor();
+  assert.equal(aiSaveAttempts.length, 0);
+  await ai.getByLabel('자료 이름', { exact: true }).fill('Zoo practice');
+  await aiWords.getByLabel('저장할 항목', { exact: true }).nth(1).uncheck();
+  await aiSentences.getByLabel('한국어 뜻', { exact: true }).fill('얼룩말 한 마리가 보여요.');
+  await ai.getByRole('button', { name: '확인한 자료 저장', exact: true }).click();
+  await ai.getByRole('alert').waitFor();
+  await ai.getByRole('button', { name: '다시 저장', exact: true }).click();
+  await ai.waitFor({ state: 'hidden' });
+  const generated = lists.filter(list => list.name === 'Zoo practice');
+  assert.equal(aiSaveAttempts.length, 2);
+  assert.deepEqual(aiSaveAttempts[1], aiSaveAttempts[0]);
+  assert.deepEqual(generated.map(row => [row.kind, row.items.map(item => [item.word, item.meaning])]), [
+    ['word', [['zebra', '얼룩말']]], ['sentence', [['I can see a zebra.', '얼룩말 한 마리가 보여요.']]],
+  ]);
+  assert.ok(generated.every(row => row.class_id === null && row.academy_id === 'academy' && row.created_by === 'teacher'));
+  await page.getByRole('button', { name: /Zoo practice.*문장/ }).waitFor();
+  await page.getByRole('button', { name: 'AI로 만들기', exact: true }).click();
+  assert.equal(await ai.getByLabel('주제', { exact: true }).inputValue(), '');
+  await ai.getByRole('button', { name: '취소', exact: true }).click();
+  await ai.waitFor({ state: 'hidden' });
   assert.deepEqual(errors, []);
-  console.log('PASS textbook catalog, legacy links, persistent empty book, unit import and worksheet reopen');
+  console.log('PASS textbook and worksheet regression, AI draft review and atomic retry');
 } finally {
   await browser?.close();
 }

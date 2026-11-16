@@ -30,6 +30,12 @@
 .textbook-check { display: flex; gap: .4rem; align-items: center; min-height: 2.75rem; }
 .textbook-chooser { width: min(36rem, calc(100vw - 2rem)); max-height: 80vh; margin: auto; overflow: auto; }
 .textbook-chooser::backdrop { background: #15233b66; }
+.classroom-dialog.ai-materials-dialog { width: min(46rem, calc(100vw - 2rem)); max-height: 85dvh; overflow-y: auto; }
+.ai-materials-dialog:not([open]) { display: none; }
+.ai-materials-dialog h3 { font-weight: 750; color: #192a44; }
+.ai-materials-form { display: grid; gap: 1rem; }
+.ai-materials-dialog .textbook-fields select { width: 100%; min-width: 0; border: 1px solid #aebcd0; border-radius: .5rem; padding: .6rem; background: #fff; color: #192a44; }
+.ai-materials-footer { position: sticky; bottom: -1px; display: grid; gap: .45rem; padding: .75rem 0 .35rem; background: #fff; border-top: 1px solid #d7e0eb; }
 @media (min-width: 801px) { .textbook-review .textbook-original { position: sticky; top: 1rem; } }
 @media (max-width: 800px) {
   .textbook-review { grid-template-columns: minmax(0, 1fr); }

@@ -5,14 +5,15 @@ import en from './locales/en';
 import ko from './locales/ko';
 import { lessonUxKo, lessonUxEn } from './lessonUxLocales';
 import { textbookKo, textbookEn } from './textbookLocales';
+import { aiMaterialsKo, aiMaterialsEn } from './aiMaterialsLocales';
 
 void i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
-      ko: { translation: { ...ko, lessonUx: lessonUxKo, textbook: textbookKo } },
-      en: { translation: { ...en, lessonUx: lessonUxEn, textbook: textbookEn } },
+      ko: { translation: { ...ko, lessonUx: lessonUxKo, textbook: textbookKo, aiMaterials: aiMaterialsKo } },
+      en: { translation: { ...en, lessonUx: lessonUxEn, textbook: textbookEn, aiMaterials: aiMaterialsEn } },
     },
     fallbackLng: 'ko',
     supportedLngs: ['ko', 'en'],
