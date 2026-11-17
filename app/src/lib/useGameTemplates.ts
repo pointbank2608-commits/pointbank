@@ -72,6 +72,7 @@ export function useGameTemplates(params: {
   const embed = useGameEmbed();
   const preview = embed?.preview;
   const workspace = useGameWorkspace();
+  const lessonSlot = workspace && !preview ? embed?.slideId : undefined;
   const embedRef = useRef(embed);
   embedRef.current = embed;
   /** "다른 게임으로 열기"·워크시트 다리·커리큘럼 발표에서 넘어온 템플릿 — 이게 있으면 이전 선택보다
@@ -115,8 +116,13 @@ export function useGameTemplates(params: {
   }, [isStaff, classes, studentClassId]);
 
   const [withoutClass, setWithoutClass] = useState(true);
-  const chooseClass = (id: string) => { setWithoutClass(!id); if (id) selectClass(id); };
-  const classId = preview ? null : embed ? (embed.classId ?? staffClassId)
+  const [lessonClass, setLessonClass] = useState<string | null | undefined>(undefined);
+  const chooseClass = (id: string) => {
+    if (lessonSlot) { setLessonClass(id || null); return; }
+    setWithoutClass(!id);
+    if (id) selectClass(id);
+  };
+  const classId = preview ? null : lessonSlot ? (lessonClass === undefined ? embed?.classId ?? null : lessonClass) : embed ? (embed.classId ?? staffClassId)
     : presenting && isStaff ? (location.state as OpenState | null)?.openClassId ?? lessonRunner.runner?.classId ?? null
     : workspace && isStaff && withoutClass ? null : isStaff ? staffClassId : studentClassId;
 
@@ -147,7 +153,7 @@ export function useGameTemplates(params: {
   const [wordListsLoading, setWordListsLoading] = useState(false);
   const listSequence = useRef(0);
 
-  const standalone = !!workspace && !embed && !presenting;
+  const standalone = !!workspace && (!embed || !!lessonSlot) && !presenting;
   const reloadWordLists = useCallback(async () => {
     const sequence = ++listSequence.current;
     setAllWordLists([]); setWordLists([]);
@@ -185,7 +191,10 @@ export function useGameTemplates(params: {
   const [newScope, setNewScope] = useState<'class' | 'academy'>('class');
 
   const temporary = isStaff && !!workspace && !embed && !presenting;
-  const temporaryId = session?.user.id && academy?.id ? draftId(session.user.id, academy.id, gameType) : '';
+  const temporaryId = session?.user.id && academy?.id ? draftId(session.user.id, academy.id, gameType, lessonSlot) : '';
+  const lessonDraft = useRef<string | null>(null);
+  const lessonSnapshot = useRef<{ id: string; content: string } | null>(null);
+  const lessonSaveLock = useRef(false);
   function makeDraft(source?: OpenState['quickSource']): GameTemplate {
     const kind = source?.kind || (listKind === 'sentence' ? 'sentence' : 'word');
     const cards = source?.cards || params.sampleCards?.() || sampleActivityCards(kind);
@@ -200,13 +209,19 @@ export function useGameTemplates(params: {
         ...((content || source) ? { classroomSource: { id: source?.id || 'temporary', name: source?.name || t('quick.sampleTitle'), kind, version: '', cards: structuredClone(cards) } } : {}) } };
   }
   function chooseDraft(draft: GameTemplate) {
+    if (lessonSlot) lessonDraft.current = draft.id;
     writeActivityDraft(draft);
     setTemplates(old => [draft, ...old.filter(row => !isActivityDraft(row.id))]);
     setSelectedId(draft.id);
   }
   function selectTemplate(id:string|null){
     const row=templates.find(row=>row.id===id);
-    if(temporary&&row&&!isActivityDraft(row.id))chooseDraft({...structuredClone(row),id:`${temporaryId}:${crypto.randomUUID()}`,config:{...structuredClone(row.config),editingTemplateId:row.id}});
+    if (lessonSlot && row && !isActivityDraft(row.id)) {
+      lessonSnapshot.current = null;
+      chooseDraft({...structuredClone(row),id:`${temporaryId}:${crypto.randomUUID()}`,config:{...structuredClone(row.config),editingTemplateId:row.id}});
+      embedRef.current?.onSelect(row.id);
+    }
+    else if(temporary&&row&&!isActivityDraft(row.id))chooseDraft({...structuredClone(row),id:`${temporaryId}:${crypto.randomUUID()}`,config:{...structuredClone(row.config),editingTemplateId:row.id}});
     else setSelectedId(id);
   }
   useEffect(() => {
@@ -267,6 +282,23 @@ export function useGameTemplates(params: {
         setSelectedId(pinned?.id ?? draft?.id ?? null);
         return;
       }
+      if (lessonSlot && temporaryId && embedRef.current) {
+        const editing = embedRef.current;
+        const linked = rows.find(row => row.id === linkedId);
+        const restored = lessonDraft.current ? readActivityDraft(lessonDraft.current) : null;
+        const initial = editing.initialContent;
+        const draft = restored ?? (linked && !editing.inheritedGrammar
+          ? {...structuredClone(linked),id:`${temporaryId}:${crypto.randomUUID()}`,config:{...structuredClone(linked.config),editingTemplateId:linked.id}}
+          : {...draftFactory.current(), ...(initial ? {
+            name: editing.title || linked?.name || t('quick.sampleTitle'), items: initial.items,
+            config: { ...gameDefaults.current?.(), ...linked?.config, ...initial.config },
+          } : {})});
+        lessonDraft.current = draft.id;
+        writeActivityDraft(draft, false);
+        setTemplates([draft, ...rows]);
+        setSelectedId(draft.id);
+        return;
+      }
       const draft = temporary && temporaryId ? (opened?{...structuredClone(opened),id:`${temporaryId}:${crypto.randomUUID()}`,config:{...structuredClone(opened.config),editingTemplateId:opened.id}}:hasNewSource ? draftFactory.current(source) : readActivityDraft(temporaryId) || draftFactory.current()) : null;
       consumedSource.current = location.key;
       if (draft) writeActivityDraft(draft);
@@ -294,7 +326,7 @@ export function useGameTemplates(params: {
     } finally {
       if (sequence === loadSequence.current) { setLoadedWorkspaceKey(workspaceKey); setLoading(false); }
     }
-  }, [preview, academy?.id, session?.user.id, classId, gameType, notify, temporary, temporaryId, location.key, presenting, lessonDraftId, workspaceKey, isStaff, t]);
+  }, [preview, academy?.id, session?.user.id, classId, gameType, notify, temporary, temporaryId, lessonSlot, location.key, presenting, lessonDraftId, workspaceKey, isStaff, t]);
 
   useEffect(() => {
     void load();
@@ -321,12 +353,12 @@ export function useGameTemplates(params: {
   const reportedRef = useRef<string | null | undefined>(embed?.templateId);
   const initialSelectionReported=useRef(false);
   useEffect(() => {
-    if (!embedRef.current || preview || loading) return;
+    if (!embedRef.current || lessonSlot || preview || loading) return;
     if(!initialSelectionReported.current){initialSelectionReported.current=true;reportedRef.current=selectedId;return;}
     if (selectedId === (reportedRef.current ?? null)) return;
     reportedRef.current = selectedId;
     embedRef.current.onSelect(selectedId);
-  }, [loading, preview, selectedId]);
+  }, [lessonSlot, loading, preview, selectedId]);
 
   const previewFactory = useRef({ defaultItems, defaultConfig });
   previewFactory.current = { defaultItems, defaultConfig };
@@ -343,8 +375,38 @@ export function useGameTemplates(params: {
   }, [gameType, preview]);
   const selected = previewTemplate ?? templates.find((t) => t.id === selectedId) ?? null;
 
+  async function saveLessonContent(content: {items: GameItem[]; config: GameTemplateConfig}, name?: string) {
+    const editing = embedRef.current;
+    if (!editing || !lessonSlot || !selected || !academy || !profile || lessonSaveLock.current) throw new Error(t('flow.actionFailed'));
+    const config = { ...structuredClone(content.config), lessonSnapshot: true };
+    delete config.editingTemplateId;
+    const items = structuredClone(content.items);
+    const fingerprint = JSON.stringify({items, config});
+    const previous = lessonSnapshot.current;
+    if (previous?.content === fingerprint) return selected;
+    const title = name || selected.name || editing.title || t('flow.defaultActivity');
+    lessonSaveLock.current = true;
+    try {
+      let savedId = previous?.id;
+      if (savedId) {
+        await updateGameTemplate(savedId, {items, config});
+      } else {
+        const saved = await createGameTemplate({academyId: academy.id, classId: editing.classId, gameType, name: title, items, config, teacherId: profile.id});
+        savedId = saved.id;
+      }
+      lessonSnapshot.current = { id: savedId, content: fingerprint };
+      const next = { ...selected, id: `${temporaryId}:${crypto.randomUUID()}`, name: title, items, config };
+      chooseDraft(next);
+      editing.onSelect(savedId);
+      return next;
+    } finally {
+      lessonSaveLock.current = false;
+    }
+  }
+
   /** Applying a new lesson game's configuration must also create its saved reference. */
   async function persistConfig(config: GameTemplateConfig, name?: string): Promise<GameTemplate | null> {
+    if (lessonSlot && selected) return saveLessonContent({items: selected.items, config}, name);
     if(temporary&&selected){
       const current=isActivityDraft(selected.id)?readActivityDraft(selected.id)||selected:selected;
       const next={...current,id:`${temporaryId}:${crypto.randomUUID()}`,config:{...config,...(isActivityDraft(selected.id)?{editingTemplateId:savedTargets.current.get(selected.id)||current.config.editingTemplateId}:{editingTemplateId:selected.id})}};
@@ -510,6 +572,14 @@ export function useGameTemplates(params: {
     const content = preparePlayableList(gameType, list);
     if (!content) throw new Error('incompatible_content');
     const kind = isSentenceList(list) ? 'sentence' : 'word';
+    if (lessonSlot) {
+      const next = await saveLessonContent({
+        items: content.items,
+        config: {...defaultConfig?.(), ...selected?.config, ...content.config,
+          classroomSource:{id:list.id,name:list.name,kind,version:list.updated_at,cards:wordListToCards(list)}},
+      }, list.name);
+      return next.id;
+    }
     if (temporary) {
       const draft = makeDraft({ cards: wordListToCards(list), kind, name: list.name, id: list.id });
       if (gameType === 'wordhoops') draft.config.hoopsMode = selected?.config.hoopsMode ?? draft.config.hoopsMode;
@@ -556,6 +626,10 @@ export function useGameTemplates(params: {
   async function configureTeams(count: number) {
     if (presenting && lessonRunner.runner?.view) throw new Error('stop_shared_view_first');
     if (!teamKey || !academy?.id || !profile) return;
+    if (lessonSlot && selected) {
+      await saveLessonContent({items: selected.items, config: {...selected.config, [teamKey]: count}});
+      return;
+    }
     if (temporary && selected && isActivityDraft(selected.id)) { chooseDraft({ ...selected, config: { ...selected.config, [teamKey]: count } }); return; }
     if (!classId) return;
     const config = { ...(selected?.config || defaultConfig?.() || {}), [teamKey]: count };
@@ -586,7 +660,7 @@ export function useGameTemplates(params: {
     }
   }
   async function beginMaterial(kind: 'word' | 'sentence') {
-    if (!temporary || !temporaryId) return;
+    if ((!temporary && !lessonSlot) || !temporaryId) return;
     const recovered = readComposition(temporaryId, kind);
     if (recovered) { chooseDraft(recovered); return; }
     const draft = makeDraft();
@@ -619,9 +693,10 @@ export function useGameTemplates(params: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (preview || !workspace || !isStaff) return;
-    workspace.publish({ settingsPending:!!params.hasPendingSettings?.(), gameType, classId, sharedView:!!lessonRunner.runner?.view, academyId: academy?.id || '', classes, roster, lists: allWordLists, templates, selected, loading: loading || loadedWorkspaceKey !== workspaceKey,
+    workspace.publish({ settingsPending:!!params.hasPendingSettings?.(), gameType, classId, sharedView:presenting && !!lessonRunner.runner?.view, academyId: academy?.id || '', classes, roster, lists: allWordLists, templates, selected, loading: loading || loadedWorkspaceKey !== workspaceKey,
       applyGuide: async (content) => {
-        if (!temporary || !selected || lessonRunner.runner?.view) throw new Error('guide_not_available');
+        if (lessonSlot) return (await saveLessonContent(content)).id;
+        if (!temporary || !selected) throw new Error('guide_not_available');
         const draft = isActivityDraft(selected.id) ? readActivityDraft(selected.id)||selected : {...makeDraft(),name:selected.name,class_id:selected.class_id};
         // Native editors synchronize their local question state on selection changes.
         // A fresh revision ID applies guided content without remounting the workspace.
@@ -630,12 +705,17 @@ export function useGameTemplates(params: {
         return next.id;
       },
       sampleGuide: async () => {
-        if (!temporary || lessonRunner.runner?.view) throw new Error('guide_not_available');
+        if (!temporary && !lessonSlot) throw new Error('guide_not_available');
         const draft=makeDraft();const content=guideSample(gameType,draft);chooseDraft({...draft,...content});
       },
       selectClass: chooseClass, selectTemplate, removeTemplate: removeTemplateNow, useList: useClassroomList, switchGame: switchClassroomGame, sourceCards: classroomSource?.cards || null,
       renameActivity: () => handleRename(), beginMaterial, saveMaterial, temporary, useSource: async (source) => { chooseDraft(makeDraft(source)); },
       saveTarget: selected?templates.find(row=>row.id===(savedTargets.current.get(selected.id)||selected.config.editingTemplateId||selected.id)&&!isActivityDraft(row.id))||null:null,
+      commitLessonSettings: lessonSlot && selected ? async () => {
+        await flushGameTemplateWrites(selected.id);
+        const current = readActivityDraft(selected.id) ?? selected;
+        await saveLessonContent(current);
+      } : undefined,
       saveSettings: async (name,copy=false) => {
         if (!selected) throw new Error('no_activity');
         if (params.hasPendingSettings?.()) throw new Error(t('settingsSave.pendingHint'));

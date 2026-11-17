@@ -685,7 +685,7 @@ export default function WordListsPage() {
     try {
       const entry = GAME_CATALOG.find((item) => item.type === game)!;
       if (classId) select(classId);
-      navigate(entry.path, { state: { openClassId: classId || undefined, quickSource: { ownerId: profile.id, academyId: academy.id, cards: wordListToCards(list), kind: list.kind || 'word', name: list.name, id: list.id } } });
+      navigate(entry.path, { state: { prepareInToolbar: true, openClassId: classId || undefined, quickSource: { ownerId: profile.id, academyId: academy.id, cards: wordListToCards(list), kind: list.kind || 'word', name: list.name, id: list.id } } });
     } catch {
       setLaunchError(true);
     } finally {

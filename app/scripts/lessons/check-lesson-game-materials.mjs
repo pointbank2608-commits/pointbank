@@ -65,8 +65,13 @@ try {
   await activity('matchup').getByText('내 자료로 진행 가능', { exact: true }).waitFor();
   await activity('wordtrain').getByText('문장 모음 필요', { exact: true }).waitFor();
   await activity('matchup').click();
+  const embeddedToolbar = editor.locator('[data-game-toolbar]');
+  await embeddedToolbar.getByRole('button', { name: '반 설정', exact: true }).waitFor();
+  await embeddedToolbar.getByRole('button', { name: '내 단어/문장', exact: true }).click();
   await editor.getByRole('button', { name: '수업 자료로 게임 만들기' }).click();
   await page.waitForFunction(() => window.__lessonQA.templates.some(row => row.config.classroomSource?.id === 'words-a'));
+  await embeddedToolbar.getByRole('button', { name: '저장/불러오기', exact: true }).click();
+  await editor.locator('[data-game-toolbar-panel="saves"]').getByRole('button', { name: '닫기', exact: true }).click();
   await save();
   const words = await saved('QA 단어 게임 수업');
   assert.equal(words.template.config.classroomSource.id, 'words-a');
@@ -148,8 +153,52 @@ try {
   await start('qa-unsupported', 'grammarverb');
   await page.getByText('이 게임은 수업의 문법 항목을 지원하지 않아요.', { exact: true }).waitFor();
   assert.equal(await page.locator('.gg-topic').count(), 0);
+
+  await page.goto(curriculum);
+  await begin('QA 상단 설정 수업', 'words-a');
+  await openPicker();
+  await activity('balloonpop').click();
+  const tabs = toolbar => toolbar.getByRole('group', { name: '설정', exact: true }).getByRole('button');
+  const mainTabs = ['내 단어/문장', '반 설정', '게임설정', '저장/불러오기'];
+  await embeddedToolbar.getByRole('button', { name: '게임설정', exact: true }).waitFor();
+  assert.deepEqual(await tabs(embeddedToolbar).allTextContents(), mainTabs);
+  await embeddedToolbar.getByRole('button', { name: '게임설정', exact: true }).click();
+  const controls = editor.locator('[data-game-toolbar-panel="settings"]');
+  await controls.getByRole('spinbutton', { name: '라운드당 문제 수' }).fill('3');
+  await controls.getByRole('button', { name: '적용', exact: true }).click();
+  await controls.waitFor({ state: 'hidden' });
+  await save();
+  const settingsLesson = await saved('QA 상단 설정 수업');
+  assert.equal(settingsLesson.template.config.adventure.count, 3);
+  assert.equal(settingsLesson.template.config.classroomSource.id, 'words-a');
+  await start(settingsLesson.lesson.id, 'balloonpop');
+  await page.locator('.ad-balloonpop').getByText('1 / 3', { exact: true }).waitFor();
+
+  for (const [source, game, path] of [
+    ['파닉스 A·B·C', '풍선 터뜨리기', '/games/balloonpop'],
+    ['QA 문장 목록', '문장 기차', '/games/wordtrain'],
+  ]) {
+    await page.goto(curriculum.replace('/curriculum', '/wordlists'));
+    const listRow = page.getByText(source, { exact: true }).locator('../..');
+    await listRow.getByRole('button', { name: '이 단어장으로 게임하기' }).click();
+    const launcher = page.getByRole('dialog', { name: '수업 게임 시작하기' });
+    assert.equal(await launcher.getByRole('combobox').count(), 0);
+    await launcher.getByRole('button', { name: new RegExp('^' + game) }).click();
+    await launcher.getByRole('button', { name: '이 게임 열기', exact: true }).click();
+    await page.waitForURL(url => url.pathname === path);
+    const gameToolbar = page.locator('[data-game-toolbar]');
+    await gameToolbar.getByRole('button', { name: '게임설정', exact: true }).waitFor();
+    assert.deepEqual(await tabs(gameToolbar).allTextContents(), mainTabs);
+    await page.getByRole('button', { name: '게임 시작', exact: true }).waitFor();
+    await gameToolbar.getByRole('button', { name: '내 단어/문장', exact: true }).click();
+    const materials = page.locator('[data-game-toolbar-panel="content"]');
+    await materials.getByText(new RegExp(source)).first().waitFor();
+    await materials.getByRole('button', { name: '닫기', exact: true }).click();
+    await page.getByRole('button', { name: '게임 시작', exact: true }).click();
+    await page.locator('[data-play-mode="play"]').waitFor();
+  }
   assert.deepEqual(errors, []);
-  console.log('Passed: material readiness, word and sentence snapshots, saved presentation, and grammar topic changes without fallback.');
+  console.log('Passed: common tabs in lessons and word/sentence collections; saved settings apply when presenting; grammar topic follows lesson.');
 } finally {
   await browser?.close();
   await server.close();

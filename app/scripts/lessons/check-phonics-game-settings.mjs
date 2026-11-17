@@ -56,10 +56,14 @@ try {
   await card.click();
   const detail = page.locator('[data-phonics-slide-detail]');
   await detail.locator('[data-phonics-unit-summary]').getByText('2단계 · Unit 6', { exact: true }).waitFor();
+  await detail.getByRole('button', { name: '수업 유닛', exact: true }).click();
   assert.equal(await detail.getByLabel('수업 유닛', { exact: true }).inputValue(), '');
+  await detail.getByRole('button', { name: '게임설정', exact: true }).click();
   await detail.getByLabel('문제 수', { exact: true }).selectOption('3');
   await detail.getByLabel('난이도', { exact: true }).selectOption('hard');
+  await detail.getByRole('button', { name: '반 설정', exact: true }).click();
   await detail.getByLabel('팀', { exact: true }).selectOption('3');
+  await detail.getByRole('button', { name: '닫기', exact: true }).click();
   await edit.getByRole('button', { name: '저장', exact: true }).click();
   await edit.waitFor({ state: 'hidden' });
   const saved = await page.evaluate(() => window.__lessonQA.lessons.find(row => row.name === 'QA 파닉스 게임 수업'));

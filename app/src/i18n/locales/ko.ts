@@ -6457,7 +6457,7 @@ const ko = {
       empty: '왼쪽에서 슬라이드를 추가해 보세요.',
       kindImage: '이미지',
       kindVideo: '영상',
-      gameEmbedHint: '아래는 게임 메뉴의 그 게임 화면이에요. 여기서 고르거나 만든 게임 내용이 수업 때 그대로 열려요.',
+      gameEmbedHint: '게임 위 탭에서 자료와 설정을 바꿀 수 있어요. 수업을 저장하면 발표할 때 반영돼요.',
       kindWordShow: "단어 소개",
       kindAttendance: "출석 체크",
       kindMaterial: "수업 자료",

@@ -18,6 +18,7 @@ export interface GameWorkspaceBridge {
   useSource: (source: { cards: FullCardItem[]; kind: 'word' | 'sentence'; name: string }) => Promise<void>;
   saveActivity: (name: string) => Promise<void>;
   saveSettings: (name?: string, copy?:boolean) => Promise<void>;
+  commitLessonSettings?: () => Promise<void>;
   saveTarget?: GameTemplate|null;
   settingsPending: boolean;
   sharedView: boolean;

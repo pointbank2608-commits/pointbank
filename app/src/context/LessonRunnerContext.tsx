@@ -6,7 +6,8 @@ import { PresentSyncContext, type PresentSyncApi, type SubState } from '../lib/p
 import { decorThemeFor, TOPIC_TITLES } from '../lib/topicWorksheets';
 import { ONBOARDING_PRESENTED_KEY } from '../components/OnboardingChecklist';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useGameEmbed } from './GameEmbedContext';
 import { GAME_CATALOG } from '../lib/gameCatalog';
 import { PHONICS_GAMES } from '../lib/phonicsGames';
 import { lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
@@ -62,6 +63,7 @@ interface RunnerState {
 interface RunnerValue {
   replaceGame: (type: GameType, templateId: string, state: Record<string, unknown>) => void;
   runner: RunnerState | null;
+  preparingCollectionGame: boolean;
   /** 수업 준비 화면의 "▶ 내 수업하기" 버튼이 호출한다 — PPT의 "슬라이드 쇼 시작"과 같다.
    * wordList 는 lesson.word_list_id 로 미리 찾아둔 실제 단어장(호출부가 이미 목록을 들고 있어
    * 여기서 새로 fetch 하지 않음 — fetch를 넣으면 비동기가 껴서 풀스크린 진입에 필요한 "클릭
@@ -106,6 +108,9 @@ const LessonRunnerContext = createContext<RunnerValue | null>(null);
 export function LessonRunnerProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const preparingCollectionGame = location.pathname.startsWith('/games/')
+    && (location.state as { prepareInToolbar?: boolean } | null)?.prepareInToolbar === true;
   const [runner, setRunner] = useState<RunnerState | null>(() => {
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY);
@@ -525,7 +530,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
 
   return (
     <LessonRunnerContext.Provider
-      value={{ runner, start, next, prev, goTo, replaceGame, exit, isFullscreen, toggleFullscreen, zoom, setZoom, startView, stopView }}
+      value={{ runner, preparingCollectionGame, start, next, prev, goTo, replaceGame, exit, isFullscreen, toggleFullscreen, zoom, setZoom, startView, stopView }}
     >
       <PresentSyncContext.Provider value={teacherSync}>
       {children}
@@ -541,12 +546,12 @@ export function useLessonRunner(): RunnerValue {
   return ctx;
 }
 
-/** "발표하기"를 누른 뒤 "수업 마치기" 전까지 true — 이 동안엔 어떤 화면에서도 편집 UI를 숨긴다
- * (EditOnly). 전체화면 여부와는 무관하다. Provider 밖(로그인 전 화면 등)에서는 항상 false. */
+/** Editable lesson slots and games opened from a collection have their own preparation even during an active lesson. */
 // eslint-disable-next-line react-refresh/only-export-components
 export function usePresenting(): boolean {
   const ctx = useContext(LessonRunnerContext);
-  return ctx?.runner != null;
+  const editingSlide = useGameEmbed()?.slideId;
+  return ctx?.runner != null && !ctx.preparingCollectionGame && !editingSlide;
 }
 
 /** Shared video controls can use the existing lesson fullscreen without requiring a lesson provider. */

@@ -48,15 +48,15 @@ try {
   await edit();
   await form.locator('[data-slide-id="first-board"]').click();
   await board.getByText('first-column', { exact: true }).first().waitFor();
-  await openOrder();
-  await dialog.getByRole('button', { name: '팀', exact: true }).click();
-  await apply();
-  await active.getByText(/1팀/).waitFor();
-  await openOrder();
-  await dialog.getByRole('button', { name: '개인', exact: true }).click();
-  await apply();
-  await active.filter({ hasText: '하늘' }).waitFor();
-  assert.equal(await strip.getByText('결석 학생').count(), 0);
+  const classSettings = board.locator('[data-game-toolbar-panel="class"]');
+  const editTurn = board.locator('[data-turn-bar]');
+  for (const [mode, expected] of [['팀', /[12]팀/], ['개인', '하늘']]) {
+    await board.getByRole('button', { name: '반 설정', exact: true }).click();
+    await classSettings.getByRole('button', { name: mode, exact: true }).click();
+    await classSettings.getByRole('button', { name: '적용', exact: true }).click();
+    await editTurn.getByText(expected).first().waitFor();
+  }
+  assert.equal(await editTurn.getByText('결석 학생').count(), 0);
 
   await form.getByRole('button', { name: /이 슬라이드부터 발표/ }).click();
   await page.waitForURL(/\/games\/connect4/);
@@ -81,6 +81,8 @@ try {
   await page.locator('[data-lesson-runner-bar]').getByRole('button', { name: '수업 끝내기', exact: true }).click();
   await page.waitForURL(/\/curriculum$/);
   await form.locator('[data-slide-id="detective"]').click();
+  await form.locator('[data-game-toolbar]').getByRole('button', { name: '내 단어/문장', exact: true }).click();
+  await form.locator('[data-game-toolbar-panel="content"]').getByRole('button', { name: '직접 입력 · 문제 편집', exact: true }).click();
   const sentences = form.locator('[data-detective-sentence-authoring]');
   await sentences.locator(':scope > summary').click();
   const authorInput = sentences.getByRole('textbox', { name: '올바른 영어 문장 (한 줄에 하나)' });

@@ -6461,7 +6461,7 @@ const en: Ko = {
       empty: 'Add a slide from the panel on the left.',
       kindImage: 'Image',
       kindVideo: 'Video',
-      gameEmbedHint: "Below is the game's own screen from the Games menu. The content you pick or make here opens as-is in class.",
+      gameEmbedHint: "Use the tabs above the game to change its materials and settings. Save the lesson to use them in class.",
       kindWordShow: "Word intro",
       kindAttendance: "Attendance",
       kindMaterial: "Printable",

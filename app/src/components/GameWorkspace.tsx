@@ -8,13 +8,14 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { GameWorkspaceContext, useGameWorkspace, type DetectiveListPicker, type GameWorkspaceBridge, type WorkspacePanel } from '../context/GameWorkspaceContext';
 import { useAuth } from '../context/AuthContext';
 import { usePresenting } from '../context/LessonRunnerContext';
+import { useGameEmbed } from '../context/GameEmbedContext';
 import { GAME_CATALOG, isFreeTierGame } from '../lib/gameCatalog';
 import { activityName as defaultActivityName } from '../lib/activityNames';
 import { demoForGame } from '../lib/gameDemos';
 import { GameMethodVideo } from './GameInfoPanel';
 import { gamePreparation, isNativeGameReady } from '../lib/gamePreparation';
 import { prepareClassroomGame, classroomGameRequirement, listsForGame } from '../lib/gameWorkspace';
-import { isActivityDraft, sampleActivityCards } from '../lib/quickActivity';
+import { isActivityDraft, ownedQuickSource, sampleActivityCards, type QuickActivitySource } from '../lib/quickActivity';
 import { pauseGameClock } from '../lib/gameClock';
 import { isShowOrderOn, loadTeamOrder, saveTeamOrder, TEAM_ORDER_EVENT, turnLabels } from '../lib/teamOrder';
 import { useFeature } from '../lib/features';
@@ -40,21 +41,24 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const {notify}=useToast();
   const { hasFullAccess, session, academy } = useAuth();
   const presenting = usePresenting();
+  const lessonEditor = !!useGameEmbed()?.slideId;
   const groupOpen = useFeature('group');
   const navigate = useNavigate();
   const location=useLocation();const editHandled=useRef('');
+  const launch = location.state as {prepareInToolbar?: boolean; quickSource?: QuickActivitySource} | null;
+  const toolbarLaunch = !!launch?.prepareInToolbar && !!ownedQuickSource(launch.quickSource, session?.user.id, academy?.id);
   const lessonGameIssue = presenting ? (location.state as { lessonGameIssue?: string } | null)?.lessonGameIssue : undefined;
   const [stage, setStage] = useState<HTMLDivElement | null>(null);
   const [teacherToolsTarget, setTeacherToolsTarget] = useState<HTMLDivElement | null>(null);
   const [info, setInfo] = useState<GameWorkspaceBridge | null>(null);
   const bridge = useRef<GameWorkspaceBridge | null>(null);
   const nativeCommit=useRef<(()=>Promise<boolean>)|null>(null),commitLock=useRef(false);
+  const [committing, setCommitting] = useState(false);
   const registerPreparation=useCallback((commit:()=>Promise<boolean>)=>{nativeCommit.current=commit;return()=>{if(nativeCommit.current===commit)nativeCommit.current=null;};},[]);
   const commitPreparation=useCallback(async()=>{
-    if(commitLock.current)return false;commitLock.current=true;setError('');
+    if(commitLock.current)return false;commitLock.current=true;setCommitting(true);setError('');
     try{
       (document.activeElement as HTMLElement|null)?.blur();
-      await new Promise<void>(resolve=>requestAnimationFrame(()=>resolve()));
       const commit=nativeCommit.current;
       if(commit&&!await commit())return false;
       // React can publish the applied selection after more than one animation frame.
@@ -68,7 +72,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
       if(commit)throw new Error(t('flow.actionFailed'));
       return false;
     }catch(error){setError(error instanceof Error?error.message:t('flow.actionFailed'));return false;}
-    finally{commitLock.current=false;}
+    finally{commitLock.current=false;setCommitting(false);}
   },[t]);
   const [panel, setPanelName] = useState<WorkspacePanel>(null);
   const [panelAnchor, setPanelAnchor] = useState<HTMLElement | null>(null);
@@ -134,7 +138,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const hasCustomContent=!!info?.selected&&(!isActivityDraft(info.selected.id)||!!info.selected.config.setupKind||!!source&&!['sample','temporary'].includes(source.id));
   const isSample = !presenting && !!info?.temporary && !!info.selected
     && !info.selected.config.editingTemplateId && !hasCustomContent;
-  const waitingForSampleStart = isSample && !playing;
+  const waitingForSampleStart = (isSample || lessonEditor || toolbarLaunch) && !playing;
   const sourceKind = source?.kind || (capabilities.kinds[0] || 'word');
   const reuseLabel = info?.selected?.config.setupKind==='names'||info?.selected?.config.setupKind==='numbers'?'teacherGame.moreContent':source || capabilities.kinds.length
     ? sourceKind === 'sentence' ? 'teacherGame.moreSentences' : 'teacherGame.moreWords'
@@ -142,7 +146,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const sourceReady = !!info?.selected?.config.pictureWordMode || !source || (!!info && !!prepareClassroomGame(info.gameType, source.cards, source.kind));
   const requirement = source && info && !sourceReady ? classroomGameRequirement(info.gameType, source.kind) : { key:'quick.needFormat', count:0 };
   const canStart = !!info && info.academyId===academy?.id && !info.loading && !info.settingsPending && hasBoard && !!info.selected && isNativeGameReady(info.selected) && !guideProblem(info.selected) && sourceReady;
-  const automaticEntry = !presenting && !!info?.temporary && isDirectGameEntry(location.state)
+  const automaticEntry = !presenting && !lessonEditor && !!info?.temporary && isDirectGameEntry(location.state)
     && GAME_CATALOG.some(game => game.type === info.gameType && game.path === location.pathname);
   const entryKey = `${academy?.id}:${location.pathname}:${location.key}`;
   const playScope = `${identity}:${entryKey}`;
@@ -188,7 +192,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   useEffect(() => { setSaveOriginal(false); setMaterialName(''); }, [info?.selected?.id]);
   useEffect(()=>{
     const entry=`${identity}:${location.key}`;
-    if(presenting||!info||info.loading||!info.temporary||!info.selected||!isActivityDraft(info.selected.id)||guideOpened.current===entry)return;
+    if(presenting||toolbarLaunch||!info||info.loading||!info.temporary||!info.selected||!isActivityDraft(info.selected.id)||guideOpened.current===entry)return;
     guideOpened.current=entry;
     const supplied=info.selected.config.classroomSource;
     const incoming=(location.state as {quickSource?:{ownerId?:string;academyId?:string;id?:string}}|null)?.quickSource;
@@ -197,7 +201,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
       &&isNativeGameReady(info.selected)&&!guideProblem(info.selected);
     const localContestSample = automaticEntry && info.gameType === 'quizshow' && isNativeGameReady(info.selected);
     setPanel(ready||isGrammar||localContestSample?null:info.gameType==='quizshow'?'settings':'guide');
-  },[info,identity,presenting,location.key,location.state,session?.user.id,academy?.id,isGrammar,automaticEntry]);
+  },[info,identity,presenting,toolbarLaunch,location.key,location.state,session?.user.id,academy?.id,isGrammar,automaticEntry]);
   useEffect(() => {
     try { setParticipantText(sessionStorage.getItem(participantKey) || ''); } catch { setParticipantText(''); }
     setOrdered(false);
@@ -225,13 +229,13 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     return () => window.removeEventListener(TEAM_ORDER_EVENT, update);
   }, []);
   useEffect(() => {
-    if (!playing || presenting) return;
+    if (!playing || presenting || lessonEditor) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden'; document.documentElement.dataset.gameFocus = 'true';
     const chrome = Array.from(document.querySelectorAll<HTMLElement>('[data-app-chrome]'));
     const previousInert = chrome.map(node => node.inert); chrome.forEach(node => { node.inert = true; });
     return () => { document.body.style.overflow = previousOverflow; delete document.documentElement.dataset.gameFocus; chrome.forEach((node,index) => { node.inert = previousInert[index]; }); };
-  }, [playing, presenting]);
+  }, [playing, presenting, lessonEditor]);
   const allRoster = useMemo(() => participantText.trim() ? participantText.split(/\r?\n/).map(name=>name.trim()).filter(Boolean).map((label,index)=>({id:`temporary:${scope}:${index}`,label})) : info?.roster.length ? info.roster : [t('flow.participant',{n:1}),t('flow.participant',{n:2})].map((label,index)=>({id:`temporary:${scope}:${index}`,label})), [info?.roster, participantText, scope, t]);
   const roster = useMemo(() => allRoster.filter(row => !absent.includes(row.id)), [allRoster, absent]);
   const order = useMemo(() => { void revision; return loadTeamOrder(roster, scope); }, [roster, scope, revision]);
@@ -258,16 +262,19 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   useEffect(()=>{if(sampleRequested && canStart && info?.selected?.id!==sampleFromId.current){setSampleRequested(false);completePreparation();}},[sampleRequested,canStart,info?.selected,completePreparation]);
   function exitPlay() {
     window.dispatchEvent(new Event('classbank:exit-game-fullscreen'));
+    if (lessonEditor) { setPanel(null); setPlaying(false); setRunning(false); return; }
     navigate('/games');
   }
   async function startFromEditor() {
     if(!await commitPreparation())return;
+    const commitLessonSettings = bridge.current?.commitLessonSettings;
+    if (commitLessonSettings && !await action(commitLessonSettings, false)) return;
     if (saveOriginal) {
       if (!await action(() => bridge.current!.saveMaterial(materialName.trim()), false)) return;
       setSaveOriginal(false);
     }
     completePreparation();
-    if (info && instantStart(info.gameType)) playAppliedTemplate(bridge.current?.selected?.id, info.gameType==='grammardetective');
+    if (info && instantStart(info.gameType) && !lessonEditor) playAppliedTemplate(bridge.current?.selected?.id, info.gameType==='grammardetective');
   }
   async function saveSettingsAndClose() {
     if (!bridge.current?.selected || !await commitPreparation()) return;
@@ -310,13 +317,13 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   // 새 도구줄을 쓰는 게임은 들어오면 바로 시작하므로 "게임 준비" 안내 창을 보이지 않는다(시작할 수 없을 때만 보여 준다).
   // 도구줄을 쓰는 게임의 설정 창은 안내 문구·이름 변경·저장 범위를 숨기고 꼭 필요한 입력만 보여 준다.
   const simpleSettings = !!info && instantStart(info.gameType);
-  const showPrepHeader = !playing && !presenting && !waitingForSampleStart && (info ? !instantStart(info.gameType) : false);
+  const showPrepHeader = !lessonEditor && !toolbarLaunch && !playing && !presenting && !waitingForSampleStart && (info ? !instantStart(info.gameType) : false);
   // 도구줄 "반 설정"에서 참여 방식(개인/팀)을 이미 정했으면 팀·순서 창도 그 방식으로만 정한다
   const participationFixed = teams && info && instantStart(info.gameType) && isShowOrderOn() && roster.length > 0
     ? (() => { const o = loadTeamOrder(roster, scope); return { mode: o.mode, teams: o.mode === 'team' ? o.teamCount : undefined }; })()
     : null;
   return <GameWorkspaceContext.Provider value={value}>
-    <section className={`game-workspace relative space-y-3 ${playing && !presenting ? 'game-workspace-focus' : ''}`} aria-label={t('flow.workspace')} data-play-mode={playing ? 'play' : 'prepare'}>
+    <section className={`game-workspace relative space-y-3 ${playing && !presenting && !lessonEditor ? 'game-workspace-focus' : ''}`} aria-label={t('flow.workspace')} data-play-mode={playing ? 'play' : 'prepare'}>
       {showPrepHeader && <header className="space-y-4 rounded-2xl border border-outline-variant bg-white p-4 sm:p-6" data-game-preparation>
         <Link to="/games" className={`${btn} inline-flex items-center`}>{t('gameAdmin.backToList')}</Link>
         <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-bold text-primary">{t('flow.preparation')}</p><h1 className="text-2xl font-black">{game ? t(game.nameKey) : t('nav.gameCenter')}</h1><p className="mt-1 text-on-surface-variant">{contentName}</p></div></div>
@@ -332,10 +339,11 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
         <p className="text-base text-deep-navy">{t('launchUx.menuHint')}</p>
       </header>}
       <div ref={setStage} className={`game-workspace-stage relative ${!running || panel || teams ? 'game-workspace-paused' : ''}`} style={presenting ? {height:'calc(100dvh - 100px)',minHeight:320}:undefined}>
+        {lessonEditor && info && !info.loading && !hasBoard && <GameWorkspaceFrameControls />}
         {lessonGameIssue && <p role="status" className="mx-auto max-w-xl rounded-2xl bg-white p-6 text-center font-bold">{lessonGameIssue}</p>}
       </div>
-      <dialog ref={dialog} className="classroom-dialog game-workspace-dialog" aria-label={t(panel === 'teacher' ? 'flow.menuTitle' : 'flow.teacherPreparation')} onCancel={event => {event.preventDefault(); if (!busy) setPanel(null);}}>
-        <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 bg-deep-navy p-4 text-white"><div><h2 className="text-xl font-bold">{t(panel === 'teacher' ? 'flow.menuTitle' : 'flow.teacherPreparation')}</h2><p className="text-sm">{t(capabilities.realtime ? 'flow.onlineContinues' : 'flow.localPaused')}</p></div><button className={btn} disabled={busy} onClick={() => setPanel(null)}>{t('common.close')}</button></header>
+      <dialog ref={dialog} className="classroom-dialog game-workspace-dialog" aria-label={t(panel === 'teacher' ? 'flow.menuTitle' : 'flow.teacherPreparation')} onCancel={event => {event.preventDefault(); if (!busy && !committing) setPanel(null);}}>
+        <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 bg-deep-navy p-4 text-white"><div><h2 className="text-xl font-bold">{t(panel === 'teacher' ? 'flow.menuTitle' : 'flow.teacherPreparation')}</h2><p className="text-sm">{t(capabilities.realtime ? 'flow.onlineContinues' : 'flow.localPaused')}</p></div><button className={btn} disabled={busy || committing} onClick={() => setPanel(null)}>{t('common.close')}</button></header>
         <div className="game-workspace-dialog-body min-h-0 flex-1 overflow-y-auto" inert={busy}>
         {error && <p role="alert" className="bg-error-container p-4 text-on-error-container">{error}</p>}
         {info?.sharedView && <p className="bg-amber-50 p-4">{t('flow.sharedView')}</p>}
@@ -377,7 +385,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
             {info?.temporary && !!source?.cards.length && !!capabilities.kinds.length && <><label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={saveOriginal} onChange={event=>setSaveOriginal(event.target.checked)} />{t(sourceKind==='sentence'?'flow.saveSentences':'flow.saveWords')}</label>{saveOriginal && <p className="text-sm text-on-surface-variant">{t('flow.defaultNameHint',{name:defaultMaterialName})}</p>}{saveOriginal && <label className="block">{t('flow.materialName')}<input placeholder={defaultMaterialName} className={`${btn} ml-2`} value={materialName} onChange={event=>setMaterialName(event.target.value)} /></label>}</>}
             {!simpleSettings && <p className="text-sm font-bold">{t('launchUx.scope')}: {(()=>{const row=info?.selected?.config.editingTemplateId?info.templates.find(r=>r.id===info.selected!.config.editingTemplateId):info?.selected;const id=row&&!isActivityDraft(row.id)?row.class_id:info?.classId;return id?info?.classes.find(c=>c.id===id)?.name||t('gameAdmin.scopeClass'):t('launchUx.academy');})()}</p>}
             {!simpleSettings && <p className="text-sm text-on-surface-variant">{t(info?.selected?.config.editingTemplateId?'launchUx.editingSaved':info?.selected&&isActivityDraft(info.selected.id)?'settingsSave.temporaryHint':'settingsSave.savedHint')}</p>}
-            <button className={`${btn} w-full bg-primary! text-white!`} disabled={busy || !!info?.loading} onClick={()=>void startFromEditor()}>{i18n.resolvedLanguage?.startsWith('en')?'Apply':'적용'}</button>
+            <button className={`${btn} w-full bg-primary! text-white!`} disabled={busy || committing || !!info?.loading} onClick={()=>void startFromEditor()}>{i18n.resolvedLanguage?.startsWith('en')?'Apply':'적용'}</button>
             {!canStart&&validation&&<p className="text-sm text-error">{validation}</p>}
             {error&&<p role="alert" className="text-error">{error}</p>}
           </div>
@@ -393,7 +401,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
 }
 export function GameWorkspaceFrameControls({ fullscreen=false, onExitFullscreen, onFullscreen, onRestart, presenting=false, participants=false }: {onRestart?:()=>void;fullscreen?:boolean;onExitFullscreen?:()=>void;onFullscreen?:()=>void;presenting?:boolean;participants?:boolean}) {
   const workspace=useGameWorkspace();const {t}=useTranslation();const [playersOpen,setPlayersOpen]=useState(false);if(!workspace)return null;
-  if(!presenting&&workspace.info&&instantStart(workspace.info.gameType))return <GameToolbar workspace={workspace} onRestart={onRestart} fullscreen={fullscreen} onFullscreen={onFullscreen} onExitFullscreen={onExitFullscreen} />;
+  if(!presenting&&workspace.info)return <GameToolbar workspace={workspace} onRestart={onRestart} fullscreen={fullscreen} onFullscreen={onFullscreen} onExitFullscreen={onExitFullscreen} />;
   const game = GAME_CATALOG.find(row => row.type === workspace.info?.gameType);
   return <div className="teacher-game-controls relative z-30 shrink-0 bg-white p-2" data-frame-controls data-play-controls>
     <p className="teacher-game-status font-bold text-deep-navy" role="status">{t(workspace.playing ? workspace.running ? 'teacherGame.playing' : 'teacherGame.paused' : 'teacherGame.ready')}</p>
@@ -413,9 +421,10 @@ export function GameWorkspaceFrameControls({ fullscreen=false, onExitFullscreen,
 export function GameWorkspaceValidation() {
   const workspace = useGameWorkspace();
   const { t } = useTranslation();
+  const presenting = usePresenting();
   if (!workspace?.validation || workspace.panel) return null;
   return <div className="relative z-20 flex flex-wrap items-center gap-3 p-3">
     <p className="text-error" role="status">{workspace.validation}</p>
-    {!workspace.info?.loading && <button className={btn} onClick={() => workspace.open('settings')}>{t('flow.nativeEditor')}</button>}
+    {presenting && !workspace.info?.loading && <button className={btn} onClick={() => workspace.open('settings')}>{t('flow.nativeEditor')}</button>}
   </div>;
 }

@@ -159,7 +159,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
   const presenting = usePresenting();
   const embed = useGameEmbed();
   const activityPreview = !!embed?.preview;
-  const lessonClassTurns = !!lessonTurnScope && (presenting || (!!embed && !activityPreview));
+  const lessonClassTurns = !!lessonTurnScope && (presenting || (!!embed && !embed.slideId && !activityPreview));
   const turnScope = lessonClassTurns ? lessonTurnScope : '';
   const roster = lessonClassTurns ? suppliedRoster : (workspace?.roster ?? suppliedRoster);
   const soundOn = useGameSoundOn();
@@ -167,7 +167,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
   // 오류를 띄우는 대신 앱 안에서 화면 전체를 덮는 "화면 가득" 모드로 대신한다(2026-09-27).
   const [pseudoFs, setPseudoFs] = useState(false);
   const fullOn = isFullscreen || pseudoFs;
-  const fill = fullOn || presenting || !!workspace?.playing;
+  const fill = fullOn || presenting || (!!workspace?.playing && !embed?.slideId);
   const responsiveScene = gameType === 'grammardetective' || gameType === 'balloonpop'
     || gameType === 'wordtrain' || gameType === 'wordfishing' || gameType === 'sentencerocket'
     || gameType === 'wordclaw'

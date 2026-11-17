@@ -21,6 +21,7 @@ import type { BombSound } from '../lib/bombSound';
 import { fetchStudentsOfClass } from '../lib/api';
 import TeamOrderPanel from './TeamOrderPanel';
 import { useAuth } from '../context/AuthContext';
+import { useGameEmbed } from '../context/GameEmbedContext';
 import { ABSENT_EVENT, loadAbsent, saveAbsent } from '../lib/absent';
 import { ROUND_DONE_EVENT, TEAM_ORDER_EVENT, isAutoTurnOn, isShowOrderOn, loadTeamOrder, saveTeamOrder, setAutoTurnOn, setShowOrderOn } from '../lib/teamOrder';
 import { GAME_CATALOG } from '../lib/gameCatalog';
@@ -126,6 +127,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const text = (ko: string, en: string) => (i18n.language.startsWith('en') ? en : ko);
   const { notify } = useToast();
   const info = workspace.info;
+  const lesson = useGameEmbed();
+  const lessonMaterials = lesson?.materialActions;
   const soundOn = useGameSoundOn();
   const [open, setOpen] = useState<Open>(null);
   const [panelAnchor, setPanelAnchor] = useState<HTMLElement | null>(null);
@@ -216,7 +219,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     : text('내 단어장', 'My word lists');
   const nativeTeams = info?.teamCount !== undefined;
   const sample = !info?.selected || isActivityDraft(info.selected.id);
-  const saved = (info?.templates ?? []).filter((row) => !isActivityDraft(row.id));
+  const saved = (info?.templates ?? []).filter((row) => !isActivityDraft(row.id) && !row.config.lessonSnapshot);
   const current = (info?.selected?.config.grammarId as string | undefined) ?? 'third-s';
   const fullRoster = info?.roster ?? [];
   const absentIds = useMemo(() => { void orderRev; return info?.classId ? loadAbsent(info.classId) : []; }, [info?.classId, orderRev]);
@@ -281,7 +284,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const hasNumbers = type === 'order';
   const nonEmpty = (v: string) => v.split(/\r?\n/).map((row) => row.trim()).filter(Boolean);
   const gameName = (() => { const g = GAME_CATALOG.find((row) => row.type === type); return g ? t(g.nameKey) : ''; })();
-  const hasContentButton = isGrammar || kinds.length > 0;
+  const hasContentButton = isGrammar || kinds.length > 0 || !!lessonMaterials;
 
   const options = useMemo(
     () => (isGrammar ? GRAMMAR_POINTS.filter((p) => grammarGameSupport(p.id)[type as GrammarGameType] >= MIN_ROUNDS[type as GrammarGameType]) : []),
@@ -350,11 +353,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const appliedFor = useRef('');
   useEffect(() => {
     const row = info?.selected;
-    if (!isGrammar || !row || isActivityDraft(row.id) || appliedFor.current === row.id) return;
+    if (!isGrammar || !row || (!lesson?.slideId && isActivityDraft(row.id)) || appliedFor.current === row.id) return;
     appliedFor.current = row.id;
     const p = row.config.grammarPlay;
     if (p) setGrammarPlay({ teams: p.teams, showScore: p.showScore });
-  }, [info?.selected, isGrammar]);
+  }, [info?.selected, isGrammar, lesson?.slideId]);
 
   // 반 설정에서 고른 반의 학생을 미리 불러와 보여 준다. 반을 실제로 바꾸는 것은 "적용"을 눌렀을 때뿐이다
   // (고르자마자 바꾸면 게임이 다시 준비되면서 이 패널이 닫혀 버렸다).
@@ -489,7 +492,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       }
     }
     if (classChanged) info.selectClass(pClass);
-    if (isGrammar) setGrammarPlay(pMode === 'none' ? { teams: 0, showScore: false } : pMode === 'solo' ? { teams: 0, showScore: true } : { teams: pTeams, showScore: true });
+    if (isGrammar) {
+      const play = pMode === 'none' ? { teams: 0, showScore: false } : pMode === 'solo' ? { teams: 0, showScore: true } : { teams: pTeams, showScore: true };
+      if (lesson?.slideId && info.selected) await info.applyGuide({items: info.selected.items, config: {...info.selected.config, grammarPlay: play}});
+      setGrammarPlay(play);
+    }
     if (nativeTeams && pMode === 'team' && pTeams !== info.teamCount) await info.configureTeams(pTeams);
   });
   const applySettings = () => run(async () => {
@@ -627,7 +634,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     if (!info?.selected || busy) return;
     setBusy(true);
     try {
-      if (isGrammar) {
+      if (isGrammar && !lesson?.slideId) {
         const play = getGrammarPlay();
         await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, grammarPlay: { teams: play.teams, showScore: play.showScore } } });
       }
@@ -720,6 +727,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           <p className="font-bold">{text(`출제 가능 ${detectiveQuestionCount}문제`, `${detectiveQuestionCount} available questions`)}</p>
           {detectiveQuestionCount === 0 && <p>{text('해당 문법에 출제 가능한 문제가 없습니다.', 'No questions can be made for the selected grammar topics.')}</p>}
         </div>}
+        {lessonMaterials}
         <button type="button" className={btn} disabled={!!info?.sharedView} onClick={() => {
           close();
           workspace.open('detective-authoring',panelAnchor??undefined);
@@ -762,10 +770,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           </div>
         ) : isGrammar ? (
           <label className="block font-bold">{text('문법 항목', 'Grammar point')}
-            <select className={field} value={pGrammar} onChange={(e) => setPGrammar(e.target.value)}>
+            <select className={field} value={pGrammar} disabled={lesson?.inheritedGrammar} onChange={(e) => setPGrammar(e.target.value)}>
               {pGrammar && !options.some(p => p.id === pGrammar) && <option value={pGrammar} disabled>{grammarPoint(pGrammar)?.name || pGrammar} · {text('이 게임에서 지원하지 않음', 'Unavailable in this game')}</option>}
               {options.map((p) => <option key={p.id} value={p.id}>{grammarLevelTag(p)} · {p.name}</option>)}
             </select>
+            {lesson?.inheritedGrammar && <small className="font-normal">{t('lessonUx.gameFollowsGrammar')}</small>}
           </label>
         ) : (
           <>
@@ -785,6 +794,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             </details>
           </>
         )}
+        {lessonMaterials}
         {panelAction(() => void applyContent())}
       </>)}
 

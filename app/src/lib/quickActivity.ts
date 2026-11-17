@@ -26,7 +26,8 @@ export function rememberSourceUse(user: string, academy: string, id: string) {
 }
 export const DRAFT_EVENT = 'classbank:activity-draft';
 export const isActivityDraft = (id: string) => id.startsWith('activity-draft:');
-export const draftId = (user: string, academy: string, game: GameType) => `activity-draft:${user}:${academy}:${game}`;
+export const draftId = (user: string, academy: string, game: GameType, instance?: string) =>
+  `activity-draft:${user}:${academy}:${game}${instance ? '@' + encodeURIComponent(instance) : ''}`;
 const storageKey = (id: string) => id.split(':').slice(0, 4).join(':');
 /** 사다리는 참가자 수만큼 결과 칸이 있어야 시작된다 — 예전에 3칸으로 저장된 임시 활동이 남아 있어도 맞춰서 바로 시작되게 한다. */
 function repairDraft(draft: GameTemplate): GameTemplate {
