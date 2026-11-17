@@ -15,8 +15,9 @@ export interface GameEmbed {
   initialContent?: GameContent | null;
   title?: string;
   inheritedGrammar?: boolean;
+  sourceListId?: string;
   materialActions?: ReactNode;
-  onSelect: (templateId: string | null) => void;
+  onSelect: (templateId: string | null, slideVersion?: { sourceListId?: string }) => void;
   preview?: { content: GameContent | null; title: string };
 }
 

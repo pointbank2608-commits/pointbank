@@ -2,7 +2,7 @@ import { createGameTemplate } from './api';
 import { buildGameContent, canBuildFromWords, lessonGameTemplateName, wordListToCards } from './gameFromWords';
 import { SENTENCE_LIST_GAMES, prepareWordListGame, type WordListGame } from './wordListLaunch';
 import { enrichCards, loadWordBank } from './wordBankCache';
-import type { FullCardItem, GameType, LessonSlide, WordList } from './types';
+import type { GameType, LessonSlide, WordList } from './types';
 
 /**
  * 내 수업 틀(2026-10-30): 수업의 "구조"(슬라이드 종류·순서·게임 종류·보조 블록·고정 슬라이드)만 저장해 두고,
@@ -42,9 +42,11 @@ export function styleFromLesson(name: string, lessonName: string, slides: Lesson
     delete copy.ownWordListId;
     if (copy.kind === 'game') {
       delete copy.templateId;
+      delete copy.useOwnGameContent;
       delete copy.autoWordListId;
-    } else if (copy.kind === 'wordshow' || copy.kind === 'study' || copy.kind === 'material') {
-      delete (copy as { words?: FullCardItem[] }).words;
+    } else if (copy.kind === 'wordshow' || copy.kind === 'study' || copy.kind === 'material' || copy.kind === 'grammar') {
+      delete copy.words;
+      if (copy.kind === 'wordshow' || copy.kind === 'study') delete copy.lessonSourceWords;
     }
     return copy;
   });

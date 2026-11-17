@@ -288,7 +288,11 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
       }
       await bridge.current!.saveSettings(activityName.trim() || undefined,saveCopy);
     });
-    if (ok) { setSettingsSaved(true);setSaveCopy(false);notify(`${t('launchUx.saved')} · ${t('launchUx.myGames')}`); }
+    if (ok) {
+      setSettingsSaved(true);
+      setSaveCopy(false);
+      notify(lessonEditor && !saveCopy ? t('curriculum.ownWords.slideOnly') : `${t('launchUx.saved')} · ${t('launchUx.myGames')}`);
+    }
   }
   const [guidePreset, setGuidePreset] = useState<GuideKind | null>(null);
   async function begin(kind: 'word' | 'sentence') {
@@ -352,7 +356,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
           <p>{t('teacherGame.menuHint')}</p>
           <button className={btn} onClick={editContent}>{t('launchUx.editContent')}</button>
           <button className={btn} onClick={() => setPanel('settings')}>{t('flow.nativeEditor')}</button>
-          {panel==='teacher'&&saveOptions}
+          {panel==='teacher'&&!lessonEditor&&saveOptions}
           <button className={btn} disabled={busy||!!info?.loading} onClick={()=>void saveSettingsAndClose()}>{t('launchUx.saveGame')}</button>
           {capabilities.manualTurns && <button className={btn} onClick={() => {setPanel(null);setTeams(true);}}>{t('flow.participation')}</button>}
           {!presenting && <Link className={`${btn} inline-flex`} to="/games">{t('teacherGame.leave')}</Link>}
@@ -384,7 +388,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
           <div hidden={(panel!=='settings'&&panel!=='detective-authoring')||info?.gameType==='quizshow'||!info?.selected||!!info?.sharedView} className="game-settings-footer z-20 shrink-0 space-y-3 border-t bg-white p-4 shadow-lg" data-preparation-submit>
             {info?.temporary && !!source?.cards.length && !!capabilities.kinds.length && <><label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={saveOriginal} onChange={event=>setSaveOriginal(event.target.checked)} />{t(sourceKind==='sentence'?'flow.saveSentences':'flow.saveWords')}</label>{saveOriginal && <p className="text-sm text-on-surface-variant">{t('flow.defaultNameHint',{name:defaultMaterialName})}</p>}{saveOriginal && <label className="block">{t('flow.materialName')}<input placeholder={defaultMaterialName} className={`${btn} ml-2`} value={materialName} onChange={event=>setMaterialName(event.target.value)} /></label>}</>}
             {!simpleSettings && <p className="text-sm font-bold">{t('launchUx.scope')}: {(()=>{const row=info?.selected?.config.editingTemplateId?info.templates.find(r=>r.id===info.selected!.config.editingTemplateId):info?.selected;const id=row&&!isActivityDraft(row.id)?row.class_id:info?.classId;return id?info?.classes.find(c=>c.id===id)?.name||t('gameAdmin.scopeClass'):t('launchUx.academy');})()}</p>}
-            {!simpleSettings && <p className="text-sm text-on-surface-variant">{t(info?.selected?.config.editingTemplateId?'launchUx.editingSaved':info?.selected&&isActivityDraft(info.selected.id)?'settingsSave.temporaryHint':'settingsSave.savedHint')}</p>}
+            {!simpleSettings && <p className="text-sm text-on-surface-variant">{t(lessonEditor?'curriculum.ownWords.localHint':info?.selected?.config.editingTemplateId?'launchUx.editingSaved':info?.selected&&isActivityDraft(info.selected.id)?'settingsSave.temporaryHint':'settingsSave.savedHint')}</p>}
             <button className={`${btn} w-full bg-primary! text-white!`} disabled={busy || committing || !!info?.loading} onClick={()=>void startFromEditor()}>{i18n.resolvedLanguage?.startsWith('en')?'Apply':'적용'}</button>
             {!canStart&&validation&&<p className="text-sm text-error">{validation}</p>}
             {error&&<p role="alert" className="text-error">{error}</p>}

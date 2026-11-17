@@ -811,6 +811,8 @@ export interface GameSlide {
   templateId?: string;
   /** 게임 내용을 자동으로 만들 때 쓴 수업 단어장(id) — 수업 단어장이 바뀌면 이 슬라이드의 게임 내용도 새로 만든다. */
   autoWordListId?: string;
+  /** Explicitly saved slide content takes precedence over automatically supplied lesson content. */
+  useOwnGameContent?: boolean;
   /** "이 블록만 다른 단어장"으로 만든 경우 그 단어장(id) — 있으면 수업 단어장이 바뀌어도 건드리지 않는다. */
   ownWordListId?: string;
 }
@@ -1005,6 +1007,8 @@ export interface StudySlide {
   shuffle?: boolean;
   /** 이 슬라이드만 쓰는 단어(2026-10-03) — 있으면 수업 단어장 대신 이것. 슬라이드를 복사해 서로 다른 단어로 쓰려고. */
   words?: FullCardItem[];
+  /** Material this slide already supplied to the lesson before slide-only edits. */
+  lessonSourceWords?: FullCardItem[];
 }
 
 /** "문법" 슬라이드 — 초등 영문법(lib/grammar.ts)의 한 항목을 칠판 화면(GrammarBoard)으로 띄운다. */
@@ -1014,6 +1018,7 @@ export interface GrammarSlide {
   grammarId: string;
   /** 수업 단어장 낱말로 만든 예문도 같이 보여줄지 */
   useWordList?: boolean;
+  words?: FullCardItem[];
   /** 단어장 예문 조합(다시 섞기) — 같은 값이면 미리보기와 발표가 같은 문장 */
   seed?: number;
   /** 칠판·화이트보드 배경(lib/boardThemes.ts). 없으면 녹색 칠판. */
@@ -1111,6 +1116,8 @@ export interface WordShowSlide {
   shuffle?: boolean;
   /** 이 슬라이드만 쓰는 단어(2026-10-03) — 있으면 수업 단어장 대신 이것. 슬라이드를 복사해 서로 다른 단어로 쓰려고. */
   words?: FullCardItem[];
+  /** Material this slide already supplied to the lesson before slide-only edits. */
+  lessonSourceWords?: FullCardItem[];
   /** 단어가 나올 때 한 번 읽어 주기(기본 켬) */
   autoSpeak?: boolean;
   boardTheme?: string | null;

@@ -10,7 +10,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useGameEmbed } from './GameEmbedContext';
 import { GAME_CATALOG } from '../lib/gameCatalog';
 import { PHONICS_GAMES } from '../lib/phonicsGames';
-import { lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
+import { lessonSlideWords, ownLessonSlideWords, wordListToCards } from '../lib/gameFromWords';
 import { effectiveSlides } from '../lib/lessonSlides';
 import { lessonGameRequirement, lessonGameSources, resolveLessonGame } from '../lib/lessonGameContent';
 import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
@@ -241,7 +241,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
             path: `/curriculum/${lesson.id}/slide/${slide.id}`,
             label: point?.name ?? t('curriculum.slides.kindGrammar'),
             icon: 'rule',
-            navState: slide.useWordList ? { materialsWords } : undefined,
+            navState: slide.useWordList ? { materialsWords: slide.words ?? materialsWords } : undefined,
           });
         } else if (slide.kind === 'study') {
           // 카드는 수업 단어장으로 — 슬라이드 화면이 navigation state 의 materialsWords 를 읽는다.
@@ -250,7 +250,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
             path: `/curriculum/${lesson.id}/slide/${slide.id}`,
             label: t('curriculum.slides.kindStudy'),
             icon: 'style',
-            navState: { materialsWords: slide.words?.length ? slide.words : materialsWords },
+            navState: { materialsWords: ownLessonSlideWords(slide) ?? materialsWords },
           });
         } else if (slide.kind === 'wordshow') {
           push({
@@ -258,7 +258,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
             path: `/curriculum/${lesson.id}/slide/${slide.id}`,
             label: t('curriculum.slides.kindWordShow'),
             icon: 'menu_book',
-            navState: { materialsWords: slide.words?.length ? slide.words : materialsWords },
+            navState: { materialsWords: ownLessonSlideWords(slide) ?? materialsWords },
           });
         } else if (slide.kind === 'attendance') {
           push({

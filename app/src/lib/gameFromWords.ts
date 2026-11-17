@@ -22,12 +22,16 @@ export function wordListToCards(wordList: WordList | null | undefined): FullCard
   }));
 }
 
-/** 수업 단어장을 안 골랐을 때 게임 재료로 쓰는 낱말 — 단어 소개·카드로 외우기 슬라이드가 자기 낱말을 갖고 있으면 그걸 모은다(같은 낱말은 한 번). */
+export function ownLessonSlideWords(slide: Extract<LessonSlide, { kind: 'wordshow' | 'study' }>): FullCardItem[] | undefined {
+  return slide.lessonSourceWords !== undefined || slide.words?.length ? slide.words : undefined;
+}
+
+/** Game material fallback for lessons created with vocabulary on the slides. */
 export function lessonSlideWords(slides: LessonSlide[]): FullCardItem[] {
   const seen = new Set<string>();
   const out: FullCardItem[] = [];
   for (const s of slides) {
-    const words=s.kind==='stem'?s.stemMeta.vocabulary:(s.kind==='wordshow'||s.kind==='study')?s.words:undefined;
+    const words=s.kind==='stem'?s.stemMeta.vocabulary:(s.kind==='wordshow'||s.kind==='study')?s.lessonSourceWords??s.words:undefined;
     if(!words?.length)continue;
     for (const w of words) {
       const key = `${w.word.toLowerCase()}::${w.meaning}`;

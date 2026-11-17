@@ -224,7 +224,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const fullRoster = info?.roster ?? [];
   const absentIds = useMemo(() => { void orderRev; return info?.classId ? loadAbsent(info.classId) : []; }, [info?.classId, orderRev]);
   const currentSource = info?.selected?.config.classroomSource;
-  const currentSourceId = currentSource && (info?.lists ?? []).some((row) => row.id === currentSource.id) ? currentSource.id : '';
+  const sourceListId = currentSource?.id ?? lesson?.sourceListId;
+  const currentSourceId = info?.lists.find(row => row.id === sourceListId)?.id ?? '';
   const detectiveSource = info?.selected?.config.adventure?.detectiveSource;
   const detectiveListId = detectiveSource && detectiveSource.kind !== 'default'
     && info?.lists.some(row => row.id === detectiveSource.listId) ? detectiveSource.listId : '';
@@ -412,7 +413,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     }
   }
 
-  const applyContent = () => run(async () => {
+  const applyContent = (reload = false) => run(async () => {
     if (!info) return;
     if (isBomb && info.selected) {
       let labels: string[] = [];
@@ -434,7 +435,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       }
       return;
     }
-    if (pList && pList !== currentSourceId) {
+    if (pList && (reload || pList !== currentSourceId)) {
       const list = info.lists.find((row) => row.id === pList);
       if (list) await workspace.applyListAndPlay(list);
     } else if (pSaved) info.selectTemplate(pSaved);
@@ -630,15 +631,16 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       setBusy(false);
     }
   }
-  async function save() {
+  async function save(copy = !lesson?.slideId) {
     if (!info?.selected || busy) return;
     setBusy(true);
     try {
+      if (lesson?.slideId && workspace.commitPreparation && !await workspace.commitPreparation()) return;
       if (isGrammar && !lesson?.slideId) {
         const play = getGrammarPlay();
         await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, grammarPlay: { teams: play.teams, showScore: play.showScore } } });
       }
-      await info.saveSettings(name.trim() || undefined, true);
+      await info.saveSettings(copy ? name.trim() || undefined : undefined, copy);
       setName('');
       setSavedMsg(text('저장했어요.', 'Saved.'));
       notify(text('저장했어요.', 'Saved.'));
@@ -714,7 +716,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
 
       {open === 'content' && isDetective && panel(<>
         <PanelHead title={text('내 단어/문장', 'My words / sentences')} onClose={close} text={text} />
-        <p className="text-sm text-on-surface-variant">{text('저장한 자료를 고르세요. 게임설정에서 출제할 문법을 정할 수 있어요.', 'Choose a saved list. You can choose the grammar rules in Game settings.')}</p>
+        <p className="text-sm text-on-surface-variant">{lesson?.slideId ? t('curriculum.ownWords.localHint') : text('저장한 자료를 고르세요. 게임설정에서 출제할 문법을 정할 수 있어요.', 'Choose a saved list. You can choose the grammar rules in Game settings.')}</p>
         <label className="block font-bold">{text('내 단어장 · 문장 모음', 'My word / sentence lists')}
           <select className={field} value={pList} onChange={event=>setPList(event.target.value)}>
             <option value="">{text('없음 · 수업뚝딱 기본 문장', 'None · 수업뚝딱 sample sentences')}</option>
@@ -732,10 +734,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           close();
           workspace.open('detective-authoring',panelAnchor??undefined);
         }}>{text('직접 입력 · 문제 편집','Enter text or edit questions')}</button>
-        {panelAction(()=>void applyDetectiveList(), detectiveQuestionCount === 0 ? text('출제 문법 확인', 'Review grammar topics') : text('선택','Select'), !!info?.loading || !!info?.sharedView)}
+        {panelAction(()=>void applyDetectiveList(), detectiveQuestionCount === 0 ? text('출제 문법 확인', 'Review grammar topics') : lesson?.slideId && pList && pList === detectiveListId ? t('curriculum.ownWords.reloadSource') : text('선택','Select'), !!info?.loading || !!info?.sharedView)}
       </>)}
       {open === 'content' && !isDetective && panel(<>
         <PanelHead title={isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words / sentences')} onClose={close} text={text} />
+        {lesson?.slideId && <p className="text-sm text-on-surface-variant">{t('curriculum.ownWords.localHint')}</p>}
         {!isGrammar && (
           <p className="rounded-xl bg-sky-50 p-3 text-sm font-bold">
             {currentSource
@@ -795,6 +798,9 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           </>
         )}
         {lessonMaterials}
+        {lesson?.slideId && !isGrammar && !isBomb && currentSourceId && pList === currentSourceId && <button type="button" className={btn} disabled={busy} onClick={() => void applyContent(true)}>
+          {t('curriculum.ownWords.reloadSource')}
+        </button>}
         {panelAction(() => void applyContent())}
       </>)}
 
@@ -1180,9 +1186,14 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         <PanelHead title={text('저장/불러오기', 'Save / Load')} onClose={close} text={text} />
         <div className="space-y-2">
           <p className="font-bold">{text('저장하기', 'Save')}</p>
-          <p className="text-xs text-on-surface-variant">{isGrammar ? text('지금 문법과 참여 방식이 함께 저장돼요.', 'The grammar point and play mode are saved together.') : text('지금 자료와 설정이 "내 게임"으로 저장돼요.', 'Your current content and settings are saved as "My games".')}</p>
-          <input className={field} value={name} onChange={(e) => setName(e.target.value)} placeholder={status || text('게임 이름', 'Game name')} aria-label={text('저장할 이름', 'Name')} />
-          <button className={primaryBtn} disabled={busy || !info?.selected} onClick={() => void save()}>{text('저장하기', 'Save')}</button>
+          <p className="text-xs text-on-surface-variant">{lesson?.slideId ? t('curriculum.ownWords.localHint') : isGrammar ? text('지금 문법과 참여 방식이 함께 저장돼요.', 'The grammar point and play mode are saved together.') : text('지금 자료와 설정이 "내 게임"으로 저장돼요.', 'Your current content and settings are saved as "My games".')}</p>
+          {!lesson?.slideId && <input className={field} value={name} onChange={(e) => setName(e.target.value)} placeholder={status || text('게임 이름', 'Game name')} aria-label={text('저장할 이름', 'Name')} />}
+          <button className={primaryBtn} disabled={busy || !info?.selected} onClick={() => void save()}>{lesson?.slideId ? text('이 슬라이드에 저장', 'Save to this slide') : text('저장하기', 'Save')}</button>
+          {lesson?.slideId && <details className="space-y-2">
+            <summary className="cursor-pointer text-sm">{text('내 게임에 사본 저장', 'Save a copy to My games')}</summary>
+            <input className={field} value={name} onChange={(e) => setName(e.target.value)} placeholder={status || text('게임 이름', 'Game name')} aria-label={text('저장할 이름', 'Name')} />
+            <button className={btn} disabled={busy || !info?.selected} onClick={() => void save(true)}>{text('사본 저장', 'Save a copy')}</button>
+          </details>}
           {savedMsg && <p role="status" className="text-sm font-bold text-green-700">{savedMsg}</p>}
         </div>
         <div className="space-y-2 border-t border-outline-variant pt-3">

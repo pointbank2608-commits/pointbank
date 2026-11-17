@@ -174,13 +174,138 @@ try {
   await start(settingsLesson.lesson.id, 'balloonpop');
   await page.locator('.ad-balloonpop').getByText('1 / 3', { exact: true }).waitFor();
 
+  const thumbs = editor.locator('[data-slide-id]');
+  const detail = editor.locator('[data-lesson-slide-detail]');
+  const editMaterials = () => detail.getByRole('button', { name: '이 슬라이드 자료 편집' }).click();
+  const reopen = id => page.locator(`#lesson-card-${id}`).getByRole('button', { name: '수정', exact: true }).click();
+  const advance = () => page.getByRole('button', { name: '다음 활동', exact: true }).click();
+  const duplicate = index => thumbs.nth(index).getByTitle('복제', { exact: true }).click();
+  const addStudy = async type => {
+    await editor.getByRole('button', { name: /활동 추가/ }).click();
+    await picker.getByRole('button', { name: '단어·문장 학습' }).click();
+    await activity(type).click();
+  };
+  async function setRounds(count) {
+    await embeddedToolbar.getByRole('button', { name: '게임설정', exact: true }).click();
+    await controls.getByRole('spinbutton', { name: '라운드당 문제 수' }).fill(String(count));
+    await controls.getByRole('button', { name: '적용', exact: true }).click();
+    await controls.waitFor({ state: 'hidden' });
+  }
+
+  await page.goto(curriculum);
+  const wordsTitle = 'QA 슬라이드별 단어와 풍선 게임';
+  await begin(wordsTitle, 'words-a');
+  await addStudy('wordShow');
+  await addStudy('study');
+  await thumbs.nth(0).click();
+  await editMaterials();
+  await detail.getByRole('button', { name: 'apple 편집', exact: true }).click();
+  await detail.getByRole('textbox', { name: '영어 단어·문장' }).fill('purple pear');
+  await detail.getByRole('textbox', { name: '뜻·해석' }).fill('보라색 배');
+  await detail.getByRole('button', { name: '항목 적용', exact: true }).click();
+  await detail.getByRole('checkbox', { name: /^ant/ }).uncheck();
+  await thumbs.nth(0).getByText('purple pear', { exact: true }).waitFor();
+  await thumbs.nth(1).getByText('apple', { exact: true }).waitFor();
+  await openPicker();
+  await activity('balloonpop').click();
+  await setRounds(3);
+  await duplicate(2);
+  await setRounds(2);
+  await save();
+
+  const wordsIsolation = await saved(wordsTitle);
+  const wordSlides = wordsIsolation.lesson.playlist.filter(slide => slide.kind !== 'report');
+  assert.equal(wordSlides[0].words.length, 8);
+  assert.equal(wordSlides[0].words[0].meaning, '보라색 배');
+  assert.equal(wordSlides[1].words, undefined);
+  assert.notEqual(wordSlides[2].templateId, wordSlides[3].templateId);
+  const originalWordList = await page.evaluate(() => window.__lessonQA.lists.find(row => row.id === 'words-a'));
+  assert.equal(originalWordList.items.length, 9);
+  assert.equal(originalWordList.items[0].word, 'apple');
+  await page.reload();
+  await reopen(wordsIsolation.lesson.id);
+  await thumbs.nth(0).getByText('purple pear', { exact: true }).waitFor();
+  await thumbs.nth(1).getByText('apple', { exact: true }).waitFor();
+  await page.goto(curriculum);
+  await page.locator(`#lesson-card-${wordsIsolation.lesson.id}`).getByRole('button', { name: '수업 시작', exact: true }).click();
+  await page.getByText('purple pear', { exact: true }).waitFor();
+  await page.keyboard.press('ArrowRight');
+  await page.getByText('보라색 배', { exact: true }).waitFor();
+  await advance();
+  await page.getByText('apple', { exact: true }).first().waitFor();
+  await advance();
+  await page.locator('.ad-balloonpop').getByText('1 / 3', { exact: true }).waitFor();
+  await advance();
+  await page.locator('.ad-balloonpop').getByText('1 / 2', { exact: true }).waitFor();
+
+  await page.goto(curriculum);
+  await page.waitForFunction(() => window.__lessonQA);
+  await page.evaluate(() => {
+    const store = window.__lessonQA;
+    const words = store.lists.find(row => row.id === 'words-a').items.map(item => ({ ...item, imageUrl: item.image_url }));
+    store.lessons.push({ ...store.lessons[0], id: 'qa-generated-vocabulary', name: 'QA 생성 수업', word_list_id: null,
+      playlist: [{ id: 'generated-vocabulary', kind: 'wordshow', words }] });
+    window.__saveLessonQA();
+  });
+  await page.reload();
+  await reopen('qa-generated-vocabulary');
+  await editMaterials();
+  await detail.getByRole('checkbox', { name: /^apple/ }).click();
+  await thumbs.nth(0).getByText('ant', { exact: true }).waitFor();
+  await openPicker();
+  await activity('balloonpop').click();
+  await save();
+  const generatedVocabulary = await saved('QA 생성 수업');
+  assert.equal(generatedVocabulary.lesson.playlist[0].words.some(card => card.word === 'apple'), false);
+  assert.match(JSON.stringify(generatedVocabulary.template.config.adventure), /"word":"apple"/);
+
+  await page.goto(curriculum);
+  const sentencesTitle = 'QA 슬라이드별 문장 기차';
+  await begin(sentencesTitle, 'sentences-a');
+  await openPicker();
+  await activity('wordtrain').click();
+  await save();
+  const originalSentences = await saved(sentencesTitle);
+  await reopen(originalSentences.lesson.id);
+  await duplicate(0);
+  await embeddedToolbar.getByRole('button', { name: '게임설정', exact: true }).click();
+  const sentenceInput = editor.getByRole('textbox', { name: '문장 입력', exact: true });
+  assert.match(await sentenceInput.inputValue(), /I brought the red bag\./);
+  await sentenceInput.fill('Zebras walk together.');
+  const gameSettings = page.locator('dialog.game-workspace-dialog[open]');
+  await gameSettings.locator('[data-preparation-submit]').getByRole('button', { name: '적용', exact: true }).click();
+  await gameSettings.waitFor({ state: 'hidden' });
+  await embeddedToolbar.getByRole('button', { name: '저장/불러오기', exact: true }).click();
+  const gameSaves = editor.locator('[data-game-toolbar-panel="saves"]');
+  await gameSaves.getByRole('button', { name: '이 슬라이드에 저장', exact: true }).click();
+  await gameSaves.getByText('저장했어요.', { exact: true }).waitFor();
+  await save();
+  const sentenceIsolation = await saved(sentencesTitle);
+  const trainSlides = sentenceIsolation.lesson.playlist.filter(slide => slide.kind === 'game');
+  assert.equal(trainSlides[0].templateId, originalSentences.slide.templateId);
+  assert.notEqual(trainSlides[1].templateId, trainSlides[0].templateId);
+  const unchangedSentences = await page.evaluate(() => window.__lessonQA.lists.find(row => row.id === 'sentences-a').items.map(row => row.word));
+  assert.deepEqual(unchangedSentences, ['I brought the red bag.', 'We see a blue bird.']);
+  await page.reload();
+  await reopen(sentenceIsolation.lesson.id);
+  await thumbs.nth(1).click();
+  await embeddedToolbar.getByRole('button', { name: '게임설정', exact: true }).click();
+  assert.equal(await sentenceInput.inputValue(), 'Zebras walk together.');
+  await page.goto(curriculum);
+  await start(sentenceIsolation.lesson.id, 'wordtrain');
+  await page.locator('.ad-assembly').getByText('brought', { exact: true }).waitFor();
+  await advance();
+  await page.locator('.ad-assembly').getByText('Zebras', { exact: true }).waitFor();
+  assert.equal(await page.locator('.ad-assembly').getByText('brought', { exact: true }).count(), 0);
+  console.log('Passed: slide-local vocabulary and separate original/duplicate game content survive save, reload and presentation.');
+
   for (const [source, game, path] of [
     ['파닉스 A·B·C', '풍선 터뜨리기', '/games/balloonpop'],
     ['QA 문장 목록', '문장 기차', '/games/wordtrain'],
   ]) {
     await page.goto(curriculum.replace('/curriculum', '/wordlists'));
     const listRow = page.getByText(source, { exact: true }).locator('../..');
-    await listRow.getByRole('button', { name: '이 단어장으로 게임하기' }).click();
+    await listRow.getByRole('button', { name: game === '문장 기차' ? '이 문장 모음으로 게임하기' : '이 단어장으로 게임하기', exact: true }).click();
     const launcher = page.getByRole('dialog', { name: '수업 게임 시작하기' });
     assert.equal(await launcher.getByRole('combobox').count(), 0);
     await launcher.getByRole('button', { name: new RegExp('^' + game) }).click();

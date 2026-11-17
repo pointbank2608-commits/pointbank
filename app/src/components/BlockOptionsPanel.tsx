@@ -80,10 +80,10 @@ export default function BlockOptionsPanel({
           gameType: slide.gameType,
           name: lessonGameTemplateName(lessonName || t('curriculum.slides.gameContentDefaultName'), list.name),
           items: content.items,
-          config: content.config,
+          config: { ...content.config, lessonSnapshot: true, classroomSource: { id: list.id, name: list.name, version: list.updated_at, kind: list.kind === 'sentence' ? 'sentence' : 'word', cards } },
           teacherId: profile.id,
         });
-        onUpdate({ templateId: tpl.id, ownWordListId: list.id });
+        onUpdate({ templateId: tpl.id, ownWordListId: list.id, autoWordListId: undefined, useOwnGameContent: true });
       } else {
         onUpdate({ words: wordListToCards(list), ownWordListId: list.id } as Partial<LessonSlide>);
       }
@@ -96,7 +96,7 @@ export default function BlockOptionsPanel({
   }
 
   function revert() {
-    if (isGame) onUpdate({ templateId: undefined, ownWordListId: undefined });
+    if (isGame) onUpdate({ templateId: undefined, ownWordListId: undefined, autoWordListId: undefined, useOwnGameContent: undefined });
     else onUpdate({ words: undefined, ownWordListId: undefined } as Partial<LessonSlide>);
   }
 

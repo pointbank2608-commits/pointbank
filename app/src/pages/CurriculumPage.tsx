@@ -1141,8 +1141,6 @@ export default function CurriculumPage() {
                 onChange={setPlaylist}
                 wordListId={wordListId}
                 wordLists={classWordLists}
-                onWordListChange={setWordListId}
-                onManageWordList={openWordListModal}
                 onSaveWordsAsList={(words, listName) => saveWordsAsList(words, listName, false)}
                 initialSelectedId={reopenSlideId}
                 onPresentFrom={(id) => void handlePresentFrom(id)}

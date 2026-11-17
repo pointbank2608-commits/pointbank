@@ -4,7 +4,7 @@ import { lazy, Suspense, useMemo } from 'react';
 import StemFrameView from './stem/StemFrameView';
 import { useTranslation } from 'react-i18next';
 import { lessonPhonicsTopic, phonicsSlideState } from '../lib/phonicsLessonGame';
-import { lessonSlideWords } from '../lib/gameFromWords';
+import { lessonSlideWords, ownLessonSlideWords } from '../lib/gameFromWords';
 import { buildWordListSentences, grammarPoint, useGrammarCards } from '../lib/grammar';
 import { usePhonicsFilled } from '../lib/phonicsFill';
 import { useClipPack, useClipTakenDown, withFreshQuestionTimes } from '../lib/videoClips';
@@ -58,8 +58,8 @@ export default function LessonSlideContent({
   phonicsObservation?: { lessonId: string; position: number };
 }) {
   const { t } = useTranslation();
-  // 단어 소개·카드로 외우기는 이 슬라이드만의 단어가 있으면 그것으로
-  if ((slide.kind === 'wordshow' || slide.kind === 'study') && slide.words?.length) words = slide.words;
+  if (slide.kind === 'wordshow' || slide.kind === 'study') words = ownLessonSlideWords(slide) ?? words;
+  if (slide.kind === 'grammar') words = slide.words ?? words;
   const grammarCards = useGrammarCards(words);
   const studyWords = usePhonicsFilled(words);
   const {clips:videoClips} = useVideoClips(slide.kind === 'video' && !!slide.clipId);

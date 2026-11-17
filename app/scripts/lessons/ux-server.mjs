@@ -40,7 +40,8 @@ Object.assign(funcs, {
     window.__saveLessonQA();
   },
 });
-${names.map(n=>`export const ${n}=async(...args)=>{window.__lessonQA.calls.push({name:'${n}',args:structuredClone(args)});return (funcs.${n}||(async()=>[]))(...args);};`).join('\n')}`;
+export const wordListKindOf = list => list.kind === 'sentence' ? 'sentence' : 'word';
+${names.filter(n=>n!=='wordListKindOf').map(n=>`export const ${n}=async(...args)=>{window.__lessonQA.calls.push({name:'${n}',args:structuredClone(args)});return (funcs.${n}||(async()=>[]))(...args);};`).join('\n')}`;
 const auth=`const value={academy:{id:'academy',name:'QA ClassBank',deleted_at:null,features:{homework:true,group:true},plan:'paid'},profile:{id:'teacher',role:'teacher',display_name:'QA 선생님'},session:{user:{id:'teacher'}},isStaff:true,isAdmin:false,isPaid:true,hasFullAccess:true,pointUnit:'별',trial:{active:false,daysLeft:7},signOut:async()=>{}};export const useAuth=()=>value;`;
 const videoFixtures = process.env.ANIMATION_PRINT_FIXTURE ? JSON.parse(readFileSync(process.env.ANIMATION_PRINT_FIXTURE,'utf8').replace(/^\uFEFF/,'')) : null;
 const db=`${setup}

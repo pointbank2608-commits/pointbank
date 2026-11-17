@@ -23,14 +23,14 @@ import {
   rectSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { createGameTemplate, fetchAllWordLists, fetchWordLists, uploadLessonSlideImage } from '../lib/api';
 import { GAME_CATALOG, GAME_MOMENTS } from '../lib/gameCatalog';
-import { buildGameContent, lessonGameTemplateName, lessonSlideWords, wordListToCards } from '../lib/gameFromWords';
+import { buildGameContent, lessonGameTemplateName, lessonSlideWords, ownLessonSlideWords, wordListToCards } from '../lib/gameFromWords';
 import { lessonGameRequirement, lessonGameSources, resolveLessonGame, type LessonGameMatch } from '../lib/lessonGameContent';
 import { guideProblem } from '../lib/gameGuide';
 import { gamePreparation } from '../lib/gamePreparation';
@@ -171,13 +171,10 @@ interface Props {
   onChange: (slides: LessonSlide[]) => void;
   wordListId: string;
   wordLists: WordList[];
-  onWordListChange: (id: string) => void;
   /** 처음 선택할 슬라이드 — 발표를 마치고 편집 화면으로 돌아올 때 마지막으로 보던 슬라이드. */
   initialSelectedId?: string | null;
   /** "이 슬라이드부터 발표" — 저장하고 그 슬라이드부터 수업을 시작한다(CurriculumPage). */
   onPresentFrom?: (slideId: string) => void;
-  /** 수업 화면 안에서 단어장 만들기·고치기 창 열기(CurriculumPage 의 LessonWordListModal). */
-  onManageWordList?: (mode: 'new' | 'edit') => void;
   /** 단어 슬라이드의 낱말을 "내 단어장"으로 저장하고 수업 단어장으로 지정한다(CurriculumPage). */
   onSaveWordsAsList?: (words: FullCardItem[], name: string) => Promise<boolean>;
 }
@@ -196,10 +193,8 @@ export default function LessonSlideSorter({
   onChange: emitChange,
   wordListId,
   wordLists,
-  onWordListChange,
   initialSelectedId,
   onPresentFrom,
-  onManageWordList,
   onSaveWordsAsList,
 }: Props) {
   const { t } = useTranslation();
@@ -330,7 +325,7 @@ export default function LessonSlideSorter({
     const last = lastKeyRef.current;
     const merge = !!coalesceKey && !!last && last.key === coalesceKey && now - last.at < (last.win ?? 1200);
     if (!merge) {
-      pastRef.current.push(slides);
+      pastRef.current.push(lastEmitRef.current);
       if (pastRef.current.length > 80) pastRef.current.shift();
     }
     futureRef.current = [];
@@ -424,11 +419,11 @@ export default function LessonSlideSorter({
     placeSlides([slide]);
   }
 
-  function updateSlide(id: string, patch: Partial<LessonSlide>) {
-    onChange(
-      slides.map((s) => (s.id === id ? ({ ...s, ...patch } as LessonSlide) : s)),
-      `update:${id}`,
-    );
+  function updateSlide(id: string, patch: Partial<LessonSlide>, gameType?: GameSlide['gameType']) {
+    const latest = lastEmitRef.current;
+    const current = latest.find(slide => slide.id === id);
+    if (!current || (gameType && (current.kind !== 'game' || current.gameType !== gameType))) return;
+    onChange(latest.map(slide => slide.id === id ? { ...slide, ...patch } as LessonSlide : slide), `update:${id}`);
   }
 
   function removeSlide(id: string) {
@@ -445,7 +440,7 @@ export default function LessonSlideSorter({
   function duplicateSlide(id: string) {
     const idx = slides.findIndex((s) => s.id === id);
     if (idx === -1) return;
-    const clone: LessonSlide = { ...slides[idx], id: uid() };
+    const clone: LessonSlide = { ...structuredClone(slides[idx]), id: uid() };
     const next = [...slides.slice(0, idx + 1), clone, ...slides.slice(idx + 1)];
     onChange(next);
     setSelectedId(clone.id);
@@ -524,7 +519,7 @@ export default function LessonSlideSorter({
   }
 
   return (
-    <WordListManageContext.Provider value={onManageWordList}>
+    <>
     {pickerOpen&&<LessonActivityPicker storageKey={recentKey} cards={cards} gameSources={gameSources} slides={slides} replaceTargetId={replaceTargetId} selected={selected} sourceName={wordList?.name ?? ''} entries={phonicsEntries} lessonName={lessonName} academyId={academyId} canAttachHelper={!!selectedId&&!replaceTargetId}
       onClose={()=>{setPickerOpen(false);if(addMode==='library')setAddMode(null);}}
       onStem={lesson=>{
@@ -715,9 +710,8 @@ export default function LessonSlideSorter({
               phonicsTopic={selected.kind === 'phonicsGame' ? lessonPhonicsTopic(slides, selected) : undefined}
               wordListId={wordListId}
               wordLists={wordLists}
-              onWordListChange={onWordListChange}
               onSaveWordsAsList={onSaveWordsAsList}
-              onUpdate={(patch) => updateSlide(selected.id, patch)}
+              onUpdate={(patch) => updateSlide(selected.id, patch, selected.kind === 'game' ? selected.gameType : undefined)}
               worksheetReplacementOpen={worksheetReplacementId === selected.id}
               onWorksheetReplacementChange={open => setWorksheetReplacementId(open ? selected.id : null)}
               onInsertAfter={(slide) => {
@@ -750,7 +744,7 @@ export default function LessonSlideSorter({
           ))}
       </div>
     </div>
-    </WordListManageContext.Provider>
+    </>
   );
 }
 
@@ -829,7 +823,7 @@ function SlideThumb({
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
   const { icon, label } = slideThumbLabel(slide, t);
   const videoId = slide.kind === 'video' || slide.kind === 'shadow' ? extractYoutubeId(slide.videoUrl ?? '') : null;
-  const word = slide.kind === 'wordshow' || slide.kind === 'study' ? (slide.words?.length ? slide.words[0] : cards[0]) : undefined;
+  const word = slide.kind === 'wordshow' || slide.kind === 'study' ? (ownLessonSlideWords(slide) ?? cards)[0] : undefined;
   const phonicsGame = slide.kind === 'phonicsGame' ? PHONICS_GAMES.find(game => game.id === slide.gameId) : undefined;
   const cover = slide.kind === 'material' ? MATERIALS_CATALOG.find(item => item.id === slide.materialId)?.cover : undefined;
   const reading = slide.kind === 'reading' ? parseReadingText(slide.source) : [];
@@ -957,7 +951,6 @@ function SlideDetail({
   phonicsTopic,
   wordListId,
   wordLists,
-  onWordListChange,
   onSaveWordsAsList,
   onUpdate,
   onInsertAfter,
@@ -977,7 +970,6 @@ function SlideDetail({
   phonicsTopic?: CourseUnit | null;
   wordListId: string;
   wordLists: WordList[];
-  onWordListChange: (id: string) => void;
   onSaveWordsAsList?: (words: FullCardItem[], name: string) => Promise<boolean>;
   onUpdate: (patch: Partial<LessonSlide>) => void;
   /** 이 슬라이드 바로 뒤에 새 슬라이드를 넣는다(문법 → 문장 배열하기 게임). */
@@ -1073,9 +1065,8 @@ function SlideDetail({
         academyId={academyId}
         classId={classId}
         cards={cards}
-        wordListId={wordListId}
+        wordList={wordList}
         wordLists={wordLists}
-        onWordListChange={onWordListChange}
         onUpdate={(patch) => onUpdate(patch as Partial<LessonSlide>)}
         onInsertAfter={onInsertAfter}
       />
@@ -1083,13 +1074,16 @@ function SlideDetail({
   }
 
   if (slide.kind === 'wordshow') {
+    const ownWords = ownLessonSlideWords(slide);
+    const words = ownWords ?? cards;
     return (
       <div className="space-y-3">
         <div className="aspect-video w-full max-w-3xl">
-          <WordShowBoard key={(slide.words ?? cards).map((w) => w.id).join(',')} words={slide.words?.length ? slide.words : cards} themeId={slide.boardTheme ?? 'green'} interactive={false} />
+          <WordShowBoard key={words.map((w) => w.id).join(',')} words={words} themeId={slide.boardTheme ?? 'green'} interactive={false} />
         </div>
-        <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.wordShow.detailHint', { count: (slide.words?.length ? slide.words : cards).length })}</p>
-        <SlideOwnWords cards={cards} wordLists={wordLists} value={slide.words} onChange={(words) => onUpdate({ words } as Partial<LessonSlide>)} />
+        <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.wordShow.detailHint', { count: words.length })}</p>
+        <SlideOwnWords cards={cards} wordList={wordList} wordLists={wordLists} value={ownWords} sourceId={slide.ownWordListId} savedSourceCards={slide.lessonSourceWords ?? ownWords}
+          onChange={(words, ownWordListId) => onUpdate({ words, ownWordListId, lessonSourceWords: slide.lessonSourceWords ?? ownWords ?? [] })} />
         {slide.words?.length && onSaveWordsAsList ? (
           <SaveWordsAsList
             words={slide.words}
@@ -1113,8 +1107,6 @@ function SlideDetail({
             {t('curriculum.wordShow.autoSpeak')}
           </label>
         </div>
-        <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />
-        {cards.length === 0 && <p className="font-caption text-caption text-error">{t('curriculum.study.needWordList')}</p>}
       </div>
     );
   }
@@ -1132,11 +1124,14 @@ function SlideDetail({
   }
 
   if (slide.kind === 'study') {
+    const ownWords = ownLessonSlideWords(slide);
+    const words = ownWords ?? cards;
     return (
       <div className="space-y-3">
-        <StudySlidePreview cards={slide.words?.length ? slide.words : cards} />
-        <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.study.detailHint', { count: (slide.words?.length ? slide.words : cards).length })}</p>
-        <SlideOwnWords cards={cards} wordLists={wordLists} value={slide.words} onChange={(words) => onUpdate({ words } as Partial<LessonSlide>)} />
+        <StudySlidePreview cards={words} />
+        <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.study.detailHint', { count: words.length })}</p>
+        <SlideOwnWords cards={cards} wordList={wordList} wordLists={wordLists} value={ownWords} sourceId={slide.ownWordListId} savedSourceCards={slide.lessonSourceWords ?? ownWords}
+          onChange={(words, ownWordListId) => onUpdate({ words, ownWordListId, lessonSourceWords: slide.lessonSourceWords ?? ownWords ?? [] })} />
         <label className="flex items-center gap-2 font-label-md text-label-md text-on-surface">
           <input
             type="checkbox"
@@ -1146,8 +1141,6 @@ function SlideDetail({
           />
           {t('curriculum.study.shuffle')}
         </label>
-        <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />
-        {cards.length === 0 && <p className="font-caption text-caption text-error">{t('curriculum.study.needWordList')}</p>}
       </div>
     );
   }
@@ -1239,7 +1232,7 @@ function SlideDetail({
   if (slide.kind === 'game') {
     return (
       <GameSlideEditor
-        key={`${slide.id}:${slide.ownWordListId ?? ''}`}
+        key={slide.id}
         slide={slide}
         academyId={academyId}
         classId={classId}
@@ -1249,7 +1242,6 @@ function SlideDetail({
         match={gameMatch}
         wordListId={wordListId}
         wordLists={wordLists}
-        onWordListChange={onWordListChange}
         onUpdate={(patch) => onUpdate(patch as Partial<LessonSlide>)}
       />
     );
@@ -1494,7 +1486,6 @@ function GameSlideEditor({
   match,
   wordListId,
   wordLists,
-  onWordListChange,
   onUpdate,
 }: {
   slide: GameSlide;
@@ -1506,7 +1497,6 @@ function GameSlideEditor({
   match?: LessonGameMatch;
   wordListId: string;
   wordLists: WordList[];
-  onWordListChange: (id: string) => void;
   onUpdate: (patch: Partial<LessonSlide>) => void;
 }) {
   const { t } = useTranslation();
@@ -1528,6 +1518,7 @@ function GameSlideEditor({
   const cards = useWordBankEnriched(rawCards);
 
   const sentenceSource = !!wordList && isSentenceList(wordList);
+  const ownList = wordLists.find(list => list.id === slide.ownWordListId);
   const content = match?.content;
   const tiedGrammar = match?.kind === 'grammar' && (match.hasGrammarSlide || !slide.templateId);
   const requirement = lessonGameRequirement(slide.gameType, match);
@@ -1547,7 +1538,7 @@ function GameSlideEditor({
         config: { ...content.config, lessonSnapshot: true },
         teacherId: profile.id,
       });
-      onUpdate({ templateId: tpl.id, autoWordListId: wordListId, ownWordListId: undefined });
+      onUpdate({ templateId: tpl.id, autoWordListId: wordListId, ownWordListId: undefined, useOwnGameContent: undefined });
       notify(t(reason === 'changed' ? 'curriculum.slides.gameContentRemade' : 'curriculum.slides.gameContentCreated'));
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
@@ -1601,7 +1592,7 @@ function GameSlideEditor({
         config: {...content.config, lessonSnapshot: true, classroomSource: {id:list?.id ?? slide.id,name:list?.name ?? '',version:list?.updated_at ?? '',kind,cards}},
         teacherId: profile.id,
       });
-      onUpdate({ templateId: tpl.id, ownWordListId: list?.id, autoWordListId: !list && kind === 'word' ? wordListId : undefined });
+      onUpdate({ templateId: tpl.id, ownWordListId: list?.id, autoWordListId: undefined, useOwnGameContent: true });
       setSentenceEditorOpen(false);
       notify(t('curriculum.slides.gameContentCreated'));
     } catch (err) {
@@ -1669,12 +1660,13 @@ function GameSlideEditor({
     initialContent: content,
     title: lessonName,
     inheritedGrammar: !!match?.hasGrammarSlide,
+    sourceListId: slide.ownWordListId ?? slide.autoWordListId,
     materialActions: match?.kind !== 'grammar' && (gamePreparation(slide.gameType).kinds.length > 0 || (content && match?.kind !== 'builtin')) ? materialActions : undefined,
-    onSelect: (id: string | null) => {
+    onSelect: (id: string | null, slideVersion?: { sourceListId?: string }) => {
       if (id === (slide.templateId ?? null)) return;
       // The game already loaded this selection. Keep its current round when attaching it to the lesson.
       setGameMount(current => ({ ...current, templateId: id ?? undefined }));
-      onUpdate({ templateId: id ?? undefined, autoWordListId: undefined });
+      onUpdate({ templateId: id ?? undefined, autoWordListId: undefined, useOwnGameContent: slideVersion ? true : undefined, ownWordListId: slideVersion ? slideVersion.sourceListId ?? slide.ownWordListId ?? slide.autoWordListId : undefined });
     },
   };
 
@@ -1692,9 +1684,6 @@ function GameSlideEditor({
           {t('curriculum.slides.changeGame')}
           <span className="material-symbols-outlined text-[18px]">{pickerOpen ? 'expand_less' : 'expand_more'}</span>
         </button>
-        <div className="ml-auto flex flex-wrap items-center gap-2">
-          <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />
-        </div>
         {pickerOpen && (
           <div className="w-full space-y-2 border-t border-outline-variant/40 pt-3">
             {GAME_MOMENTS.map((cat) => (
@@ -1706,7 +1695,7 @@ function GameSlideEditor({
                     type="button"
                     onClick={() => {
                       // 게임 종류가 바뀌면 이전 게임의 내용(템플릿)은 맞지 않으니 비운다.
-                      if (slide.gameType !== g.type) onUpdate({ gameType: g.type, templateId: undefined, autoWordListId: undefined, ownWordListId: undefined });
+                      if (slide.gameType !== g.type) onUpdate({ gameType: g.type, templateId: undefined, autoWordListId: undefined, ownWordListId: undefined, useOwnGameContent: undefined });
                       setPickerOpen(false);
                     }}
                     className={`flex items-center gap-1 rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${
@@ -1728,6 +1717,15 @@ function GameSlideEditor({
         <span className="material-symbols-outlined text-[16px] text-primary">info</span>
         {t('curriculum.slides.gameEmbedHint')}
       </p>
+      {slide.useOwnGameContent && <div className="flex flex-wrap items-center gap-2 px-1 text-sm">
+        <span className="font-semibold">{ownList && <>{ownList.name} · </>}{t('curriculum.ownWords.slideOnly')}</span>
+        {content && match?.kind !== 'builtin' && <button type="button" className="rounded-lg border px-3 py-2" onClick={() => onUpdate({ templateId: undefined, autoWordListId: undefined, ownWordListId: undefined, useOwnGameContent: undefined })}>
+          {t('curriculum.ownWords.backToLesson')}
+        </button>}
+      </div>}
+      {!slide.useOwnGameContent && (slide.autoWordListId || (!slide.templateId && match?.kind !== 'builtin' && content)) && wordList && (
+        <p className="px-1 text-sm font-semibold">{wordList.name} · {t('curriculum.ownWords.lessonSource')}</p>
+      )}
       {(tiedGrammar || !slide.templateId) && <p role="status" className="px-1 text-sm">
         {content ? t(match?.kind === 'grammar' ? 'lessonUx.gameFollowsGrammar' : match?.kind === 'builtin' ? 'lessonUx.gameBuiltinReady' : 'lessonUx.gameReady')
           : t(requirement.key, { count: requirement.count })}
@@ -2203,9 +2201,8 @@ function GrammarSlideDetail({
   academyId,
   classId,
   cards: rawCards,
-  wordListId,
+  wordList,
   wordLists,
-  onWordListChange,
   onUpdate,
   onInsertAfter,
 }: {
@@ -2213,9 +2210,8 @@ function GrammarSlideDetail({
   academyId: string;
   classId: string | null;
   cards: FullCardItem[];
-  wordListId: string;
+  wordList: WordList | null;
   wordLists: WordList[];
-  onWordListChange: (id: string) => void;
   onUpdate: (patch: Partial<Extract<LessonSlide, { kind: 'grammar' }>>) => void;
   onInsertAfter: (slide: LessonSlide) => void;
 }) {
@@ -2223,7 +2219,7 @@ function GrammarSlideDetail({
   const { profile } = useAuth();
   const { notify } = useToast();
   const [creating, setCreating] = useState(false);
-  const cards = useGrammarCards(rawCards);
+  const cards = useGrammarCards(slide.words ?? rawCards);
   const point = grammarPoint(slide.grammarId) ?? GRAMMAR_POINTS[0];
   const generated = useMemo(
     () => (slide.useWordList ? buildWordListSentences(point, cards, 6, slide.seed ?? 0) : []),
@@ -2347,9 +2343,10 @@ function GrammarSlideDetail({
               </p>
             )}
             <p className="font-caption text-caption text-on-surface-variant">{t('grammar.wordListHint')}</p>
+            {slide.useWordList && <SlideOwnWords cards={rawCards} wordList={wordList} wordLists={wordLists} value={slide.words} sourceId={slide.ownWordListId}
+              onChange={(words, ownWordListId) => onUpdate({ words, ownWordListId })} />}
           </>
         )}
-        <WordListSelect wordListId={wordListId} wordLists={wordLists} onWordListChange={onWordListChange} />
       </div>
       <div className="space-y-1.5 rounded-xl border border-outline-variant/50 bg-surface-container-low p-3">
         <div className="font-label-md text-label-md text-on-surface">{t('grammar.boardTitle')}</div>
@@ -2378,10 +2375,6 @@ function StudySlidePreview({ cards }: { cards: FullCardItem[] }) {
   );
 }
 
-/**
- * 단어 소개·카드로 외우기 슬라이드의 "이 슬라이드 단어"(2026-10-03 제보: 복사한 슬라이드가 같이 바뀐다).
- * 기본은 수업 단어장 전체. "이 슬라이드만 고르기"를 켜면 수업 단어장(또는 다른 단어장)에서 골라 이 슬라이드에만 저장한다.
- */
 /** 슬라이드가 자기 낱말만 갖고 있을 때(영상 수업 등) "내 단어장"으로 저장 — 게임 슬라이드가 같은 낱말을 쓰게 된다 */
 function SaveWordsAsList({ words, name, onSave }: { words: FullCardItem[]; name: string; onSave: (words: FullCardItem[], name: string) => Promise<boolean> }) {
   const { t } = useTranslation();
@@ -2410,161 +2403,113 @@ function SaveWordsAsList({ words, name, onSave }: { words: FullCardItem[]; name:
 
 function SlideOwnWords({
   cards,
+  wordList,
   wordLists,
   value,
+  sourceId,
+  savedSourceCards,
   onChange,
 }: {
   cards: FullCardItem[];
+  wordList: WordList | null;
   wordLists: WordList[];
   value: FullCardItem[] | undefined;
-  onChange: (words: FullCardItem[] | undefined) => void;
+  sourceId?: string;
+  savedSourceCards?: FullCardItem[];
+  onChange: (words: FullCardItem[] | undefined, sourceId?: string) => void;
 }) {
   const { t } = useTranslation();
-  const own = !!value && value.length > 0;
-  const [pickOn, setPickOn] = useState(own);
-  const [sourceId, setSourceId] = useState('');
-  useEffect(() => setPickOn(own), [own]);
-  const source = sourceId ? wordListToCards(wordLists.find((wl) => wl.id === sourceId) ?? null) : cards;
-  const chosen = new Set((value ?? []).map((w) => `${w.word.toLowerCase()}::${w.meaning}`));
-  const keyOf = (w: FullCardItem) => `${w.word.toLowerCase()}::${w.meaning}`;
-  function toggle(w: FullCardItem) {
-    const list = value ?? [];
-    const next = chosen.has(keyOf(w)) ? list.filter((x) => keyOf(x) !== keyOf(w)) : [...list, w];
-    onChange(next.length ? next : undefined);
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState<FullCardItem | null>(null);
+  const local = value !== undefined;
+  const sourceList = sourceId ? wordLists.find(list => list.id === sourceId) : local ? null : wordList;
+  const source = sourceList ? sourceList === wordList ? cards : wordListToCards(sourceList) : savedSourceCards ?? [];
+  const active = value ?? cards;
+  const activeIds = new Set(active.map(card => card.id));
+  const available = [...active, ...source.filter(card => !activeIds.has(card.id))];
+  const button = 'rounded-lg border px-3 py-2 text-sm font-semibold';
+  const input = 'w-full rounded-lg border bg-white px-3 py-2 text-sm';
+
+  function save(words: FullCardItem[]) {
+    onChange(words, local ? sourceId : wordList?.id);
   }
-  const chip = (on: boolean) => `rounded-full px-3 py-1.5 font-label-md text-label-md ${on ? 'bg-primary text-on-primary' : 'bg-surface-container-lowest text-on-surface-variant'}`;
+
+  function saveRow() {
+    if (!draft?.word.trim()) return;
+    const row = { ...draft, word: draft.word.trim(), meaning: draft.meaning.trim() };
+    const previous = active.find(card => card.id === row.id);
+    setDraft(null);
+    if (previous?.word === row.word && previous.meaning === row.meaning) return;
+    // A different expression cannot inherit the source card's image, example or identity.
+    const edited = previous && previous.word !== row.word
+      ? { id: uid(), word: row.word, meaning: row.meaning, imageUrl: null }
+      : row;
+    save(previous ? active.map(card => card.id === row.id ? edited : card) : [...active, edited]);
+  }
+
   return (
-    <div className="space-y-2 rounded-xl border border-outline-variant/50 bg-surface-container-low p-3">
-      <div className="font-label-md text-label-md text-on-surface">{t('curriculum.ownWords.title')}</div>
-      <div className="flex flex-wrap gap-1.5">
-        <button
-          type="button"
-          className={chip(!pickOn)}
-          onClick={() => {
-            setPickOn(false);
-            onChange(undefined);
-          }}
-        >
-          {t('curriculum.ownWords.useLesson', { count: cards.length })}
-        </button>
-        <button type="button" className={chip(pickOn)} onClick={() => setPickOn(true)}>
-          {t('curriculum.ownWords.pick')}
+    <section className="space-y-2 rounded-xl border border-outline-variant/50 bg-surface-container-low p-3" aria-label={t('curriculum.ownWords.title')}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm font-semibold">
+          {sourceList?.name && <>{sourceList.name} · </>}
+          {t(local ? 'curriculum.ownWords.slideOnly' : 'curriculum.ownWords.lessonSource')} · {active.length}
+        </p>
+        <button type="button" className={button} aria-expanded={open} onClick={() => { setOpen(!open); setDraft(null); }}>
+          {t('curriculum.ownWords.editSlide')}
         </button>
       </div>
-      {pickOn && (
-        <div className="space-y-2">
-          <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.ownWords.hint')}</p>
+      {open && (
+        <>
+          <p className="text-sm text-on-surface-variant">{t('curriculum.ownWords.localHint')}</p>
           <div className="flex flex-wrap items-center gap-2">
-            <select
-              value={sourceId}
-              onChange={(e) => setSourceId(e.target.value)}
-              className="rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm text-on-surface outline-none focus:border-primary"
-            >
-              <option value="">{t('curriculum.ownWords.fromLesson')}</option>
-              {wordLists.map((wl) => (
-                <option key={wl.id} value={wl.id}>
-                  {wl.name} ({wl.items.length})
-                </option>
-              ))}
+            <select aria-label={t('curriculum.ownWords.loadSource')} className="max-w-full rounded-lg border bg-white px-3 py-2 text-sm"
+              value="" onChange={event => {
+                const list = wordLists.find(row => row.id === event.target.value);
+                if (list) { setDraft(null); onChange(wordListToCards(list), list.id); }
+              }}>
+              <option value="">{t('curriculum.ownWords.loadSource')}</option>
+              {wordLists.map(list => <option key={list.id} value={list.id}>{list.name} ({list.items.length})</option>)}
             </select>
-            <button type="button" onClick={() => onChange([...(value ?? []), ...source.filter((w) => !chosen.has(keyOf(w)))])} className="font-label-md text-label-md text-primary hover:underline">
-              {t('curriculum.ownWords.all')}
+            {local && (sourceList || !!savedSourceCards?.length) && <button type="button" className={button} onClick={() => { setDraft(null); onChange(source, sourceList?.id); }}>
+              {t('curriculum.ownWords.reloadSource')}
+            </button>}
+            {local && wordList && <button type="button" className={button} onClick={() => { setDraft(null); onChange(undefined); }}>
+              {t('curriculum.ownWords.backToLesson')}
+            </button>}
+            <button type="button" className={button} onClick={() => setDraft({ id: uid(), word: '', meaning: '', imageUrl: null })}>
+              {t('curriculum.ownWords.addItem')}
             </button>
-            <button type="button" onClick={() => onChange(undefined)} className="font-label-md text-label-md text-on-surface-variant hover:underline">
-              {t('curriculum.ownWords.clear')}
-            </button>
-            <span className="font-caption text-caption text-on-surface-variant">{t('curriculum.ownWords.count', { count: value?.length ?? 0 })}</span>
           </div>
-          <div className="flex max-h-56 flex-wrap gap-1.5 overflow-y-auto">
-            {source.map((w) => {
-              const on = chosen.has(keyOf(w));
-              return (
-                <button
-                  key={w.id}
-                  type="button"
-                  onClick={() => toggle(w)}
-                  className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-sm transition-colors ${
-                    on ? 'border-primary bg-primary text-on-primary' : 'border-outline-variant/50 bg-surface-container-lowest text-on-surface hover:border-primary'
-                  }`}
-                >
-                  {w.imageUrl && <img src={w.imageUrl} alt="" className="h-5 w-5 rounded-full object-cover" />}
-                  {w.word}
-                  {on && <span className="material-symbols-outlined text-[16px]">check</span>}
-                </button>
-              );
+          {draft && <div className="grid gap-2 rounded-lg bg-white p-2 sm:grid-cols-2">
+            <label>{t('curriculum.ownWords.itemText')}<input className={input} value={draft.word} onChange={event => setDraft({ ...draft, word: event.target.value })} /></label>
+            <label>{t('curriculum.ownWords.itemMeaning')}<input className={input} value={draft.meaning} onChange={event => setDraft({ ...draft, meaning: event.target.value })} /></label>
+            <div className="flex gap-2">
+              <button type="button" className={button} disabled={!draft.word.trim()} onClick={saveRow}>{t('curriculum.ownWords.applyItem')}</button>
+              <button type="button" className={button} onClick={() => setDraft(null)}>{t('common.cancel')}</button>
+            </div>
+          </div>}
+          <ul className="max-h-72 space-y-1 overflow-auto">
+            {available.map(card => {
+              const included = activeIds.has(card.id);
+              return <li key={card.id} className="flex items-center gap-2 rounded-lg bg-white px-2 py-1">
+                <label className="flex min-w-0 flex-1 items-center gap-2 text-sm">
+                  <input type="checkbox" checked={included} onChange={() => {
+                    setDraft(null);
+                    save(included ? active.filter(row => row.id !== card.id) : [...active, card]);
+                  }} />
+                  <span className="min-w-0 break-words"><strong>{card.word}</strong>{card.meaning && <span className="ml-2">{card.meaning}</span>}</span>
+                </label>
+                {included && <button type="button" className={button} aria-label={t('curriculum.ownWords.editItem', { word: card.word })} onClick={() => setDraft(card)}>
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">edit</span>
+                </button>}
+              </li>;
             })}
-            {source.length === 0 && <span className="font-caption text-caption text-on-surface-variant">{t('curriculum.study.needWordList')}</span>}
-          </div>
-        </div>
+          </ul>
+        </>
       )}
-    </div>
+    </section>
   );
 }
-
-function WordListSelect({
-  wordListId,
-  wordLists,
-  onWordListChange,
-}: {
-  wordListId: string;
-  wordLists: WordList[];
-  onWordListChange: (id: string) => void;
-}) {
-  const { t } = useTranslation();
-  const onManage = useContext(WordListManageContext);
-  return (
-    <div>
-      <label className="mb-1.5 block font-label-md text-label-md text-on-surface-variant">
-        {t('curriculum.slides.lessonWordList')}
-      </label>
-      <select
-        value={wordListId}
-        onChange={(e) => onWordListChange(e.target.value)}
-        className="w-64 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-      >
-        <option value="">{t('curriculum.wordListPlaceholder')}</option>
-        {wordLists.filter((wl) => !wl.group_name).map((wl) => (
-          <option key={wl.id} value={wl.id}>
-            {wl.name} ({wl.items.length})
-          </option>
-        ))}
-        {[...new Set(wordLists.map((wl) => wl.group_name).filter((g): g is string => !!g))].map((g) => (
-          <optgroup key={g} label={g}>
-            {wordLists.filter((wl) => wl.group_name === g).map((wl) => (
-              <option key={wl.id} value={wl.id}>
-                {wl.name} ({wl.items.length})
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
-      {onManage && (
-        <div className="mt-1.5 flex flex-wrap gap-1.5">
-          <button
-            type="button"
-            onClick={() => onManage('new')}
-            className="flex items-center gap-1 rounded-full border border-primary px-3 py-1 font-label-md text-label-md text-primary hover:bg-primary-fixed"
-          >
-            <span className="material-symbols-outlined text-[16px]">add</span>
-            {t('curriculum.wordListTools.newButton')}
-          </button>
-          <button
-            type="button"
-            disabled={!wordListId}
-            onClick={() => onManage('edit')}
-            className="flex items-center gap-1 rounded-full border border-outline-variant px-3 py-1 font-label-md text-label-md text-on-surface-variant hover:border-primary hover:text-primary disabled:opacity-40"
-          >
-            <span className="material-symbols-outlined text-[16px]">edit</span>
-            {t('curriculum.wordListTools.editButton')}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/** 슬라이드 패널 곳곳의 단어장 고르기 옆 "새 단어장·단어 고치기" 버튼이 쓰는 창 열기 함수. */
-const WordListManageContext = createContext<((mode: 'new' | 'edit') => void) | undefined>(undefined);
 
 /** 파닉스 워크시트 슬라이드 설정(2026-09-27) — 유형·단어(수업 단어장 또는 파닉스 단계)·옵션을 미리 정해 두면
  * 발표 중엔 파닉스 워크시트 페이지가 고르는 화면 없이 이대로 보여 준다. */

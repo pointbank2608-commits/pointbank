@@ -174,7 +174,7 @@ try {
   await form.locator('select').first().selectOption('words-sentences');
   await open();
   await category('게임·퀴즈');
-  assert.match(await train.innerText(),/내 자료 적용/);
+  assert.match(await train.innerText(),/내 자료로 진행 가능/);
   assert.match(await train.innerText(),/bridge/);
   await train.locator('.activity-preview-button').click();
   const nativeTrain = picker.locator('[data-native-game-preview="/games/wordtrain"]');
@@ -186,7 +186,7 @@ try {
   await open();
   await category('게임·퀴즈');
   const balloon = card('game.balloonpop');
-  assert.match(await balloon.innerText(),/내 자료 적용/);
+  assert.match(await balloon.innerText(),/내 자료로 진행 가능/);
   await balloon.locator('.activity-preview-button').click();
   const nativeBalloon = picker.locator('[data-native-game-preview="/games/balloonpop"]');
   await nativeBalloon.getByRole('button',{name:'게임 시작',exact:true}).click();
@@ -221,9 +221,9 @@ try {
   await thumbs.nth(3).getByText('blue',{exact:true}).waitFor();
   await thumbs.nth(2).click();
   const detail = form.locator('[data-lesson-slide-detail]');
-  await detail.getByRole('button',{name:'이 슬라이드만 고르기',exact:true}).click();
-  await detail.locator('select').filter({has:page.locator('option[value="words-a"]')}).first().selectOption('words-a');
-  await detail.getByRole('button',{name:/^ant(?:\s|$)/}).first().click();
+  await detail.getByRole('button',{name:'이 슬라이드 자료 편집',exact:true}).click();
+  await detail.getByRole('combobox',{name:'단어장·문장 모음에서 가져오기'}).selectOption('words-a');
+  await detail.getByRole('checkbox',{name:/^apple/}).uncheck();
   await thumbs.nth(2).getByText('ant',{exact:true}).waitFor();
   await detail.getByText('ant',{exact:true}).first().waitFor();
   await thumbs.nth(3).getByText('blue',{exact:true}).waitFor();
@@ -235,6 +235,7 @@ try {
     await category('게임·퀴즈');
     await picker.locator('.activity-game-filters').getByRole('button',{name:group}).click();
     await card('game.lightning').locator('[data-activity-id]').click();
+    await detail.getByRole('button',{name:'내 단어/문장',exact:true}).click();
   }
   await addLightning(/^단어/);
   await detail.getByRole('button',{name:'문장 직접 입력',exact:true}).click();

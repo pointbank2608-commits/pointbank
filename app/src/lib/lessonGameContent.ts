@@ -55,7 +55,7 @@ export function resolveLessonGame(slide: GameSlide, slides: LessonSlide[], sourc
   };
   if (isGrammarRuleGame(type)) return {
     content: grammarRuleContent(type, grammarId), grammarId, kind: 'grammar',
-    hasGrammarSlide: slides.some(item => item.kind === 'grammar'),
+    hasGrammarSlide: !slide.useOwnGameContent && slides.some(item => item.kind === 'grammar'),
   };
 
   const sentenceOnly = SENTENCE_ONLY.has(type);
