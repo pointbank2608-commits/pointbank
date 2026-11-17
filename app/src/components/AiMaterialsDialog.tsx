@@ -58,13 +58,13 @@ export default function AiMaterialsDialog({ academy, owner, mode, preferredKind,
     }
   }
 
-  function edit(kind: typeof kinds[number], index: number, update: Partial<MaterialDraftItem>) {
-    setReview(current => current && { ...current, [kind]: current[kind].map((item, i) => i === index ? { ...item, ...update } : item) });
+  function updateDraft(kind: typeof kinds[number], update: (items: ReviewItem[]) => ReviewItem[]) {
+    setReview(current => current && { ...current, [kind]: update(current[kind]) });
     setError('');
   }
 
   function setSourceDraft(draft: StudyListSourceDraft) {
-    const include = (item: Omit<ReviewItem, 'included'>): ReviewItem => ({ ...item, included: true });
+    const include = (item: Omit<ReviewItem, 'included' | 'id'>): ReviewItem => ({ ...item, id: crypto.randomUUID(), included: true });
     setName(draft.title.trim().slice(0, 120));
     setOriginal(draft.original);
     setPage(draft.original?.first ?? 1);
@@ -134,7 +134,17 @@ export default function AiMaterialsDialog({ academy, owner, mode, preferredKind,
           title={t(mode === 'source' ? 'aiMaterials.studyCount' : 'aiMaterials.reviewCount', {
             list: t(`textbook.${kind}`), actual: review[kind].length, requested: requested[kind],
           })}
-          items={review[kind]} onEdit={(index, update) => edit(kind, index, update)}
+          items={review[kind]} onEdit={(id, update) => updateDraft(kind, items =>
+            items.map(item => item.id === id ? { ...item, ...update } : item))}
+          actions={mode === 'source' ? {
+            addLabel: t(kind === 'words' ? 'aiMaterials.addWord' : 'aiMaterials.addSentence'),
+            removeLabel: t(kind === 'words' ? 'aiMaterials.removeWord' : 'aiMaterials.removeSentence'),
+            onAdd: () => {
+              const item = { id: crypto.randomUUID(), text: '', meaning: '', included: true, focusOnMount: true };
+              updateDraft(kind, items => [...items, item]);
+            },
+            onRemove: id => updateDraft(kind, items => items.filter(item => item.id !== id)),
+          } : undefined}
           source={original ? index => {
             const { page: itemPage, meaningSuggested } = review[kind][index];
             return <>

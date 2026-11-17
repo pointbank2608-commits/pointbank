@@ -283,12 +283,25 @@ try {
   const extractedWords = sourceDialog.getByRole('group', { name: '단어장 (3개)' });
   await extractedWords.getByLabel('한국어 뜻').nth(1).fill('숲속');
   await extractedWords.getByLabel('저장할 항목').nth(2).uncheck();
+  await extractedWords.getByRole('button', { name: 'river · 단어 삭제', exact: true }).click();
+  await sourceDialog.getByRole('group', { name: '단어장 (2개)' }).getByRole('button', { name: '단어 추가' }).click();
+  await extractedWords.getByLabel('영어', { exact: true }).last().fill('stream');
+  await extractedWords.getByLabel('한국어 뜻', { exact: true }).last().fill('개울');
+
+  const extractedSentences = sourceDialog.getByRole('group', { name: '문장 모음 (1개)' });
+  await extractedSentences.getByRole('button', { name: 'We walk by the river. · 문장 삭제', exact: true }).click();
+  await sourceDialog.getByRole('group', { name: '문장 모음 (0개)' }).getByRole('button', { name: '문장 추가' }).click();
+  await extractedSentences.getByLabel('영어', { exact: true }).fill('We see a stream.');
+  await extractedSentences.getByLabel('한국어 뜻', { exact: true }).fill('우리는 개울을 봐요.');
   assert.equal(aiSaveAttempts.length, 2);
   await sourceDialog.getByRole('button', { name: '확인한 자료 저장', exact: true }).click();
   await sourceDialog.waitFor({ state: 'hidden' });
   const savedPhoto = lists.filter(list => list.name === 'pages');
   assert.deepEqual(savedPhoto.map(list => [list.kind, list.items.length]), [['word', 2], ['sentence', 1]]);
-  assert.equal(savedPhoto[0].items[1].meaning, '숲속');
+  assert.deepEqual(savedPhoto.map(list => list.items.map(({ word, meaning }) => [word, meaning])), [
+    [['forest', '숲속'], ['stream', '개울']],
+    [['We see a stream.', '우리는 개울을 봐요.']],
+  ]);
   assert.equal(new URL(page.url()).searchParams.get('list'), savedPhoto[0].id);
   const photoList = page.getByRole('button', { name: /expand_less pages \(2\)/ });
   await photoList.waitFor();
