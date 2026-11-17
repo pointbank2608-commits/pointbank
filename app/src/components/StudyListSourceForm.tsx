@@ -27,7 +27,7 @@ export default function StudyListSourceForm({ academy, owner, busy, onBusy, onDr
   onDraft: (draft: StudyListSourceDraft) => void;
 }) {
   const { t } = useTranslation();
-  const [source, setSource] = useState<'file' | 'worksheet'>('file');
+  const [source, setSource] = useState<'camera' | 'file' | 'worksheet'>('file');
   const [files, setFiles] = useState<File[]>([]);
   const [first, setFirst] = useState('1');
   const [last, setLast] = useState('1');
@@ -35,7 +35,7 @@ export default function StudyListSourceForm({ academy, owner, busy, onBusy, onDr
   const [error, setError] = useState('');
   const isPdf = files[0]?.type === 'application/pdf';
 
-  function choose(picked: File[]) {
+  function choose(picked: File[], from: 'camera' | 'file') {
     if (!picked.length) return;
     const next = picked.map(file => {
       if (file.type && file.type !== 'application/octet-stream') return file;
@@ -48,6 +48,8 @@ export default function StudyListSourceForm({ academy, owner, busy, onBusy, onDr
       setError('invalidFiles');
       return;
     }
+    setSource(from);
+    setWorksheet(null);
     setFiles(next);
     setError('');
     setFirst('1');
@@ -56,10 +58,10 @@ export default function StudyListSourceForm({ academy, owner, busy, onBusy, onDr
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (busy || (source === 'file' ? !files.length : !worksheet)) return;
+    if (busy || (source === 'worksheet' ? !worksheet : !files.length)) return;
     const start = Number(first);
     const end = Number(last);
-    if (source === 'file' && isPdf && (!Number.isInteger(start) || !Number.isInteger(end)
+    if (source !== 'worksheet' && isPdf && (!Number.isInteger(start) || !Number.isInteger(end)
       || start < 1 || end < start || end > 1000 || end - start >= TEXTBOOK_MAX_PDF_PAGES)) {
       setError('invalidPageRange');
       return;
@@ -88,26 +90,37 @@ export default function StudyListSourceForm({ academy, owner, busy, onBusy, onDr
   }
 
   return <form className="ai-materials-form" onSubmit={submit}>
-    <div className="textbook-actions" aria-label={t('aiMaterials.source')}>
-      <button type="button" className={button} disabled={busy} aria-pressed={source === 'file'}
-        onClick={() => { setSource('file'); setWorksheet(null); setError(''); }}>{t('aiMaterials.sourceFiles')}</button>
-      <button type="button" className={button} disabled={busy} aria-pressed={source === 'worksheet'}
-        onClick={() => { setSource('worksheet'); setError(''); }}>{t('aiMaterials.sourceWorksheet')}</button>
-    </div>
-    {source === 'file' ? <>
-      <div className="textbook-actions">
-        <label className={button}>{t('textbook.camera')}<input type="file" accept="image/*" capture="environment" disabled={busy}
-          onChange={event => {
-            const photos = [...(event.target.files ?? [])];
-            if (photos.length) choose([...(isPdf ? [] : files), ...photos]);
-            event.target.value = '';
-          }} /></label>
-        <label className={button}>{t('textbook.files')}<input type="file" accept={acceptedFiles} multiple disabled={busy}
-          onChange={event => { choose([...(event.target.files ?? [])]); event.target.value = ''; }} /></label>
+    <fieldset className="study-source-picker">
+      <legend>{t('aiMaterials.source')}</legend>
+      <div className="study-source-options">
+        <label className="study-source-option" data-active={source === 'camera' && !!files.length}>
+          <StudySourceLabel icon="photo_camera" title={t('textbook.camera')} hint={t('aiMaterials.cameraHint')} />
+          <input type="file" accept="image/*" capture="environment" disabled={busy}
+            aria-label={t('textbook.camera')}
+            onChange={event => {
+              const photos = [...(event.target.files ?? [])];
+              if (photos.length) choose([...(isPdf ? [] : files), ...photos], 'camera');
+              event.target.value = '';
+            }} />
+        </label>
+        <label className="study-source-option" data-active={source === 'file' && !!files.length}>
+          <StudySourceLabel icon="upload_file" title={t('textbook.files')} hint={t('aiMaterials.filesHint')} />
+          <input type="file" accept={acceptedFiles} multiple disabled={busy} aria-label={t('textbook.files')}
+            onChange={event => { choose([...(event.target.files ?? [])], 'file'); event.target.value = ''; }} />
+        </label>
+        <button type="button" className="study-source-option" disabled={busy} aria-pressed={source === 'worksheet'}
+          aria-label={t('aiMaterials.sourceWorksheet')}
+          onClick={() => { setSource('worksheet'); setError(''); }}>
+          <StudySourceLabel icon="assignment" title={t('aiMaterials.sourceWorksheet')} hint={t('aiMaterials.worksheetHint')} />
+        </button>
       </div>
+    </fieldset>
+    {source !== 'worksheet' ? <>
       <p className="textbook-note">{t('textbook.fileLimits')}</p>
-      {!!files.length && <ol className="study-source-files">{files.map((file, index) =>
-        <li key={index}>{file.name}</li>)}</ol>}
+      {!!files.length && <section className="study-source-details" aria-label={t('aiMaterials.selectedFiles')}>
+        <strong>{t('aiMaterials.selectedFiles')}</strong>
+        <ol className="study-source-files">{files.map((file, index) => <li key={index}>{file.name}</li>)}</ol>
+      </section>}
       {isPdf && <div className="textbook-fields">
         <label>{t('textbook.first')}<input type="number" min={1} max={1000} disabled={busy} value={first}
           onChange={event => { setFirst(event.target.value); if (Number(event.target.value) > Number(last)) setLast(event.target.value); }} /></label>
@@ -124,10 +137,18 @@ export default function StudyListSourceForm({ academy, owner, busy, onBusy, onDr
         : extractionErrors.includes(error) ? 'textbook.' + error : 'aiMaterials.' + error)}
     </p>}
     <button type="submit" className={button + ' textbook-primary'}
-      disabled={busy || (source === 'file' ? !files.length : !worksheet)}>
+      disabled={busy || (source === 'worksheet' ? !worksheet : !files.length)}>
+      <span className="material-symbols-outlined" aria-hidden="true">auto_awesome</span>
       {t(busy ? 'aiMaterials.readingSource' : 'textbook.extract')}
     </button>
   </form>;
+}
+
+function StudySourceLabel({ icon, title, hint }: { icon: string; title: string; hint: string }) {
+  return <>
+    <span className="material-symbols-outlined study-source-icon" aria-hidden="true">{icon}</span>
+    <span className="study-source-label"><strong>{title}</strong><small>{hint}</small></span>
+  </>;
 }
 
 function StudyWorksheetPicker({ academy, owner, busy, onSelect }: {
