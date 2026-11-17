@@ -220,6 +220,7 @@ const en: Ko = {
     retrySave: "Retry save",
     removeWord: "Remove {{word}}",
     launch: "Play with this word list",
+    launchSentence: "Play with this sentence collection",
     launchTitle: "Start a classroom game",
     launchHint: "No retyping needed. Choose a class and a game to save a ready-to-use classroom game.",
     chooseClass: "Class for this lesson",

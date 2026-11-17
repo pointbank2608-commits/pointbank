@@ -218,6 +218,7 @@ const ko = {
     retrySave: "다시 저장하기",
     removeWord: "{{word}} 삭제",
     launch: "이 단어장으로 게임하기",
+    launchSentence: "이 문장 모음으로 게임하기",
     launchTitle: "수업 게임 시작하기",
     launchHint: "단어를 다시 입력할 필요 없어요. 반과 게임을 고르면 수업용 게임이 저장돼요.",
     chooseClass: "수업할 반",

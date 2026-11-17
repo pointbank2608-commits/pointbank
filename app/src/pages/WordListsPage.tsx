@@ -889,9 +889,9 @@ export default function WordListsPage() {
                 <span className="flex">
                   {list.items.length > 0 && <button type="button"
                     onClick={() => { setLaunchError(false); setLaunchListId(list.id); }}
-                    className="flex min-h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-primary px-4 py-2 font-semibold text-on-primary hover:bg-primary-container">
+                    className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-center font-semibold text-on-primary hover:bg-primary-container">
                     <span aria-hidden className="material-symbols-outlined">play_circle</span>
-                    {t('classroomUx.launch')}
+                    {t(wordListKindOf(list) === 'sentence' ? 'classroomUx.launchSentence' : 'classroomUx.launch')}
                   </button>}
                 </span>
                 <span className="flex flex-wrap items-center gap-3">
