@@ -140,6 +140,11 @@ export async function adminAcademySearchV2(q: AcademyQuery): Promise<AcademyRow[
 }
 
 /* ---------------- 플랜·테스트·조치 ---------------- */
+export type AcademyStatus = Pick<AcademyRow, 'academy_id' | 'is_test' | 'entitlement' | 'source' | 'billing_state'>;
+
+export const adminAcademyStatus = (academyId: string) =>
+  rpc<AcademyStatus | null>('admin_academy_status', { p_academy_id: academyId });
+
 export const adminChangePlan = (academyId: string, plan: 'free' | 'paid', until: string | null, reason: string, source: 'admin' | 'event' = 'admin') =>
   rpc<void>('admin_change_plan', { p_academy_id: academyId, p_plan: plan, p_until: until, p_reason: reason, p_source: source });
 

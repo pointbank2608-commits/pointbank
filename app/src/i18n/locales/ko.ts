@@ -5871,6 +5871,7 @@ const ko = {
       testBadge: "테스트",
       safetyTitle: "테스트 표시·삭제",
       testHint: "테스트 학원은 지표와 자동 발송에서 빠져요. 실제 고객 학원에는 쓰지 마세요.",
+      statusMissing: "학원 상태를 찾을 수 없어요.",
       testOn: "테스트 학원으로 표시",
       testOff: "테스트 표시 해제",
       delRequest: "삭제 요청",
