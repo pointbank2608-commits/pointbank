@@ -9,7 +9,7 @@ export const textbookKo = {
   invalidFiles: '이미지와 PDF는 따로 올려 주세요. 파일 형식과 용량을 확인해 주세요.',
   first: 'PDF 시작 쪽', last: 'PDF 끝 쪽',
   invalidPageRange: '한 번에 연속된 PDF 12쪽까지 읽을 수 있어요. 파일에서 쪽 번호를 확인해 주세요.',
-  privacy: '자동 추출을 누르면 파일이 Google Gemini로 전송됩니다. PDF에서 선택한 쪽을 읽도록 요청합니다.',
+  privacy: '자동 추출을 누르면 AI가 자동으로 단어장과 문장모음을 만들어줍니다. PDF에서 선택한 쪽을 읽도록 요청합니다.',
   extract: '단어·문장 자동 추출', extracting: '교재에서 단어와 문장을 찾고 있어요…',
   review: '단어·문장 확인', reviewHelp: '저장할 항목을 골라 영어와 한국어 뜻을 확인해 주세요.',
   listSharing: '확인한 단어장과 문장 모음은 학원 공용 목록에 추가됩니다.',
