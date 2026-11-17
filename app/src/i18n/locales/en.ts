@@ -5874,6 +5874,7 @@ const en: Ko = {
       testBadge: "Test",
       safetyTitle: "Test flag & deletion",
       testHint: "Test academies are excluded from metrics and automated messages. Do not use for real customers.",
+      statusMissing: "This academy’s status could not be found.",
       testOn: "Mark as test academy",
       testOff: "Remove test flag",
       delRequest: "Request deletion",

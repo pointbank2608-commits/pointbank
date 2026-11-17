@@ -15,8 +15,8 @@ import { StatusPill } from './HelpPage';
 import { Badge, DataState, ReasonDialog } from '../components/admin/AdminUi';
 import { BillingBadge, EntitlementBadge, SourceBadge } from '../components/admin/labels';
 import {
-  adminActionDetail, adminActionLog, adminCancelDeletion, adminChangePlan, adminRequestDeletion, adminSetAcademyTest,
-  fmtKst, useAdminQuery, type AcademyRow,
+  adminAcademyStatus, adminActionDetail, adminActionLog, adminCancelDeletion, adminChangePlan, adminRequestDeletion, adminSetAcademyTest,
+  fmtKst, useAdminQuery,
 } from '../lib/adminOps';
 import { supabase } from '../lib/supabase';
 
@@ -49,15 +49,12 @@ export default function AdminAcademyDetailPage() {
   }
   type PlanAsk = { title: string; plan: 'free' | 'paid'; until: string | null; source: 'admin' | 'event' };
   const [planAsk, setPlanAsk] = useState<PlanAsk | null>(null);
-  const [testAsk, setTestAsk] = useState(false);
+  const [testAsk, setTestAsk] = useState<{ academyId: string; isTest: boolean } | null>(null);
   const [delAsk, setDelAsk] = useState<'request' | 'cancel' | null>(null);
   const [rawId, setRawId] = useState<string | null>(null);
   const [raw, setRaw] = useState<Record<string, unknown> | null>(null);
-  const facts = useAdminQuery(async () => {
-    const { data, error } = await supabase.from('admin_academy_rollup').select('*').eq('academy_id', id).maybeSingle();
-    if (error) throw error;
-    return (data ?? null) as AcademyRow | null;
-  }, [id, msg]);
+  const facts = useAdminQuery(() => adminAcademyStatus(id), [id]);
+  const academyStatus = facts.data?.academy_id === id ? facts.data : null;
   const delReq = useAdminQuery(async () => {
     const { data, error } = await supabase.from('academy_deletion_requests').select('requested_at, purge_after, cancelled_at').eq('academy_id', id).is('cancelled_at', null).maybeSingle();
     if (error) throw error;
@@ -152,12 +149,12 @@ export default function AdminAcademyDetailPage() {
         <span className={`rounded-full px-3 py-1 font-label-md text-label-md ${a.plan === 'paid' ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container text-on-surface-variant'}`}>
           {a.plan === 'paid' ? t('admin.planPaid') : t('admin.planFree')}
         </span>
-        {facts.data && (
+        {academyStatus && (
           <>
-            <EntitlementBadge value={facts.data.entitlement} />
-            <SourceBadge value={facts.data.entitlement === 'full' ? facts.data.source : null} />
-            <BillingBadge value={facts.data.billing_state} />
-            {facts.data.is_test && <Badge tone="info">{t('adminV2.detail.testBadge')}</Badge>}
+            <EntitlementBadge value={academyStatus.entitlement} />
+            <SourceBadge value={academyStatus.entitlement === 'full' ? academyStatus.source : null} />
+            <BillingBadge value={academyStatus.billing_state} />
+            {academyStatus.is_test && <Badge tone="info">{t('adminV2.detail.testBadge')}</Badge>}
           </>
         )}
         {a.billing_failure_count > 0 && (
@@ -265,9 +262,13 @@ export default function AdminAcademyDetailPage() {
         <section className={box}>
           <h2 className="font-title-md text-title-md">{t('adminV2.detail.safetyTitle')}</h2>
           <p className="font-caption text-caption text-on-surface-variant">{t('adminV2.detail.testHint')}</p>
-          <button type="button" disabled={busy || !facts.data} onClick={() => setTestAsk(true)} className="rounded-full border border-primary px-4 py-1.5 font-label-md text-label-md text-primary disabled:opacity-50">
-            {facts.data?.is_test ? t('adminV2.detail.testOff') : t('adminV2.detail.testOn')}
-          </button>
+          <DataState state={facts} isEmpty={data => !data || data.academy_id !== id} empty={t('adminV2.detail.statusMissing')} compact>
+            {data => data && <button type="button" disabled={busy || facts.status !== 'ready'}
+              onClick={() => setTestAsk({ academyId: data.academy_id, isTest: !data.is_test })}
+              className="rounded-full border border-primary px-4 py-1.5 font-label-md text-label-md text-primary disabled:opacity-50">
+              {data.is_test ? t('adminV2.detail.testOff') : t('adminV2.detail.testOn')}
+            </button>}
+          </DataState>
           <div className="border-t border-outline-variant/50 pt-3">
             {delReq.data ? (
               <div className="space-y-2">
@@ -276,8 +277,9 @@ export default function AdminAcademyDetailPage() {
               </div>
             ) : (
               <div className="space-y-2">
-                <p className="font-caption text-caption text-on-surface-variant">{facts.data?.is_test ? t('adminV2.detail.delHintTest') : t('adminV2.detail.delHint')}</p>
-                <button type="button" onClick={() => setDelAsk('request')} className="rounded-full border border-error px-4 py-1.5 font-label-md text-label-md text-error">{t('adminV2.detail.delRequest')}</button>
+                {academyStatus && <p className="font-caption text-caption text-on-surface-variant">{t(academyStatus.is_test ? 'adminV2.detail.delHintTest' : 'adminV2.detail.delHint')}</p>}
+                <button type="button" disabled={busy || facts.status !== 'ready' || !academyStatus} onClick={() => setDelAsk('request')}
+                  className="rounded-full border border-error px-4 py-1.5 font-label-md text-label-md text-error disabled:opacity-50">{t('adminV2.detail.delRequest')}</button>
               </div>
             )}
           </div>
@@ -510,20 +512,23 @@ export default function AdminAcademyDetailPage() {
             await adminChangePlan(id, planAsk.plan, planAsk.until, reason, planAsk.source);
             setPlanAsk(null);
             setMsg(t('adminOps.saved'));
+            facts.reload();
             load();
           }}
         />
       )}
-      {testAsk && facts.data && (
+      {testAsk?.academyId === id && (
         <ReasonDialog
-          title={facts.data.is_test ? t('adminV2.detail.testOff') : t('adminV2.detail.testOn')}
+          title={t(testAsk.isTest ? 'adminV2.detail.testOn' : 'adminV2.detail.testOff')}
           body={t('adminV2.detail.testHint')}
           confirmLabel={t('common.save')}
-          onClose={() => setTestAsk(false)}
+          onClose={() => setTestAsk(null)}
           onConfirm={async (reason) => {
-            await adminSetAcademyTest(id, !facts.data!.is_test, reason);
-            setTestAsk(false);
+            await adminSetAcademyTest(testAsk.academyId, testAsk.isTest, reason);
+            setTestAsk(null);
             setMsg(t('adminOps.saved'));
+            facts.reload();
+            log.reload();
           }}
         />
       )}
@@ -531,7 +536,7 @@ export default function AdminAcademyDetailPage() {
         <ReasonDialog
           danger={delAsk === 'request'}
           title={delAsk === 'request' ? t('adminV2.detail.delRequest') : t('adminV2.detail.delCancel')}
-          body={delAsk === 'request' ? (facts.data?.is_test ? t('adminV2.detail.delHintTest') : t('adminV2.detail.delHint')) : undefined}
+          body={delAsk === 'request' && academyStatus ? t(academyStatus.is_test ? 'adminV2.detail.delHintTest' : 'adminV2.detail.delHint') : undefined}
           confirmLabel={delAsk === 'request' ? t('adminV2.detail.delRequest') : t('adminV2.detail.delCancel')}
           onClose={() => setDelAsk(null)}
           onConfirm={async (reason) => {
