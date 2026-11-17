@@ -269,7 +269,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const isTimerMatch = type === 'timer';
   const isPopcorn = type === 'popcorn';
   const isPassBall = type === 'passball';
-  const simpleOpts = SIMPLE_OPTS[type ?? ''] ?? [];
+  const lightningUsesClass = type === 'lightning' && fullRoster.length > 0;
+  const simpleOpts = (SIMPLE_OPTS[type ?? ''] ?? []).filter(option => option.key !== 'lightningPlayers' || !lightningUsesClass);
   // 개인·팀은 반 학생이 있어야 하므로 반이 없으면 첫 반을 자동으로 고른다.
   function pickMode(next: Mode) {
     setPMode(next);
@@ -875,9 +876,9 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
               <button type="button" className={btn} aria-label={text('팀 하나 늘리기', 'More teams')} disabled={pTeams >= teamCapOf()} onClick={() => setPTeams((n) => Math.min(teamCapOf(), n + 1))}>＋</button>
             </div>
           )}
-          <p className="text-xs text-on-surface-variant">{text('개인·팀을 고르면 도구줄 아래에 지금 차례가 보여요. 팀은 "적용"을 누르면 학생이 무작위로 나뉘어요. 직접 바꾸려면 아래 팀·순서 정하기를 쓰세요.', 'Press Apply to split students into random teams. Use Set teams and order to adjust by hand.')}</p>
+          <p className="text-xs text-on-surface-variant">{type === 'lightning' ? t('gameLightning.classOrderHint') : text('개인·팀을 고르면 도구줄 아래에 지금 차례가 보여요. 팀은 "적용"을 누르면 학생이 무작위로 나뉘어요. 직접 바꾸려면 아래 팀·순서 정하기를 쓰세요.', 'Press Apply to split students into random teams. Use Set teams and order to adjust by hand.')}</p>
         </div>}
-        {!isTwoDice && pMode !== 'none' && !isBomb && (
+        {!isTwoDice && pMode !== 'none' && !isBomb && type !== 'lightning' && (
           <label className="flex min-h-11 items-center gap-2 font-bold">
             <input type="checkbox" className="h-5 w-5" checked={pAutoTurn} onChange={(e) => setPAutoTurn(e.target.checked)} />
             {text('한 판이 끝나면 자동으로 다음 차례로 넘기기', 'Move to the next turn automatically')}
@@ -947,6 +948,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         )}
         {simpleOpts.length > 0 && (
           <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
+            {lightningUsesClass && <p className="text-sm text-on-surface-variant">{t('gameLightning.classPlayerCountHint')}</p>}
             {simpleOpts.filter(o => o.key !== 'twoDiceRounds' || diceTeams >= 3).map((o) => (
               <div key={o.key} className="space-y-1">
                 <p className="text-sm font-bold">{text(o.ko, o.en)}</p>

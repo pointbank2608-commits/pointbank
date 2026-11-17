@@ -79,7 +79,7 @@ export function isNativeGameReady(template: Pick<GameTemplate, 'game_type' | 'co
 const KEEP_OLD_FLOW = new Set<string>(['quizshow']);
 /** 항목 목록을 늘 숨기는 게임(시한폭탄: 누가 걸릴지·읽을 내용이 미리 보이면 재미가 없다). 도구줄의 "항목 숨기기"도 잠긴다. */
 /** 게임 안에 "지금 누구 차례" 표시가 따로 있는 경우(시한폭탄 참가자 순서대로) — 도구줄 차례 바를 숨겨 두 번 보이지 않게 한다. */
-export const hasOwnTurnDisplay = (type: GameType, config?: { bombMode?: 'pass' | 'timer' }): boolean => type === 'timer' || type === 'popcorn' || (type === 'bomb' && (config?.bombMode ?? 'pass') === 'pass');
+export const hasOwnTurnDisplay = (type: GameType, config?: { bombMode?: 'pass' | 'timer' }): boolean => type === 'timer' || type === 'popcorn' || type === 'lightning' || (type === 'bomb' && (config?.bombMode ?? 'pass') === 'pass');
 export const itemsAlwaysHidden = (type: GameType): boolean => type === 'bomb';
 export const instantStart = (type: GameType): boolean => !KEEP_OLD_FLOW.has(type);
 

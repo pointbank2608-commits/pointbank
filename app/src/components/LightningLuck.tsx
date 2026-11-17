@@ -21,6 +21,7 @@ export const LIGHTNING_DEFAULTS = { players: 8, min: 4, max: 12 };
 interface Props {
   items: GameItem[];
   players: number;
+  participants?: { entries: GameItem[]; teams: boolean };
   minSec: number;
   maxSec: number;
   /** 번개를 맞을 캐릭터 — 게임 시작 전에 고른다(저장은 페이지가) */
@@ -71,10 +72,10 @@ const STYLE = `
 @media (prefers-reduced-motion: reduce) { .lt-anim { animation-duration:.01s !important; animation-iteration-count:1 !important; } }
 `;
 
-const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ items, players, minSec, maxSec, char = 'sheep', onChar }, ref) {
+const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ items, players, participants, minSec, maxSec, char = 'sheep', onChar }, ref) {
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
-  const n = Math.min(40, Math.max(2, players));
+  const n = participants?.entries.length ?? Math.min(40, Math.max(2, players));
   const lo = Math.max(2, Math.min(minSec, maxSec));
   const hi = Math.max(lo, maxSec);
   const itemKey = items.map((i) => i.id).join(',');
@@ -116,6 +117,9 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
   const current = items.length > 0 && order.length > 0 ? parseItem(items[order[pos % order.length]]?.label ?? '') : { text: '', ko: '' };
   const aliveCount = alive.filter(Boolean).length;
   const winner = alive.findIndex(Boolean);
+  const currentName = participants?.entries[cur]?.label;
+  const winnerName = participants?.entries[winner]?.label;
+  const winnerText = winnerName ? t('gameLightning.namedWinner', { name: winnerName }) : t('gameLightning.winnerLine', { n: winner + 1 });
 
   const nextAlive = (from: number, a: boolean[]) => {
     for (let k = 1; k <= a.length; k++) {
@@ -126,7 +130,7 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
   };
 
   function sendClouds() {
-    if (phase !== 'ready') return;
+    if (phase !== 'ready' || n < 2 || !items.length) return;
     clearTimers();
     setSnapshot({ alive: [...alive], cur, pos, round });
     setRunId((r) => r + 1);
@@ -240,10 +244,10 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
     [],
   );
 
-  if (items.length === 0) {
+  if (!items.length || n < 2) {
     return (
       <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
-        {t('gameLightning.needItems')}
+        {t(!items.length ? 'gameLightning.needItems' : 'gameLightning.needParticipants')}
       </div>
     );
   }
@@ -340,8 +344,8 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
           <span className="inline-block rounded-full bg-white/85 px-[2.4cqw] py-[0.6cqw] font-bold text-slate-800 shadow" style={{ fontSize: 'clamp(11px, 1.9cqw, 26px)' }}>
             {phase === 'ready' && t('gameLightning.readyTitle')}
             {phase === 'clouds' && (reading ? t('gameLightning.startReading') : t('gameLightning.cloudsComing'))}
-            {phase === 'struck' && t('gameLightning.outLine', { n: cur + 1 })}
-            {phase === 'won' && t('gameLightning.winnerLine', { n: winner + 1 })}
+            {phase === 'struck' && (currentName ? t('gameLightning.namedOut', { name: currentName }) : t('gameLightning.outLine', { n: cur + 1 }))}
+            {phase === 'won' && winnerText}
           </span>
         </div>
 
@@ -392,22 +396,26 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
           <div className="lt-anim absolute left-1/2 top-[26%] z-20 -translate-x-1/2 text-center" style={{ animation: 'lt-pop .6s both' }}>
             <img src={LT_IMG('trophy')} alt="" draggable={false} className="mx-auto h-[16cqw] w-auto" style={{ filter: 'drop-shadow(0 1cqw 1cqw rgba(0,0,0,.3))' }} />
             <div className="mt-[0.6cqw] rounded-full bg-amber-300 px-[3cqw] py-[0.8cqw] font-black text-amber-950 shadow-xl" style={{ fontSize: 'clamp(18px,4.4cqw,60px)' }}>
-              {t('gameLightning.winnerLine', { n: winner + 1 })}
+              {winnerText}
             </div>
           </div>
         )}
       </div>
 
-      {/* 학생 번호 칩 */}
-      <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
+      {currentName && (phase === 'ready' || phase === 'clouds') && <p role="status" className="mt-3 text-center text-sm font-bold text-deep-navy">
+        {t('gameLightning.currentReader', { n: cur + 1, name: currentName })}
+      </p>}
+      <div role="group" aria-label={t('gameLightning.participants')} className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
         {alive.map((ok, i) => {
           const isCur = i === cur && phase !== 'won';
+          const participant = participants?.entries[i];
+          const label = t(ok ? 'gameLightning.chipAlive' : 'gameLightning.chipOut', { n: i + 1 });
           return (
             <button
-              key={i}
+              key={participant?.id ?? i}
               type="button"
               onClick={() => pickReader(i)}
-              disabled={!ok}
+              disabled={!ok || phase === 'struck' || phase === 'won'}
               className="lt-anim flex h-10 min-w-10 items-center justify-center rounded-full px-2 font-bold text-white shadow-md transition-transform"
               style={{
                 background: ok ? CHIP_COLORS[i % CHIP_COLORS.length] : '#cbd5e1',
@@ -416,7 +424,9 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
                 color: ok ? '#fff' : '#64748b',
                 animation: isCur ? 'lt-chip .8s ease-in-out infinite' : undefined,
               }}
-              title={ok ? t('gameLightning.chipAlive', { n: i + 1 }) : t('gameLightning.chipOut', { n: i + 1 })}
+              aria-current={isCur ? 'true' : undefined}
+              title={participant ? `${label} · ${participant.label}` : label}
+              aria-label={participant ? `${label} · ${participant.label}` : label}
             >
               {ok ? i + 1 : `✕ ${i + 1}`}
             </button>
@@ -424,7 +434,7 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
         })}
       </div>
       <div className="mt-1 text-center font-label-md text-label-md text-on-surface-variant">
-        {t('gameLightning.survivors', { n: aliveCount, total: alive.length })} · {t('gameLightning.roundLabel', { n: round })}
+        {t(participants?.teams ? 'gameLightning.teamSurvivors' : 'gameLightning.survivors', { n: aliveCount, total: alive.length })} · {t('gameLightning.roundLabel', { n: round })}
       </div>
 
       {/* 조작 */}

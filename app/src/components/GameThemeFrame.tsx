@@ -632,7 +632,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
           <button type="button" className="min-h-11 rounded-xl border border-outline-variant bg-white px-3 font-bold" onClick={() => setTeamOrderOpen(true)}>{t('gamePlay.teamOrder')}</button>
           <button type="button" className="min-h-11 rounded-xl border border-outline-variant bg-white px-3 font-bold" onClick={() => setShowOrderOn(!showOrder)}>{t(showOrder ? 'gamePlay.hideOrder' : 'gamePlay.showOrder')}</button>
         </div>}
-        {(lessonClassTurns || (!nativeTurn && !workspace)) && showOrder && roster && teamOrder && teamOrder.order.length > 0 && (
+        {gameType !== 'lightning' && (lessonClassTurns || (!nativeTurn && !workspace)) && showOrder && roster && teamOrder && teamOrder.order.length > 0 && (
           <div data-class-turn-strip className="game-order-strip relative z-10 mb-3 flex shrink-0 items-center gap-2 rounded-2xl bg-surface-container-lowest/95 px-2 py-2 shadow-sm">
             <button
               type="button"

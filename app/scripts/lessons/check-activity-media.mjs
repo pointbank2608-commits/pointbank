@@ -379,15 +379,48 @@ try {
   await page.waitForURL(new RegExp(stemSlides[1].id));
   console.log('PASS Ready STEM and replaced worksheet save, reopen and present');
   await page.goto(base+'/curriculum');
+  await page.waitForFunction(() => window.__lessonQA);
+  await page.evaluate(() => {
+    window.__lessonQA.students = { a: ['QA 학생 A', 'QA 학생 B', 'QA 학생 C'].map((name, i) => ({ id: `lightning-${i}`, name })) };
+    window.__saveLessonQA();
+  });
+  await page.reload();
   await edit();
+  await form.locator(`[data-slide-id="${lightningSources[0].id}"]`).click();
+  const lightningPlayers = page.getByRole('group', { name: '번개 피하기 참가자', exact: true });
+  await lightningPlayers.getByRole('button', { name: /QA 학생 C/ }).waitFor();
+  assert.equal(await lightningPlayers.getByRole('button').count(), 3);
+  const lightningToolbar = detail.locator('[data-game-toolbar]');
+  await lightningToolbar.getByRole('button', { name: '반 설정', exact: true }).click();
+  const lightningClass = detail.locator('[data-game-toolbar-panel="class"]');
+  await lightningClass.getByRole('button', { name: '팀', exact: true }).click();
+  await lightningClass.getByRole('button', { name: '적용', exact: true }).click();
+  await page.getByText(/남은 팀 2 \/ 2팀/).waitFor();
+  assert.equal(await lightningPlayers.getByRole('button').count(), 2);
+  await lightningToolbar.getByRole('button', { name: '반 설정', exact: true }).click();
+  await lightningClass.getByRole('button', { name: '개인', exact: true }).click();
+  await lightningClass.getByRole('button', { name: /^결석 학생 제외/ }).click();
+  await lightningClass.getByRole('checkbox', { name: 'QA 학생 C', exact: true }).check();
+  await lightningClass.getByRole('button', { name: '적용', exact: true }).click();
+  await lightningPlayers.getByRole('button', { name: /QA 학생 C/ }).waitFor({ state: 'detached' });
+  assert.equal(await lightningPlayers.getByRole('button').count(), 2);
+  assert.equal(await lightningToolbar.locator('[data-turn-bar]').count(), 0);
+  await detail.locator('[data-game-start-card]').getByRole('button', { name: '게임 시작', exact: true }).click();
+  await detail.getByRole('button', { name: /다음 사람/ }).click();
+  await page.getByText('지금 차례 · 2번 QA 학생 B', { exact: true }).waitFor();
+  assert.equal(await lightningPlayers.getByRole('button', { name: /QA 학생 B/ }).getAttribute('aria-current'), 'true');
   for (const source of lightningSources) {
     await form.locator(`[data-slide-id="${source.id}"]`).click();
     await form.getByRole('button',{name:/이 슬라이드부터 발표/}).click();
     await page.waitForURL(/\/games\/lightning/);
+    await lightningPlayers.getByRole('button', { name: /QA 학생 B/ }).waitFor();
+    assert.equal(await lightningPlayers.getByRole('button').count(), 2);
+    await page.getByText(/남은 학생 2 \/ 2명/).waitFor();
     await page.getByText(new RegExp(source.words.map(word=>word.replace(/[.]/g,'\\.')).join('|'))).first().waitFor();
     await page.goto(base+'/curriculum');
     await edit();
   }
+  console.log('PASS Lightning participant circles and native turns match the class roster, including absences in presentation');
   console.log('PASS Lightning direct sentence, sentence list, and slide word list persist and appear during presentation');
   await pdfThumb.locator('img').waitFor();
   await pdfThumb.click();

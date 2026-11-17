@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import EditOnly from '../components/EditOnly';
@@ -7,7 +7,10 @@ import LightningLuck, { LIGHTNING_DEFAULTS } from '../components/LightningLuck';
 import { type CharKind } from '../components/LightningChars';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
+import { useAuth } from '../context/AuthContext';
+import { ABSENT_EVENT, loadAbsent } from '../lib/absent';
 import { updateGameTemplate } from '../lib/api';
+import { isShowOrderOn, loadTeamOrder, TEAM_ORDER_EVENT } from '../lib/teamOrder';
 import { useGameTemplates } from '../lib/useGameTemplates';
 import type { GameItem, UndoHandle } from '../lib/types';
 
@@ -22,6 +25,7 @@ function defaultItems(): GameItem[] {
 
 export default function LightningLuckPage() {
   const { t } = useTranslation();
+  const { session, isStaff: isTeacher } = useAuth();
   const g = useGameTemplates({
     gameType: 'lightning',
     defaultItems,
@@ -58,6 +62,36 @@ export default function LightningLuckPage() {
   } = g;
 
   const [roundKey, setRoundKey] = useState(0);
+  const [rosterRevision, setRosterRevision] = useState(0);
+  useEffect(() => {
+    const refresh = () => setRosterRevision(revision => revision + 1);
+    window.addEventListener(ABSENT_EVENT, refresh);
+    window.addEventListener(TEAM_ORDER_EVENT, refresh);
+    return () => {
+      window.removeEventListener(ABSENT_EVENT, refresh);
+      window.removeEventListener(TEAM_ORDER_EVENT, refresh);
+    };
+  }, []);
+  const turnScope = `${session?.user.id}:${g.academy?.id}`;
+  const participants = useMemo(() => {
+    void rosterRevision;
+    if (!isTeacher || !classId || !roster.length) return undefined;
+    const absent = new Set(loadAbsent(classId));
+    const present = roster.filter(student => !absent.has(student.id));
+    if (!isShowOrderOn()) return { entries: present, teams: false };
+    const order = loadTeamOrder(present, turnScope);
+    if (order.mode === 'individual') {
+      const byId = new Map(present.map(student => [student.id, student]));
+      return { entries: order.order.flatMap(id => byId.get(id) ?? []), teams: false };
+    }
+    const occupied = new Set(present.map(student => order.teamOf[student.id]));
+    const entries = order.order.flatMap(id => {
+      const index = Number(id.slice('team-'.length));
+      return occupied.has(index) ? [{ id, label: order.teamNames?.[id] || t('teamOrder.teamLabel', { n: index + 1 }) }] : [];
+    });
+    return { entries, teams: true };
+  }, [classId, isTeacher, roster, turnScope, rosterRevision, t]);
+  const participantKey = JSON.stringify([classId, participants?.entries.map(row => row.id)]);
   const demoItems = useMemo(defaultItems, []);
   const gameRef = useRef<UndoHandle>(null);
   const players = selected?.config.lightningPlayers ?? LIGHTNING_DEFAULTS.players;
@@ -225,7 +259,7 @@ export default function LightningLuckPage() {
           <EditOnly>{classPicker}</EditOnly>
           <div>
             <GameThemeFrame gameType="lightning" roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-              <LightningLuck items={demoItems} players={players} minSec={minSec} maxSec={maxSec} />
+              {g.rosterLoading ? t('common.loading') : <LightningLuck key={participantKey} items={demoItems} players={players} participants={participants} minSec={minSec} maxSec={maxSec} />}
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameLightning.emptyStaff') : t('gameLightning.emptyStudent')}
@@ -248,7 +282,7 @@ export default function LightningLuckPage() {
             onUndo={() => gameRef.current?.undo()}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <LightningLuck key={roundKey} ref={gameRef} items={selected.items} players={players} minSec={minSec} maxSec={maxSec} char={char} onChar={isStaff ? (c) => void commitConfig({ lightningChar: c }) : undefined} />
+            {g.rosterLoading ? t('common.loading') : <LightningLuck key={`${roundKey}:${participantKey}`} ref={gameRef} items={selected.items} players={players} participants={participants} minSec={minSec} maxSec={maxSec} char={char} onChar={isStaff ? (c) => void commitConfig({ lightningChar: c }) : undefined} />}
           </GameThemeFrame>
 
           <div className="space-y-4">
