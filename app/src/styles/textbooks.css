@@ -28,9 +28,13 @@
 .textbook-card fieldset { min-width: 0; border-top: 1px solid #d7e0eb; margin-top: 1rem; }
 .textbook-item { display: grid; gap: .5rem; padding: .65rem 0; border-bottom: 1px solid #e4ebf3; }
 .textbook-check { display: flex; gap: .4rem; align-items: center; min-height: 2.75rem; }
+.textbook-draft-add, .textbook-draft-remove { gap: .3rem; }
+.textbook-draft-add { margin-block: .45rem .25rem; }
+.textbook-draft-remove { margin-inline-start: auto; color: #952d28; }
+.textbook-draft-add .material-symbols-outlined, .textbook-draft-remove .material-symbols-outlined { font-size: 1.15rem; }
 .textbook-chooser { width: min(36rem, calc(100vw - 2rem)); max-height: 80vh; margin: auto; overflow: auto; }
 .textbook-chooser::backdrop { background: #15233b66; }
-.classroom-dialog.ai-materials-dialog { width: min(46rem, calc(100vw - 2rem)); max-height: 85dvh; overflow-y: auto; }
+.classroom-dialog.ai-materials-dialog { width: min(46rem, calc(100vw - 2rem)); max-height: 85dvh; overflow-y: auto; scroll-padding-block-end: 7rem; }
 .ai-materials-dialog:not([open]) { display: none; }
 .ai-materials-dialog h3 { font-weight: 750; color: #192a44; }
 .ai-materials-form { display: grid; gap: 1rem; }
