@@ -1,0 +1,33 @@
+export const lessonPptKo = {
+  title: 'PPT 가져오기',
+  choose: 'PowerPoint 파일 선택',
+  help: 'PPTX 파일을 최대 {{pages}}장, {{mb}}MB까지 가져올 수 있어요. 각 페이지는 정지 이미지로 추가돼요. 글꼴이나 복잡한 도형은 미리보기에서 확인해 주세요.',
+  storage: '추가한 이미지는 링크를 아는 사람이 볼 수 있어요.',
+  page: 'PPT {{number}}페이지',
+  insert: '{{count}}장 추가',
+  addAfter: '이 뒤에 추가',
+  rendering: '미리보기 만드는 중',
+  uploading: '슬라이드 저장 중',
+  format: 'PowerPoint에서 .pptx 형식으로 저장한 파일을 선택해 주세요.',
+  size: '{{mb}}MB 이하의 파일을 선택해 주세요.',
+  pages: '슬라이드가 1~{{pages}}장인 PPTX 파일을 선택해 주세요.',
+  renderError: 'PPTX를 열 수 없어요. 파일을 확인하고 다시 선택해 주세요.',
+  uploadError: '슬라이드를 추가하지 못했어요. 연결을 확인하고 다시 시도해 주세요.',
+};
+
+export const lessonPptEn = {
+  title: 'Import PowerPoint',
+  choose: 'Choose a PowerPoint file',
+  help: 'Import a PPTX of up to {{pages}} slides and {{mb}} MB. Each page becomes a still image. Check fonts and complex shapes in the preview.',
+  storage: 'Anyone with an image link can view it.',
+  page: 'PowerPoint page {{number}}',
+  insert: 'Add {{count}} slides',
+  addAfter: 'Add after this slide',
+  rendering: 'Preparing preview',
+  uploading: 'Saving slides',
+  format: 'Choose a file saved in PowerPoint .pptx format.',
+  size: 'Choose a file of {{mb}} MB or less.',
+  pages: 'Choose a PPTX with 1–{{pages}} slides.',
+  renderError: 'Could not open this PPTX. Check the file and try again.',
+  uploadError: 'Could not add the slides. Check your connection and try again.',
+};

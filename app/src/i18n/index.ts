@@ -6,14 +6,15 @@ import ko from './locales/ko';
 import { lessonUxKo, lessonUxEn } from './lessonUxLocales';
 import { textbookKo, textbookEn } from './textbookLocales';
 import { aiMaterialsKo, aiMaterialsEn } from './aiMaterialsLocales';
+import { lessonPptKo, lessonPptEn } from './lessonPptLocales';
 
 void i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
-      ko: { translation: { ...ko, lessonUx: lessonUxKo, textbook: textbookKo, aiMaterials: aiMaterialsKo } },
-      en: { translation: { ...en, lessonUx: lessonUxEn, textbook: textbookEn, aiMaterials: aiMaterialsEn } },
+      ko: { translation: { ...ko, lessonUx: lessonUxKo, textbook: textbookKo, aiMaterials: aiMaterialsKo, lessonPpt: lessonPptKo } },
+      en: { translation: { ...en, lessonUx: lessonUxEn, textbook: textbookEn, aiMaterials: aiMaterialsEn, lessonPpt: lessonPptEn } },
     },
     fallbackLng: 'ko',
     supportedLngs: ['ko', 'en'],

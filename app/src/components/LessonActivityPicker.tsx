@@ -56,9 +56,9 @@ function isWorkbook(block: BlockDef) {
   return !!materialId && !!(workbookOfMaterial(materialId) || workbookStep(materialId));
 }
 
-export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClose,canAttachHelper,storageKey,cards,gameSources,slides,replaceTargetId,selected,sourceName,entries,lessonName,academyId}:{
+export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClose,canAttachHelper,storageKey,cards,gameSources,slides,replaceTargetId,insertAfterId,selected,sourceName,entries,lessonName,academyId}:{
  onPick:(b:BlockDef,layout?:CanvasExample,theme?:string|null, worksheet?:ActivityWorksheetOptions)=>void;onBundle:()=>void;onClose:()=>void;canAttachHelper:boolean;storageKey:string;
- cards:FullCardItem[];gameSources:ReturnType<typeof lessonGameSources>;slides:LessonSlide[];replaceTargetId:string|null;
+ cards:FullCardItem[];gameSources:ReturnType<typeof lessonGameSources>;slides:LessonSlide[];replaceTargetId:string|null;insertAfterId?:string|null;
  selected:LessonSlide|null;sourceName:string;entries:PhonicsBankEntry[];lessonName:string;
  academyId:string;onPdf:(asset:Omit<PdfSlide,'id'|'kind'>)=>void;
  onStem:(lesson:StemLesson)=>void;
@@ -125,6 +125,8 @@ export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClo
  const choose=(b:BlockDef,layout?:CanvasExample)=>{if(locked.current)return;if(b.id==='media.pdf'){pdfInput.current?.click();return;}if(b.slide?.kind==='stem'){setStemOpen(true);return;}if(b.slide?.materialId==='library'||(b.slide?.materialId==='worksheet'&&!b.id.startsWith('worksheet.'))){setWorksheetBlock(b);return;}locked.current=true;onPick(b,layout,theme);};
  const canvasTitle = lessonName.trim() || t('lessonUx.sampleTitle');
  const selectedName = sourceName || t('lessonUx.linked');
+ const after = insertAfterId ? slides.findIndex(slide => slide.id === insertAfterId) : -1;
+ const insertionIndex = after < 0 ? slides.length : after + 1;
  const gameExamples = useMemo(() => {
    const matches = new Map<GameType, LessonGameMatch>();
    const replacing = slides.findIndex(slide => slide.id === replaceTargetId);
@@ -133,11 +135,11 @@ export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClo
      if (!gameType || block.slide?.kind !== 'game') continue;
      const candidate = { id: 'activity-picker-preview', kind: 'game', gameType } as const;
      const playlist = [...slides];
-     playlist.splice(replacing < 0 ? playlist.length : replacing, replacing < 0 ? 0 : 1, candidate);
+     playlist.splice(replacing < 0 ? insertionIndex : replacing, replacing < 0 ? 0 : 1, candidate);
      matches.set(gameType, resolveLessonGame(candidate, playlist, gameSources));
    }
    return matches;
- }, [slides, replaceTargetId, gameSources]);
+ }, [slides, replaceTargetId, insertionIndex, gameSources]);
  const gamePriority = (block: BlockDef) => {
    const match = block.slide?.gameType ? gameExamples.get(block.slide.gameType) : null;
    return !match?.content ? 2 : match.kind === 'builtin' ? 1 : 0;
@@ -148,14 +150,14 @@ export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClo
    const candidate = { id: 'phonics-activity-preview', kind: 'phonicsGame', gameId: '' } as const;
    const playlist = [...slides];
    const replacing = slides.findIndex(slide => slide.id === replaceTargetId);
-   playlist.splice(replacing < 0 ? playlist.length : replacing, replacing < 0 ? 0 : 1, candidate);
+   playlist.splice(replacing < 0 ? insertionIndex : replacing, replacing < 0 ? 0 : 1, candidate);
    const workbookTopic = lessonPhonicsTopic(playlist, candidate);
    const topic = workbookTopic === undefined ? matchUnitForWords(gameSources.cards) : workbookTopic;
    return new Map(gameCards.flatMap(block => {
      const id = block.slide?.phonicsGameId;
      return id ? [[id, phonicsSlideState(id, undefined, gameSources.cards, !ko, undefined, topic)] as const] : [];
    }));
- }, [slides, replaceTargetId, gameSources.cards, ko]);
+ }, [slides, replaceTargetId, insertionIndex, gameSources.cards, ko]);
  const example = (block: BlockDef, layout?: CanvasExample, large = false, material: LessonSlide | null = selected) => <LessonActivityExample
    key={material?.kind === 'material' ? material.phonicsUnitIds?.join(',') : undefined}
    block={block} cards={cards} gameMatch={block.slide?.gameType ? gameExamples.get(block.slide.gameType) : undefined}

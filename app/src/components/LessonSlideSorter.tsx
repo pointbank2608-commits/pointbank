@@ -26,6 +26,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
+import LessonPowerPointImport from './LessonPowerPointImport';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { createGameTemplate, fetchAllWordLists, fetchWordLists, uploadLessonSlideImage } from '../lib/api';
@@ -216,6 +217,8 @@ export default function LessonSlideSorter({
   const inputSession=useMemo(()=>({mode:addMode,active:true}),[addMode]);
   useEffect(()=>{inputSession.active=true;return()=>{inputSession.active=false;};},[inputSession]);
   const [pickerOpen,setPickerOpen]=useState(false);
+  const [insertAfterId, setInsertAfterId] = useState<string | null>(null);
+  const [powerPoint, setPowerPoint] = useState<{ afterId: string | null } | null>(null);
   const [phonicsEntries, setPhonicsEntries] = useState<PhonicsBankEntry[]>([]);
   const [phonicsLoaded, setPhonicsLoaded] = useState(false);
   const pendingActivity=useRef<string|null>(null);
@@ -388,13 +391,13 @@ export default function LessonSlideSorter({
     if (!addMode) setReplaceTargetId(null);
   }, [addMode]);
 
-  function placeSlides(made: LessonSlide[]) {
-    if (made.length === 0 || additionLock.current) return;
+  function placeSlides(made: LessonSlide[], afterId = insertAfterId, replaceId = replaceTargetId) {
+    if (made.length === 0 || additionLock.current) return false;
     additionLock.current=true;
     requestAnimationFrame(()=>{additionLock.current=false;});
     rememberActivity(recentKey,pendingActivity.current??blockOfSlide(made[0])?.id??'');
     pendingActivity.current=null;
-    const idx = replaceTargetId ? slides.findIndex((sl) => sl.id === replaceTargetId) : -1;
+    const idx = replaceId ? slides.findIndex((sl) => sl.id === replaceId) : -1;
     if (idx >= 0) {
       // 주 블록을 바꿔도 제목·타이머 같은 보조 블록은 그대로 남는다(BLOCK_SPEC §6)
       const kept = slides[idx].helpers;
@@ -403,8 +406,11 @@ export default function LessonSlideSorter({
       setReplaceTargetId(null);
       notify(t('curriculum.slides.replacedToast'));
     } else {
-      onChange([...slides, ...made]);
+      const after = afterId ? slides.findIndex(slide => slide.id === afterId) : -1;
+      const position = after < 0 ? slides.length : after + 1;
+      onChange([...slides.slice(0, position), ...made, ...slides.slice(position)]);
     }
+    setInsertAfterId(null);
     // 방금 넣은 슬라이드가 열리며 스스로 채우는 값(게임 슬라이드가 고른 게임 내용 등)은 넣기와 한 번으로
     // 묶는다 — 안 그러면 되돌리기를 한 번 눌러도 그 자동 변경만 되돌아가 "안 되는 것"처럼 보인다.
     lastKeyRef.current = { key: `update:${made[0].id}`, at: Date.now(), win: 5000 };
@@ -413,6 +419,7 @@ export default function LessonSlideSorter({
       document.querySelector<HTMLElement>(`[data-slide-id="${window.CSS.escape(made[0].id)}"]`)?.scrollIntoView({block:'nearest',inline:'nearest'});
       document.querySelector<HTMLElement>('[data-lesson-slide-detail]')?.scrollIntoView({block:'nearest'});
     }));
+    return true;
   }
 
   function addSlide(slide: LessonSlide) {
@@ -520,8 +527,8 @@ export default function LessonSlideSorter({
 
   return (
     <>
-    {pickerOpen&&<LessonActivityPicker storageKey={recentKey} cards={cards} gameSources={gameSources} slides={slides} replaceTargetId={replaceTargetId} selected={selected} sourceName={wordList?.name ?? ''} entries={phonicsEntries} lessonName={lessonName} academyId={academyId} canAttachHelper={!!selectedId&&!replaceTargetId}
-      onClose={()=>{setPickerOpen(false);if(addMode==='library')setAddMode(null);}}
+    {pickerOpen&&<LessonActivityPicker storageKey={recentKey} cards={cards} gameSources={gameSources} slides={slides} replaceTargetId={replaceTargetId} insertAfterId={insertAfterId} selected={selected} sourceName={wordList?.name ?? ''} entries={phonicsEntries} lessonName={lessonName} academyId={academyId} canAttachHelper={!!selectedId&&!replaceTargetId}
+      onClose={()=>{setPickerOpen(false);setInsertAfterId(null);if(addMode==='library')setAddMode(null);}}
       onStem={lesson=>{
         pendingActivity.current='learn.stem';
         const frames=lesson.frames.map(frame=>({...frame,id:uid()}));
@@ -531,6 +538,12 @@ export default function LessonSlideSorter({
       }}
       onPdf={asset=>{if(!inputSession.active)return;pendingActivity.current='media.pdf';addSlide({id:uid(),kind:'pdf',...asset});setPickerOpen(false);setAddMode(null);}}
       onPick={pickBlock} onBundle={()=>{pendingActivity.current='wordset';setPickerOpen(false);setAddMode('wordset');}}/>}
+
+    {powerPoint && <LessonPowerPointImport academyId={academyId} onClose={() => setPowerPoint(null)} onInsert={made => {
+      if (!placeSlides(made, powerPoint.afterId, null)) throw new Error('Slide insertion is busy');
+      setAddMode(null);
+      setPowerPoint(null);
+    }} />}
 
     <div className="flex flex-col gap-4 lg:flex-row">
       {/* 왼쪽 슬라이드 레일 */}
@@ -585,6 +598,7 @@ export default function LessonSlideSorter({
           type="button"
           onClick={() => {
             setReplaceTargetId(null);
+            setInsertAfterId(null);
             setPickerOpen(true);
           }}
           aria-haspopup="dialog"
@@ -592,6 +606,11 @@ export default function LessonSlideSorter({
         >
           <span className="material-symbols-outlined text-[18px]" aria-hidden>add</span>
           {t('lessonUx.add')}
+        </button>
+        <button type="button" disabled={!academyId} onClick={() => setPowerPoint({ afterId: selected?.id ?? null })}
+          className="flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-outline-variant bg-white px-3 font-bold text-primary disabled:opacity-50">
+          <span className="material-symbols-outlined text-[18px]" aria-hidden>upload_file</span>
+          {t('lessonPpt.title')}
         </button>
       </div>
 
@@ -667,6 +686,13 @@ export default function LessonSlideSorter({
               </span>
               <span className="material-symbols-outlined text-[20px] text-primary">{slideThumbLabel(selected, t).icon}</span>
               <span className="min-w-0 flex-1 truncate font-label-md text-label-md text-on-surface">{slideThumbLabel(selected, t).label}</span>
+              <button type="button" onClick={() => {
+                setReplaceTargetId(null);
+                setInsertAfterId(selected.id);
+                setPickerOpen(true);
+              }} className="rounded-full border border-primary px-4 py-1.5 font-label-md text-label-md text-primary hover:bg-primary-fixed">
+                {t('lessonPpt.addAfter')}
+              </button>
               <button
                 type="button"
                 onClick={() => {
@@ -675,6 +701,7 @@ export default function LessonSlideSorter({
                     return;
                   }
                   setReplaceTargetId(selected.id);
+                  setInsertAfterId(null);
                   setAddMode('library');
                   setPickerOpen(true);
                 }}
