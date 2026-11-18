@@ -43,7 +43,7 @@ export const textbookEn: Record<keyof typeof textbookKo, string> = {
   invalidFiles: 'Upload images or a PDF separately. Check the file types and sizes.',
   first: 'First PDF page', last: 'Last PDF page',
   invalidPageRange: 'Choose up to 12 consecutive PDF pages. Check the page numbers in the file.',
-  privacy: 'Automatic extraction sends the file to Google Gemini with instructions to read the selected PDF pages.',
+  privacy: 'Automatic extraction sends the file to OpenAI with instructions to read the selected PDF pages.',
   extract: 'Extract words and sentences', extracting: 'Reading the textbook…',
   review: 'Review words and sentences', reviewHelp: 'Choose what to save and check the English and Korean meanings.',
   listSharing: 'The reviewed word and sentence lists are added to the academy library.',
