@@ -19,7 +19,7 @@
 
 1. 스테이징에서 `supabase/133_parent_portal.sql` → `supabase/133_parent_portal_check.sql` → `supabase/134_student_account_staff_creation.sql`을 실행한다.
 2. 환경마다 VAPID 키를 한 번 생성한다(예: `npx web-push generate-vapid-keys`). 공개 키는 Edge Function의 `PARENT_PUSH_PUBLIC_KEY`로 저장하고 개인 키는 함수 비밀 `PARENT_PUSH_PRIVATE_KEY`로만 저장한다. `PARENT_PUSH_SUBJECT`에는 운영 연락용 HTTPS 주소 또는 `mailto:` URI를 쓴다. 별도의 32자 이상 무작위 `PARENT_PUSH_CRON_SECRET`을 Edge Function과 Vault(`parent_push_cron_secret`)에 같은 값으로 보관한다.
-3. Vault에 해당 프로젝트의 `https://<project-ref>.supabase.co`를 `parent_push_project_url`로 저장한다. `supabase functions deploy parent-push --no-verify-jwt --project-ref <project-ref>`로 함수 배포 후 `supabase/133_parent_push_schedule.sql`을 적용한다. 이 함수는 JWT 대신 별도 크론 비밀을 검증한다. 발송 준비를 확인한 뒤 `public.private_config`의 `parent_push_public_key`에 공개 키를 저장하면 학부모 API가 연결된 기기에 그 키를 제공한다. 대기열은 1분마다 처리하며 일시 실패는 최대 5회 시도한다.
+3. Vault에 `parent_push_project_url`(프로젝트 Supabase 주소)과 `parent_push_gateway_jwt`(같은 프로젝트의 anon JWT)를 저장한다. 기본 JWT 검사를 켠 채 `parent-push` Edge Function을 배포한 뒤 `supabase/133_parent_push_schedule.sql`을 적용한다. 함수는 별도 크론 비밀도 검증한다. 발송 준비를 확인한 뒤 `public.private_config`의 `parent_push_public_key`에 공개 키를 저장하면 학부모 API가 연결된 기기에 그 키를 제공한다. 대기열은 1분마다 처리하며 일시 실패는 최대 5회 시도한다.
 4. 실기기에서 Android Chrome 및 iPhone 홈 화면 앱 각각을 보호자 링크로 연결한다. 푸시를 켠 뒤 교사가 시험 숙제 발행, 학생이 완료할 때 페이지와 잠금 화면을 모두 확인한다. 푸시 탭으로 해당 자녀의 알림함 열기, 푸시 끄기, 개인 연결 끊기, 원장의 전체 해제도 확인한다.
 
 푸시를 즉시 중지하려면 `select cron.unschedule('parent-push');`를 실행한다. 페이지의 현황과 알림함은 계속 확인할 수 있다. 공개 키를 교체할 때는 이전 브라우저 구독을 다시 등록해야 한다.
