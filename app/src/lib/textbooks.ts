@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { parseWorksheetFile, type WorksheetDocument } from './worksheetStudio';
+import type { SourceMaterialOptions, TeachingDraft } from './teachingMaterials';
 
 export const TEXTBOOK_MAX_BYTES = 10 * 1024 * 1024;
 export const TEXTBOOK_MAX_FILES = 6;
@@ -97,13 +98,15 @@ export async function createTextbookBook(academy: string, owner: string, title: 
   return existing.data;
 }
 
-export async function extractTextbook(academy: string, files: File[], first: number, last: number): Promise<TextbookExtraction> {
+export async function extractTextbook(academy: string, files: File[], first: number, last: number,
+  options?: SourceMaterialOptions): Promise<TextbookExtraction & Partial<TeachingDraft>> {
   const body = new FormData();
   body.set('academy', academy);
   body.set('first', String(first));
   body.set('last', String(last));
+  if (options) body.set('options', JSON.stringify(options));
   files.forEach(file => body.append('files', file));
-  const { data, error } = await supabase.functions.invoke<TextbookExtraction>('extract-textbook', { body });
+  const { data, error } = await supabase.functions.invoke<TextbookExtraction & Partial<TeachingDraft>>('extract-textbook', { body });
   if (error) {
     const payload = error.context instanceof Response ? await error.context.json().catch(() => null) : null;
     throw new Error(typeof payload?.error === 'string' ? payload.error : 'extractionUnavailable');

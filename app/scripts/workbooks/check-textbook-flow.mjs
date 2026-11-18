@@ -26,6 +26,7 @@ const fixture = `
 const api = `
   const lists = async () => (await fetch('${origin}/word_lists')).json();
   const mocks = {fetchAllWordLists: lists, fetchWordLists: lists,
+    createCurriculumLesson: async draft => (await fetch('${origin}/curriculum_lessons', {method:'POST',body:JSON.stringify(draft)})).json(),
     wordListKindOf: l => l.kind || 'word', fetchPhonicsBankResult: async () => ({entries: [], mediaAvailable: false})};
   ${apiExports.map(name => `export const ${name} = (...args) => (mocks.${name} || (async () => []))(...args);`).join('\n')}
 `;
@@ -52,6 +53,7 @@ const units = [
 const lists = [{ id: 'old-sentence-list', kind: 'sentence', name: 'Existing workbook · Unit 2', items: [
   { id: 'existing-sentence', word: 'We walk by the river.', meaning: '우리는 강가를 걸어요.', image_url: null },
 ] }], sheets = [];
+const lessons = [];
 const extraction = {
   words: [
     { text: 'river', meaning: '강', page: 1, meaningSuggested: false },
@@ -87,10 +89,33 @@ try {
     });
     if (request.method() === 'OPTIONS') return respond(null);
     if (pathname === '/word_lists') return respond(lists);
+    if (pathname === '/curriculum_lessons' && request.method() === 'POST') {
+      const lesson = request.postDataJSON();
+      assert.ok(lesson.id && lesson.classId === null);
+      lessons.push(lesson);
+      return respond(lesson);
+    }
     if (pathname.endsWith('/extract-textbook')) {
       if (request.headers()['content-type']?.startsWith('application/json')) {
         const input = request.postDataJSON();
         if (input.mode === 'worksheet') {
+          if (input.options?.teaching) {
+            assert.match(input.source, /We walk by the river\./);
+            assert.deepEqual(input.options, { outputs: ['words', 'lesson', 'workbook'], teaching: {
+              grade: 8, level: 'foundation', purpose: 'exam', minutes: 30, questionCount: 4,
+              exam: { scope: 'Unit 2', counts: { reading: 1, vocabulary: 1, grammar: 0, writing: 2 } },
+            } });
+            extractionRequests.push('teaching');
+            return respond({ words: [{ text: 'river', meaning: '강' }], sentences: [], objective: 'Describe where we walk.',
+              lesson: [{ title: 'Model', minutes: 10, content: 'Say: We walk by the river.' }, { title: 'Practice', minutes: 20, content: 'Describe a new place.' }],
+              practice: { instruction: 'Read and answer.', passage: 'We walk by the river.', questions: [
+                { category: 'reading', prompt: 'Where do we walk?', options: ['By the river', 'By the ocean'], answer: 'By the river', explanation: 'Read the passage.', evidence: 'Source worksheet' },
+                { category: 'vocabulary', prompt: 'What is a river?', options: [], answer: 'Moving water', explanation: 'A river flows.', evidence: '' },
+                { category: 'writing', prompt: 'Write a sentence about a stream.', options: [], answer: 'We see a stream.', explanation: 'Use the new noun.', evidence: '' },
+                { category: 'writing', prompt: 'Describe another place.', options: [], answer: 'We walk by the lake.', explanation: 'Give a place.', evidence: '' },
+              ] },
+            });
+          }
           assert.deepEqual(Object.keys(input).sort(), ['academy', 'mode', 'source']);
           assert.match(input.source, /We walk by the river\./);
           extractionRequests.push(input.mode);
@@ -191,7 +216,7 @@ try {
   await page.getByLabel('단원 이름').waitFor();
   assert.equal(await page.getByLabel('교재 이름', { exact: true }).count(), 0);
   assert.equal(await page.getByLabel('교재 촬영').count(), 0);
-  assert.equal(await page.getByRole('button', { name: 'AI로 단어장/문장 모음 만들기', exact: true }).count(), 0);
+  assert.equal(await page.getByRole('button', { name: '수업자료 뚝딱 만들기', exact: true }).count(), 0);
   await page.getByLabel('단원 이름').fill('Unit 1');
   await page.getByRole('button', { name: '단원 저장', exact: true }).click();
   await page.getByText('저장하지 못했어요. 다시 시도해 주세요.').waitFor();
@@ -270,7 +295,7 @@ try {
   await page.keyboard.press('Escape');
   await page.waitForFunction(dialog => !dialog.isConnected, escapedDialog, { timeout: 2000 });
 
-  const importTitle = 'AI로 단어장/문장 모음 만들기';
+  const importTitle = '수업자료 뚝딱 만들기';
   const importAi = page.getByRole('button', { name: importTitle, exact: true });
   const sourceDialog = page.getByRole('dialog', { name: importTitle, exact: true });
   await page.getByRole('button', { name: '단어장', exact: true }).click();
@@ -340,10 +365,60 @@ try {
   await sourceDialog.waitFor({ state: 'hidden' });
   const savedWorksheetSentence = lists.find(list => list.name === 'River worksheet study' && list.kind === 'sentence');
   assert.equal(new URL(page.url()).searchParams.get('list'), savedWorksheetSentence.id);
-  assert.deepEqual(extractionRequests, ['photo', 'pdf', 'worksheet', 'worksheet']);
+  await go('/wordlists');
+  await importAi.click();
+  const outputOptions = sourceDialog.getByRole('group', { name: '만들 자료', exact: true });
+  assert.equal(await sourceDialog.getByRole('group', { name: '수업·워크북 설정' }).count(), 0);
+  await outputOptions.getByRole('checkbox', { name: '문장 모음', exact: true }).uncheck();
+  await outputOptions.getByRole('checkbox', { name: '수업', exact: true }).check();
+  await outputOptions.getByRole('checkbox', { name: '워크북', exact: true }).check();
+  assert.equal(await sourceDialog.getByLabel('시험 범위', { exact: true }).count(), 0);
+  await sourceDialog.getByLabel('학년', { exact: true }).selectOption('8');
+  await sourceDialog.getByLabel('영어 레벨', { exact: true }).selectOption('foundation');
+  await sourceDialog.getByLabel('수업 시간(분)', { exact: true }).fill('30');
+  await sourceDialog.getByLabel('용도', { exact: true }).selectOption('exam');
+  await sourceDialog.getByLabel('시험 범위', { exact: true }).fill('Unit 2');
+  await sourceDialog.getByLabel('문항 수', { exact: true }).fill('4');
+  await sourceDialog.getByLabel('문법', { exact: true }).fill('0');
+  await sourceDialog.getByRole('button', { name: '우리 활동지', exact: true }).click();
+  await location.selectOption('local');
+  await selectedWorksheet.selectOption({ label: 'River copy' });
+  const teach = sourceDialog.getByRole('button', { name: '선택한 자료 초안 만들기', exact: true });
+  await teach.click();
+  await sourceDialog.getByRole('alert').waitFor();
+  assert.match(await sourceDialog.getByRole('alert').innerText(), /문항 수의 합계/);
+  assert.equal(extractionRequests.filter(mode => mode === 'teaching').length, 0);
+  await sourceDialog.getByLabel('서술형', { exact: true }).fill('2');
+  await teach.click();
+  await sourceDialog.getByLabel('자료 이름', { exact: true }).fill('River lesson and workbook');
+  assert.equal(await sourceDialog.getByRole('group', { name: /^문장 모음/ }).count(), 0);
+  await sourceDialog.getByLabel('학습 목표', { exact: true }).fill('Describe a place by the river.');
+  await sourceDialog.getByLabel('단계 제목', { exact: true }).first().fill('Model by the river');
+  const workbook = sourceDialog.getByRole('group', { name: '워크북 · 4', exact: true });
+  await workbook.getByText('학생용 미리보기', { exact: true }).click();
+  await workbook.locator('details[open]').getByText('Where do we walk?', { exact: false }).waitFor();
+  await workbook.getByText('교사용 정답·해설', { exact: true }).click();
+  const reading = workbook.getByRole('group', { name: '1. 본문 이해', exact: true });
+  await reading.getByRole('textbox').first().fill('Where does the class walk?');
+  await sourceDialog.getByRole('button', { name: '확인한 자료 저장', exact: true }).click();
+  await sourceDialog.waitFor({ state: 'hidden' });
+  assert.equal(lessons.length, 1);
+  assert.equal(lessons[0].playlist[0].elements[0].text, 'Model by the river · 10분');
+  assert.equal(lessons[0].playlist[0].elements[1].text, 'Describe a place by the river.');
+  assert.equal(lessons[0].wordListId, lists.find(list => list.name === 'River lesson and workbook').id);
+  assert.equal(lists.filter(list => list.name === 'River lesson and workbook').length, 1);
+  const links = page.getByRole('navigation', { name: '저장한 자료 열기' });
+  assert.equal(await links.getByRole('link', { name: '수업' }).getAttribute('href'), '/curriculum');
+  await links.getByRole('link', { name: '워크북' }).click();
+  await page.waitForURL('**/materials/worksheet?activity=sourceWorkbook');
+  await page.locator('.print-board').getByText('[본문 이해] Where does the class walk?', { exact: false }).waitFor();
+  await page.getByRole('button', { name: '교사용 설명·답안', exact: true }).click();
+  await page.locator('[data-audience="teacher"]').waitFor();
+  assert.match((await page.locator('.print-board').allTextContents()).join('\n'), /Source worksheet/);
+  assert.deepEqual(extractionRequests, ['photo', 'pdf', 'worksheet', 'worksheet', 'teaching']);
   assert.equal(uploadCount, 0);
   assert.deepEqual(errors, []);
-  console.log('PASS catalog and worksheet regression, photo/PDF/worksheet study lists, flashcards and save retry');
+  console.log('PASS textbook catalog, legacy study lists, exam settings, lesson save, and edited workbook reopen');
 } finally {
   await browser?.close();
 }

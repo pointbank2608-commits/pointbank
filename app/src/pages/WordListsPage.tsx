@@ -2,10 +2,10 @@ import { activityName } from '../lib/activityNames';
 import { useRecoverableField } from '../lib/useRecoverableField';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import WordListGameLauncher from '../components/WordListGameLauncher';
 import TextbookLibrary from '../components/TextbookLibrary';
-import AiMaterialsDialog from '../components/AiMaterialsDialog';
+import AiMaterialsDialog, { type SavedAiMaterials } from '../components/AiMaterialsDialog';
 import SentenceListEditor from '../components/SentenceListEditor';
 import { isFreeTierGame, GAME_CATALOG } from '../lib/gameCatalog';
 import { prepareClassroomGame } from '../lib/gameWorkspace';
@@ -511,6 +511,7 @@ export default function WordListsPage() {
   const linkedList = params.get('list');
   const [materialFilter, setMaterialFilter] = useState<'all' | 'word' | 'sentence'>('all');
   const [aiDialog, setAiDialog] = useState<{ scope: string; mode: 'source' | 'topic' } | null>(null);
+  const [savedTeaching, setSavedTeaching] = useState<(SavedAiMaterials & { scope: string }) | null>(null);
   const [launchListId, setLaunchListId] = useState<string | null>(null);
   const [launchBusy, setLaunchBusy] = useState(false);
   const [launchError, setLaunchError] = useState(false);
@@ -751,13 +752,18 @@ export default function WordListsPage() {
       {academy?.id && profile?.id && aiDialog?.scope === accountScope.current &&
         <AiMaterialsDialog key={aiDialog.scope + aiDialog.mode} academy={academy.id} owner={profile.id} mode={aiDialog.mode}
           preferredKind={materialFilter === 'all' ? undefined : materialFilter} onClose={() => setAiDialog(null)}
-          onSaved={id => {
+          onSaved={result => {
             if (aiDialog.scope !== accountScope.current) return;
             setAiDialog(null);
-            setParams({ list: id });
-            void load();
+            if (result.listId) { setParams({ list: result.listId }); void load(); }
+            setSavedTeaching(result.lessonId || result.workbookPath ? { ...result, scope: aiDialog.scope } : null);
             notify(t('aiMaterials.saved'));
           }} />}
+      {savedTeaching?.scope === accountScope.current && <nav className="flex flex-wrap items-center gap-2" aria-label={t('aiMaterials.openSaved')}>
+        <span className="text-sm font-semibold text-deep-navy">{t('aiMaterials.openSaved')}</span>
+        {savedTeaching.lessonId && <Link className="textbook-button" to="/curriculum" state={{ reopenLessonId: savedTeaching.lessonId }}>{t('aiMaterials.lesson')}</Link>}
+        {savedTeaching.workbookPath && <Link className="textbook-button" to={savedTeaching.workbookPath}>{t('aiMaterials.workbook')}</Link>}
+      </nav>}
       <div className="flex flex-wrap gap-2" aria-label={t('flow.materialFilter')}>
         {(['all','word','sentence'] as const).map(kind => <button type="button" key={kind} className={`min-h-11 rounded-xl border px-4 font-bold ${!textbooks && materialFilter===kind?'bg-primary text-white':'bg-white text-deep-navy'}`} aria-pressed={!textbooks && materialFilter===kind} onClick={() => { setMaterialFilter(kind); if (textbooks || linkedList) setParams({}); }}>{t(kind==='all'?'flow.allMaterials':kind==='word'?'flow.words':'flow.sentences')}</button>)}
         <button type="button" className={`min-h-11 rounded-xl border px-4 font-bold ${textbooks?'bg-primary text-white':'bg-white text-deep-navy'}`} aria-pressed={textbooks} onClick={() => { if (!textbooks) setParams({ tab: 'textbooks' }); }}>{t('textbook.tab')}</button>

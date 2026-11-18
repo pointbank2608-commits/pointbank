@@ -1,11 +1,13 @@
 import { supabase } from './supabase';
 import type { WordListItem, WordListKind } from './types';
 import type { WorksheetDocument } from './worksheetStudio';
+import { hasTeachingDraft, type SourceMaterialOptions, type TeachingDraft } from './teachingMaterials';
 
 export const AI_MATERIAL_COUNT_LIMIT = 30;
 export type AiMaterialInput = { topic: string; grade: number; wordCount: number; sentenceCount: number };
 type DraftItem = { text: string; meaning: string; page?: number; meaningSuggested?: boolean };
 export type AiMaterialDraft = { words: DraftItem[]; sentences: DraftItem[] };
+export type SourceMaterialDraft = AiMaterialDraft & Partial<TeachingDraft>;
 export type AiMaterialList = { id: string; kind: WordListKind; name: string; items: WordListItem[] };
 
 function isDraftItems(items: unknown, limit: number): items is DraftItem[] {
@@ -18,7 +20,7 @@ export async function generateAiMaterials(academy: string, input: AiMaterialInpu
   return requestAiMaterials({ mode: 'generate', academy, ...input }, AI_MATERIAL_COUNT_LIMIT);
 }
 
-export async function extractWorksheetMaterials(academy: string, document: WorksheetDocument): Promise<AiMaterialDraft> {
+export async function extractWorksheetMaterials(academy: string, document: WorksheetDocument, options?: SourceMaterialOptions): Promise<SourceMaterialDraft> {
   const selected = document.selectedWordIds ? new Set(document.selectedWordIds) : null;
   const words = document.words.filter(word => !selected || selected.has(word.id));
   const sections = [
@@ -32,11 +34,11 @@ export async function extractWorksheetMaterials(academy: string, document: Works
     if (text && source.length + text.length + 1 <= 12000) source += `${text}\n`;
   }
   if (!source) throw new Error('noWorksheetText');
-  return requestAiMaterials({ mode: 'worksheet', academy, source }, 40);
+  return requestAiMaterials({ mode: 'worksheet', academy, source, options }, 40, options);
 }
 
-async function requestAiMaterials(body: object, limit: number): Promise<AiMaterialDraft> {
-  const { data, error } = await supabase.functions.invoke<AiMaterialDraft>('extract-textbook', {
+async function requestAiMaterials(body: object, limit: number, options?: SourceMaterialOptions): Promise<SourceMaterialDraft> {
+  const { data, error } = await supabase.functions.invoke<SourceMaterialDraft>('extract-textbook', {
     body,
   });
   if (error) {
@@ -46,7 +48,9 @@ async function requestAiMaterials(body: object, limit: number): Promise<AiMateri
   if (!data || !isDraftItems(data.words, limit) || !isDraftItems(data.sentences, limit)) {
     throw new Error('extractionFailed');
   }
-  if (!data.words.length && !data.sentences.length) throw new Error('noStudyItems');
+  if (options?.teaching ? !hasTeachingDraft(data, options) : !data.words.length && !data.sentences.length) {
+    throw new Error(options?.teaching ? 'extractionFailed' : 'noStudyItems');
+  }
   return data;
 }
 

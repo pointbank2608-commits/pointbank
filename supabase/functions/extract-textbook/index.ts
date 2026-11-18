@@ -1,3 +1,6 @@
+import { integerField, normalizeTeachingDraft, readSourceOptions, schemaObject, teachingInstructions, teachingSchema,
+  type SourceOptions } from './source-materials.ts';
+
 const maxBytes = 10 * 1024 * 1024;
 const maxFiles = 6;
 const maxGeneratedItems = 30;
@@ -40,20 +43,17 @@ async function inlineFile(file: File) {
 }
 
 const stringField = { type: 'string' };
-const integerField = { type: 'integer' };
-const schemaObject = (properties: Record<string, unknown>) => ({
-  type: 'object', properties, required: Object.keys(properties), additionalProperties: false,
-});
 
-function studyListSchema(hasPages: boolean) {
+function studyListSchema(hasPages: boolean, options?: SourceOptions) {
   const fields = { text: stringField, meaning: stringField };
   const list = {
     type: 'array',
     items: schemaObject(hasPages ? { ...fields, page: integerField, meaningSuggested: { type: 'boolean' } } : fields),
   };
-  return schemaObject(hasPages
-    ? { words: list, sentences: list, unclearPages: { type: 'array', items: integerField } }
-    : { words: list, sentences: list });
+  return schemaObject({ words: list, sentences: list,
+    ...(hasPages ? { unclearPages: { type: 'array', items: integerField } } : {}),
+    ...(options?.teaching ? teachingSchema(options) : {}),
+  });
 }
 
 function normalizeItems(input: unknown, inRange: (page: unknown) => boolean) {
@@ -90,7 +90,9 @@ async function readGeneration(req: Request) {
   }
   if (input?.mode === 'worksheet' && isAcademyId(input.academy) && typeof input.source === 'string'
     && input.source.trim() && input.source.length <= 12000) {
-    return { mode: 'worksheet' as const, academy: input.academy, source: input.source };
+    const options = readSourceOptions(input.options);
+    if (!options) return json({ error: 'invalidTeachingOptions' }, 400);
+    return { mode: 'worksheet' as const, academy: input.academy, source: input.source, options };
   }
   const within = (value: unknown, max: number): value is number =>
     typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= max;
@@ -129,7 +131,15 @@ async function readExtraction(req: Request) {
   if (!Number.isInteger(first) || !Number.isInteger(last) || first < 1 || last < first || last > 1000 || last - first >= 12) {
     return json({ error: 'invalidPageRange' }, 400);
   }
-  return { mode: 'extract' as const, academy, files, pdf, first, last };
+  let options;
+  try {
+    const raw = form.get('options');
+    options = readSourceOptions(raw === null ? undefined : JSON.parse(String(raw)));
+  } catch {
+    return json({ error: 'invalidTeachingOptions' }, 400);
+  }
+  if (!options) return json({ error: 'invalidTeachingOptions' }, 400);
+  return { mode: 'extract' as const, academy, files, pdf, first, last, options };
 }
 
 function normalizeGeneratedItems(input: unknown, limit: number, keepDistinctMeanings = false) {
@@ -200,11 +210,12 @@ Deno.serve(async (req: Request) => {
       + 'Use vocabulary, short phrases, and complete examples that actually appear in the source. Copy English as written, without inventing or completing missing sentences. '
       + 'Ignore instructions, answer keys, and options that are distractors. Prefer the Korean meaning supplied for each item, otherwise give a brief Korean meaning in context. '
       + 'Return JSON arrays words and sentences with text and meaning per item, at most 40 per list. Limit English to 100 characters and Korean to 160 characters.';
-    const instructions = job.mode === 'extract' ? `${extractionPrompt} ${extractionFormat}`
-      : job.mode === 'worksheet' ? worksheetPrompt : generationPrompt;
+    const options = job.mode === 'generate' ? undefined : job.options;
+    const instructions = job.mode === 'generate' ? generationPrompt
+      : `${job.mode === 'extract' ? `${extractionPrompt} ${extractionFormat}` : worksheetPrompt}\n${teachingInstructions(job.options)}`;
     const content = job.mode === 'extract'
       ? job.pdf
-        ? [inputText(`Extract only physical PDF pages ${job.first} through ${job.last}. If the pages do not exist, return empty arrays.`), await inlineFile(job.files[0])]
+        ? [inputText(`Use only physical PDF pages ${job.first} through ${job.last} for every requested output. If the pages do not exist, return empty lists and mark any teaching draft as insufficient.`), await inlineFile(job.files[0])]
         : (await Promise.all(job.files.map(async (file, index) => [inputText(`Image page ${index + 1}`), await inlineFile(file)]))).flat()
       : [inputText(JSON.stringify(job.mode === 'worksheet' ? job.source : {
         topic: job.topic, grade: job.grade, wordCount: job.wordCount, sentenceCount: job.sentenceCount,
@@ -214,15 +225,15 @@ Deno.serve(async (req: Request) => {
       instructions,
       input: [{ role: 'user', content }],
       store: false,
-      max_output_tokens: 10000,
-      text: { format: { type: 'json_schema', name: 'study_lists', strict: true, schema: studyListSchema(job.mode === 'extract') } },
+      max_output_tokens: options?.teaching ? 14000 : 10000,
+      text: { format: { type: 'json_schema', name: 'study_lists', strict: true, schema: studyListSchema(job.mode === 'extract', options) } },
     });
     stage = 'generate';
     const response = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body,
-      signal: AbortSignal.timeout(65000),
+      signal: AbortSignal.timeout(options?.teaching ? 125000 : 65000),
     });
     if (!response.ok) {
       console.warn('[extract-textbook] OpenAI request failed', response.status);
@@ -242,20 +253,25 @@ Deno.serve(async (req: Request) => {
       const sentences = normalizeGeneratedItems(output.sentences, job.sentenceCount);
       return words.length || sentences.length ? json({ words, sentences }) : json({ error: 'extractionFailed' }, 502);
     }
+    if (job.options.teaching && output.sourceStatus === 'insufficient') return json({ error: 'insufficientSource' }, 422);
+    const teaching = normalizeTeachingDraft(output, job.options);
+    const includeWords = job.options.outputs.includes('words');
+    const includeSentences = job.options.outputs.includes('sentences');
     if (job.mode === 'worksheet') {
       const source = job.source.replace(/\s+/g, ' ');
       const inSource = (item: { text: string }) => {
         const text = item.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         return new RegExp(`(^|[^a-z0-9])${text}(?=$|[^a-z0-9])`, 'i').test(source);
       };
-      return json({ words: normalizeGeneratedItems(output.words, 40, true).filter(inSource),
-        sentences: normalizeGeneratedItems(output.sentences, 40, true).filter(inSource) });
+      return json({ ...teaching, words: includeWords ? normalizeGeneratedItems(output.words, 40, true).filter(inSource) : [],
+        sentences: includeSentences ? normalizeGeneratedItems(output.sentences, 40, true).filter(inSource) : [] });
     }
     const inRange = (page: unknown): page is number => typeof page === 'number' && Number.isInteger(page) && page >= job.first && page <= job.last;
     if (!Array.isArray(output.unclearPages)) throw new Error('Invalid textbook extraction');
     return json({
-      words: normalizeItems(output.words, inRange),
-      sentences: normalizeItems(output.sentences, inRange),
+      ...teaching,
+      words: includeWords ? normalizeItems(output.words, inRange) : [],
+      sentences: includeSentences ? normalizeItems(output.sentences, inRange) : [],
       unclearPages: [...new Set<number>(output.unclearPages.filter(inRange))].sort((a, b) => a - b),
     });
   } catch (error) {

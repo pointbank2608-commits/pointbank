@@ -1,4 +1,4 @@
-import { WORKSHEET_ACTIVITIES, WORKSHEET_BASIC_ACTIVITIES } from '../lib/worksheetActivityCatalog';
+import { SOURCE_WORKBOOK_ACTIVITY, WORKSHEET_ACTIVITIES, WORKSHEET_BASIC_ACTIVITIES } from '../lib/worksheetActivityCatalog';
 
 const labels: Record<string,[string,string]> = {
  usingSource:['사용 중인 단어장·문장 모음','Using material'],sampleSource:['샘플 자료','Sample material'],itemsUnit:['개','items'],changeSource:['자료 변경','Change material'],cancelSource:['취소','Cancel'],loadingSource:['단어장을 불러오고 있어요','Loading material'],loadSourceFailed:['단어장을 불러오지 못했어요','Could not load your material'],retrySource:['다시 시도','Retry'],allFormats:['모든 양식 보기','All formats'],usableFormats:['선택한 자료로 만들 수 있는 양식','Formats for your material'],usedPages:['{{total}}개 중 {{used}}개 사용 · A4 {{pages}}쪽','{{used}} of {{total}} items used · {{pages}} A4 pages'],cannotPrint:['아직 인쇄할 수 있는 문항이 없어요','No printable questions yet'],chooseSentences:['문장 모음 선택','Choose sentences'],builtInSource:['자료 출처: 수업뚝딱 기본 문항 · 선택한 단어장과 별개예요. 문항 편집에서 고칠 수 있어요.','Source: 수업뚝딱 base questions, independent of the selected vocabulary. Edit the questions if needed.'],appliedRules:['적용 규칙','Applied rules'],chooseWords:['사용할 단어 선택','Choose words'],oneWordPage:['단어 한 개가 A4 한 쪽이에요. 사용할 단어만 선택하세요.','One word uses one A4 page. Select the words you need.'],pagesUnit:['쪽','pages'],excludedCount:['필요한 그림·소리·규칙 자료가 없는 {{count}}개는 이번 출력에서 제외했어요. 단어·그림 수정에서 보완할 수 있어요.','{{count}} items without required images, sounds or rules are excluded. Add the missing material in the editor.'],
@@ -29,7 +29,7 @@ function locale(index:0|1) { return {
  purpose:Object.fromEntries(Object.entries(purposeLabels).map(([key,value])=>[key,value[index]])),
  people:index?{solo:'Individual / class',pair:'Pairs',group:'Small groups'}:{solo:'혼자·전체',pair:'짝',group:'모둠'},
  field:Object.fromEntries(['title','instruction','passage','topic','prompt','answer','columns','partner','parts','word','questions'].map(key=>[key,labels[key==='title'?'titleLabel':key][index]])),
- activities:Object.fromEntries([...WORKSHEET_ACTIVITIES,...WORKSHEET_BASIC_ACTIVITIES].map(a=>[a.id,{title:index?a.en:a.ko,goal:index?a.goalEn:a.goalKo,tip:index?a.tipEn:a.tipKo}])),
+ activities:Object.fromEntries([...WORKSHEET_ACTIVITIES,...WORKSHEET_BASIC_ACTIVITIES,SOURCE_WORKBOOK_ACTIVITY].map(a=>[a.id,{title:index?a.en:a.ko,goal:index?a.goalEn:a.goalKo,tip:index?a.tipEn:a.tipKo}])),
 }; }
 export const worksheetStudioKo=locale(0);
 export const worksheetStudioEn=locale(1);
