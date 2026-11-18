@@ -24,13 +24,36 @@ async function hasFileSignature(file: File) {
   }
 }
 
+type InputText = { type: 'input_text'; text: string };
+const inputText = (text: string): InputText => ({ type: 'input_text', text });
+
 async function inlineFile(file: File) {
   const bytes = new Uint8Array(await file.arrayBuffer());
   const chunks: string[] = [];
   for (let i = 0; i < bytes.length; i += 0x6000) {
     chunks.push(btoa(String.fromCharCode(...bytes.subarray(i, i + 0x6000))));
   }
-  return { inlineData: { mimeType: file.type, data: chunks.join('') } };
+  const dataUrl = `data:${file.type};base64,${chunks.join('')}`;
+  return file.type === 'application/pdf'
+    ? { type: 'input_file', filename: 'textbook.pdf', file_data: dataUrl }
+    : { type: 'input_image', image_url: dataUrl, detail: 'high' };
+}
+
+const stringField = { type: 'string' };
+const integerField = { type: 'integer' };
+const schemaObject = (properties: Record<string, unknown>) => ({
+  type: 'object', properties, required: Object.keys(properties), additionalProperties: false,
+});
+
+function studyListSchema(hasPages: boolean) {
+  const fields = { text: stringField, meaning: stringField };
+  const list = {
+    type: 'array',
+    items: schemaObject(hasPages ? { ...fields, page: integerField, meaningSuggested: { type: 'boolean' } } : fields),
+  };
+  return schemaObject(hasPages
+    ? { words: list, sentences: list, unclearPages: { type: 'array', items: integerField } }
+    : { words: list, sentences: list });
 }
 
 function normalizeItems(input: unknown, inRange: (page: unknown) => boolean) {
@@ -131,7 +154,7 @@ Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') return json({ error: 'invalidRequest' }, 405);
   const authorization = req.headers.get('authorization');
   if (!authorization?.startsWith('Bearer ')) return json({ error: 'accessDenied' }, 401);
-  const apiKey = Deno.env.get('GEMINI_API_KEY');
+  const apiKey = Deno.env.get('OPENAI_API_KEY');
   const supabaseUrl = Deno.env.get('SUPABASE_URL');
   const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY');
   if (!apiKey || !supabaseUrl || !supabaseKey) return json({ error: 'extractionUnavailable' }, 503);
@@ -177,61 +200,43 @@ Deno.serve(async (req: Request) => {
       + 'Use vocabulary, short phrases, and complete examples that actually appear in the source. Copy English as written, without inventing or completing missing sentences. '
       + 'Ignore instructions, answer keys, and options that are distractors. Prefer the Korean meaning supplied for each item, otherwise give a brief Korean meaning in context. '
       + 'Return JSON arrays words and sentences with text and meaning per item, at most 40 per list. Limit English to 100 characters and Korean to 160 characters.';
-    const parts = job.mode === 'extract'
-      ? [{ text: extractionPrompt + ' ' + extractionFormat }, ...(job.pdf
-        ? [await inlineFile(job.files[0]), { text: `Extract only physical PDF pages ${job.first} through ${job.last}. If the pages do not exist, return empty arrays.` }]
-        : await Promise.all(job.files.map(async (file, index) => [{ text: `Image page ${index + 1}` }, await inlineFile(file)])).then(pages => pages.flat()))]
-      : job.mode === 'worksheet' ? [{ text: worksheetPrompt }, { text: JSON.stringify(job.source) }]
-      : [{ text: generationPrompt + '\n' + JSON.stringify({ topic: job.topic, grade: job.grade,
-        wordCount: job.wordCount, sentenceCount: job.sentenceCount }) }];
-    const configuredModel = Deno.env.get('TEXTBOOK_GEMINI_MODEL');
-    const model = configuredModel || 'gemini-3.5-flash';
-    // The production Gemini endpoint accepts JSON mode without a response schema.
-    // The output is checked below before it is returned to the author's review screen.
+    const instructions = job.mode === 'extract' ? `${extractionPrompt} ${extractionFormat}`
+      : job.mode === 'worksheet' ? worksheetPrompt : generationPrompt;
+    const content = job.mode === 'extract'
+      ? job.pdf
+        ? [inputText(`Extract only physical PDF pages ${job.first} through ${job.last}. If the pages do not exist, return empty arrays.`), await inlineFile(job.files[0])]
+        : (await Promise.all(job.files.map(async (file, index) => [inputText(`Image page ${index + 1}`), await inlineFile(file)]))).flat()
+      : [inputText(JSON.stringify(job.mode === 'worksheet' ? job.source : {
+        topic: job.topic, grade: job.grade, wordCount: job.wordCount, sentenceCount: job.sentenceCount,
+      }))];
     const body = JSON.stringify({
-      contents: [{ role: 'user', parts }],
-      generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 10000 },
+      model: Deno.env.get('TEXTBOOK_OPENAI_MODEL')?.trim() || 'gpt-4.1-mini',
+      instructions,
+      input: [{ role: 'user', content }],
+      store: false,
+      max_output_tokens: 10000,
+      text: { format: { type: 'json_schema', name: 'study_lists', strict: true, schema: studyListSchema(job.mode === 'extract') } },
     });
     stage = 'generate';
-    const signal = AbortSignal.timeout(65000);
-    const requestModel = (name: string) =>
-      fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(name)}:generateContent`, {
-        method: 'POST',
-        headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' },
-        body,
-        signal,
-      });
-    let response = await requestModel(model);
-    if (!configuredModel && [400, 404].includes(response.status)) {
-      response = await requestModel('gemini-2.5-flash-lite');
-    }
+    const response = await fetch('https://api.openai.com/v1/responses', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body,
+      signal: AbortSignal.timeout(65000),
+    });
     if (!response.ok) {
-      const failure = await response.json().catch(() => null);
-      const error = failure?.error;
-      const reason = error?.status;
-      const details = Array.isArray(error?.details) ? error.details : [];
-      const codes = details.flatMap((detail: { reason?: unknown }) =>
-        typeof detail?.reason === 'string' && /^[A-Z_]{1,64}$/.test(detail.reason) ? [detail.reason] : []);
-      const message = typeof error?.message === 'string' ? error.message : '';
-      const category = /api key|api_key/i.test(message) ? 'key'
-        : /schema/i.test(message) ? 'schema'
-        : /image|mime|inline.data/i.test(message) ? 'media'
-        : /country|region|billing/i.test(message) ? 'region-or-billing' : 'other';
-      console.warn('[extract-textbook] Gemini request failed', response.status,
-        typeof reason === 'string' && /^[A-Z_]{1,64}$/.test(reason) ? reason : '', codes.join(','), category);
+      console.warn('[extract-textbook] OpenAI request failed', response.status);
       return json({ error: 'extractionFailed' }, 502);
     }
     stage = 'parse';
-    const { candidates } = await response.json();
-    const answer = candidates?.[0];
-    if (answer?.finishReason !== 'STOP') {
-      const reason = answer?.finishReason;
-      console.warn('[extract-textbook] Gemini did not complete', typeof reason === 'string' && /^[A-Z_]+$/.test(reason) ? reason : 'unknown');
-      return json({ error: 'extractionFailed' }, 502);
-    }
-    const output = JSON.parse(answer.content.parts
-      .filter((part: { thought?: boolean }) => !part.thought)
-      .map((part: { text?: string }) => part.text ?? '').join(''));
+    const answer = await response.json() as {
+      status?: string;
+      output?: { type: string; content?: { type: string; text?: string }[] }[];
+    };
+    if (answer.status !== 'completed') throw new Error('OpenAI response incomplete');
+    const messages = (answer.output ?? []).flatMap(item => item.type === 'message' ? item.content ?? [] : []);
+    if (messages.some(part => part.type === 'refusal')) throw new Error('OpenAI response refused');
+    const output = JSON.parse(messages.filter(part => part.type === 'output_text').map(part => part.text).join(''));
     if (job.mode === 'generate') {
       const words = normalizeGeneratedItems(output.words, job.wordCount);
       const sentences = normalizeGeneratedItems(output.sentences, job.sentenceCount);
