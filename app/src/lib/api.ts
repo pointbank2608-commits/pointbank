@@ -1413,15 +1413,37 @@ export async function fetchBillingHistory(academyId: string): Promise<BillingHis
   );
 }
 
-/** 포트원으로 카드(빌링키) 발급이 끝난 뒤 호출 — 서버(Edge Function)가 호출자 본인의
- * academy_id를 직접 확인하므로 academyId를 body로 넘기지 않는다. */
-export async function registerBillingKey(billingKey: string): Promise<{ scheduledAt: string | null }> {
-  const { data, error } = await supabase.functions.invoke<{ ok?: boolean; error?: string; scheduled?: string }>('register-billing-key', {
-    body: { billingKey },
-  });
-  if (error) throw new Error(error.message);
+export interface SubscriptionQuote {
+  firstChargeOn: string;
+  amountKrw: number;
+  chargeNow: boolean;
+}
+
+async function requestBilling<T>(body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke<T & { error?: string }>('register-billing-key', { body });
+  if (error) {
+    const response = error.context;
+    const details = response instanceof Response ? await response.json().catch(() => null) : null;
+    throw new Error(details?.error || error.message);
+  }
   if (data?.error) throw new Error(data.error);
-  return { scheduledAt: data?.scheduled ?? null };
+  if (!data) throw new Error('No billing response');
+  return data;
+}
+
+export function fetchSubscriptionQuote(): Promise<SubscriptionQuote> {
+  return requestBilling({ action: 'quote' });
+}
+
+export async function startMonthlySubscription(billingKey: string, quote: SubscriptionQuote): Promise<string | null> {
+  const { scheduled } = await requestBilling<{ scheduled: string | null }>({
+    action: 'start-subscription', billingKey, firstChargeOn: quote.firstChargeOn, amountKrw: quote.amountKrw,
+  });
+  return scheduled;
+}
+
+export async function changeSubscriptionCard(billingKey: string): Promise<void> {
+  await requestBilling({ action: 'change-card', billingKey });
 }
 
 export async function cancelBilling(action: 'cancel' | 'resume'): Promise<void> {

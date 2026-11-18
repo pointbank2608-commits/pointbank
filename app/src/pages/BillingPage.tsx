@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { cancelBilling, fetchBillingHistory, fetchStudentsOfAcademy, registerBillingKey } from '../lib/api';
+import { cancelBilling, changeSubscriptionCard, fetchBillingHistory, fetchStudentsOfAcademy, fetchSubscriptionQuote, startMonthlySubscription, type SubscriptionQuote } from '../lib/api';
 import { BASE_FEE_KRW } from '../lib/planLimits';
 import { issueBillingKey } from '../lib/portone';
 import type { BillingHistoryRow } from '../lib/types';
@@ -13,7 +13,7 @@ function formatKrw(n: number): string {
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+  return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Seoul' });
 }
 
 export default function BillingPage() {
@@ -23,6 +23,13 @@ export default function BillingPage() {
   const [studentCount, setStudentCount] = useState<number | null>(null);
   const [history, setHistory] = useState<BillingHistoryRow[]>([]);
   const [busy, setBusy] = useState(false);
+  const [quote, setQuote] = useState<(SubscriptionQuote & { academyId: string }) | null>(null);
+  const [quoteFailed, setQuoteFailed] = useState(false);
+  const [quoteVersion, setQuoteVersion] = useState(0);
+
+  const isOwner = profile?.role === 'owner';
+  const hasSubscription = isPaid && !!academy?.next_billing_at;
+  const currentQuote = quote?.academyId === academy?.id ? quote : null;
 
   const load = useCallback(async () => {
     if (!academy?.id) return;
@@ -42,21 +49,36 @@ export default function BillingPage() {
     void load();
   }, [load]);
 
-  const isOwner = profile?.role === 'owner';
+  useEffect(() => {
+    const academyId = academy?.id;
+    if (!isOwner || !academyId || hasSubscription) return;
+    let current = true;
+    setQuote(null);
+    setQuoteFailed(false);
+    void fetchSubscriptionQuote().then(
+      (result) => { if (current) setQuote({ ...result, academyId }); },
+      () => { if (current) setQuoteFailed(true); },
+    );
+    return () => { current = false; };
+  }, [academy?.id, hasSubscription, isOwner, quoteVersion]);
 
-  async function handleRegisterCard() {
-    if (!academy) return;
+  async function handleBillingAction() {
+    if (!academy || busy || (!hasSubscription && !currentQuote)) return;
     setBusy(true);
     let scheduledAt: string | null = null;
     const ok = await run(async () => {
       const billingKey = await issueBillingKey(academy.name);
-      scheduledAt = (await registerBillingKey(billingKey)).scheduledAt;
+      if (hasSubscription) await changeSubscriptionCard(billingKey);
+      else if (currentQuote) scheduledAt = await startMonthlySubscription(billingKey, currentQuote);
     });
     setBusy(false);
     if (ok) {
-      notify(scheduledAt ? t('billing.trialScheduledToast', { date: scheduledAt }) : t('billing.cardRegisteredToast'));
+      notify(scheduledAt ? t('billing.trialScheduledToast', { date: formatDate(scheduledAt) }) :
+        t(hasSubscription ? 'billing.cardChangedToast' : 'billing.subscriptionStartedToast'));
       await refresh();
       await load();
+    } else if (!hasSubscription) {
+      setQuoteVersion((version) => version + 1);
     }
   }
 
@@ -116,13 +138,26 @@ export default function BillingPage() {
             {academy?.next_billing_at && (
               <p>{t('billing.nextBillingDate', { date: formatDate(academy.next_billing_at) })}</p>
             )}
-            <p>{t('billing.estimatedAmount', { amount: formatKrw(BASE_FEE_KRW) })}</p>
+            {hasSubscription && <p>{t('billing.estimatedAmount', { amount: formatKrw(BASE_FEE_KRW) })}</p>}
           </div>
         ) : (
           <div className="space-y-2 font-body-md text-body-md text-on-surface-variant">
             <p>{t('billing.freePlanPitch', { base: formatKrw(BASE_FEE_KRW) })}</p>
           </div>
         )}
+
+        {!hasSubscription && (currentQuote ? (
+          <div className="space-y-1 rounded-lg bg-surface-container-low px-4 py-3 font-body-md text-body-md text-on-surface">
+            <p className="font-semibold">{t('billing.firstChargeSummary', { date: formatDate(currentQuote.firstChargeOn), amount: formatKrw(currentQuote.amountKrw) })}</p>
+            <p>{t(currentQuote.chargeNow ? 'billing.firstChargeToday' : 'billing.firstChargeAfterTrial')}</p>
+            <p>{t('billing.recurringConsent', { amount: formatKrw(currentQuote.amountKrw) })}</p>
+          </div>
+        ) : (
+          <div role="status" className="font-body-md text-body-md text-on-surface-variant">
+            {t(quoteFailed ? 'billing.quoteFailed' : 'billing.quoteLoading')}
+            {quoteFailed && <button type="button" className="ml-2 text-primary underline" onClick={() => setQuoteVersion((version) => version + 1)}>{t('billing.retryQuote')}</button>}
+          </div>
+        ))}
 
         <div className="flex items-start gap-2 rounded-lg bg-tertiary-container/40 px-3 py-2.5 font-caption text-caption text-on-surface">
           <span aria-hidden="true">⚠️</span>
@@ -132,14 +167,14 @@ export default function BillingPage() {
         <div className="flex flex-wrap gap-2 pt-2">
           <button
             type="button"
-            onClick={() => void handleRegisterCard()}
-            disabled={busy}
+            onClick={() => void handleBillingAction()}
+            disabled={busy || (!hasSubscription && !currentQuote)}
             className="px-5 py-2.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md disabled:opacity-60 hover:bg-primary-container transition-colors"
           >
-            {isPaid ? t('billing.changeCardButton') : t('billing.registerCardButton')}
+            {hasSubscription ? t('billing.changeCardButton') : t('billing.startSubscriptionButton', { amount: formatKrw(currentQuote?.amountKrw ?? BASE_FEE_KRW) })}
           </button>
 
-          {isPaid && academy?.plan_status === 'active' && (
+          {hasSubscription && academy?.plan_status === 'active' && (
             <button
               type="button"
               onClick={() => void handleCancel()}
@@ -148,7 +183,7 @@ export default function BillingPage() {
               {t('billing.cancelButton')}
             </button>
           )}
-          {isPaid && academy?.plan_status === 'pending_cancel' && (
+          {hasSubscription && academy?.plan_status === 'pending_cancel' && (
             <button
               type="button"
               onClick={() => void handleResume()}
@@ -158,7 +193,7 @@ export default function BillingPage() {
             </button>
           )}
         </div>
-        {isPaid && academy?.plan_status === 'pending_cancel' && (
+        {hasSubscription && academy?.plan_status === 'pending_cancel' && (
           <p className="font-caption text-caption text-error">{t('billing.pendingCancelNotice')}</p>
         )}
       </div>
@@ -169,11 +204,12 @@ export default function BillingPage() {
           <p className="font-body-md text-body-md text-on-surface-variant">{t('billing.historyEmpty')}</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[480px] border-collapse text-left">
+            <table className="w-full min-w-[390px] border-collapse text-left whitespace-nowrap">
               <thead>
                 <tr className="border-b border-outline-variant/60 text-on-surface-variant">
                   <th className="py-2 pr-4 font-label-md text-label-md">{t('billing.colDate')}</th>
                   <th className="py-2 pr-4 font-label-md text-label-md">{t('billing.colStudents')}</th>
+                  <th className="py-2 pr-4 font-label-md text-label-md">{t('billing.colTeachers')}</th>
                   <th className="py-2 pr-4 font-label-md text-label-md">{t('billing.colAmount')}</th>
                   <th className="py-2 pr-4 font-label-md text-label-md">{t('billing.colStatus')}</th>
                 </tr>
@@ -183,6 +219,13 @@ export default function BillingPage() {
                   <tr key={row.id} className="border-b border-outline-variant/30">
                     <td className="py-2 pr-4">{formatDate(row.billed_at)}</td>
                     <td className="py-2 pr-4 tabular-nums">{row.student_count}</td>
+                    <td className="py-2 pr-4 tabular-nums">
+                      {row.teacher_count ?? (
+                        <abbr title={t('billing.teacherCountUnavailable')}>
+                          {row.status === 'success' ? t('billing.teacherCountMinimum') : '—'}
+                        </abbr>
+                      )}
+                    </td>
                     <td className="py-2 pr-4 tabular-nums">{formatKrw(row.amount_krw)}</td>
                     <td className="py-2 pr-4">
                       <span

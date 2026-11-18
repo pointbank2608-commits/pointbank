@@ -67,6 +67,7 @@ export interface BillingHistoryRow {
   period_start: string;
   period_end: string;
   student_count: number;
+  teacher_count: number | null;
   amount_krw: number;
   status: 'success' | 'failed';
   portone_payment_id: string | null;
