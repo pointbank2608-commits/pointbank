@@ -20,6 +20,7 @@ function json(body: unknown, status = 200) {
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS_HEADERS });
+  if (req.method !== 'POST') return json({ error: 'POST 요청이 필요해요.' }, 405);
 
   try {
     const { action } = (await req.json()) as CancelRequest;
@@ -47,19 +48,17 @@ Deno.serve(async (req: Request) => {
     if (!profile?.academy_id) throw new Error('소속된 학원이 없어요.');
     if (profile.role !== 'owner') throw new Error('구독 해지는 원장님만 할 수 있어요.');
 
-    const { data: academy, error: academyError } = await supabaseAsCaller
-      .from('academies')
-      .select('plan')
-      .eq('id', profile.academy_id)
-      .maybeSingle();
-    if (academyError) throw new Error(academyError.message);
-    if (academy?.plan !== 'paid') throw new Error('유료 플랜이 아니에요.');
-
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
-    await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('academies')
       .update({ plan_status: action === 'cancel' ? 'pending_cancel' : 'active' })
-      .eq('id', profile.academy_id);
+      .eq('id', profile.academy_id)
+      .eq('plan', 'paid')
+      .not('next_billing_at', 'is', null)
+      .select('id')
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) throw new Error('활성 구독을 찾지 못했어요.');
 
     return json({ ok: true });
   } catch (err) {

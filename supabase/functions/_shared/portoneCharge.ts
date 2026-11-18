@@ -3,9 +3,7 @@
 // 포트원에 결제를 요청하고 → 결과를 돌려준다"만 한다. billing_history 기록·academies
 // 갱신은 호출한 쪽(각 함수)에서 한다 — 실패 시에도 기록을 남겨야 하기 때문.
 //
-// 요금은 학생 수와 무관한 월 9,900원 정액이다(2026-09-17 확정) — 학생이 직접 쓰는
-// 기능이 없는 지금 단계에서는 학생 수로 추가 과금할 근거가 없다. student_count는
-// billing_history에 참고용으로만 남긴다(청구액 계산에는 안 쓴다).
+// 학생 수는 결제 내역에 참고용으로 기록한다. 청구액은 월 9,900원(부가세 포함)으로 고정한다.
 
 export interface ChargeResult {
   success: boolean;
@@ -16,6 +14,23 @@ export interface ChargeResult {
 }
 
 const PORTONE_API_BASE = 'https://api.portone.io';
+export const MONTHLY_SUBSCRIPTION_KRW = 9900;
+
+export async function requireIssuedBillingKey(billingKey: string) {
+  const apiSecret = Deno.env.get('PORTONE_API_SECRET');
+  const channelKey = Deno.env.get('PORTONE_CHANNEL_KEY');
+  if (!apiSecret || !channelKey) throw new Error('결제 서비스가 아직 준비되지 않았어요.');
+
+  const response = await fetch(`${PORTONE_API_BASE}/billing-keys/${encodeURIComponent(billingKey)}`, {
+    headers: { Authorization: `PortOne ${apiSecret}` },
+  });
+  if (!response.ok) throw new Error('등록된 카드를 확인하지 못했어요. 카드를 다시 등록해 주세요.');
+  const info = await response.json() as { status?: string; channels?: Array<{ type?: string; key?: string }> };
+  if (info.status !== 'ISSUED') throw new Error('사용할 수 없는 카드 등록 정보예요.');
+  if (!info.channels?.some((channel) => channel.key === channelKey)) {
+    throw new Error('현재 결제 채널에서 발급된 카드 등록 정보가 아니에요. 카드를 다시 등록해 주세요.');
+  }
+}
 
 export async function chargeAcademy(
   // deno-lint-ignore no-explicit-any
@@ -36,22 +51,24 @@ export async function chargeAcademy(
   }
 
   const studentCount = count ?? 0;
-  const amountKrw = Number(Deno.env.get('BASE_FEE_KRW') ?? '9900');
+  const amountKrw = MONTHLY_SUBSCRIPTION_KRW;
 
   const apiSecret = Deno.env.get('PORTONE_API_SECRET');
-  if (!apiSecret) {
-    // 채널키·API 시크릿이 아직 발급 전이면(KCP 승인 대기 중) 결제를 시도하지 않고 실패로
-    // 기록만 남긴다 — 화면/배치 작업이 죽지 않는다.
+  const channelKey = Deno.env.get('PORTONE_CHANNEL_KEY');
+  if (!apiSecret || !channelKey) {
     return {
       success: false,
       studentCount,
       amountKrw,
-      failureReason: 'PORTONE_API_SECRET 시크릿이 아직 설정되지 않았어요(KCP 승인 대기 중).',
+      failureReason: '포트원 API 시크릿이나 결제 채널이 설정되지 않았어요.',
     };
   }
 
-  const paymentId = `sub_${academyId}_${opts.dueDate}_${opts.attempt}`;
   try {
+    // KCP는 주문번호를 40자까지 받는다. 날짜와 시도 번호를 포함해 재시도에도 같은 ID를 쓴다.
+    const paymentSeed = new TextEncoder().encode(`${academyId}:${opts.dueDate}:${opts.attempt}`);
+    const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', paymentSeed));
+    const paymentId = `sub_${Array.from(digest.slice(0, 18), (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
     const res = await fetch(`${PORTONE_API_BASE}/payments/${paymentId}/billing-key`, {
       method: 'POST',
       headers: {
@@ -60,6 +77,7 @@ export async function chargeAcademy(
       },
       body: JSON.stringify({
         billingKey,
+        channelKey,
         orderName: '클래스뱅크 유료 플랜 구독료',
         customer: { id: customerUid },
         amount: { total: amountKrw },
@@ -69,6 +87,19 @@ export async function chargeAcademy(
 
     if (!res.ok) {
       const body = await res.text();
+      // 재요청 전에 포트원에서 결제가 끝났다면 같은 청구 ID의 확정 금액으로 복구한다.
+      if (res.status === 409 || /already[_ ]?paid/i.test(body)) {
+        const previous = await fetch(`${PORTONE_API_BASE}/payments/${paymentId}`, {
+          headers: { Authorization: `PortOne ${apiSecret}` },
+        });
+        if (previous.ok) {
+          const payment = await previous.json();
+          if (payment.status === 'PAID' && payment.channel?.key === channelKey &&
+            payment.currency === 'KRW' && payment.amount?.total === amountKrw) {
+            return { success: true, studentCount, amountKrw, portonePaymentId: paymentId };
+          }
+        }
+      }
       return { success: false, studentCount, amountKrw, failureReason: body.slice(0, 500) };
     }
 
