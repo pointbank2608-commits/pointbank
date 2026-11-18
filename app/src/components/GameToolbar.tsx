@@ -116,12 +116,13 @@ function fitResults(results: { id: string; label: string }[], n: number): { id: 
   return Array.from({ length: n }, (_, i) => ({ id: results[i]?.id ?? crypto.randomUUID(), label: results[i]?.label?.trim() ? results[i].label : '꽝' }));
 }
 
-export default function GameToolbar({ workspace, onRestart, fullscreen, onFullscreen, onExitFullscreen }: {
+export default function GameToolbar({ workspace, onRestart, fullscreen, onFullscreen, onExitFullscreen, presenting = false }: {
   workspace: WorkspaceContextValue;
   onRestart?: () => void;
   fullscreen: boolean;
   onFullscreen?: () => void;
   onExitFullscreen?: () => void;
+  presenting?: boolean;
 }) {
   const { i18n, t } = useTranslation();
   const text = (ko: string, en: string) => (i18n.language.startsWith('en') ? en : ko);
@@ -673,18 +674,22 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         <p className="min-w-0 max-w-[14rem] truncate px-2 text-base font-extrabold text-deep-navy" role="status">{status}</p>
         <div className="flex flex-wrap gap-1 rounded-xl bg-surface-container-low p-1" role="group" aria-label={text('설정', 'Settings')}>
           {isLadder && <button className={`${tab(false)} cursor-not-allowed opacity-40`} disabled title={text('사다리는 참가자를 반 설정에서, 결과를 게임설정에서 정해요', 'Set players in Class and results in Settings')}>{text('내 단어/문장', 'My words')}</button>}
-          {hasContentButton && !isLadder && <button className={tab(open === 'content')} aria-expanded={open==='content'} onClick={event => toggle('content',event.currentTarget)}>{isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
-          <button className={tab(open === 'class')} aria-expanded={open === 'class'} onClick={event => toggle('class',event.currentTarget)}>{text('반 설정', 'Class')}</button>
-          <button ref={settingsButton} className={tab(open === 'settings' || workspace.panel === 'settings')} aria-expanded={open === 'settings' || workspace.panel === 'settings'} onClick={event => (pictureKind || isGrammar || itemSettings || splitGame || isPopcorn || isPassBall || simpleOpts.length > 0 ? toggle('settings',event.currentTarget) : (close(), workspace.open('settings',event.currentTarget)))}>{text('게임설정', 'Settings')}</button>
+          {hasContentButton && !isLadder && <button className={tab(open === 'content')} disabled={!!info?.sharedView} aria-expanded={open==='content'} onClick={event => toggle('content',event.currentTarget)}>{isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
+          <button className={tab(open === 'class')} disabled={!!info?.sharedView} aria-expanded={open === 'class'} onClick={event => toggle('class',event.currentTarget)}>{text('반 설정', 'Class')}</button>
+          <button ref={settingsButton} className={tab(open === 'settings' || workspace.panel === 'settings')} disabled={!!info?.sharedView} aria-expanded={open === 'settings' || workspace.panel === 'settings'} onClick={event => (pictureKind || isGrammar || itemSettings || splitGame || isPopcorn || isPassBall || simpleOpts.length > 0 ? toggle('settings',event.currentTarget) : (close(), workspace.open('settings',event.currentTarget)))}>{text('게임설정', 'Settings')}</button>
           <button className={tab(open === 'saves')} aria-expanded={open === 'saves'} onClick={event => toggle('saves',event.currentTarget)}>{text('저장/불러오기', 'Save / Load')}</button>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-1.5">
-          {workspace.playing && <button type="button" className={`${util} ${workspace.running ? '' : 'bg-primary! text-white!'}`} disabled={!workspace.running && !workspace.canStart} onClick={workspace.running ? workspace.pause : workspace.start}>
+          {workspace.playing && <button type="button" className={`${util} ${workspace.running ? '' : 'bg-primary! text-white!'}`} disabled={workspace.pauseLocked || (!workspace.running && !workspace.canStart)} title={workspace.pauseLocked ? t('teacherGame.livePauseHint') : undefined} onClick={workspace.running ? workspace.pause : workspace.start}>
             {t(workspace.running ? 'teacherGame.pause' : 'flow.resume')}
           </button>}
           {onRestart && <button className={util} onClick={onRestart} data-frame-restart>{text('다시하기', 'Restart')}</button>}
           <button className={util} onClick={fullscreen ? onExitFullscreen : onFullscreen}>{text(fullscreen ? '전체화면 끄기' : '전체화면', fullscreen ? 'Exit fullscreen' : 'Fullscreen')}</button>
-          <button className={`${util} text-error`} onClick={() => { close(); workspace.exitPlay(); }}>{text('나가기', 'Exit')}</button>
+          <button className={`${util} text-error`} onClick={() => {
+            if (presenting && !window.confirm(text('게임에서 나가고 수업 진행을 끝낼까요?', 'Leave the game and end the lesson?'))) return;
+            close();
+            workspace.exitPlay();
+          }}>{text('나가기', 'Exit')}</button>
           {gameName && <GameReportButton gameName={gameName} className={util} />}
         </div>
       </div>
@@ -1212,7 +1217,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <button className={`${btn} min-w-0 flex-1 truncate text-left`} onClick={() => { info?.selectTemplate(row.id); notify(text('설정이 적용되었습니다.', 'Your settings have been applied.')); setOpen(null); }}>{row.name}</button>
+                    <button className={`${btn} min-w-0 flex-1 truncate text-left`} disabled={!!info?.sharedView} onClick={() => { info?.selectTemplate(row.id); notify(text('설정이 적용되었습니다.', 'Your settings have been applied.')); setOpen(null); }}>{row.name}</button>
                     <button className={btn} aria-label={text(`${row.name} 삭제`, `Delete ${row.name}`)} onClick={() => setDeleteId(row.id)}>{text('삭제', 'Delete')}</button>
                   </div>
                 )}

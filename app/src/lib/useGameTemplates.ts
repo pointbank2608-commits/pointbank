@@ -241,6 +241,12 @@ export function useGameTemplates(params: {
   const routeState = useRef(location.state); routeState.current = location.state;
   const consumedSource = useRef('');
   const lessonDraftId = `activity-draft:lesson:${location.key}`;
+  function applyPresentationContent(content: Pick<GameTemplate, 'items' | 'config'>, name?: string) {
+    if (!selected || lessonRunner.runner?.view) throw new Error(t('flow.actionFailed'));
+    const next = { ...selected, ...structuredClone(content), id: lessonDraftId, name: name || selected.name };
+    chooseDraft(next);
+    return next;
+  }
   const workspaceKey = `${classId}:${gameType}:${presenting ? location.key : ''}`;
   const load = useCallback(async () => {
     const sequence = ++loadSequence.current;
@@ -570,13 +576,14 @@ export function useGameTemplates(params: {
     const content = preparePlayableList(gameType, list);
     if (!content) throw new Error('incompatible_content');
     const kind = isSentenceList(list) ? 'sentence' : 'word';
-    if (lessonSlot) {
+    if (lessonSlot || presenting) {
       const config: GameTemplateConfig = {...defaultConfig?.(), ...selected?.config, ...content.config,
         classroomSource:{id:list.id,name:list.name,kind,version:list.updated_at,cards:wordListToCards(list)}};
       if (hasAdventureRoundSettings(gameType) && config.adventure && selected?.config.adventure) {
         config.adventure = { ...config.adventure, count: selected.config.adventure.count };
       }
-      const next = await saveLessonContent({ items: content.items, config }, list.name);
+      const next = presenting ? applyPresentationContent({ items: content.items, config }, list.name)
+        : await saveLessonContent({ items: content.items, config }, list.name);
       return next.id;
     }
     if (temporary) {
@@ -625,6 +632,10 @@ export function useGameTemplates(params: {
   async function configureTeams(count: number) {
     if (presenting && lessonRunner.runner?.view) throw new Error('stop_shared_view_first');
     if (!teamKey || !academy?.id || !profile) return;
+    if (presenting && selected) {
+      applyPresentationContent({ items: selected.items, config: { ...selected.config, [teamKey]: count } });
+      return;
+    }
     if (lessonSlot && selected) {
       await saveLessonContent({items: selected.items, config: {...selected.config, [teamKey]: count}});
       return;
@@ -694,6 +705,7 @@ export function useGameTemplates(params: {
     if (preview || !workspace || !isStaff) return;
     workspace.publish({ settingsPending:!!params.hasPendingSettings?.(), gameType, classId, sharedView:presenting && !!lessonRunner.runner?.view, academyId: academy?.id || '', classes, roster, lists: allWordLists, templates, selected, loading: loading || loadedWorkspaceKey !== workspaceKey,
       applyGuide: async (content) => {
+        if (presenting) return applyPresentationContent(content).id;
         if (lessonSlot) return (await saveLessonContent(content)).id;
         if (!temporary || !selected) throw new Error('guide_not_available');
         const draft = isActivityDraft(selected.id) ? readActivityDraft(selected.id)||selected : {...makeDraft(),name:selected.name,class_id:selected.class_id};

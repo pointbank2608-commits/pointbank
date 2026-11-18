@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { GameWorkspaceContext, useGameWorkspace, type DetectiveListPicker, type GameWorkspaceBridge, type WorkspacePanel } from '../context/GameWorkspaceContext';
 import { useAuth } from '../context/AuthContext';
-import { usePresenting } from '../context/LessonRunnerContext';
+import { useLessonRunner, usePresenting } from '../context/LessonRunnerContext';
 import { useGameEmbed } from '../context/GameEmbedContext';
 import { GAME_CATALOG, isFreeTierGame } from '../lib/gameCatalog';
 import { activityName as defaultActivityName } from '../lib/activityNames';
@@ -42,6 +42,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const { hasFullAccess, session, academy } = useAuth();
   const presenting = usePresenting();
   const lessonEditor = !!useGameEmbed()?.slideId;
+  const lesson = useLessonRunner();
   const groupOpen = useFeature('group');
   const navigate = useNavigate();
   const location=useLocation();const editHandled=useRef('');
@@ -260,11 +261,16 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
     setPanel(null); setPlaying(true); setRunning(true);
   }
   useEffect(()=>{if(sampleRequested && canStart && info?.selected?.id!==sampleFromId.current){setSampleRequested(false);completePreparation();}},[sampleRequested,canStart,info?.selected,completePreparation]);
-  function exitPlay() {
+  const exitLesson = lesson.exit;
+  const exitPlay = useCallback(() => {
+    if (presenting) {
+      exitLesson();
+      return;
+    }
     window.dispatchEvent(new Event('classbank:exit-game-fullscreen'));
     if (lessonEditor) { setPanel(null); setPlaying(false); setRunning(false); return; }
     navigate('/games');
-  }
+  }, [exitLesson, lessonEditor, navigate, presenting]);
   async function startFromEditor() {
     if(!await commitPreparation())return;
     const commitLessonSettings = bridge.current?.commitLessonSettings;
@@ -305,7 +311,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const demo = game && demoForGame(game.path);
   const defaultMaterialName = defaultActivityName('',t(sourceKind==='sentence'?'flow.defaultSentences':'flow.defaultWords'),info?.lists.map(row=>row.name));
   const defaultGameName = defaultActivityName('',game ? t(game.nameKey) : t('flow.defaultActivity'),info?.templates.filter(row=>!isActivityDraft(row.id)).map(row=>row.name));
-  const value = useMemo(() => ({ info, registerPreparation,commitPreparation,registerDetectiveListPicker,selectDetectiveList,countDetectiveListQuestions,fullscreen, setFullscreen, canStart, waitingForSampleStart, validation, stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), pauseLocked, setPauseLocked, panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, startAppliedGame, applyListAndPlay, applyGuideAndPlay, exitPlay, turn }), [info, stage, running, playing, pauseLocked, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, waitingForSampleStart, validation, fullscreen, capabilities.manualTurns,registerPreparation,commitPreparation,registerDetectiveListPicker,selectDetectiveList,countDetectiveListQuestions,startAppliedGame,applyListAndPlay,applyGuideAndPlay]); // eslint-disable-line react-hooks/exhaustive-deps
+  const value = useMemo(() => ({ info, registerPreparation,commitPreparation,registerDetectiveListPicker,selectDetectiveList,countDetectiveListQuestions,fullscreen, setFullscreen, canStart, waitingForSampleStart, validation, stage, running, playing, teacherToolsTarget, hasSource:!!info?.sourceCards, pause:()=>setRunning(false), pauseLocked, setPauseLocked, panel, publish, roster:capabilities.manualTurns ? roster : EMPTY_ROSTER, openTeams:()=>setTeams(true), open:setPanel, start, startAppliedGame, applyListAndPlay, applyGuideAndPlay, exitPlay, turn }), [info, stage, running, playing, pauseLocked, teacherToolsTarget, panel, publish, roster, info?.sourceCards, turn, canStart, waitingForSampleStart, validation, fullscreen, capabilities.manualTurns,registerPreparation,commitPreparation,registerDetectiveListPicker,selectDetectiveList,countDetectiveListQuestions,startAppliedGame,applyListAndPlay,applyGuideAndPlay,exitPlay]); // eslint-disable-line react-hooks/exhaustive-deps
   const contentName = source?.name || info?.selected?.name || t('quick.sampleTitle');
   const materialButtons = (includeLoad = true) => <div className="flex flex-wrap gap-2" data-material-actions>
     {capabilities.kinds.map(kind => <button key={kind} className={btn} disabled={busy || !info?.temporary || !!info.sharedView} onClick={() => void begin(kind)}>{t(kind === 'word' ? 'flow.createWords' : 'flow.createSentences')}</button>)}
@@ -404,8 +410,9 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   </GameWorkspaceContext.Provider>;
 }
 export function GameWorkspaceFrameControls({ fullscreen=false, onExitFullscreen, onFullscreen, onRestart, presenting=false, participants=false }: {onRestart?:()=>void;fullscreen?:boolean;onExitFullscreen?:()=>void;onFullscreen?:()=>void;presenting?:boolean;participants?:boolean}) {
-  const workspace=useGameWorkspace();const {t}=useTranslation();const [playersOpen,setPlayersOpen]=useState(false);if(!workspace)return null;
-  if(!presenting&&workspace.info)return <GameToolbar workspace={workspace} onRestart={onRestart} fullscreen={fullscreen} onFullscreen={onFullscreen} onExitFullscreen={onExitFullscreen} />;
+  const workspace=useGameWorkspace();const {t}=useTranslation();const [playersOpen,setPlayersOpen]=useState(false);const lesson=useLessonRunner();if(!workspace)return null;
+  if(workspace.info)return <GameToolbar workspace={workspace} onRestart={onRestart} fullscreen={presenting?lesson.isFullscreen:fullscreen} onFullscreen={presenting?lesson.toggleFullscreen:onFullscreen} onExitFullscreen={presenting?lesson.toggleFullscreen:onExitFullscreen} presenting={presenting} />;
+  if(presenting)return null;
   const game = GAME_CATALOG.find(row => row.type === workspace.info?.gameType);
   return <div className="teacher-game-controls relative z-30 shrink-0 bg-white p-2" data-frame-controls data-play-controls>
     <p className="teacher-game-status font-bold text-deep-navy" role="status">{t(workspace.playing ? workspace.running ? 'teacherGame.playing' : 'teacherGame.paused' : 'teacherGame.ready')}</p>
