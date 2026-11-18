@@ -11,6 +11,8 @@ const anotherUser = randomUUID();
 const first = randomUUID();
 const second = randomUUID();
 const anotherSession = randomUUID();
+const admin = randomUUID();
+const adminSession = randomUUID();
 const academy = randomUUID();
 const classroom = randomUUID();
 const otherClass = randomUUID();
@@ -18,9 +20,9 @@ const student = randomUUID();
 const otherStudent = randomUUID();
 const preset = randomUUID();
 
-async function as(role, sub, session) {
+async function as(role, sub, session, aal = 'aal1') {
   await db.exec(`reset role; set role ${role};`);
-  await value("select set_config('request.jwt.claims', $1, false) as value", [JSON.stringify({ sub, session_id: session })]);
+  await value("select set_config('request.jwt.claims', $1, false) as value", [JSON.stringify({ sub, session_id: session, aal })]);
 }
 
 try {
@@ -198,6 +200,72 @@ try {
   assert.equal((await poll()).state.lessonName, 'Test');
   await db.exec('reset role');
   await run('122_single_account_session.sql');
+  await db.exec(`
+    create table public.admin_actions (
+      id uuid primary key default gen_random_uuid(),
+      admin_id uuid default auth.uid(),
+      academy_id uuid references public.academies(id) on delete set null,
+      action text not null,
+      detail jsonb,
+      created_at timestamptz not null default now()
+    );
+  `);
+  await run('086b_admin_settings_and_log.sql');
+  await run('082c_enforce_admin_mfa.sql');
+  await run('131_admin_account_session_policy.sql');
+  await db.query("insert into auth.users values ($1, 'admin@fixture.invalid')", [admin]);
+  await db.query("insert into profiles (id, role, display_name) values ($1, 'admin', 'Admin')", [admin]);
+  await db.query('insert into auth.sessions values ($1, $2, now()), ($3, $4, now())', [adminSession, admin, second, user]);
+
+  const search = (query) => db.query('select * from admin_search_login_accounts($1)', [query]).then(({ rows }) => rows);
+  const setPolicy = (target, allow) => db.query('select admin_set_login_account_policy($1, $2)', [target, allow]);
+  for (const claims of [['anon'], ['authenticated', user, second], ['authenticated', admin, adminSession]]) {
+    await as(...claims);
+    await assert.rejects(search('teacher'), { code: '42501' });
+    await assert.rejects(setPolicy(user, true), { code: '42501' });
+  }
+  await as('authenticated', admin, adminSession, 'aal2');
+  await db.exec('select classbank_check_request()');
+  assert.deepEqual((await search('TEACHER@FIXTURE.INVALID')).map((row) => [row.user_id, row.allow_multiple]), [[user, false]]);
+  assert.equal((await search('Other teacher'))[0].user_id, anotherUser);
+  await setPolicy(user, true);
+  await setPolicy(user, true);
+  assert.equal((await search('teacher@fixture.invalid'))[0].allow_multiple, true);
+
+  const anotherLatest = randomUUID();
+  await db.exec('reset role');
+  await db.query('insert into auth.sessions values ($1, $2, now())', [anotherLatest, anotherUser]);
+  await as('authenticated', anotherUser, anotherSession);
+  await assert.rejects(db.exec('select classbank_check_request()'), { code: 'PT409' });
+  await as('authenticated', anotherUser, anotherLatest);
+  await db.exec('select classbank_check_request()');
+
+  for (const session of [first, second]) {
+    await as('authenticated', user, session);
+    await db.exec('select classbank_check_request()');
+    assert.equal(await value('select count(*)::integer as value from storage.objects'), 1);
+  }
+  await as('authenticated', user, anotherSession);
+  await assert.rejects(db.exec('select classbank_check_request()'), { code: 'PT409' });
+  await as('anon');
+  assert.equal((await poll()).state.lessonName, 'Test');
+  await as('authenticated', admin, adminSession, 'aal2');
+  assert.equal((await search('Other teacher'))[0].allow_multiple, false);
+  await setPolicy(user, false);
+  assert.equal((await search('teacher@fixture.invalid'))[0].allow_multiple, false);
+  const { rows: actions } = await db.query(`
+    select b.before, b.after, b.actor_email from admin_action_log($1, 10, 0) b
+    where b.action = 'set_login_account_policy'
+    order by (b.after->>'allow_multiple')::boolean desc`, [academy]);
+  assert.deepEqual(actions.map(({ before, after, actor_email }) => [before.allow_multiple, after.allow_multiple, actor_email]),
+    [[false, true, 'admin@fixture.invalid'], [true, false, 'admin@fixture.invalid']]);
+
+  await as('authenticated', user, first);
+  await assert.rejects(db.exec('select classbank_check_request()'), { code: 'PT409' });
+  await as('authenticated', user, second);
+  await db.exec('select classbank_check_request()');
+  await as('anon');
+  assert.equal(await poll(), null);
   console.log('Single-session enforcement and QR remote checks passed');
 } catch (error) {
   console.error(error.message, error.code ?? '', error.where ?? '');

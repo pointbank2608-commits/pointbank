@@ -84,6 +84,19 @@ export interface AdminOverview {
 export const adminOverview = (excludeTest = true) => rpc<AdminOverview | null>('admin_overview', { p_exclude_test: excludeTest });
 
 /* ---------------- 학원·회원 목록 ---------------- */
+export interface LoginAccount {
+  user_id: string;
+  email: string | null;
+  display_name: string | null;
+  allow_multiple: boolean;
+}
+
+export const adminSearchLoginAccounts = (query: string) =>
+  rpc<LoginAccount[]>('admin_search_login_accounts', { p_query: query });
+
+export const adminSetLoginAccountPolicy = (userId: string, allowMultiple: boolean) =>
+  rpc<void>('admin_set_login_account_policy', { p_user_id: userId, p_allow_multiple: allowMultiple });
+
 export type Entitlement = 'free' | 'trial' | 'full';
 export type PlanSource = 'subscription' | 'admin' | 'event' | 'unclassified';
 export type BillingState = 'normal' | 'failed' | 'cancel_scheduled' | 'none';
