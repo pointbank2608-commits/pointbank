@@ -7900,7 +7900,7 @@ const ko = {
     pricingFreeF3: '수업 게임 4종 (돌림판·사다리타기·시한폭탄·행맨)',
     pricingPaidName: '유료',
     pricingPaidPrice: '월 9,900원',
-    pricingPaidVat: '부가세 별도 · 학생 수 무관 정액',
+    pricingPaidVat: '부가세 포함 · 학생 수 무관 정액',
     pricingPaidF1: '반·학생 수 제한 없음',
     pricingPaidF2: '수업 게임 전체 · 단어장 · 그림 사전 · 파닉스',
     pricingPaidF3: '내 수업(수업 만들기 · 추천 수업) · 활동지(워크시트 · 워크북)',

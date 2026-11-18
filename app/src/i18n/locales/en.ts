@@ -7903,7 +7903,7 @@ const en: Ko = {
     pricingFreeF3: '4 class games (Wheel, Ladder, Time Bomb, Hangman)',
     pricingPaidName: 'Paid',
     pricingPaidPrice: 'KRW 9,900 / month',
-    pricingPaidVat: 'VAT not included · flat rate, any number of students',
+    pricingPaidVat: 'VAT included · flat rate, any number of students',
     pricingPaidF1: 'No limit on classes or students',
     pricingPaidF2: 'All class games · Word lists · Dictionary · Phonics',
     pricingPaidF3: 'My lessons (lesson builder · suggested lessons) · Printables (worksheets · workbooks)',
