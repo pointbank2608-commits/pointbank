@@ -16,9 +16,78 @@ import { Badge, DataState, ReasonDialog } from '../components/admin/AdminUi';
 import { BillingBadge, EntitlementBadge, SourceBadge } from '../components/admin/labels';
 import {
   adminAcademyStatus, adminActionDetail, adminActionLog, adminCancelDeletion, adminChangePlan, adminRequestDeletion, adminSetAcademyTest,
-  fmtKst, useAdminQuery,
+  adminAcademyLoginPolicy, adminSetAcademyLoginPolicy, errorText, fmtKst, useAdminQuery, type AcademyLoginPolicy,
 } from '../lib/adminOps';
 import { supabase } from '../lib/supabase';
+
+function FeatureSwitch({ label, checked, disabled, onClick }: {
+  label: string; checked: boolean; disabled: boolean; onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-label={label}
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={onClick}
+      className={`relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-50 ${checked ? 'bg-primary' : 'bg-outline-variant'}`}
+    >
+      <span className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all ${checked ? 'left-[22px]' : 'left-0.5'}`} />
+    </button>
+  );
+}
+
+function AcademyLoginPolicyRow({ academyId, onSaved }: { academyId: string; onSaved: () => void }) {
+  const { t } = useTranslation();
+  const state = useAdminQuery(() => adminAcademyLoginPolicy(academyId), [academyId]);
+  const [saved, setSaved] = useState<AcademyLoginPolicy | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function change(allow: boolean) {
+    setSaving(true);
+    setError(null);
+    try {
+      setSaved(await adminSetAcademyLoginPolicy(academyId, allow));
+      onSaved();
+    } catch (err) {
+      setError(errorText(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <li className="space-y-2 rounded-lg border border-outline-variant/50 px-3 py-2">
+      <DataState state={state} empty="" compact>
+        {(current) => {
+          const policy = saved ?? current;
+          const disabled = saving || state.status !== 'ready';
+          return (
+            <>
+              <div className="flex items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="font-label-md text-label-md font-bold text-on-surface">{t('adminOps.academyLogin.title')}</div>
+                  <div className="font-caption text-caption text-on-surface-variant">{t('adminOps.academyLogin.hint')}</div>
+                </div>
+                {policy !== 'mixed' && <FeatureSwitch label={t('adminOps.academyLogin.title')} checked={policy === 'allowed'} disabled={disabled} onClick={() => void change(policy !== 'allowed')} />}
+                <span role="status" className="shrink-0 text-sm font-bold">{t(`adminOps.academyLogin.${policy}`)}</span>
+              </div>
+              {policy === 'mixed' && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button type="button" disabled={disabled} onClick={() => void change(true)} className="rounded-full border border-primary px-3 py-1 text-sm font-bold text-primary disabled:opacity-50">{t('adminOps.academyLogin.allowAll')}</button>
+                  <button type="button" disabled={disabled} onClick={() => void change(false)} className="rounded-full border border-outline px-3 py-1 text-sm font-bold disabled:opacity-50">{t('adminOps.academyLogin.blockAll')}</button>
+                </div>
+              )}
+            </>
+          );
+        }}
+      </DataState>
+      {error && <p role="alert" className="break-words font-caption text-caption text-error">{error}</p>}
+    </li>
+  );
+}
 
 /**
  * 관리자 학원 상세(2026-09-27) — 원장·선생님 연락처, 사용량, 결제, 관리자 메모(학원은 못 봄), 요금제 조치,
@@ -195,33 +264,23 @@ export default function AdminAcademyDetailPage() {
           </div>
         </section>
 
-        {features && (
-          <section className={box}>
-            <h2 className="font-title-md text-title-md">{t('adminOps.featuresTitle')}</h2>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">{t('adminOps.featuresHint')}</p>
-            <ul className="space-y-2 pt-1">
-              {(['group', 'solo', 'homework'] as const).map((k) => (
-                <li key={k} className="flex items-center gap-3 rounded-lg border border-outline-variant/50 px-3 py-2">
-                  <div className="min-w-0 flex-1">
-                    <div className="font-label-md text-label-md font-bold text-on-surface">{t(`adminOps.feature_${k}`)}</div>
-                    <div className="font-caption text-caption text-on-surface-variant">{t(`adminOps.featureDesc_${k}`)}</div>
-                  </div>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={features[k]}
-                    disabled={busy}
-                    onClick={() => void toggleFeature(k)}
-                    className={`relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-50 ${features[k] ? 'bg-primary' : 'bg-outline-variant'}`}
-                  >
-                    <span className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all ${features[k] ? 'left-[22px]' : 'left-0.5'}`} />
-                  </button>
-                  <span className="w-12 text-sm font-bold">{features[k] ? t('adminOps.featureOpen') : t('adminOps.featureClosed')}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+        <section className={box}>
+          <h2 className="font-title-md text-title-md">{t('adminOps.featuresTitle')}</h2>
+          {features && <p className="font-body-sm text-body-sm text-on-surface-variant">{t('adminOps.featuresHint')}</p>}
+          <ul className="space-y-2 pt-1">
+            {features && (['group', 'solo', 'homework'] as const).map((k) => (
+              <li key={k} className="flex items-center gap-3 rounded-lg border border-outline-variant/50 px-3 py-2">
+                <div className="min-w-0 flex-1">
+                  <div className="font-label-md text-label-md font-bold text-on-surface">{t(`adminOps.feature_${k}`)}</div>
+                  <div className="font-caption text-caption text-on-surface-variant">{t(`adminOps.featureDesc_${k}`)}</div>
+                </div>
+                <FeatureSwitch label={t(`adminOps.feature_${k}`)} checked={features[k]} disabled={busy} onClick={() => void toggleFeature(k)} />
+                <span className="w-12 text-sm font-bold">{features[k] ? t('adminOps.featureOpen') : t('adminOps.featureClosed')}</span>
+              </li>
+            ))}
+            {a.id === id && <AcademyLoginPolicyRow key={id} academyId={id} onSaved={log.reload} />}
+          </ul>
+        </section>
 
         <section className={box}>
           <h2 className="font-title-md text-title-md">{t('adminOps.billing')}</h2>

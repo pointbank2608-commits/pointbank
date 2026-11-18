@@ -266,7 +266,63 @@ try {
   await db.exec('select classbank_check_request()');
   await as('anon');
   assert.equal(await poll(), null);
-  console.log('Single-session enforcement and QR remote checks passed');
+
+  await db.exec('reset role');
+  await run('132_admin_academy_login_policy.sql');
+  const separateAcademy = randomUUID();
+  const outsideOwner = randomUUID();
+  const outsideOlder = randomUUID();
+  const outsideLatest = randomUUID();
+  await db.query("insert into academies (id, name) values ($1, 'Separate academy')", [separateAcademy]);
+  await db.query("insert into auth.users values ($1, 'owner@fixture.invalid')", [outsideOwner]);
+  await db.query("insert into profiles (id, academy_id, role, display_name) values ($1, $2, 'owner', 'Outside owner')", [outsideOwner, separateAcademy]);
+  await db.query("insert into auth.sessions values ($1, $3, now() - interval '1 hour'), ($2, $3, now())", [outsideOlder, outsideLatest, outsideOwner]);
+  await db.exec('grant select, update on public.profiles to authenticated');
+  const academyPolicy = (id = academy) => value('select admin_academy_login_policy($1) as value', [id]);
+  const setAcademyPolicy = (allow) => value('select admin_set_academy_login_policy($1, $2) as value', [academy, allow]);
+
+  await as('authenticated', user, second);
+  await assert.rejects(academyPolicy(), { code: '42501' });
+  await assert.rejects(setAcademyPolicy(true), { code: '42501' });
+  await assert.rejects(db.query('update profiles set academy_id = $1 where id = $2', [separateAcademy, user]), { code: '42501' });
+  await assert.rejects(db.query("update profiles set role = 'owner' where id = $1", [user]), { code: '42501' });
+  await db.query("update profiles set display_name = 'Teacher updated' where id = $1", [user]);
+
+  await as('authenticated', admin, adminSession, 'aal2');
+  assert.equal(await academyPolicy(), 'blocked');
+  await setPolicy(user, true);
+  assert.equal(await academyPolicy(), 'mixed');
+  assert.equal(await setAcademyPolicy(true), 'allowed');
+  assert.equal(await academyPolicy(separateAcademy), 'blocked');
+
+  for (const [accountId, sessionId] of [[user, first], [user, second], [anotherUser, anotherSession], [anotherUser, anotherLatest]]) {
+    await as('authenticated', accountId, sessionId);
+    await db.exec('select classbank_check_request()');
+  }
+  await as('authenticated', outsideOwner, outsideOlder);
+  await assert.rejects(db.exec('select classbank_check_request()'), { code: 'PT409' });
+
+  await db.exec('reset role');
+  await db.query('update profiles set academy_id = $1 where id = $2', [academy, outsideOwner]);
+  await as('authenticated', outsideOwner, outsideOlder);
+  await db.exec('select classbank_check_request()');
+  await as('authenticated', admin, adminSession, 'aal2');
+  assert.equal(await setAcademyPolicy(false), 'blocked');
+  assert.equal(await setAcademyPolicy(false), 'blocked');
+  assert.equal((await search('teacher@fixture.invalid'))[0].allow_multiple, true);
+  const { rows: academyActions } = await db.query(`
+    select b.before->>'policy' as previous, b.after->>'policy' as next
+    from admin_action_log($1, 10, 0) b where b.action = 'set_academy_login_policy'
+    order by next`, [academy]);
+  assert.deepEqual(academyActions, [{ previous: 'mixed', next: 'allowed' }, { previous: 'allowed', next: 'blocked' }]);
+
+  for (const [accountId, older, latest] of [[user, first, second], [anotherUser, anotherSession, anotherLatest], [outsideOwner, outsideOlder, outsideLatest]]) {
+    await as('authenticated', accountId, older);
+    await assert.rejects(db.exec('select classbank_check_request()'), { code: 'PT409' });
+    await as('authenticated', accountId, latest);
+    await db.exec('select classbank_check_request()');
+  }
+  console.log('Account and academy session policies and QR remote checks passed');
 } catch (error) {
   console.error(error.message, error.code ?? '', error.where ?? '');
   process.exitCode = 1;
