@@ -1,10 +1,15 @@
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import AccessibleDialog from './AccessibleDialog';
 import MaterialDraftReview, { type MaterialDraftItem } from './MaterialDraftReview';
 import StudyListSourceForm, { StudyListOriginal, type StudyListSourceDraft } from './StudyListSourceForm';
+import TeachingDraftReview from './TeachingDraftReview';
+import { MaterialGradeField } from './TeachingMaterialOptions';
 import { AI_MATERIAL_COUNT_LIMIT, generateAiMaterials, makeAiMaterialList, saveAiMaterials, type AiMaterialList } from '../lib/aiMaterials';
-import type { WordListKind } from '../lib/types';
+import { assertWorkbookSpace, examCategories, isTeachingReviewComplete, makeTeachingLessonSlides, makeTeachingWorkbook,
+  saveTeachingLesson, saveTeachingWorkbook, type ExamCategory, type SourceMaterialOptions, type TeachingDraft } from '../lib/teachingMaterials';
+import type { LessonSlide, WordListKind } from '../lib/types';
+import type { WorksheetDocument } from '../lib/worksheetStudio';
 import '../styles/textbooks.css';
 
 const kinds = ['words', 'sentences'] as const;
@@ -13,27 +18,41 @@ const button = 'textbook-button';
 const primary = `${button} textbook-primary`;
 type ReviewItem = MaterialDraftItem & { page?: number; meaningSuggested?: boolean };
 type Review = Record<typeof kinds[number], ReviewItem[]>;
+type PreparedSave = {
+  lists: AiMaterialList[];
+  lesson?: { id: string; name: string; level: string; slides: LessonSlide[] };
+  workbook?: { id: string; document: WorksheetDocument; unitId?: string };
+};
+export type SavedAiMaterials = { listId?: string; lessonId?: string; workbookPath?: string };
 
 export default function AiMaterialsDialog({ academy, owner, mode, preferredKind, onClose, onSaved }: {
   academy: string; owner: string; mode: 'source' | 'topic'; preferredKind?: WordListKind;
-  onClose: () => void; onSaved: (id: string) => void;
+  onClose: () => void; onSaved: (result: SavedAiMaterials) => void;
 }) {
   const { t } = useTranslation();
   const [topic, setTopic] = useState('');
-  const [grade, setGrade] = useState('3');
+  const [grade, setGrade] = useState(3);
   const [wordCount, setWordCount] = useState('10');
   const [sentenceCount, setSentenceCount] = useState('5');
   const [name, setName] = useState('');
   const [review, setReview] = useState<Review | null>(null);
+  const [options, setOptions] = useState<SourceMaterialOptions>();
+  const [teaching, setTeaching] = useState<TeachingDraft>();
+  const [unitId, setUnitId] = useState<string>();
   const [original, setOriginal] = useState<StudyListSourceDraft['original']>();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<'generating' | 'saving' | null>(null);
   const [error, setError] = useState('');
   const [savePrepared, setSavePrepared] = useState(false);
-  const pendingSave = useRef<AiMaterialList[] | null>(null);
+  const pendingSave = useRef<PreparedSave | null>(null);
+  const draftName = useRef<HTMLInputElement>(null);
+  const reviewing = !!review;
+  useEffect(() => { if (reviewing) draftName.current?.focus(); }, [reviewing]);
   const dialogTitle = t(mode === 'source' ? 'aiMaterials.sourceTitle' : 'aiMaterials.title');
   const requested = { words: Number(wordCount), sentences: Number(sentenceCount) };
-  const selectedCount = review ? kinds.reduce((total, kind) => total + review[kind].filter(item => item.included).length, 0) : 0;
+  const listKinds = kinds.filter(kind => !options || options.outputs.includes(kind));
+  const hasWorkbook = options?.outputs.includes('workbook') === true;
+  const selectedCount = review ? listKinds.reduce((total, kind) => total + review[kind].filter(item => item.included).length, 0) : 0;
 
   function gradeLabel(level: number) {
     return t(level <= 6 ? 'aiMaterials.primaryGrade' : level <= 9 ? 'aiMaterials.middleGrade' : 'aiMaterials.highGrade',
@@ -47,9 +66,9 @@ export default function AiMaterialsDialog({ academy, owner, mode, preferredKind,
     setError('');
     try {
       const draft = await generateAiMaterials(academy, {
-        topic: topic.trim(), grade: Number(grade), wordCount: requested.words, sentenceCount: requested.sentences,
+        topic: topic.trim(), grade, wordCount: requested.words, sentenceCount: requested.sentences,
       });
-      const suffix = ` · ${gradeLabel(Number(grade))}`;
+      const suffix = ` · ${gradeLabel(grade)}`;
       setSourceDraft({ ...draft, title: `${topic.trim().slice(0, 120 - suffix.length).trimEnd()}${suffix}` });
     } catch (err) {
       setError(err instanceof Error && generationErrors.includes(err.message) ? err.message : 'extractionFailed');
@@ -65,7 +84,10 @@ export default function AiMaterialsDialog({ academy, owner, mode, preferredKind,
 
   function setSourceDraft(draft: StudyListSourceDraft) {
     const include = (item: Omit<ReviewItem, 'included' | 'id'>): ReviewItem => ({ ...item, id: crypto.randomUUID(), included: true });
-    setName(draft.title.trim().slice(0, 120));
+    setName(draft.title.trim().slice(0, draft.options?.outputs.includes('workbook') ? 100 : 120));
+    setOptions(draft.options);
+    setTeaching(draft.objective ? { objective: draft.objective, lesson: draft.lesson, practice: draft.practice } : undefined);
+    setUnitId(draft.unitId);
     setOriginal(draft.original);
     setPage(draft.original?.first ?? 1);
     setReview({ words: draft.words.map(include), sentences: draft.sentences.map(include) });
@@ -74,31 +96,56 @@ export default function AiMaterialsDialog({ academy, owner, mode, preferredKind,
 
   async function save(event: FormEvent) {
     event.preventDefault();
-    if (!review || status || !name.trim() || !selectedCount) return;
+    if (!review || status || !name.trim() || (!selectedCount && !teaching)) return;
     const dialog = event.currentTarget.closest('dialog');
     setError('');
     if (!pendingSave.current) {
-      const words = review.words.filter(item => item.included);
-      const sentences = review.sentences.filter(item => item.included);
+      const words = listKinds.includes('words') ? review.words.filter(item => item.included) : [];
+      const sentences = listKinds.includes('sentences') ? review.sentences.filter(item => item.included) : [];
       if ([...words, ...sentences].some(item => !item.text.trim() || !item.meaning.trim())) {
         setError('requireMeaning');
         return;
       }
-      const rows = [
+      if (teaching && !isTeachingReviewComplete(teaching, options?.teaching?.minutes)) {
+        setError('incompleteTeachingReview');
+        return;
+      }
+      const lists = [
         ...(words.length ? [makeAiMaterialList('word', name.trim(), words)] : []),
         ...(sentences.length ? [makeAiMaterialList('sentence', name.trim(), sentences)] : []),
       ];
-      pendingSave.current = rows;
+      const prepared: PreparedSave = { lists };
+      try {
+        if (teaching?.lesson && options?.teaching) {
+          const durations = teaching.lesson.map(stage => t('aiMaterials.minuteLabel', { count: stage.minutes }));
+          prepared.lesson = { id: crypto.randomUUID(), name: name.trim(),
+            level: `${gradeLabel(options.teaching.grade)} · ${t(`aiMaterials.${options.teaching.level}`)}`,
+            slides: makeTeachingLessonSlides(teaching, durations, !hasWorkbook, t('aiMaterials.lessonPractice')) };
+        }
+        if (teaching && hasWorkbook) {
+          if (!unitId) assertWorkbookSpace(academy, owner);
+          const labels = options?.teaching?.exam ? Object.fromEntries(examCategories.map(key =>
+            [key, t(`aiMaterials.${key}`)])) as Record<ExamCategory, string> : undefined;
+          prepared.workbook = { id: crypto.randomUUID(), document: makeTeachingWorkbook(name, teaching, labels), unitId };
+        }
+      } catch (err) {
+        setError(err instanceof Error && err.message === 'workbookStorageLimit' ? err.message : 'incompleteTeachingReview');
+        return;
+      }
+      pendingSave.current = prepared;
       setSavePrepared(true);
     }
     setStatus('saving');
     try {
-      const lists = pendingSave.current;
-      await saveAiMaterials(academy, owner, lists);
+      const { lists, lesson, workbook } = pendingSave.current;
+      if (lists.length) await saveAiMaterials(academy, owner, lists);
+      if (lesson) await saveTeachingLesson(academy, owner, lesson.id, lesson.name, lesson.level, lesson.slides,
+        lists.find(list => list.kind === 'word')?.id ?? null);
+      const workbookPath = workbook ? await saveTeachingWorkbook(academy, owner, workbook.id, workbook.document, workbook.unitId) : undefined;
       dialog?.close();
-      onSaved((lists.find(list => list.kind === preferredKind) ?? lists[0]).id);
-    } catch {
-      setError('saveFailed');
+      onSaved({ listId: (lists.find(list => list.kind === preferredKind) ?? lists[0])?.id, lessonId: lesson?.id, workbookPath });
+    } catch (err) {
+      setError(err instanceof Error && err.message === 'workbookStorageLimit' ? err.message : 'saveFailed');
     } finally {
       setStatus(null);
     }
@@ -121,16 +168,16 @@ export default function AiMaterialsDialog({ academy, owner, mode, preferredKind,
     </div>}
     {review && <form onSubmit={save}>
       <div className="textbook-fields">
-        <label>{t('aiMaterials.name')}<input value={name} maxLength={120} required disabled={savePrepared}
+        <label>{t('aiMaterials.name')}<input ref={draftName} value={name} maxLength={hasWorkbook ? 100 : 120} required disabled={savePrepared}
           onChange={e => setName(e.target.value)} /></label>
       </div>
-      <p className="textbook-note">{t(mode === 'source' ? 'aiMaterials.studyReviewHelp' : 'aiMaterials.reviewHelp')}</p>
+      <p className="textbook-note">{t(teaching ? 'aiMaterials.reviewTeaching' : mode === 'source' ? 'aiMaterials.studyReviewHelp' : 'aiMaterials.reviewHelp')}</p>
       {!!original?.unclearPages.length && <p role="status" className="textbook-error">
         {t('textbook.unclear', { pages: original.unclearPages.join(', ') })}
       </p>}
-      <div className={original ? 'textbook-review' : undefined}>
+      <div className={original && listKinds.length ? 'textbook-review' : undefined}>
         {original && <StudyListOriginal files={original.files} page={page} />}
-        <div>{kinds.map(kind => <MaterialDraftReview key={kind} disabled={savePrepared}
+        <div>{listKinds.map(kind => <MaterialDraftReview key={kind} disabled={savePrepared}
           title={t(mode === 'source' ? 'aiMaterials.studyCount' : 'aiMaterials.reviewCount', {
             list: t(`textbook.${kind}`), actual: review[kind].length, requested: requested[kind],
           })}
@@ -154,11 +201,14 @@ export default function AiMaterialsDialog({ academy, owner, mode, preferredKind,
             </>;
           } : undefined} />)}</div>
       </div>
+      {teaching && options?.teaching && <TeachingDraftReview draft={teaching} settings={options.teaching}
+        workbook={hasWorkbook} disabled={savePrepared} onChange={value => { setTeaching(value); setError(''); }} />}
       <footer className="ai-materials-footer">
         {errorMessage && <p role="alert" className="textbook-error">{errorMessage}</p>}
-        <p className="textbook-note">{t('textbook.listSharing')}</p>
+        {selectedCount > 0 && <p className="textbook-note">{t('textbook.listSharing')}</p>}
+        {hasWorkbook && <p className="textbook-note">{t(unitId ? 'aiMaterials.workbookUnit' : 'aiMaterials.workbookLocal')}</p>}
         <div className="textbook-actions">
-          <button type="submit" className={primary} disabled={!!status || !name.trim() || !selectedCount}>
+          <button type="submit" className={primary} disabled={!!status || !name.trim() || (!selectedCount && !teaching)}>
             {t(status ? 'textbook.saving' : savePrepared ? 'aiMaterials.retrySave' : 'aiMaterials.save')}</button>
           {!savePrepared && <button type="button" className={button} onClick={() => { setReview(null); setError(''); }}>
             {t(mode === 'source' ? 'aiMaterials.changeSource' : 'aiMaterials.changeSettings')}</button>}
@@ -169,11 +219,7 @@ export default function AiMaterialsDialog({ academy, owner, mode, preferredKind,
       <div className="textbook-fields">
         <label>{t('aiMaterials.topic')}<input value={topic} maxLength={120} required disabled={!!status}
           onChange={e => setTopic(e.target.value)} placeholder={t('aiMaterials.topicExample')} /></label>
-        <label>{t('aiMaterials.grade')}<select aria-label={t('aiMaterials.grade')} value={grade} disabled={!!status} onChange={e => setGrade(e.target.value)}>
-          {Array.from({ length: 12 }, (_, index) => <option key={index} value={index + 1}>
-            {gradeLabel(index + 1)}
-          </option>)}
-        </select></label>
+        <MaterialGradeField value={grade} disabled={!!status} onChange={setGrade} />
         <label>{t('aiMaterials.wordCount')}<input type="number" required min={1} max={AI_MATERIAL_COUNT_LIMIT}
           value={wordCount} disabled={!!status} onChange={e => setWordCount(e.target.value)} /></label>
         <label>{t('aiMaterials.sentenceCount')}<input type="number" required min={1} max={AI_MATERIAL_COUNT_LIMIT}

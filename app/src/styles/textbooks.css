@@ -54,7 +54,23 @@
 .ai-materials-form .textbook-primary { gap: .45rem; }
 .ai-materials-form .textbook-primary > .material-symbols-outlined { font-size: 1.15rem; }
 .study-source-files { margin: 0; padding-inline-start: 1.5rem; overflow-wrap: anywhere; }
-.ai-materials-dialog .textbook-fields select { width: 100%; min-width: 0; border: 1px solid #aebcd0; border-radius: .5rem; padding: .6rem; background: #fff; color: #192a44; }
+.ai-materials-dialog .textbook-fields select, .ai-materials-dialog .textbook-fields textarea { width: 100%; min-width: 0; border: 1px solid #aebcd0; border-radius: .5rem; padding: .6rem; background: #fff; color: #192a44; }
+.ai-materials-dialog .textbook-fields textarea { resize: vertical; }
+.teaching-output-picker legend, .teaching-settings legend, .teaching-mix legend { margin-bottom: .55rem; }
+.teaching-output-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem; }
+.teaching-output { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; padding: .5rem; min-height: 2.75rem; min-width: 0; border: 1px solid #ccd9eb; border-radius: .65rem; color: #183961; cursor: pointer; }
+.teaching-output:has(:checked) { background: #eaf2ff; border-color: #3974bc; }
+.teaching-output:focus-within { outline: 2px solid #195fbb; outline-offset: 2px; }
+.teaching-output .material-symbols-outlined { font-size: 1.15rem; }
+.teaching-full-width { grid-column: 1 / -1; }
+.teaching-settings, .teaching-review { display: grid; gap: .65rem; }
+.teaching-mix { display: grid; gap: .5rem; }
+.teaching-preview { padding: .65rem .85rem; background: #f1f5fa; border-radius: .65rem; overflow-wrap: anywhere; }
+.teaching-preview summary { cursor: pointer; font-weight: 650; }
+.teaching-preview p, .teaching-preview blockquote, .teaching-preview ol { margin-top: .5rem; white-space: pre-wrap; }
+.teaching-preview ol { padding-inline-start: 1.3rem; list-style-type: decimal; }
+.teaching-preview ol[type="A"] { list-style-type: upper-alpha; }
+.teaching-preview li + li { margin-top: .4rem; }
 .ai-materials-footer { position: sticky; bottom: -1px; display: grid; gap: .45rem; padding: .75rem 0 .35rem; background: #fff; border-top: 1px solid #d7e0eb; }
 @media (min-width: 801px) { .textbook-review .textbook-original { position: sticky; top: 1rem; } }
 @media (max-width: 800px) {
@@ -64,5 +80,6 @@
 }
 @media (max-width: 480px) {
   .textbook-fields, .study-source-options { grid-template-columns: minmax(0, 1fr); }
+  .teaching-output-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .study-source-option { grid-template-columns: auto minmax(0, 1fr); align-items: center; min-height: 0; padding: .65rem .8rem; }
 }

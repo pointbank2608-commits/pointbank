@@ -50,12 +50,13 @@ function WorksheetStudioOwner({owner}:{owner:string}) {
   const words=fillExamples(current.words);
   if(words!==current.words)change(current.editedTasks?{...current,words}:rebuildWordTasks({...current,words}));
  },[exampleSource,fillExamples,change]);
- const requested=params.get('activity'),sourceId=params.get('source');
+ const requested=params.get('activity'),sourceId=params.get('source'),copyId=params.get('copy');
  const unitId=params.get('unit'),sheetId=params.get('sheet');
  const [unitDialog,setUnitDialog]=useState<'source'|'save'|null>(null);
  const [units,setUnits]=useState<TextbookUnit[]|null>(null),[unitsFailed,setUnitsFailed]=useState(false),[unitAttempt,setUnitAttempt]=useState(0);
  const [sheetFailed,setSheetFailed]=useState(false),[sheetAttempt,setSheetAttempt]=useState(0),[savingSheet,setSavingSheet]=useState(false);
  const openedSheet=useRef('');
+ const openedCopy=useRef<string|null>(null);
  const pendingSheet=useRef<{unitId:string;activityId:string;id:string}|null>(null);
  const unit=units?.find(row=>row.id===unitId),teacherId=session?.user.id,academyId=academy?.id;
  const needsUnits=!!unitDialog||!!unitId;
@@ -98,14 +99,14 @@ function WorksheetStudioOwner({owner}:{owner:string}) {
  useEffect(()=>{const id=sourceId;if(id&&id!==sourceRef.current?.id){setSource(restoreWorksheetSource(owner,id));}},[sourceId,owner]);
  useEffect(()=>{const id=sourceId;if(!id||sourceRef.current?.id===id||loading)return;const list=lists.find(l=>l.id===id);if(list){const selected=sourceFromList(list);setSource(selected);rememberWorksheetSource(owner,selected);}},[lists,loading,sourceId,owner,sourceError]);
  useEffect(()=>{
-  if(sheetKey)return;
+  if(sheetKey||copyId)return;
   if(!requested||!worksheetActivity(requested)){docRef.current=null;setDoc(null);return;}
   if(sourceId&&!source)return;
   if(source&&loading&&!bank.length)return;
   if(docRef.current?.activityId===requested&&docRef.current.source?.id===source?.id)return;
   const next=documentFromSource(requested,source,bank,store.current.current[requested]);docRef.current=next;setDoc(next);setAudience('student');setUndo(null);change(next);
   if(!source&&next.source){const restored={...worksheetSource(next.source.id,next.source.name,next.source.kind,next.words),revision:next.source.revision||''};sourceRef.current=restored;setSource(restored);rememberWorksheetSource(owner,restored);navigate(route(requested,restored),{replace:true,state:{}});}
- },[requested,source,sourceId,loading,bank,change,navigate,owner,route,sheetKey]);
+ },[requested,source,sourceId,loading,bank,change,navigate,owner,route,sheetKey,copyId]);
  const reloadSources=useCallback(async()=>{
   if(!academy?.id){setLoading(false);return;}setLoading(true);setSourceError(false);
   const results=await Promise.allSettled([fetchAllWordLists(academy.id,'all'),fetchPhonicsBankResult({includeExtensions:true})]);if(!active.current)return;
@@ -155,7 +156,15 @@ function WorksheetStudioOwner({owner}:{owner:string}) {
   }catch{if(active.current)notify(t('textbook.saveFailed'),'error');}
   finally{if(active.current)setSavingSheet(false);}
  }
- function openStored(next:WorksheetDocument){let selected:WorksheetSource|null=null;if(next.source){selected={...worksheetSource(next.source.id,next.source.name,next.source.kind,next.words),revision:next.source.revision||''};rememberWorksheetSource(owner,selected);}sourceRef.current=selected;setSource(selected);change(next);navigate(route(next.activityId,selected),{state:{}});}
+ const openStored=useCallback((next:WorksheetDocument,replace=false)=>{let selected:WorksheetSource|null=null;if(next.source){selected={...worksheetSource(next.source.id,next.source.name,next.source.kind,next.words),revision:next.source.revision||''};rememberWorksheetSource(owner,selected);}sourceRef.current=selected;setSource(selected);change(next);navigate(route(next.activityId,selected),{replace,state:{}});},[owner,change,navigate,route]);
+ useEffect(()=>{
+  if(!copyId){openedCopy.current=null;return;}
+  if(sheetKey||openedCopy.current===copyId)return;
+  openedCopy.current=copyId;
+  const copy=store.current.copies.find(row=>row.id===copyId);
+  if(copy){setAudience('student');setUndo(null);openStored(structuredClone(copy.document),true);}
+  else{notify(t('textbook.loadFailed'),'error');navigate(route(),{replace:true});}
+ },[copyId,sheetKey,openStored,notify,t,navigate,route]);
  function useSample(next:WorksheetDocument){
   const previous=store.current.current[next.activityId];
   if(previous&&copies.length>=30){notify(tr('storageLimit'),'error');return 'storageLimit' as const;}
@@ -211,7 +220,7 @@ function WorksheetStudioOwner({owner}:{owner:string}) {
       <button type="button" className="ws-button" disabled={savingSheet} onClick={()=>{if(unit)void saveInUnit(unit);else setUnitDialog('save');}}>{t(savingSheet?'textbook.saving':sheetId?'textbook.updateWorksheet':'textbook.saveWorksheet')}</button>
     </div>}
     {source&&activity!.mode==='words'&&<details className="ws-editor-section"><summary>같은 자료로 다른 활동 만들기</summary><div className="ws-actions">{[...new Set([...recommendedCards,...(source.kind==='word'?['pictureMatch','basic-coloring']:[])])].filter(id=>id!==doc.activityId&&prepareWorksheet(cardDocument(id)).ready).map(id=><button key={id} type="button" className="ws-button" onClick={()=>choose(id)}>{tr(`activities.${id}.title`)}</button>)}</div></details>}
-    {activity!.mode==='content'&&<p className="ws-note" data-content-source>{tr('builtInSource')}</p>}
+    {activity!.mode==='content'&&doc.activityId!=='sourceWorkbook'&&<p className="ws-note" data-content-source>{tr('builtInSource')}</p>}
     <div className="ws-preview-controls"><h2>{tr('preview')}</h2><span role="status" data-worksheet-usage>{doc.activityId==='basic-coloring'&&!plan!.ready?'색칠용 그림이 있는 단어 0개':activity!.mode==='content'?doc.tasks.length+'문항 · A4 '+plan!.pages+'쪽':tr('usedPages',{total:plan!.totalCount,used:plan!.usedCount,pages:plan!.pages})}</span></div>
     {doc.activityId==='targetLetters'&&plan!.ready&&<p data-used-rules>{tr('appliedRules')}: {[...new Set(plan!.doc.words.map(w=>w.soundGroup||w.category||w.patternMarked))].join(', ')}</p>}
     {doc.activityId==='frayer'&&<details className="ws-editor-section"><summary>{tr('chooseWords')} · {plan!.pages} {tr('pagesUnit')}</summary><p>{tr('oneWordPage')}</p><div className="ws-word-checks">{doc.words.map(word=><label key={word.id}><input type="checkbox" checked={(doc.selectedWordIds||doc.words.slice(0,1).map(w=>w.id)).includes(word.id)} onChange={e=>{const selected=doc.selectedWordIds||doc.words.slice(0,1).map(w=>w.id);change({...doc,selectedWordIds:e.target.checked?[...selected,word.id]:selected.filter(id=>id!==word.id)});}}/>{word.word}</label>)}</div></details>}

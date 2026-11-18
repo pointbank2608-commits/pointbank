@@ -1130,6 +1130,7 @@ export async function fetchCurriculumLessonById(id: string): Promise<CurriculumL
 }
 
 export async function createCurriculumLesson(params: {
+  id?: string;
   academyId: string;
   classId: string | null;
   name: string;
@@ -1139,22 +1140,22 @@ export async function createCurriculumLesson(params: {
   playlist: LessonSlide[];
   teacherId: string;
 }): Promise<CurriculumLesson> {
-  return unwrap(
-    await supabase
-      .from('curriculum_lessons')
-      .insert({
-        academy_id: params.academyId,
-        class_id: params.classId,
-        name: params.name,
-        word_list_id: params.wordListId,
-        video_url: params.videoUrl,
-        level: params.level,
-        playlist: params.playlist,
-        created_by: params.teacherId,
-      })
-      .select()
-      .single(),
-  ) as CurriculumLesson;
+  const row = {
+    academy_id: params.academyId,
+    class_id: params.classId,
+    name: params.name,
+    word_list_id: params.wordListId,
+    video_url: params.videoUrl,
+    level: params.level,
+    playlist: params.playlist,
+    created_by: params.teacherId,
+  };
+  const lessons = supabase.from('curriculum_lessons');
+  if (!params.id) return unwrap(await lessons.insert(row).select().single()) as CurriculumLesson;
+  const { data, error } = await lessons.upsert({ ...row, id: params.id }, { onConflict: 'id', ignoreDuplicates: true }).select().maybeSingle();
+  if (error) throw error;
+  return (data ?? unwrap(await lessons.select('*').eq('id', params.id)
+    .eq('academy_id', params.academyId).eq('created_by', params.teacherId).single())) as CurriculumLesson;
 }
 
 export async function updateCurriculumLesson(

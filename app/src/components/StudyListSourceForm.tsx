@@ -1,11 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { extractWorksheetMaterials, type AiMaterialDraft } from '../lib/aiMaterials';
+import { extractWorksheetMaterials, type SourceMaterialDraft } from '../lib/aiMaterials';
+import { hasTeachingDraft, type MaterialOutput, type SourceMaterialOptions } from '../lib/teachingMaterials';
 import {
   extractTextbook, fetchTextbookUnits, fetchTextbookWorksheets, textbookUnitName, TEXTBOOK_FILE_TYPES,
   TEXTBOOK_MAX_BYTES, TEXTBOOK_MAX_FILES, TEXTBOOK_MAX_PDF_PAGES, type TextbookUnit,
 } from '../lib/textbooks';
 import { readWorksheetStore, studioKey, type WorksheetDocument } from '../lib/worksheetStudio';
+import TeachingMaterialOptions, { buildSourceOptions, defaultTeachingForm } from './TeachingMaterialOptions';
 
 const button = 'textbook-button';
 const fileTypes: Record<string, string> = {
@@ -14,8 +16,11 @@ const fileTypes: Record<string, string> = {
 const acceptedFiles = [...TEXTBOOK_FILE_TYPES, ...Object.keys(fileTypes).map(extension => '.' + extension)].join(',');
 const extractionErrors = ['accessDenied', 'invalidFiles', 'invalidPageRange', 'extractionFailed', 'extractionUnavailable', 'rateLimited'];
 
-export type StudyListSourceDraft = AiMaterialDraft & {
+type SelectedWorksheet = { title: string; document: WorksheetDocument; unitId?: string };
+export type StudyListSourceDraft = SourceMaterialDraft & {
   title: string;
+  options?: SourceMaterialOptions;
+  unitId?: string;
   original?: { files: File[]; first: number; unclearPages: number[] };
 };
 
@@ -31,9 +36,12 @@ export default function StudyListSourceForm({ academy, owner, busy, onBusy, onDr
   const [files, setFiles] = useState<File[]>([]);
   const [first, setFirst] = useState('1');
   const [last, setLast] = useState('1');
-  const [worksheet, setWorksheet] = useState<{ title: string; document: WorksheetDocument } | null>(null);
+  const [worksheet, setWorksheet] = useState<SelectedWorksheet | null>(null);
+  const [outputs, setOutputs] = useState<MaterialOutput[]>(['words', 'sentences']);
+  const [settings, setSettings] = useState(defaultTeachingForm);
   const [error, setError] = useState('');
   const isPdf = files[0]?.type === 'application/pdf';
+  const teaching = outputs.includes('lesson') || outputs.includes('workbook');
 
   function choose(picked: File[], from: 'camera' | 'file') {
     if (!picked.length) return;
@@ -59,6 +67,8 @@ export default function StudyListSourceForm({ academy, owner, busy, onBusy, onDr
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (busy || (source === 'worksheet' ? !worksheet : !files.length)) return;
+    const options = buildSourceOptions(outputs, settings);
+    if (!options) { setError('invalidTeachingOptions'); return; }
     const start = Number(first);
     const end = Number(last);
     if (source !== 'worksheet' && isPdf && (!Number.isInteger(start) || !Number.isInteger(end)
@@ -68,21 +78,20 @@ export default function StudyListSourceForm({ academy, owner, busy, onBusy, onDr
     }
     setError('');
     onBusy(true);
+    const requestOptions = !teaching && outputs.length === 2 ? undefined : options;
     try {
       if (source === 'worksheet' && worksheet) {
-        const items = await extractWorksheetMaterials(academy, worksheet.document);
-        onDraft({ ...items, title: worksheet.title });
+        const items = await extractWorksheetMaterials(academy, worksheet.document, requestOptions);
+        onDraft({ ...items, title: worksheet.title, options, unitId: worksheet.unitId });
         return;
       }
-      const items = await extractTextbook(academy, files, start, end);
-      if (!items.words.length && !items.sentences.length) {
-        setError(items.unclearPages.length ? 'extractionFailed' : 'noStudyItems');
-        return;
-      }
-      onDraft({ ...items, title: files[0].name.replace(/\.[^.]+$/, '') || files[0].name,
+      const items = await extractTextbook(academy, files, start, end, requestOptions);
+      if (teaching && !hasTeachingDraft(items, options)) throw new Error('extractionFailed');
+      if (!teaching && !items.words.length && !items.sentences.length) throw new Error(items.unclearPages.length ? 'extractionFailed' : 'noStudyItems');
+      onDraft({ ...items, title: files[0].name.replace(/\.[^.]+$/, '') || files[0].name, options,
         original: { files, first: isPdf ? start : 1, unclearPages: items.unclearPages } });
     } catch (err) {
-      setError(err instanceof Error && [...extractionErrors, 'noWorksheetText', 'noStudyItems'].includes(err.message)
+      setError(err instanceof Error && [...extractionErrors, 'noWorksheetText', 'noStudyItems', 'insufficientSource', 'invalidTeachingOptions'].includes(err.message)
         ? err.message : 'extractionFailed');
     } finally {
       onBusy(false);
@@ -127,19 +136,21 @@ export default function StudyListSourceForm({ academy, owner, busy, onBusy, onDr
         <label>{t('textbook.last')}<input type="number" min={1} max={1000} disabled={busy} value={last}
           onChange={event => setLast(event.target.value)} /></label>
       </div>}
-      <p className="textbook-note">{t('textbook.privacy')}</p>
+      <p className="textbook-note">{t(teaching ? 'aiMaterials.fileProvider' : 'textbook.privacy')}</p>
     </> : <>
       <StudyWorksheetPicker academy={academy} owner={owner} busy={busy} onSelect={setWorksheet} />
       <p className="textbook-note">{t('aiMaterials.worksheetPrivacy')}</p>
     </>}
+    <TeachingMaterialOptions outputs={outputs} form={settings} disabled={busy}
+      onOutputs={next => { setOutputs(next); setError(''); }} onForm={next => { setSettings(next); setError(''); }} />
     {error && <p role="alert" className="textbook-error">
       {t(error === 'extractionFailed' && source === 'worksheet' ? 'aiMaterials.worksheetExtractionFailed'
         : extractionErrors.includes(error) ? 'textbook.' + error : 'aiMaterials.' + error)}
     </p>}
     <button type="submit" className={button + ' textbook-primary'}
-      disabled={busy || (source === 'worksheet' ? !worksheet : !files.length)}>
+      disabled={busy || !outputs.length || (source === 'worksheet' ? !worksheet : !files.length)}>
       <span className="material-symbols-outlined" aria-hidden="true">auto_awesome</span>
-      {t(busy ? 'aiMaterials.readingSource' : 'textbook.extract')}
+      {t(busy ? 'aiMaterials.readingSource' : teaching ? 'aiMaterials.createDrafts' : 'textbook.extract')}
     </button>
   </form>;
 }
@@ -155,7 +166,7 @@ function StudyWorksheetPicker({ academy, owner, busy, onSelect }: {
   academy: string;
   owner: string;
   busy: boolean;
-  onSelect: (worksheet: { title: string; document: WorksheetDocument } | null) => void;
+  onSelect: (worksheet: SelectedWorksheet | null) => void;
 }) {
   const { t } = useTranslation();
   const [copies] = useState(() => readWorksheetStore(studioKey(owner, academy)).copies);
@@ -200,7 +211,8 @@ function StudyWorksheetPicker({ academy, owner, busy, onSelect }: {
       {!!options?.length && <label>{t('aiMaterials.sourceWorksheet')}<select value={sheet} disabled={busy}
         onChange={event => {
           setSheet(event.target.value);
-          onSelect(options.find(option => option.id === event.target.value) ?? null);
+          const option = options.find(row => row.id === event.target.value);
+          onSelect(option ? { title: option.title, document: option.document, unitId: unit === 'local' ? undefined : unit } : null);
         }}>
         <option value="">{t('aiMaterials.chooseWorksheet')}</option>
         {options.map(option => <option key={option.id} value={option.id}>{option.title}</option>)}
