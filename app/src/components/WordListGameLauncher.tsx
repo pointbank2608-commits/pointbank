@@ -12,8 +12,8 @@ export default function WordListGameLauncher({ list, classes, selectedClassId, i
 }) {
   const { t } = useTranslation();
   // 문장 목록은 문장 게임만, 단어장은 단어 게임만
-  const games = GAME_CATALOG.filter((entry) => prepareClassroomGame(entry.type,list)).map((entry) => entry.type);
-  const [game, setGame] = useState<GameType>(games[0] || 'wheel');
+  const games = GAME_CATALOG.filter((entry) => prepareClassroomGame(entry.type, list));
+  const [game, setGame] = useState<GameType>(games[0]?.type ?? 'wheel');
   const preferred = list.class_id ?? selectedClassId;
   const classId = classes.find(row => row.id === preferred)?.id ?? '';
   const prepared = useMemo(() => { const content = prepareClassroomGame(game,list); return { ready: !!content, count: content ? list.items.length : 0 }; }, [list, game]);
@@ -33,13 +33,22 @@ export default function WordListGameLauncher({ list, classes, selectedClassId, i
           <fieldset>
             <legend className="mb-2 font-semibold">{t('classroomUx.chooseGame')}</legend>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {games.map((type) => {
-                const entry = GAME_CATALOG.find((item) => item.type === type)!;
+              {games.map((entry) => {
+                const { type } = entry;
                 const locked = !isPaid && !isFreeTierGame(type);
                 return <button key={type} type="button" disabled={locked} aria-pressed={game === type} onClick={() => setGame(type)}
-                  className={`min-h-16 rounded-xl border-2 p-3 text-left disabled:opacity-60 ${game === type ? 'border-primary bg-primary/5' : 'border-outline-variant/40'}`}>
-                  <span className="flex items-center gap-2 font-semibold"><span aria-hidden className="material-symbols-outlined">{game === type ? 'check_circle' : entry.icon}</span>{t(entry.nameKey)}</span>
-                  <span className="mt-1 block text-sm text-on-surface-variant">{locked ? t('classroomUx.paidGame') : t(entry.descKey)}</span>
+                  className={`grid grid-cols-[4.5rem_minmax(0,1fr)] items-start gap-3 rounded-xl border-2 p-3 text-left outline-offset-2 focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-60 sm:grid-cols-[5.5rem_minmax(0,1fr)] ${game === type ? 'border-primary bg-primary/5' : 'border-outline-variant/40'}`}>
+                  <span aria-hidden className="grid aspect-[4/3] place-items-center overflow-hidden rounded-lg bg-primary-fixed text-primary">
+                    {entry.cover ? <img src={entry.cover} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                      : <span className="material-symbols-outlined text-2xl">{entry.icon}</span>}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="flex items-start gap-1.5 break-words font-semibold">
+                      <span className="min-w-0">{t(entry.nameKey)}</span>
+                      {game === type && <span aria-hidden className="material-symbols-outlined shrink-0 text-[1.15rem] text-primary">check_circle</span>}
+                    </span>
+                    <span className="mt-1 block break-words text-sm text-on-surface-variant">{locked ? t('classroomUx.paidGame') : t(entry.descKey)}</span>
+                  </span>
                 </button>;
               })}
             </div>
