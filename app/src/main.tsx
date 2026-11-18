@@ -5,6 +5,7 @@ import './tailwind.css';
 import './i18n';
 import App from './App';
 import InstallBanner from './components/InstallBanner';
+import WebAppIdentity from './components/WebAppIdentity';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import AppErrorBoundary from './components/AppErrorBoundary';
@@ -17,6 +18,7 @@ applyFontScale(getFontScale());
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
+      <WebAppIdentity />
       <ToastProvider>
         <AuthProvider>
           <InstallBanner />

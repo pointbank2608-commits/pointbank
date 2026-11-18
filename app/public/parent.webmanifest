@@ -1,0 +1,16 @@
+{
+  "name": "수업뚝딱 학부모",
+  "short_name": "수업뚝딱 학부모",
+  "description": "자녀에게 발행된 숙제와 완료 알림",
+  "lang": "ko",
+  "id": "/p",
+  "start_url": "/p",
+  "scope": "/p",
+  "display": "standalone",
+  "background_color": "#F7F9FD",
+  "theme_color": "#102B50",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

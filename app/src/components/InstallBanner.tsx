@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import BrandMark from './BrandMark';
+import { webAppForPath } from '../lib/webAppIdentity';
 
-const DISMISS_KEY = 'classbank.installBannerDismissed.v1';
+const DISMISS_KEY = 'classbank.installBannerDismissed.v2';
 
 type Kind = 'kakao' | 'ios' | 'android' | null;
 
@@ -40,16 +41,17 @@ export default function InstallBanner() {
   const [kind, setKind] = useState<Kind>(null);
   // 퀴즈쇼 학생 입장 화면(/join)은 수업 중에만 잠깐 쓰는 화면이라 앱 설치 안내를 띄우지 않는다.
   const { pathname } = useLocation();
+  const app = webAppForPath(pathname);
+  const dismissKey = `${DISMISS_KEY}.${app}`;
 
   useEffect(() => {
-    if (localStorage.getItem(DISMISS_KEY) === '1') return;
-    setKind(detectKind());
-  }, []);
+    setKind(localStorage.getItem(dismissKey) === '1' ? null : detectKind());
+  }, [dismissKey]);
 
   if (!kind || pathname === '/join' || pathname.startsWith('/join/')) return null;
 
   function dismiss() {
-    localStorage.setItem(DISMISS_KEY, '1');
+    localStorage.setItem(dismissKey, '1');
     setKind(null);
   }
 

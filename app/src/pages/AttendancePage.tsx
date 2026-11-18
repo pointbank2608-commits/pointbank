@@ -7,6 +7,7 @@ import ClassChipRow from '../components/ClassChipRow';
 import ClassroomHeader from '../components/ClassroomHeader';
 import LearningCardModal from '../components/homework/teacher/LearningCardModal';
 import StudentLoginPanel from '../components/StudentLoginPanel';
+import ParentAccessPanel from '../components/ParentAccessPanel';
 import AddStudentModal from '../components/AddStudentModal';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -321,6 +322,7 @@ export default function AttendancePage() {
       )}
 
       {studentAreaOpen && selectedId && students.length > 0 && <StudentLoginPanel students={students} />}
+      {studentAreaOpen && (profile?.role === 'owner' || profile?.role === 'teacher') && selectedId && students.length > 0 && <ParentAccessPanel students={students} />}
 
       <section className="space-y-4 rounded-[20px] border border-outline-variant bg-white p-4 shadow-card sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">

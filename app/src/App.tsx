@@ -1,7 +1,6 @@
 import MyGamesPage from './pages/MyGamesPage';
 import GameWorkspace from './components/GameWorkspace';
 import { useTranslation } from 'react-i18next';
-import StudentAppIdentity from './components/StudentAppIdentity';
 import { NoticeProvider } from './components/NoticeCenter';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
@@ -33,6 +32,7 @@ const HomeworkPage = lazyPage(() => import('./pages/HomeworkPage'));
 const HomeworkStudentPage = lazyPage(() => import('./pages/HomeworkStudentPage'));
 const WordMemoryStudentPage = lazyPage(() => import('./pages/WordMemoryStudentPage'));
 const StudentPortalPage = lazyPage(() => import('./pages/StudentPortalPage'));
+const ParentPortalPage = lazyPage(() => import('./pages/ParentPortalPage'));
 const StudentSoloPage = lazyPage(() => import('./pages/StudentSoloPage'));
 const StudentGrammarPage = lazyPage(() => import('./pages/StudentGrammarPage'));
 const SharedRecordingPage = lazyPage(() => import('./pages/SharedRecordingPage'));
@@ -166,6 +166,8 @@ function AppRoutes() {
   const { loading, session, sessionReplaced, profile, isStaff, isAdmin } = useAuth();
   const { pathname } = useLocation();
 
+  if (pathname === '/p' || pathname === '/p/') return <ParentPortalPage />;
+
   // 대회 퀴즈쇼 학생 입장 — 로그인 없이 휴대폰으로 들어온다(로그인 여부·로딩과 상관없이 먼저).
   if (pathname === '/join' || pathname.startsWith('/join/')) {
     return (
@@ -178,8 +180,6 @@ function AppRoutes() {
   // 학생용 페이지(Classbank Student): 학원 코드 + 이름 + 학부모 전화번호로 로그인. 선생님 로그인과 따로.
   if (pathname === '/s' || pathname.startsWith('/s/')) {
     return (
-      <>
-        <StudentAppIdentity />
       <Routes>
         <Route path="/s" element={<StudentPortalPage />} />
         <Route path="/s/lesson/:assignmentId" element={<StudentSoloPage />} />
@@ -187,7 +187,6 @@ function AppRoutes() {
         <Route path="/s/grammar/:assignmentId" element={<StudentGrammarPage />} />
         <Route path="*" element={<Navigate to="/s" replace />} />
       </Routes>
-      </>
     );
   }
   // 학부모가 링크로 보는 아이의 녹음(로그인 없음, 만료·닫힘이 있는 무작위 열쇠)

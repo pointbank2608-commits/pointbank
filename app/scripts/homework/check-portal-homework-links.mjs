@@ -83,7 +83,7 @@ try {
   await page.goto(base+encodeURIComponent('/hw/100001'));
   await page.waitForURL('**/s?hw=100001');
   await page.getByLabel('내 이름',{exact:true}).fill('민서');
-  await page.getByLabel(/보호자 전화번호/).fill('01012345678');
+  await page.getByLabel(/등록된 전화번호/).fill('01012345678');
   assert.equal(await page.locator('form input').count(),2);
   await page.getByRole('button',{name:'들어가기'}).click();
   await page.waitForURL('**/hw/100001');
@@ -94,7 +94,7 @@ try {
   await page.evaluate(()=>localStorage.clear());
   await page.goto(base+encodeURIComponent('/s'));
   await page.getByLabel('내 이름',{exact:true}).fill('민서');
-  await page.getByLabel(/보호자 전화번호/).fill('01012345678');
+  await page.getByLabel(/등록된 전화번호/).fill('01012345678');
   assert.equal(await page.locator('form input').count(),2);
   await page.getByRole('button',{name:'들어가기'}).click();
   await page.getByText('민서, 안녕!',{exact:true}).waitFor();
@@ -102,7 +102,7 @@ try {
   await page.evaluate(()=>localStorage.clear());
   await page.goto(base+encodeURIComponent('/s?c=ABC123'));
   await page.getByLabel('내 이름',{exact:true}).fill('민서');
-  await page.getByLabel(/보호자 전화번호/).fill('01012345678');
+  await page.getByLabel(/등록된 전화번호/).fill('01012345678');
   assert.equal(await page.locator('form input').count(),2);
   await page.getByRole('button',{name:'들어가기'}).click();
   await page.getByText('민서, 안녕!',{exact:true}).waitFor();

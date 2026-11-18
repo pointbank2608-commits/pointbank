@@ -5,8 +5,7 @@ import { createStudent } from '../lib/api';
 import { formatPhone, saveGuardianPhone } from '../lib/studentPortal';
 
 /**
- * 학생 등록 창 — 이름 + (원장은) 보호자 전화번호. 전화번호는 학생이 /s 에서 로그인할 때 쓴다.
- * 선생님(원장이 아닌 경우)은 이름만 등록하고, 번호는 원장이 학생관리의 "학생 로그인"에서 나중에 넣는다.
+ * 학생 등록 창 — 이름과 학생이 /s에서 로그인할 때 쓸 전화번호를 등록한다.
  * 같은 이름의 학생이 이미 있으면 알려 주고(번호가 다르면 문제없음), 이름·번호가 모두 같으면 서버가 막는다.
  */
 export default function AddStudentModal({
@@ -25,7 +24,7 @@ export default function AddStudentModal({
 }) {
   const { t } = useTranslation();
   const { profile } = useAuth();
-  const isOwner = profile?.role === 'owner';
+  const canRegisterPhone = profile?.role === 'owner' || profile?.role === 'teacher';
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [consent, setConsent] = useState(false);
@@ -33,7 +32,7 @@ export default function AddStudentModal({
   const [error, setError] = useState<string | null>(null);
 
   const digits = phone.replace(/\D/g, '');
-  const wantsPhone = isOwner && digits.length > 0;
+  const wantsPhone = canRegisterPhone && digits.length > 0;
   const phoneOk = !wantsPhone || (digits.length >= 10 && digits.length <= 11 && consent);
   const ready = name.trim().length > 0 && phoneOk;
   const norm = (s: string) => s.replace(/\s+/g, '').toLowerCase();
@@ -85,7 +84,7 @@ export default function AddStudentModal({
           <input autoFocus value={name} onChange={(e) => setName(e.target.value)} className={input} />
         </label>
         {sameName && <p className="rounded-lg bg-warm-yellow/25 px-3 py-2 font-caption text-caption text-on-surface">{t('addStudent.sameName')}</p>}
-        {isOwner ? (
+        {canRegisterPhone && (
           <>
             <label className="block space-y-1">
               <span className="font-label-md text-label-md text-on-surface">{t('addStudent.phone')}</span>
@@ -106,8 +105,6 @@ export default function AddStudentModal({
               </label>
             )}
           </>
-        ) : (
-          <p className="font-caption text-caption text-on-surface-variant">{t('addStudent.ownerPhone')}</p>
         )}
         {error && (
           <p className="font-caption text-caption text-error" role="alert">

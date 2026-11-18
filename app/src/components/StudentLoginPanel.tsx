@@ -18,8 +18,8 @@ import { setRecordConsent } from '../lib/soloApi';
 import type { Student } from '../lib/types';
 
 /**
- * 학생관리의 "학생 로그인" 패널 — 학원 학생 코드, 학생별 학부모 전화번호 등록(원장만).
- * 학생은 /s 에서 학원 코드 + 이름 + 학부모 전화번호로 로그인한다. 번호는 서버에 암호화해서 저장되고,
+ * 학생관리의 "학생 로그인" 패널 — 학원 학생 코드와 학생 로그인 전화번호 등록.
+ * 학생은 /s 에서 이름과 등록된 전화번호로 로그인한다. 번호는 서버에 암호화해서 저장되고,
  * 등록할 때 보호자 동의를 받았다는 확인을 남긴다.
  */
 export default function StudentLoginPanel({ students }: { students: Student[] }) {
@@ -27,6 +27,7 @@ export default function StudentLoginPanel({ students }: { students: Student[] })
   const { profile } = useAuth();
   const { notify } = useToast();
   const isOwner = profile?.role === 'owner';
+  const canRegisterPhone = isOwner || profile?.role === 'teacher';
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState<string | null>(null);
   const [status, setStatus] = useState<Map<string, GuardianStatus>>(new Map());
@@ -148,7 +149,7 @@ export default function StudentLoginPanel({ students }: { students: Student[] })
                     ) : (
                       <span className="rounded-full bg-surface-container px-2.5 py-0.5 font-caption text-caption text-on-surface-variant">{t('studentLogin.notRegistered')}</span>
                     )}
-                    {isOwner && (
+                    {(isOwner || (canRegisterPhone && !st)) && (
                       <button
                         type="button"
                         onClick={() => setEditing(s)}
@@ -167,6 +168,7 @@ export default function StudentLoginPanel({ students }: { students: Student[] })
       {editing && (
         <GuardianModal
           student={editing}
+          isOwner={isOwner}
           registered={status.has(editing.id)}
           recordConsent={!!status.get(editing.id)?.record_consent_at}
           onClose={() => setEditing(null)}
@@ -180,7 +182,7 @@ export default function StudentLoginPanel({ students }: { students: Student[] })
   );
 }
 
-function GuardianModal({ student, registered, recordConsent, onClose, onChanged }: { student: Student; registered: boolean; recordConsent: boolean; onClose: () => void; onChanged: () => void }) {
+function GuardianModal({ student, isOwner, registered, recordConsent, onClose, onChanged }: { student: Student; isOwner: boolean; registered: boolean; recordConsent: boolean; onClose: () => void; onChanged: () => void }) {
   const { t } = useTranslation();
   const { notify } = useToast();
   const [phone, setPhone] = useState('');
@@ -232,7 +234,7 @@ function GuardianModal({ student, registered, recordConsent, onClose, onChanged 
             className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-base outline-none focus:border-primary"
           />
         </label>
-        {registered && (
+        {isOwner && registered && (
           <button type="button" onClick={() => void reveal()} className="font-caption text-caption text-primary hover:underline">
             {t('studentLogin.reveal')}
           </button>
@@ -241,7 +243,7 @@ function GuardianModal({ student, registered, recordConsent, onClose, onChanged 
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1 h-4 w-4" />
           <span className="font-caption text-caption text-on-surface">{t('studentLogin.consent')}</span>
         </label>
-        {registered && (
+        {isOwner && registered && (
           <div className="space-y-1.5 rounded-lg border border-outline-variant/50 p-3">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-[20px] text-primary">mic</span>
@@ -279,7 +281,7 @@ function GuardianModal({ student, registered, recordConsent, onClose, onChanged 
           <button type="button" onClick={onClose} className="rounded-full px-4 py-2 font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low">
             {t('common.cancel')}
           </button>
-          {registered && (
+          {isOwner && registered && (
             <button
               type="button"
               onClick={async () => {
