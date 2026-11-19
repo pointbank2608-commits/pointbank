@@ -1,6 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
+import { ABSENT_EVENT, loadAbsent } from '../lib/absent';
+import { announceRoundDone, isAutoTurnOn, loadTeamOrder, TEAM_ORDER_EVENT } from '../lib/teamOrder';
 import { Link } from 'react-router-dom';
 import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
@@ -25,6 +28,7 @@ function defaultItems(): GameItem[] {
 
 export default function TwoDicePage() {
   const { t } = useTranslation();
+  const { session, academy } = useAuth();
   const g = useGameTemplates({ gameType: 'twodice', defaultItems });
   const {
     isStaff,
@@ -61,6 +65,30 @@ export default function TwoDicePage() {
   const size = [3, 4, 5, 6].find(n => n === selected?.config.twoDiceSize) ?? 6;
   const teams = [1, 2, 3, 4].find(n => n === selected?.config.twoDiceTeams) ?? 2;
   const rounds = [6, 9, 12].find(n => n === selected?.config.twoDiceRounds) ?? 9;
+  const [orderRevision, setOrderRevision] = useState(0);
+  useEffect(() => {
+    const refresh = () => setOrderRevision(revision => revision + 1);
+    window.addEventListener(TEAM_ORDER_EVENT, refresh);
+    window.addEventListener(ABSENT_EVENT, refresh);
+    return () => {
+      window.removeEventListener(TEAM_ORDER_EVENT, refresh);
+      window.removeEventListener(ABSENT_EVENT, refresh);
+    };
+  }, []);
+  const participation = selected?.config.twoDiceMode;
+  const scope = `${session?.user.id}:${academy?.id}`;
+  const classOrder = useMemo(() => {
+    void orderRevision;
+    if (participation !== 'team' || !roster.length) return null;
+    const absent = new Set(loadAbsent(classId ?? ''));
+    return loadTeamOrder(roster.filter(student => !absent.has(student.id)), scope);
+  }, [roster, classId, scope, participation, orderRevision]);
+  const teamOrder = classOrder?.mode === 'team' && classOrder.teamCount === teams
+    ? classOrder.order.map(id => Number(id.slice('team-'.length))) : undefined;
+  const firstTeam = teamOrder?.[classOrder?.turn ?? 0] ?? 0;
+  const teamNames = Array.from({ length: teams }, (_, index) => classOrder?.teamNames?.[`team-${index}`] || t('teamOrder.teamLabel', { n: index + 1 }));
+  const orderKey = JSON.stringify([teamOrder, firstTeam]);
+  const autoAdvance = participation === 'team' ? isAutoTurnOn() : true;
 
   async function persistItems(next: GameItem[]): Promise<boolean> {
     if (!selected) return false;
@@ -263,11 +291,16 @@ export default function TwoDicePage() {
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
             <TwoDice
-              key={`${roundKey}:${size}:${teams}:${rounds}`}
+              key={`${roundKey}:${size}:${teams}:${rounds}:${participation}:${orderKey}`}
               items={selected.items}
               size={size}
               teamCount={teams}
               rounds={rounds}
+              teamOrder={teamOrder}
+              firstTeam={firstTeam}
+              teamNames={participation === 'team' ? teamNames : undefined}
+              autoAdvance={autoAdvance}
+              onRoundDone={participation === 'solo' ? announceRoundDone : undefined}
               editable={false}
               onEditItem={(id, label) => void renameItemLabel(id, label)}
               templateName={selected.name}

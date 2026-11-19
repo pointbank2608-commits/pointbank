@@ -84,7 +84,7 @@ import RainbowSlideForm, { pickSpeaking, pickStructure } from './rainbow/Rainbow
 import { parseQnaText, qnaToText } from '../lib/qnaLines';
 import { generateShadowScript } from '../lib/api';
 import ReadingBoard from './ReadingBoard';
-import { parseReadingText } from '../lib/readingLines';
+import { parseReadingText, transcriptClozeSource } from '../lib/readingLines';
 import GrammarExplainCard from './GrammarExplainCard';
 import { buildWordListSentences, GRAMMAR_LEVELS_BY_STAGE, GRAMMAR_POINTS, GRAMMAR_STAGES, grammarLevelTag, grammarPoint, sentencesForUnscramble, useGrammarCards, type GrammarStage } from '../lib/grammar';
 import { GAME_PAGES } from '../lib/gamePages';
@@ -217,6 +217,7 @@ export default function LessonSlideSorter({
   const inputSession=useMemo(()=>({mode:addMode,active:true}),[addMode]);
   useEffect(()=>{inputSession.active=true;return()=>{inputSession.active=false;};},[inputSession]);
   const [pickerOpen,setPickerOpen]=useState(false);
+  const [videoActivity,setVideoActivity]=useState<{block:BlockDef;source:'provided'|'custom'}|null>(null);
   const [insertAfterId, setInsertAfterId] = useState<string | null>(null);
   const [powerPoint, setPowerPoint] = useState<{ afterId: string | null } | null>(null);
   const [phonicsEntries, setPhonicsEntries] = useState<PhonicsBankEntry[]>([]);
@@ -537,8 +538,10 @@ export default function LessonSlideSorter({
         setAddMode(null);
       }}
       onPdf={asset=>{if(!inputSession.active)return;pendingActivity.current='media.pdf';addSlide({id:uid(),kind:'pdf',...asset});setPickerOpen(false);setAddMode(null);}}
+      onVideo={(block,source)=>{pendingActivity.current=block.id;setPickerOpen(false);setVideoActivity({block,source});}}
       onPick={pickBlock} onBundle={()=>{pendingActivity.current='wordset';setPickerOpen(false);setAddMode('wordset');}}/>}
 
+    {videoActivity&&<VideoActivitySetup shadow={videoActivity.block.id==='learn.shadow'} source={videoActivity.source} onClose={()=>{setVideoActivity(null);setInsertAfterId(null);pendingActivity.current=null;}} onAdd={draft=>{if(!inputSession.active)return;if(placeSlides([{...draft,id:uid()}])){setVideoActivity(null);setAddMode(null);}}}/>}
     {powerPoint && <LessonPowerPointImport academyId={academyId} onClose={() => setPowerPoint(null)} onInsert={made => {
       if (!placeSlides(made, powerPoint.afterId, null)) throw new Error('Slide insertion is busy');
       setAddMode(null);
@@ -1770,6 +1773,16 @@ function GameSlideEditor({
   );
 }
 
+
+function VideoActivitySetup({shadow,source,onClose,onAdd}:{shadow:boolean;source:'provided'|'custom';onClose:()=>void;onAdd:(draft:Omit<ShadowSlide,'id'>|Omit<import('../lib/types').ReadingSlide,'id'>)=>void}){
+ const {i18n}=useTranslation();const en=i18n.language.startsWith('en');const [clip,setClip]=useState<VideoClip|null>(null);
+ const name=shadow?(en?'Shadowing':'따라 말하기(쉐도잉)'):(en?'Listening cloze':'빈칸 듣기');
+ const reading=clip?{title:clip.title,videoUrl:'https://www.youtube.com/watch?v='+clip.youtube_id,mode:'cloze' as const,source:transcriptClozeSource(clip.script)}:undefined;
+ return <AccessibleDialog label={name} onClose={onClose}><div className="video-activity-setup"><header><h2>{name} · {source==='provided'?(en?'Prepared video':'준비된 영상으로 시작'):(en?'My video':'내 영상으로 만들기')}</h2><button type="button" onClick={onClose}>{en?'Close':'닫기'}</button></header>
+  {source==='provided'&&!clip?<VideoClipLibrary pickLabel={en?'Set up this video':'이 영상으로 활동 설정'} onPick={setClip}/>:<>{clip&&<button type="button" className="activity-preview-button" onClick={()=>setClip(null)}>{en?'Choose another video':'다른 영상 고르기'}</button>}{shadow?<ShadowSlideForm key={clip?.id??'custom'} initial={clip?shadowDraftFromClip(clip):undefined} onAdd={draft=>onAdd({...draft,kind:'shadow'})}/>:<ReadingSlideForm key={clip?.id??'custom'} initial={reading??{source:'',videoUrl:'',mode:'cloze'}} videoRequired onAdd={draft=>onAdd({...draft,kind:'reading',mode:'cloze'})}/>}</>}
+ </div></AccessibleDialog>;
+}
+
 type ReadingDraft = { title?: string; source: string; videoUrl?: string | null; mode: 'lines' | 'cloze' };
 
 /** 노래·지문 슬라이드 입력 — 추가 패널(onAdd)과 상세(onChange, 바로 반영) 둘 다 쓴다. */
@@ -1777,7 +1790,9 @@ function ReadingSlideForm({
   initial,
   onAdd,
   onChange,
+  videoRequired=false,
 }: {
+  videoRequired?:boolean;
   initial?: ReadingDraft;
   onAdd?: (draft: ReadingDraft) => void;
   onChange?: (patch: Partial<ReadingDraft>) => void;
@@ -1822,7 +1837,7 @@ function ReadingSlideForm({
       {onAdd && (
         <button
           type="button"
-          disabled={lineCount === 0}
+          disabled={lineCount === 0 || (videoRequired&&!extractYoutubeId(draft.videoUrl??''))}
           onClick={() => onAdd({ ...draft, title: draft.title?.trim() || undefined, videoUrl: draft.videoUrl?.trim() || null })}
           className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary hover:bg-primary-container disabled:opacity-40"
         >

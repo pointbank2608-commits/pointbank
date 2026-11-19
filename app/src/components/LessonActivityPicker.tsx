@@ -56,12 +56,13 @@ function isWorkbook(block: BlockDef) {
   return !!materialId && !!(workbookOfMaterial(materialId) || workbookStep(materialId));
 }
 
-export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClose,canAttachHelper,storageKey,cards,gameSources,slides,replaceTargetId,insertAfterId,selected,sourceName,entries,lessonName,academyId}:{
+export default function LessonActivityPicker({onPick,onVideo,onPdf,onStem,onBundle,onClose,canAttachHelper,storageKey,cards,gameSources,slides,replaceTargetId,insertAfterId,selected,sourceName,entries,lessonName,academyId}:{
  onPick:(b:BlockDef,layout?:CanvasExample,theme?:string|null, worksheet?:ActivityWorksheetOptions)=>void;onBundle:()=>void;onClose:()=>void;canAttachHelper:boolean;storageKey:string;
  cards:FullCardItem[];gameSources:ReturnType<typeof lessonGameSources>;slides:LessonSlide[];replaceTargetId:string|null;insertAfterId?:string|null;
  selected:LessonSlide|null;sourceName:string;entries:PhonicsBankEntry[];lessonName:string;
  academyId:string;onPdf:(asset:Omit<PdfSlide,'id'|'kind'>)=>void;
  onStem:(lesson:StemLesson)=>void;
+ onVideo?:(block:BlockDef,source:'provided'|'custom')=>void;
 }){
  const {t,i18n}=useTranslation(),ko=i18n.language.startsWith('ko');
  const [cat,setCat]=useState<ActivityCategory>('recent'),[query,setQuery]=useState('');
@@ -144,7 +145,8 @@ export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClo
    const match = block.slide?.gameType ? gameExamples.get(block.slide.gameType) : null;
    return !match?.content ? 2 : match.kind === 'builtin' ? 1 : 0;
  };
- const shown = !q && cat === 'games' ? [...filtered].sort((a, b) => gamePriority(a) - gamePriority(b)) : filtered;
+ const mediaOrder=['media.image','media.pdf','media.video','media.web','learn.shadow','learn.reading.cloze'];
+ const shown = !q && cat === 'games' ? [...filtered].sort((a, b) => gamePriority(a) - gamePriority(b)) : !q&&cat==='media'?[...filtered].sort((a,b)=>mediaOrder.indexOf(a.id)-mediaOrder.indexOf(b.id)):filtered;
  const canvasVisible = shown.some(b => b.id === 'free.canvas');
  const phonicsMatches = useMemo(() => {
    const candidate = { id: 'phonics-activity-preview', kind: 'phonicsGame', gameId: '' } as const;
@@ -191,6 +193,11 @@ export default function LessonActivityPicker({onPick,onPdf,onStem,onBundle,onClo
      {(!q && cat==='print' ? printSections : [{key:'all', blocks:shown}]).map(section => <section key={section.key}>
      {section.key!=='all' && <h4 className="my-3 font-bold">{t(`materials.group_${section.key}`)}</h4>}
      <div className="activity-grid">{section.blocks.flatMap(block => (block.id === 'free.canvas' ? canvasLayouts : [undefined]).map(layout => {
+       const videoActivity=['learn.shadow','learn.reading.cloze'].includes(block.id);
+       if(videoActivity){const shadow=block.id==='learn.shadow';const label=shadow?(ko?'따라 말하기(쉐도잉)':'Shadowing'):(ko?'빈칸 듣기':'Listening cloze');return <article className="activity-card activity-video-card" key={block.id} data-activity-id={block.id}>
+         <div className="activity-card-main"><span className="activity-card-label"><strong>{label}</strong></span><div className="video-activity-scene" aria-label={label+' 예시'}><span className="video-example-line">{shadow?'I like it.':'I ____ it.'}</span><span className="video-example-controls">▶ {ko?'재생':'Play'}　{shadow?'↻ '+(ko?'다시 듣기':'Replay'):'✓ '+(ko?'정답 보기':'Answer')}</span></div><small className="activity-description">{shadow?(ko?'영상 속 대사를 한 문장씩 듣고 따라 말해요.':'Listen and repeat each line from a video.'):(ko?'영상 속 문장을 듣고 빠진 단어를 맞혀요.':'Listen to a video and find the missing word.')}</small></div>
+         <div className="video-activity-starts"><button type="button" className="video-activity-primary" onClick={()=>onVideo?onVideo(block,'provided'):choose(block)}>{ko?'준비된 영상으로 시작':'Start with a prepared video'}</button><button type="button" onClick={()=>onVideo?onVideo(block,'custom'):choose(block)}>{ko?'내 영상으로 만들기':'Use my video'}</button></div>
+       </article>;}
        const info = INFO[block.id];
        const helper = block.category === 'helper';
        const disabled = !!info || (helper && !canAttachHelper);

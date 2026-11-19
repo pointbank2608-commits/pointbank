@@ -461,6 +461,7 @@ export interface GameTemplateConfig {
   pictureWordMode?: boolean;
   twoDiceSize?: number;
   twoDiceTeams?: number;
+  twoDiceMode?: 'none' | 'solo' | 'team';
   twoDiceRounds?: number;
   pictureWordListId?: string;
   /** race 정해진 슛을 먼저 끝내기 · timed 제한 시간 안에 많이 넣기, 그리고 제한 시간(초) */
@@ -778,6 +779,15 @@ export interface PdfSlide {
   thumbnailPath: string;
 }
 
+export interface PhonicsClassPlay {
+  classId: string | null;
+  mode: 'none' | 'solo' | 'team';
+  teamCount: number;
+  autoTurn: boolean;
+  absentIds: string[];
+  order?: import('./teamOrder').TeamOrderState;
+}
+
 export interface PhonicsGameSlide {
   id: string;
   kind: 'phonicsGame';
@@ -786,6 +796,7 @@ export interface PhonicsGameSlide {
   rounds?: 3 | 6 | 10;
   level?: 'easy' | 'normal' | 'hard';
   teams?: 1 | 2 | 3 | 4;
+  classPlay?: PhonicsClassPlay;
 }
 
 export interface VideoSlide {

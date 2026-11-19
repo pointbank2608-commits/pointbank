@@ -31,6 +31,7 @@ import GameMusicPicker from './GameMusicPicker';
 import { resolveResultSound } from '../lib/gameMusic';
 import { PASS_BALL_MUSIC, passBallMusic } from '../lib/passBallMusic';
 import GameReportButton from './GameReportButton';
+import GameClassSettingsContent from './GameClassSettingsContent';
 
 const btn = 'min-h-11 rounded-xl border border-outline-variant bg-white px-4 py-2 text-base font-bold text-deep-navy focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40';
 const primaryBtn = 'min-h-11 rounded-xl bg-primary px-5 py-2 text-base font-bold text-white focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40';
@@ -151,7 +152,6 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const [pClass, setPClass] = useState('');
   const [pMode, setPMode] = useState<Mode>('none');
   const [pTeams, setPTeams] = useState(2);
-  const [pDiceTeams, setPDiceTeams] = useState(2);
   const [pSound, setPSound] = useState(true);
   const [pItemSource, setPItemSource] = useState<ItemSource>('list');
   const [pText, setPText] = useState('');
@@ -187,7 +187,6 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const { session, academy } = useAuth();
   const [pAutoTurn, setPAutoTurn] = useState(true);
   const [pAbsent, setPAbsent] = useState<string[]>([]);
-  const [absentOpen, setAbsentOpen] = useState(false);
   const [pStudents, setPStudents] = useState<GameItem[]>([]);
   const [pStudentsLoading, setPStudentsLoading] = useState(false);
   const [orderOpen, setOrderOpen] = useState(false);
@@ -278,7 +277,6 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     if (next !== 'none' && !pClass && info?.classes.length) {
       const first = info.classes[0].id;
       setPClass(first);
-      setAbsentOpen(false);
       setPAbsent(loadAbsent(first));
     }
   }
@@ -308,17 +306,10 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     setPPictureList('');
     setPSaved('');
     setPClass(info?.classId || '');
-    setPDiceTeams(diceTeams);
-    const teamCap = isGrammar ? 4 : nativeTeams ? 8 : 6;
-    setPMode(isGrammar ? (play.teams > 0 ? 'team' : play.showScore ? 'solo' : 'none') : !isShowOrderOn() ? 'none' : turnState?.mode === 'team' ? 'team' : 'solo');
-    setPTeams(Math.min(teamCap, Math.max(2, nativeTeams ? (info?.teamCount ?? 2) : (turnState?.mode === 'team' ? turnState.teamCount : play.teams || 2))));
+    const teamCap = isGrammar || isTwoDice ? 4 : nativeTeams ? 8 : 6;
+    setPMode(isTwoDice ? info?.selected?.config.twoDiceMode ?? (diceTeams > 1 ? 'team' : 'none') : isGrammar ? (play.teams > 0 ? 'team' : play.showScore ? 'solo' : 'none') : !isShowOrderOn() ? 'none' : turnState?.mode === 'team' ? 'team' : 'solo');
+    setPTeams(Math.min(teamCap, Math.max(2, isTwoDice ? diceTeams : nativeTeams ? (info?.teamCount ?? 2) : (turnState?.mode === 'team' ? turnState.teamCount : play.teams || 2))));
     setPAbsent(info?.classId ? loadAbsent(info.classId) : []);
-    setAbsentOpen(false);
-    if (!isTwoDice && !info?.classId && info?.classes.length && !(isGrammar ? play.teams === 0 && !play.showScore : !isShowOrderOn())) {
-      const first = info.classes[0].id;
-      setPClass(first);
-      setPAbsent(loadAbsent(first));
-    }
     setPSound(soundOn);
     setPItemSource('type');
     setPItemClass(info?.classId || '');
@@ -365,7 +356,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   // 반 설정에서 고른 반의 학생을 미리 불러와 보여 준다. 반을 실제로 바꾸는 것은 "적용"을 눌렀을 때뿐이다
   // (고르자마자 바꾸면 게임이 다시 준비되면서 이 패널이 닫혀 버렸다).
   useEffect(() => {
-    if (open !== 'class' || !pClass) { setPStudents([]); return; }
+    if (open !== 'class' || !pClass) { setPStudents([]); setPStudentsLoading(false); return; }
     let live = true;
     setPStudentsLoading(true);
     fetchStudentsOfClass(pClass)
@@ -375,7 +366,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     return () => { live = false; };
   }, [open, pClass]);
 
-  const teamCapOf = () => (isGrammar ? 4 : nativeTeams ? 8 : 6);
+  const teamCapOf = () => (isGrammar || isTwoDice ? 4 : nativeTeams ? 8 : 6);
   const toggle = (next: Exclude<Open, null>, anchor: HTMLButtonElement) => {
     setPanelAnchor(anchor);
     setOpen((o) => (o === next ? null : next));
@@ -447,18 +438,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     if (!info) return;
     const classChanged = pClass !== (info.classId || '');
     if (pClass) saveAbsent(pClass, pAbsent);
-    if (isTwoDice) {
-      if (info.selected && pDiceTeams !== diceTeams) {
-        await info.applyGuide({
-          items: info.selected.items,
-          config: { ...info.selected.config, twoDiceTeams: pDiceTeams },
-        });
-      }
-      if (classChanged) info.selectClass(pClass);
-      return;
-    }
     // 차례·팀을 짤 명단(결석 제외). 반을 바꾸는 중이면 그 반 학생을 바로 불러온다.
-    const students = pStudents.length > 0 ? pStudents : classChanged && pClass ? (await fetchStudentsOfClass(pClass)).map((row): GameItem => ({ id: row.id, label: row.name })) : fullRoster;
+    const students = !pClass ? [] : pStudents.length > 0 ? pStudents : classChanged ? (await fetchStudentsOfClass(pClass)).map((row): GameItem => ({ id: row.id, label: row.name })) : fullRoster;
     const gone = pClass ? loadAbsent(pClass) : [];
     const eff = students.filter((row) => !gone.includes(row.id));
     setShowOrderOn(pMode !== 'none');
@@ -479,6 +460,12 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       }
     } else {
       window.dispatchEvent(new Event(TEAM_ORDER_EVENT));
+    }
+    if (isTwoDice && info.selected) {
+      const teams = pMode === 'team' ? pTeams : 1;
+      if (teams !== diceTeams || pMode !== info.selected.config.twoDiceMode) {
+        await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, twoDiceTeams: teams, twoDiceMode: pMode } });
+      }
     }
     if (splitGame && pMode !== 'none' && info.selected) {
       // 사다리의 참가자는 반 설정이 정한다: 개인 = 학생 이름, 팀 = 팀 이름. 결과 칸은 참가자 수에 자동으로 맞춘다(모자라면 꽝).
@@ -810,90 +797,16 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         {panelAction(() => void applyContent())}
       </>)}
 
-      {open === 'class' && panel(<>
-        <PanelHead title={text('반 설정', 'Class settings')} onClose={close} text={text} />
-        {info && info.classes.length > 0 && (
-          <div className="space-y-2 rounded-xl bg-surface-container-low p-3">
-            <label className="block text-sm font-bold">{text('반', 'Class')}
-              <select className={field} value={pClass} onChange={(e) => { const next = e.target.value; setPClass(next); setAbsentOpen(false); setPAbsent(next ? loadAbsent(next) : []); }}>
-                <option value="" disabled={!isTwoDice && pMode !== 'none'}>{text('반 없이 하기', 'No class')}</option>
-                {info.classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </label>
-            {pClass && (
-              <p className="text-sm" aria-live="polite">
-                {pStudentsLoading
-                  ? text('학생 명단을 불러오는 중…', 'Loading students…')
-                  : pStudents.length > 0
-                    ? <>{text(`학생 ${pStudents.length}명: `, `${pStudents.length} students: `)}<span className="font-semibold">{pStudents.slice(0, 8).map((r) => r.label).join(', ')}{pStudents.length > 8 ? ' …' : ''}</span></>
-                    : text('이 반에는 학생이 없어요. 학생·출석 메뉴에서 먼저 추가해 주세요.', 'This class has no students yet.')}
-              </p>
-            )}
-          </div>
-        )}
-        {pClass && pStudents.length > 0 && (
-          <div className="space-y-2">
-            <button type="button" className={btn} aria-expanded={absentOpen} onClick={() => setAbsentOpen((o) => !o)}>
-              {text('결석 학생 제외', 'Exclude absent students')}{pAbsent.length > 0 ? text(` (${pAbsent.length}명)`, ` (${pAbsent.length})`) : ''}
-            </button>
-            {absentOpen && (
-              <div className="rounded-xl border border-outline-variant p-3">
-                <p className="mb-2 text-sm text-on-surface-variant">{text('오늘 빠지는 학생을 체크하세요. 차례와 팀에서 빠져요.', 'Check students who are absent today.')}</p>
-                <div className="flex flex-wrap gap-2">
-                  {pStudents.map((row) => {
-                    const gone = pAbsent.includes(row.id);
-                    return (
-                      <label key={row.id} className={`inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border px-3 font-bold ${gone ? 'border-error bg-error-container/40 text-error line-through' : 'border-outline-variant bg-white'}`}>
-                        <input type="checkbox" className="h-5 w-5" checked={gone} onChange={(e) => setPAbsent((old) => (e.target.checked ? [...old, row.id] : old.filter((id) => id !== row.id)))} />
-                        {row.label}
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-        {isTwoDice ? (
-          <fieldset className="space-y-2">
-            <legend className="text-sm font-bold">{text('참여 방식', 'How to play')}</legend>
-            <div className="flex flex-wrap gap-2">
-              {[1, 2, 3, 4].map(count => (
-                <button key={count} type="button" className={chip(pDiceTeams === count)} aria-pressed={pDiceTeams === count} onClick={() => setPDiceTeams(count)}>
-                  {count === 1 ? text('혼자 연습', 'Solo practice') : text(`${count}팀 대결`, `${count} teams`)}
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-on-surface-variant">{text('반을 선택하지 않아도 참여 방식을 고를 수 있어요. 참여 방식을 바꾸면 새 판을 시작해요.', 'You can choose how to play without a class. Changing this starts a new board.')}</p>
-          </fieldset>
-        ) : <div className="space-y-2">
-          <p className="text-sm font-bold">{text('참여 방식', 'How to play')}</p>
-          <div className="flex flex-wrap items-center gap-2">
-            <button type="button" className={chip(pMode === 'none')} aria-pressed={pMode === 'none'} onClick={() => setPMode('none')}>{text('없음', 'None')}</button>
-            <button type="button" className={chip(pMode === 'solo')} aria-pressed={pMode === 'solo'} onClick={() => pickMode('solo')}>{text('개인', 'Solo')}</button>
-            <button type="button" className={chip(pMode === 'team')} aria-pressed={pMode === 'team'} onClick={() => pickMode('team')}>{text('팀', 'Teams')}</button>
-          </div>
-          {pMode === 'team' && (
-            <div className="flex items-center gap-3" role="group" aria-label={text('팀 수', 'Number of teams')}>
-              <span className="text-sm font-bold">{text('팀 수', 'Teams')}</span>
-              <button type="button" className={btn} aria-label={text('팀 하나 줄이기', 'Fewer teams')} disabled={pTeams <= 2} onClick={() => setPTeams((n) => Math.max(2, n - 1))}>−</button>
-              <span className="min-w-12 text-center text-2xl font-extrabold tabular-nums text-deep-navy">{pTeams}{text('팀', '')}</span>
-              <button type="button" className={btn} aria-label={text('팀 하나 늘리기', 'More teams')} disabled={pTeams >= teamCapOf()} onClick={() => setPTeams((n) => Math.min(teamCapOf(), n + 1))}>＋</button>
-            </div>
-          )}
-          <p className="text-xs text-on-surface-variant">{type === 'lightning' ? t('gameLightning.classOrderHint') : text('개인·팀을 고르면 도구줄 아래에 지금 차례가 보여요. 팀은 "적용"을 누르면 학생이 무작위로 나뉘어요. 직접 바꾸려면 아래 팀·순서 정하기를 쓰세요.', 'Press Apply to split students into random teams. Use Set teams and order to adjust by hand.')}</p>
-        </div>}
-        {!isTwoDice && pMode !== 'none' && !isBomb && type !== 'lightning' && (
-          <label className="flex min-h-11 items-center gap-2 font-bold">
-            <input type="checkbox" className="h-5 w-5" checked={pAutoTurn} onChange={(e) => setPAutoTurn(e.target.checked)} />
-            {text('한 판이 끝나면 자동으로 다음 차례로 넘기기', 'Move to the next turn automatically')}
-          </label>
-        )}
-        {!isTwoDice && pEff.length > 0 && pMode !== 'none' && (
-          <button type="button" className={btn} onClick={() => setOrderOpen(true)}>{text('팀·순서 정하기 (반 명단)', 'Set teams and order')}</button>
-        )}
-        {panelAction(() => void applyClass())}
-      </>)}
+      {open === 'class' && panel(<GameClassSettingsContent
+        classes={info?.classes ?? []} classId={pClass} students={pStudents} loading={pStudentsLoading}
+        absentIds={pAbsent} mode={pMode} teams={pTeams} maxTeams={teamCapOf()}
+        autoTurn={pAutoTurn} showAutoTurn={!isBomb && type !== 'lightning'}
+        hint={type === 'lightning' ? t('gameLightning.classOrderHint') : undefined}
+        busy={busy} onClose={close} onApply={() => void applyClass()}
+        onClass={next => { setPClass(next); setPAbsent(next ? loadAbsent(next) : []); }}
+        onAbsent={setPAbsent} onMode={pickMode} onTeams={setPTeams} onAutoTurn={setPAutoTurn}
+        onOrder={() => setOrderOpen(true)}
+      />)}
 
       {open === 'settings' && panel(<>
         <PanelHead title={text('게임설정', 'Game settings')} onClose={close} text={text} />

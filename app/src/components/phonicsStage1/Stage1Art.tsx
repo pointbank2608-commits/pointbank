@@ -5,6 +5,8 @@ import type { PhonicsBankEntry } from '../../lib/types';
 import { stage1Entry, type Stage1Unit } from '../../data/phonicsStage1';
 import artwork from '../../data/phonics/stage1Artwork.json';
 import wordAssets from '../../data/phonics/words.json';
+let currentWordAudio:HTMLAudioElement|null=null;
+function stopWordAudio(){currentWordAudio?.pause();currentWordAudio=null;}
 
 export function Stage1Word({entry,blank=false}:{entry:PhonicsBankEntry;blank?:boolean}) {
   const marks=entry.targets??[];
@@ -25,8 +27,10 @@ export function Stage1Speaker({entry,text}:{entry?:PhonicsBankEntry;text?:string
   const recording=entry?.audio?.recordingUrl;
   const available=!!recording||(typeof window!=='undefined'&&'speechSynthesis' in window);
   const label=text??entry?.word??'';
-  return <span className="s1-speaker-wrap"><button className="s1-speaker no-print" type="button" aria-label={t('phonicsStage1.audio')} title={t(available?'phonicsStage1.audioInfo':'phonicsStage1.audioUnavailable')} disabled={!available||!label} onClick={()=>{
-    setFailed(false);if(recording){const audio=new Audio(recording);audio.onerror=()=>setFailed(true);void audio.play().catch(()=>setFailed(true));}else if(available)speak(label);
+  useEffect(()=>()=>stopWordAudio(),[label,recording]);
+  const fallback=()=>{if(typeof window!=='undefined'&&'speechSynthesis' in window)speak(label);else setFailed(true);};
+  return <span className="s1-speaker-wrap"><button className="s1-speaker no-print" type="button" data-audio-word={label} aria-label={`${t('phonicsStage1.audio')}: ${label}`} title={t(available?'phonicsStage1.audioInfo':'phonicsStage1.audioUnavailable')} disabled={!available||!label} onClick={()=>{
+    setFailed(false);stopWordAudio();window.speechSynthesis?.cancel();if(recording){const audio=new Audio(recording);currentWordAudio=audio;const recover=()=>{if(currentWordAudio===audio){currentWordAudio=null;fallback();}};audio.onerror=recover;void audio.play().catch(recover);}else fallback();
   }}><svg aria-hidden viewBox="0 0 24 24"><path d="M3 9h4l5-4v14l-5-4H3zM16 8q4 4 0 8M19 5q7 7 0 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>{failed&&<small role="alert">{t('phonicsStage1.audioFailed')}</small>}</span>;
 }
 export function Stage1Lines({text='',trace=false}:{text?:string;trace?:boolean}) {

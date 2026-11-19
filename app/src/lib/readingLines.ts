@@ -42,6 +42,14 @@ export function restoreReadingCues(source: string, transcript: string): string {
   }).join('\n');
 }
 
+/** Keep the prepared transcript's cue ranges, translations, and existing blanks. */
+export function transcriptClozeSource(transcript: string): string {
+  return parseShadowText(transcript).map(line => {
+    const text = line.en.includes('**') ? line.en : line.en.replace(/\b[A-Za-z]{3,}\b/, word => `**${word}**`);
+    return `${readingCue(line.start, line.end)} ${text}${line.ko ? ` | ${line.ko}` : ''}`;
+  }).join('\n');
+}
+
 export function parseReadingText(source: string): ReadingLine[] {
   return source
     .split(/\r?\n/)

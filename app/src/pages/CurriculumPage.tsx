@@ -174,7 +174,7 @@ export default function CurriculumPage() {
     const usedBy = lessons.filter((l) => l.word_list_id === wl.id && l.id !== editingId).length;
     const shared = wl.class_id == null || usedBy > 0;
     if (shared) {
-      if (!confirm(t('curriculum.wordListTools.sharedConfirm', { count: usedBy + 1, name: wl.name }))) return;
+      if (!confirm(t('curriculum.wordListTools.sharedConfirm', { count: usedBy, name: wl.name }))) return;
       const copy = await createWordList({
         academyId: academy.id,
         classId: formClassId,
@@ -972,17 +972,6 @@ export default function CurriculumPage() {
                   </option>
                 ))}
               </select>
-              {(() => {
-                const wl = wordLists.find((w) => w.id === wordListId);
-                if (!wl) return null;
-                const others = lessons.filter((l) => l.word_list_id === wl.id && l.id !== editingId).length;
-                if (wl.class_id != null && others === 0) return null;
-                return (
-                  <p className="mt-1 font-caption text-caption text-on-surface-variant">
-                    {t('curriculum.wordListTools.sharedHint', { count: others + 1 })}
-                  </p>
-                );
-              })()}
               <div className="mt-1.5 flex flex-wrap gap-1.5">
                 <button
                   type="button"
@@ -1001,6 +990,18 @@ export default function CurriculumPage() {
                   <span className="material-symbols-outlined text-[16px]">edit</span>
                   {t('curriculum.wordListTools.editButton')}
                 </button>
+              {(() => {
+                const wl = wordLists.find((w) => w.id === wordListId);
+                if (!wl) return null;
+                const others = lessons.filter((l) => l.word_list_id === wl.id && l.id !== editingId).length;
+                if (wl.class_id != null && others === 0) return null;
+                return (
+                  <p className="self-center font-caption text-caption text-on-surface-variant">
+                    {t('curriculum.wordListTools.sharedHint', { count: others + 1 })}
+                  </p>
+                );
+              })()}
+
               </div>
             </div>
 

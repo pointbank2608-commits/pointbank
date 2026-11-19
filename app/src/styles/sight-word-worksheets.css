@@ -47,7 +47,8 @@
 .sw-writing-line span { position: relative; }
 .sw-review-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
 .sw-review-cards strong { border: .5mm solid var(--sw-line); border-radius: 2mm; text-align: center; padding: 2mm; font-size: 8mm; color: var(--sw-accent); }
-.sw-find-line { font-size: 5.3mm; color: #111; word-spacing: 1mm; }
+.sw-find-line { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); align-items:center; margin-top:5mm; padding-block:1.5mm; font-size:5.3mm; color:#111; }
+.sw-find-line > span { text-align:center; white-space:nowrap; }
 .sw-sentence { display: flex; align-items: center; justify-content: space-between; gap: 4mm; font-size: 5.1mm; }
 .sw-sentence img { width: 28mm; height: 23mm; object-fit: contain; }
 .sw-sentence strong { color: var(--sw-accent); }
