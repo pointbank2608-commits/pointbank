@@ -21,7 +21,6 @@ import {
   fetchStudentsOfAcademy,
   fetchStudentsOfClass,
   markPresent,
-  renameStudent,
 } from '../lib/api';
 import { useClasses } from '../lib/useClasses';
 import { FREE_CLASS_LIMIT, FREE_STUDENT_LIMIT } from '../lib/planLimits';
@@ -57,6 +56,8 @@ export default function AttendancePage() {
   const [academyStudentCount, setAcademyStudentCount] = useState(0);
   const [academyStudentNames, setAcademyStudentNames] = useState<string[]>([]);
   const [addingStudent, setAddingStudent] = useState(false);
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [studentInfoRevision, setStudentInfoRevision] = useState(0);
 
   const loadAcademyStudentCount = useCallback(async () => {
     if (!academy?.id) return;
@@ -149,17 +150,19 @@ export default function AttendancePage() {
 
   async function handleStudentAdded(name: string, phoneProblem: string | null) {
     setAddingStudent(false);
+    setStudentInfoRevision((value) => value + 1);
     notify(t('board.addStudentToast', { name }));
     if (phoneProblem) notify(phoneProblem, 'error');
     await load();
     await loadAcademyStudentCount();
   }
 
-  async function handleRenameStudent(studentId: string, currentName: string) {
-    const next = prompt(t('attendance.renameStudentPrompt'), currentName);
-    if (!next?.trim() || next.trim() === currentName) return;
-    const ok = await run(() => renameStudent(studentId, next.trim()), t('attendance.renameStudentToast'));
-    if (ok) setStudents((prev) => prev.map((s) => (s.id === studentId ? { ...s, name: next.trim() } : s)));
+  async function handleStudentUpdated() {
+    setEditingStudent(null);
+    setStudentInfoRevision((value) => value + 1);
+    notify(t('parentPortal.studentInfoSaved'));
+    await load();
+    await loadAcademyStudentCount();
   }
 
   async function handleDeleteStudent(studentId: string, name: string) {
@@ -321,8 +324,10 @@ export default function AttendancePage() {
         </div>
       )}
 
-      {studentAreaOpen && selectedId && students.length > 0 && <StudentLoginPanel students={students} />}
-      {studentAreaOpen && (profile?.role === 'owner' || profile?.role === 'teacher') && selectedId && students.length > 0 && <ParentAccessPanel students={students} />}
+      {studentAreaOpen && selectedId && students.length > 0 && <StudentLoginPanel key={studentInfoRevision} students={students} />}
+      {(profile?.role === 'owner' || profile?.role === 'teacher') && selectedId && students.length > 0 && (
+        <ParentAccessPanel students={students} revision={studentInfoRevision} onEditStudent={setEditingStudent} />
+      )}
 
       <section className="space-y-4 rounded-[20px] border border-outline-variant bg-white p-4 shadow-card sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -407,8 +412,8 @@ export default function AttendancePage() {
                         <span className="mr-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-extrabold text-deep-navy" style={{ background: avatarTone(s.name) }}>{s.name.slice(0, 1)}</span>
                         <span>{s.name}</span>
                         <button
-                          onClick={() => void handleRenameStudent(s.id, s.name)}
-                          aria-label={t('attendance.renameStudentPrompt')}
+                          onClick={() => setEditingStudent(s)}
+                          aria-label={t('parentPortal.editStudentInfo', { name: s.name })}
                           className="p-1 rounded text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors"
                         >
                           <span className="material-symbols-outlined text-[16px]">edit</span>
@@ -577,6 +582,11 @@ export default function AttendancePage() {
         />
       )}
       {statStudent && <LearningCardModal studentId={statStudent} onClose={() => setStatStudent(null)} />}
+      {editingStudent && academy?.id && selectedId && (
+        <AddStudentModal key={editingStudent.id} student={editingStudent}
+          academyId={academy.id} classId={selectedId} existingNames={academyStudentNames}
+          onClose={() => setEditingStudent(null)} onAdded={() => void handleStudentUpdated()} />
+      )}
     </div>
   );
 }

@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import BrandMark from '../components/BrandMark';
 import {
   applicationServerKey, connectParent, inviteFromHash, inviteFromText, iosNeedsInstall, loadParent,
-  logoutParent, ParentError, parentSessions, pushKey, readParentNotices, setParentPush, storeParentSessions,
-  type ParentHome, type ParentSession,
+  logoutParent, ParentError, parentSessions, pushKey, readParentNotices, setFamilyPush, storeParentSessions,
+  loginParent, type ParentHome, type ParentSession, type ParentNotice,
 } from '../lib/parentPortal';
+import { formatPhone } from '../lib/studentPortal';
 
 const card = 'rounded-2xl border border-outline-variant bg-white p-4 shadow-card sm:p-6';
 const primary = 'min-h-11 rounded-full bg-primary px-5 py-2 text-sm font-bold text-white disabled:opacity-50';
@@ -17,9 +18,11 @@ export default function ParentPortalPage() {
   const [chosen, setChosen] = useState(() => new URLSearchParams(location.hash.slice(1)).get('child') ?? '');
   const [homes, setHomes] = useState<Record<string, ParentHome>>({});
   const [invite, setInvite] = useState(() => inviteFromHash() ?? '');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [adding, setAdding] = useState(() => !!inviteFromHash());
   const [installedRequired] = useState(iosNeedsInstall);
-  const [view, setView] = useState<'homework' | 'notices'>(() =>
+  const [view, setView] = useState<'homework' | 'attendance' | 'notices'>(() =>
     new URLSearchParams(location.search).get('view') === 'notices' ? 'notices' : 'homework');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
@@ -33,6 +36,8 @@ export default function ParentPortalPage() {
   const applicationKey = home?.push_key ?? pushKey;
   const supportsPush = !installedRequired && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
   const hasSessions = sessions.length > 0;
+  const familyReady = hasSessions && sessions.every((session) => !!homes[session.id]);
+  const familyPushEnabled = familyReady && sessions.every((session) => homes[session.id].push_enabled);
   const formOpen = adding || !hasSessions;
 
   useEffect(() => {
@@ -116,6 +121,23 @@ export default function ParentPortalPage() {
     finally { setBusy(false); }
   }
 
+  async function login() {
+    if (busy) return;
+    setBusy(true);
+    setMessage('');
+    try {
+      const result = await loginParent(name, phone);
+      await Promise.allSettled(sessions.map((session) => logoutParent(session.token)));
+      setSessions(result.sessions);
+      setChosen(result.sessions[0]?.id ?? '');
+      setHomes({});
+      setName('');
+      setPhone('');
+      setAdding(false);
+    } catch (error) { setMessage(error instanceof ParentError ? error.kind : 'failed'); }
+    finally { setBusy(false); }
+  }
+
   async function forActive(action: (session: ParentSession) => Promise<unknown>) {
     if (!active || busy) return;
     setBusy(true);
@@ -128,9 +150,9 @@ export default function ParentPortalPage() {
   function togglePush() {
     const key = applicationKey;
     if (!worker || !key || !home) return;
-    void forActive(async ({ token }) => {
+    void forActive(async () => {
       let sub = subscription;
-      if (!sub && !home.push_enabled) {
+      if (!sub && !familyPushEnabled) {
         try {
           sub = await worker.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: applicationServerKey(key) });
         } catch (error) {
@@ -139,7 +161,7 @@ export default function ParentPortalPage() {
         }
       }
       if (!sub) return;
-      await setParentPush(token, sub, !home.push_enabled, i18n.resolvedLanguage ?? 'ko');
+      await setFamilyPush(sessions, sub, !familyPushEnabled, i18n.resolvedLanguage ?? 'ko');
       setSubscription(sub);
       setRefresh((x) => x + 1);
     });
@@ -149,12 +171,15 @@ export default function ParentPortalPage() {
   function date(iso: string) {
     return new Intl.DateTimeFormat(lang, { dateStyle: 'medium', timeZone: 'Asia/Seoul' }).format(new Date(iso));
   }
-  const notices = (home?.homework ?? []).flatMap((item) => [
-    { item, time: item.published_at, kind: 'published' },
-    ...(item.completed_at ? [{ item, time: item.completed_at, kind: 'completed' }] : []),
-  ]).sort((a, b) => Date.parse(b.time) - Date.parse(a.time));
+  const notices: ParentNotice[] = home?.notices ?? (home?.homework ?? []).flatMap((item): ParentNotice[] => [
+    { source: item.source, assignment_id: item.assignment_id, title: item.title, body: null, details: {}, happened_at: item.published_at, kind: 'published' },
+    ...(item.completed_at ? [{ source: item.source, assignment_id: item.assignment_id, title: item.title, body: null, details: {}, happened_at: item.completed_at, kind: 'completed' as const }] : []),
+  ]).sort((a, b) => Date.parse(b.happened_at) - Date.parse(a.happened_at));
   const unread = (time: string) => !!home && Date.parse(time) > Date.parse(home.read_through);
-  const unreadCount = notices.filter((notice) => unread(notice.time)).length;
+  const unreadCount = notices.filter((notice) => unread(notice.happened_at)).length;
+  function time(iso: string) {
+    return new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Seoul' }).format(new Date(iso));
+  }
 
   return (
     <main className="min-h-[100dvh] bg-background px-4 pb-12 pt-[max(1rem,env(safe-area-inset-top))] text-deep-navy">
@@ -167,6 +192,27 @@ export default function ParentPortalPage() {
         </div>
         {message && <p role="status" className="rounded-xl bg-primary-fixed p-3 text-sm">{t(`parentPortal.${message}`)}</p>}
         {formOpen && (
+          <form className={`${card} space-y-3`} onSubmit={(e) => { e.preventDefault(); void login(); }}>
+            <h2 className="text-lg font-bold">{t('parentPortal.loginTitle')}</h2>
+            <p className="text-sm text-on-surface-variant">{t('parentPortal.loginHint')}</p>
+            <label className="block space-y-1">
+              <span className="text-sm font-bold">{t('parentPortal.guardianName')}</span>
+              <input value={name} maxLength={80} onChange={(e) => setName(e.target.value)} autoComplete="name"
+                className="min-h-12 w-full rounded-xl border border-outline-variant px-3 py-3" />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-sm font-bold">{t('parentPortal.guardianPhone')}</span>
+              <input type="tel" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} autoComplete="tel"
+                className="min-h-12 w-full rounded-xl border border-outline-variant px-3 py-3" />
+            </label>
+            <div className="flex gap-2">
+              <button className={primary} disabled={busy || !name.trim() || phone.replace(/\D/g, '').length < 10}>{t('parentPortal.login')}</button>
+              {hasSessions && <button type="button" className={secondary} onClick={() => setAdding(false)}>{t('common.cancel')}</button>}
+            </div>
+            {installedRequired && <p className="rounded-xl bg-primary-fixed p-3 text-sm">{t('parentPortal.installLogin')}</p>}
+          </form>
+        )}
+        {formOpen && !!invite && (
           <form className={`${card} space-y-3`} onSubmit={(e) => { e.preventDefault(); void connect(); }}>
             <h2 className="text-lg font-bold">{t('parentPortal.connectTitle')}</h2>
             <p className="text-sm text-on-surface-variant">{t('parentPortal.connectHint')}</p>
@@ -204,9 +250,14 @@ export default function ParentPortalPage() {
             </select>
             {!formOpen && <button type="button" className={secondary} onClick={() => setAdding(true)}>{t('parentPortal.addChild')}</button>}
             <button type="button" className="ml-auto min-h-11 px-2 text-sm underline" disabled={busy}
-              onClick={() => void forActive(async (s) => {
-                await logoutParent(s.token);
-                setSessions((prev) => prev.filter((p) => p.id !== s.id));
+              onClick={() => void forActive(async () => {
+                const results = await Promise.allSettled(sessions.map(async (session) => {
+                  await logoutParent(session.token);
+                  return session.id;
+                }));
+                const removed = new Set(results.flatMap((result) => result.status === 'fulfilled' ? [result.value] : []));
+                setSessions((prev) => prev.filter((session) => !removed.has(session.id)));
+                if (results.some((result) => result.status === 'rejected')) throw new ParentError('failed');
               })}>{t('parentPortal.signOut')}</button>
           </div>
           {failed && <div role="alert" className={card}>
@@ -222,14 +273,16 @@ export default function ParentPortalPage() {
                   : !applicationKey ? t('parentPortal.pushUnconfigured')
                     : !supportsPush ? t('parentPortal.unsupported')
                       : workerFailed ? t('parentPortal.pushSetupFailed')
-                        : home.push_enabled ? t('parentPortal.pushOn') : t('parentPortal.pushHint')}</p>
+                        : familyPushEnabled ? t('parentPortal.pushOn') : t('parentPortal.pushHint')}</p>
               </div>
-              {supportsPush && applicationKey && !workerFailed && <button type="button" className={home.push_enabled ? secondary : primary}
-                disabled={!worker || busy} onClick={togglePush}>{t(home.push_enabled ? 'parentPortal.disable' : 'parentPortal.enable')}</button>}
+              {supportsPush && applicationKey && !workerFailed && <button type="button" className={familyPushEnabled ? secondary : primary}
+                disabled={!worker || busy || !familyReady} onClick={togglePush}>{t(familyPushEnabled ? 'parentPortal.disable' : 'parentPortal.enable')}</button>}
             </section>
-            <nav className="flex gap-2" aria-label={t('parentPortal.title')}>
+            <nav className="flex flex-wrap gap-2" aria-label={t('parentPortal.title')}>
               <button type="button" className={view === 'homework' ? primary : secondary}
                 aria-pressed={view === 'homework'} onClick={() => setView('homework')}>{t('parentPortal.homework')}</button>
+              <button type="button" className={view === 'attendance' ? primary : secondary}
+                aria-pressed={view === 'attendance'} onClick={() => setView('attendance')}>{t('parentPortal.attendance')}</button>
               <button type="button" className={view === 'notices' ? primary : secondary}
                 aria-pressed={view === 'notices'} onClick={() => setView('notices')}>
                 {t('parentPortal.notices')}{unreadCount > 0 ? ` · ${unreadCount}` : ''}
@@ -249,10 +302,26 @@ export default function ParentPortalPage() {
                         {item.due_at ? ` · ${t('parentPortal.dueDate', { date: date(item.due_at) })}` : ''}
                       </p>
                       {item.completed_at && <p className="text-sm text-on-surface-variant">{t('parentPortal.completedDate', { date: date(item.completed_at) })}</p>}
+                      {item.daily && item.status !== 'closed' && <p className="mt-1 text-sm font-bold text-primary">
+                        {t(item.daily.completed_at ? 'parentPortal.dailyDone' : item.daily.started ? 'parentPortal.dailyStarted' : 'parentPortal.dailyPending', { day: item.daily.day })}
+                      </p>}
                     </div>
                     <span className={`rounded-full px-3 py-1 text-xs font-bold ${item.status === 'completed' ? 'bg-[#ddf6e8] text-[#155438]' : 'bg-primary-fixed text-deep-navy'}`}>
                       {t(`parentPortal.state_${item.status}`)}
                     </span>
+                  </li>)}
+                </ul>
+              </section>
+            ) : view === 'attendance' ? (
+              <section className={card}>
+                <h2 className="text-lg font-bold">{t('parentPortal.attendance')}</h2>
+                <p className="mt-1 text-sm text-on-surface-variant">{t('parentPortal.attendanceHint')}</p>
+                {!home.attendance?.length && <p className="mt-4 text-sm">{t('parentPortal.noAttendance')}</p>}
+                <ul className="divide-y divide-outline-variant">
+                  {home.attendance?.map((row) => <li key={row.id} className="space-y-1 py-4 text-sm">
+                    <p className="font-bold">{date(row.day + 'T12:00:00+09:00')}</p>
+                    <p>{row.present ? (row.checked_in_at ? t('parentPortal.arrivedAt', { time: time(row.checked_in_at) }) : t('parentPortal.presentRecorded')) : t('parentPortal.noArrival')}</p>
+                    {row.checked_out_at && <p>{t('parentPortal.leftAt', { time: time(row.checked_out_at) })}</p>}
                   </li>)}
                 </ul>
               </section>
@@ -268,9 +337,13 @@ export default function ParentPortalPage() {
                 </div>
                 {!notices.length && <p className="mt-4 rounded-xl bg-background p-4 text-sm">{t('parentPortal.emptyNotices')}</p>}
                 <ul className="divide-y divide-outline-variant">
-                  {notices.map(({ item, time, kind }) => <li key={`${item.source}:${item.assignment_id}:${kind}`} className="py-4">
-                    <p className="font-bold">{t(`parentPortal.${kind}`)} {unread(time) && <span className="ml-1 text-xs font-bold text-primary">{t('parentPortal.new')}</span>}</p>
-                    <p className="mt-1 break-words text-sm text-on-surface-variant">{item.title || t('parentPortal.homework')} · {date(time)}</p>
+                  {notices.map((notice) => <li key={`${notice.source}:${notice.assignment_id}:${notice.kind}`} className="py-4">
+                    <p className="font-bold">{t(`parentPortal.notice_${notice.kind}`)} {unread(notice.happened_at) && <span className="ml-1 text-xs font-bold text-primary">{t('parentPortal.new')}</span>}</p>
+                    <p className="mt-1 break-words text-sm text-on-surface-variant">
+                      {notice.title ? `${notice.title} · ` : ''}{date(notice.happened_at)}
+                      {notice.details.day ? ` · ${t('parentPortal.recordDay', { day: notice.details.day })}` : ''}
+                    </p>
+                    {notice.body && <p className="mt-2 whitespace-pre-wrap break-words text-sm">{notice.body}</p>}
                   </li>)}
                 </ul>
               </section>
