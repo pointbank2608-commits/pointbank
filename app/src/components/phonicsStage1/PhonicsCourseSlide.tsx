@@ -1,21 +1,26 @@
+import {useId,useState} from 'react';
+import {hasPhoneme,playPhoneme} from '../../lib/phonicsPhonemes';
 import {useTranslation} from 'react-i18next';
 import {courseWord,readerSentence,type CourseUnit,type CourseSlide} from '../../data/phonicsLessons';
 import {Stage1Lines,Stage1Picture,Stage1Speaker,Stage1Word} from './Stage1Art';
 import type {PhonicsBankEntry} from '../../lib/types';
-import {ClaySprite} from '../PhonicsGameArt';
 import ReadyClassActivity, { readyClassActivity } from './ReadyClassActivity';
 import '../../styles/phonics-lessons.css';
+import '../../styles/classroom-ux.css';
 
 const rotate=<T,>(items:T[])=>items.length>1?[...items.slice(1),items[0]]:items;
+function SoundButton({ruleId}:{ruleId:string}){const [failed,setFailed]=useState(false);return <><button type="button" className="s1-speaker pc-sound-button" aria-label="소리 듣기" disabled={!hasPhoneme(ruleId)} onClick={()=>{void playPhoneme(ruleId).then(ok=>setFailed(!ok));}}>♪</button>{failed&&<small role="alert">소리를 재생하지 못했어요. 다시 눌러 주세요.</small>}</>;}
 function MarkedSentence({text,unit}:{text:string;unit:CourseUnit}){return <>{text.split(/(\b[a-z]+(?:-[a-z]+)*\b)/gi).map((part,i)=>{const entry=[...unit.reading.entries,...unit.entries].find(e=>e.word.toLowerCase()===part.toLowerCase());return entry?<Stage1Word key={i} entry={{...entry,word:part}}/>:part;})}</>;}
 export default function PhonicsCourseSlide({unit:u,slide:s,index,total}:{unit:CourseUnit;slide:CourseSlide;index:number;total:number}){
  const {t}=useTranslation();
+ const marker=useId().replace(/:/g,'');const [picked,setPicked]=useState<string[]>([]);
  const activity=readyClassActivity(s);
  const words=s.entryIds.map(id=>courseWord(u,id)),groups=s.groupIds.length?u.groups.filter(g=>s.groupIds.includes(g.id)):u.groups;
  const answer=s.phase>0,gameAnswer=s.phase===2;
- const tile=(entry:PhonicsBankEntry,label=true,speaker=true)=> <div className={'pc-word-card '+(answer&&s.answerIds.includes(entry.id)?'pc-answer':'')} key={entry.id} data-entry={entry.id}>{u.id==='course-4-7'&&entry.word==='fish'&&s.kind==='readChoose'?<div className="pc-plural-fish"><Stage1Picture entry={entry}/><Stage1Picture entry={entry}/></div>:<Stage1Picture entry={entry}/>} {label&&<Stage1Word entry={entry}/>} {speaker&&<Stage1Speaker entry={entry}/>}</div>;
+ const selectable=!answer&&['choose','odd','readChoose'].includes(s.kind);
+ const tile=(entry:PhonicsBankEntry,label=true,speaker=true)=>{const picture=u.id==='course-4-7'&&entry.word==='fish'&&s.kind==='readChoose'?<div className="pc-plural-fish"><Stage1Picture entry={entry}/><Stage1Picture entry={entry}/></div>:<Stage1Picture entry={entry}/>;return <div className={'pc-word-card '+(answer&&s.answerIds.includes(entry.id)?'pc-answer':'')+(picked.includes(entry.id)?' pc-picked':'')} key={entry.id} data-entry={entry.id}>{selectable?<button type="button" className="pc-picture-choice" aria-label={`${t('phonicsLesson.choosePicture',{defaultValue:'그림 선택'})} ${words.indexOf(entry)+1}`} aria-pressed={picked.includes(entry.id)} onClick={()=>setPicked(old=>s.answerIds.length>1?(old.includes(entry.id)?old.filter(id=>id!==entry.id):[...old,entry.id]):[entry.id])}>{picture}</button>:picture} {label&&<Stage1Word entry={entry}/>} {speaker&&<Stage1Speaker entry={entry}/>}</div>;};
  const cards=(labels=true)=><div className="pc-word-grid">{words.map(e=>tile(e,labels))}</div>;
- const ruleBlocks=()=> <div className="pc-rule-blocks">{groups.map((g,i)=>u.step===1?<div className="pc-letter-pair" key={g.id}><span className={'pc-pastel pc-tone-'+i%4}>{g.label[0]}</span><span className={'pc-pastel pc-tone-'+i%4}>{g.label[1]}</span></div>:<div key={g.id} className={'pc-pastel pc-tone-'+i%4}>{g.label}</div>)}</div>;
+ const ruleBlocks=()=> <div className="pc-rule-blocks">{groups.map((g,i)=><div className="pc-rule-sound" key={g.id}>{u.step===1?<div className="pc-letter-pair"><span className={'pc-pastel pc-tone-'+i%4}>{g.label[0]}</span><span className={'pc-pastel pc-tone-'+i%4}>{g.label[1]}</span></div>:<div className={'pc-pastel pc-tone-'+i%4}>{g.label}</div>}<SoundButton ruleId={g.ruleId}/></div>)}</div>;
  const sentence=(id:string)=>readerSentence(u,id);
  const scene=()=>{
   const targetIndex=s.sceneTarget?s.entryIds.indexOf(s.sceneTarget):-1;
@@ -28,7 +33,7 @@ export default function PhonicsCourseSlide({unit:u,slide:s,index,total}:{unit:Co
  };
  let body=activity?<ReadyClassActivity activity={activity} slide={s} unit={u} words={words} groups={groups}/>:null;
  switch(activity?null:s.kind){
-  case 'cover':case 'lesson':case 'finish':case 'extra':case 'end':case 'transition':body=<><strong className="pc-big-title">{s.kind==='cover'?`Unit ${u.number}`:s.title}</strong>{s.kind==='cover'&&ruleBlocks()}<p className="pc-large-hint">{s.hint}</p></>;break;
+  case 'cover':case 'lesson':case 'finish':case 'extra':case 'end':case 'transition':body=<><strong className="pc-big-title">{s.kind==='cover'?`Unit ${u.number}`:s.title}</strong>{s.kind==='cover'&&ruleBlocks()}<p className="pc-large-hint">{s.hint}</p>{s.kind==='finish'&&<div className="pc-final-read"><p>Read by yourself.</p><div>{(u.id==='course-1-1'&&s.lesson===1?u.groups.map(g=>g.entries[0]):words.length?words:u.groups.map(g=>g.entries[0])).slice(0,3).map(e=><Stage1Word key={e.id} entry={e}/>)}</div></div>}</>;break;
   case 'sounds':case 'letter':body=<>{s.text?<strong className="pc-big-title">{s.text}</strong>:ruleBlocks()}{s.kind==='sounds'&&words.length>0&&<div className="pc-small-pictures">{cards()}</div>}</>;break;
   case 'introduce':body=<div className="pc-introduce">{ruleBlocks()}{tile(words[0])}</div>;break;
   case 'letterMatch':body=<div className="pc-letter-match"><div>{groups.map(g=><strong className="pc-pastel pc-tone-1" key={g.id}>{g.label[0]}</strong>)}</div><div>{rotate(groups).map(g=><strong className="pc-pastel pc-tone-2" key={g.id}>{g.label[1]}</strong>)}</div></div>;break;
@@ -37,7 +42,7 @@ export default function PhonicsCourseSlide({unit:u,slide:s,index,total}:{unit:Co
   case 'word':case 'group':case 'odd':body=<div className={words.length===1?'pc-single':'pc-cards-wrap'}>{cards()}</div>;break;
   case 'match':{
    const pictures=rotate(words);
-   body=<div className="pc-match" data-match-order={pictures.map(e=>e.id).join('|')}><div className="pc-match-words">{words.map((e,i)=><div key={e.id}>{s.groupIds.length?<strong className="pc-match-rule">{u.groups.find(g=>g.entries.some(w=>w.id===e.id))?.label}</strong>:<Stage1Word entry={e}/>}<span className="pc-match-dot">●</span>{answer&&<small>{pictures.findIndex(p=>p.id===e.id)+1}</small>}<span className="pc-match-number">{String.fromCharCode(65+i)}</span></div>)}</div><div className="pc-match-pictures">{pictures.map((e,i)=><div key={e.id}><span>{i+1}</span><Stage1Picture entry={e}/>{answer&&<small>{String.fromCharCode(65+words.findIndex(w=>w.id===e.id))}</small>}</div>)}</div></div>;break;
+   body=<div className="pc-match" data-match-order={pictures.map(e=>e.id).join('|')}><div className="pc-match-words">{words.map((e,i)=><div key={e.id}><span className="pc-match-number">{String.fromCharCode(65+i)}</span>{s.groupIds.length?<strong className="pc-match-rule">{u.groups.find(g=>g.entries.some(w=>w.id===e.id))?.label}</strong>:<Stage1Word entry={e}/>}</div>)}</div><div className="pc-match-pictures">{pictures.map((e,i)=><div key={e.id}><span className="pc-match-number">{i+1}</span><Stage1Picture entry={e}/></div>)}</div>{answer&&<svg className="pc-match-arrows" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="정답 연결"><defs><marker id={marker} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>{words.map((e,i)=><path key={e.id} data-match-from={e.id} data-match-to={pictures.find(p=>p.id===e.id)!.id} d={`M32 ${(i+.5)*100/words.length} L66 ${(pictures.findIndex(p=>p.id===e.id)+.5)*100/words.length}`} fill="none" stroke="currentColor" strokeWidth=".65" markerEnd={`url(#${marker})`}/>)}</svg>}</div>;break;
   }
   case 'writeLetter':body=<div className="pc-letter-writing">{groups.map(g=><div key={g.id}><div className="pc-capitals"><span>{g.label[0]}</span><span>{g.label[1]}</span></div><Stage1Lines text={g.label[0]+'   '+g.label[1]} trace/></div>)}</div>;break;
   case 'write':body=<div className="pc-writing">{words.map(e=><div key={e.id}><Stage1Picture entry={e}/><Stage1Word entry={e}/><Stage1Lines text={e.word} trace/><Stage1Lines/></div>)}</div>;break;
@@ -57,9 +62,9 @@ export default function PhonicsCourseSlide({unit:u,slide:s,index,total}:{unit:Co
   }
  }
  return <article className={'s1-slide pc-lesson-slide pc-level-'+u.step+(activity?' pc-ready-activity-slide':'')} data-course-slide={s.id} data-course-kind={s.kind}>
-  <header className="s1-slide-brand"><strong>수업뚝딱</strong><span>LEVEL {u.step} · UNIT {u.number} · {u.groups.map(g=>g.label).join(' · ')}</span>{!activity&&<ClaySprite kind="robot" className="pc-slide-guide"/>}</header>
-  {!activity&&<h2 className="s1-slide-title">{s.title}</h2>}
-  <div className="s1-slide-body">{s.draft&&<span className="pc-draft-badge">{t('phonicsLesson.readDraft')}</span>}{!activity&&<p className="pc-slide-hint">{!['cover','lesson','finish','extra','end','readIntro'].includes(s.kind)&&s.hint}</p>}{body}</div>
+  <header className="s1-slide-brand"><strong>수업뚝딱</strong><span>LEVEL {u.step} · UNIT {u.number} · {u.groups.map(g=>g.label).join(' · ')}</span></header>
+  <h2 className="s1-slide-title">{s.kind==='builder'?'Listen and Blend':s.title}</h2>
+  <div className="s1-slide-body">{s.draft&&<span className="pc-draft-badge">{t('phonicsLesson.readDraft')}</span>}{<p className="pc-slide-hint">{!['cover','lesson','finish','extra','end','readIntro'].includes(s.kind)&&s.hint}</p>}{body}</div>
   <footer className="s1-slide-footer"><span>{s.lesson==='extra'?'Extra Practice':`Lesson ${s.lesson}`} · {u.groups.map(g=>g.label).join(' · ')}</span><progress value={index+1} max={total}/><span>{index+1} / {total}</span></footer>
  </article>;
 }

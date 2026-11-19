@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AccessibleDialog from './AccessibleDialog';
 import { GAME_CATALOG, isFreeTierGame } from '../lib/gameCatalog';
-import { prepareClassroomGame } from '../lib/gameWorkspace';
+import { prepareClassroomGame, isSentenceList } from '../lib/gameWorkspace';
 import type { ClassRow, GameType, WordList } from '../lib/types';
 
 export default function WordListGameLauncher({ list, classes, selectedClassId, isPaid, busy, error, onClose, onLaunch }: {
@@ -24,7 +24,7 @@ export default function WordListGameLauncher({ list, classes, selectedClassId, i
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-xl font-bold text-deep-navy">{t('classroomUx.launchTitle')}</h2>
-            <p className="mt-1 break-words font-semibold text-primary">{list.name}</p>
+            <p className="mt-1 break-words font-semibold text-primary">{list.name}</p><p className="mt-1 text-sm text-on-surface-variant">{isSentenceList(list)?'문장 모음':'단어장'}</p>
           </div>
           <button type="button" disabled={busy} onClick={onClose} className="min-h-11 rounded-lg px-3 text-on-surface-variant">{t('common.close')}</button>
         </div>
@@ -32,17 +32,17 @@ export default function WordListGameLauncher({ list, classes, selectedClassId, i
         <fieldset disabled={busy} className="mt-5 space-y-5 disabled:opacity-60">
           <fieldset>
             <legend className="mb-2 font-semibold">{t('classroomUx.chooseGame')}</legend>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-3">
               {games.map((entry) => {
                 const { type } = entry;
                 const locked = !isPaid && !isFreeTierGame(type);
                 return <button key={type} type="button" disabled={locked} aria-pressed={game === type} onClick={() => setGame(type)}
-                  className={`grid grid-cols-[4.5rem_minmax(0,1fr)] items-start gap-3 rounded-xl border-2 p-3 text-left outline-offset-2 focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-60 sm:grid-cols-[5.5rem_minmax(0,1fr)] ${game === type ? 'border-primary bg-primary/5' : 'border-outline-variant/40'}`}>
-                  <span aria-hidden className="grid aspect-[4/3] place-items-center overflow-hidden rounded-lg bg-primary-fixed text-primary">
+                  className={`flex flex-col items-stretch gap-2 overflow-hidden rounded-xl border-2 p-0 text-left outline-offset-2 focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-60 ${game === type ? 'border-primary bg-primary/5' : 'border-outline-variant/40'}`}>
+                  <span aria-hidden className="grid aspect-video w-full place-items-center overflow-hidden bg-primary-fixed text-primary">
                     {entry.cover ? <img src={entry.cover} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                       : <span className="material-symbols-outlined text-2xl">{entry.icon}</span>}
                   </span>
-                  <span className="min-w-0">
+                  <span className="min-w-0 p-3">
                     <span className="flex items-start gap-1.5 break-words font-semibold">
                       <span className="min-w-0">{t(entry.nameKey)}</span>
                       {game === type && <span aria-hidden className="material-symbols-outlined shrink-0 text-[1.15rem] text-primary">check_circle</span>}

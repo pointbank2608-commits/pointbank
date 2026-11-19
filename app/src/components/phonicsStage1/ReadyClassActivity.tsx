@@ -1,3 +1,4 @@
+import {useState} from 'react';
 import { builderParts, courseWord, type CourseSlide, type CourseUnit, type LessonGroup } from '../../data/phonicsLessons';
 import type { PhonicsBankEntry } from '../../lib/types';
 import { Stage1Picture, Stage1Speaker, Stage1Word } from './Stage1Art';
@@ -74,6 +75,7 @@ export default function ReadyClassActivity({ activity, slide, unit, words, group
   groups: LessonGroup[];
 }) {
   const revealed = slide.phase > 0;
+  const [picked,setPicked]=useState<string|null>(null);
   const title = activity === 'builder' ? 'Listen and Blend' : activity === 'read' ? 'Read on Your Own' : slide.title;
   const isMemory = slide.kind === 'memory';
 
@@ -88,7 +90,7 @@ export default function ReadyClassActivity({ activity, slide, unit, words, group
       <div className="rc-activity-listen-audio"><Stage1Speaker entry={courseWord(unit, slide.answerIds[0])} /></div>
       <div className="rc-activity-choices">
         {words.map(word => <div className={`rc-activity-choice${revealed && slide.answerIds.includes(word.id) ? ' pc-answer' : ''}`} key={word.id} data-entry={word.id}>
-          <Stage1Picture entry={word} />
+          {!revealed?<button type="button" className="rc-choice-button" aria-label={'그림 선택 '+(words.indexOf(word)+1)} aria-pressed={picked===word.id} onClick={()=>setPicked(word.id)}><Stage1Picture entry={word}/></button>:<Stage1Picture entry={word}/>}
           {revealed && <div className="rc-activity-choice-label"><Stage1Word entry={word} /><Stage1Speaker entry={word} /></div>}
         </div>)}
       </div>

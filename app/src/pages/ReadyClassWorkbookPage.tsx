@@ -1,7 +1,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {Link,useSearchParams} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {courseUnits} from '../data/phonicsLessons';
+import {courseUnits,availableLessonSlides} from '../data/phonicsLessons';
 import {curriculumEntries} from '../data/phonicsCurriculum';
 import {readyClassPages} from '../data/readyClassWorkbook';
 import {fetchPhonicsBank} from '../lib/api';
@@ -18,7 +18,10 @@ function Workbook(){
  const unit=useMemo(()=>courseUnits(bank).find(u=>u.id===params.get('unit')),[bank,params]);const pages=useMemo(()=>unit?readyClassPages(unit):[],[unit]);
  const [selected,setSelected]=useState<string[]|null>(()=>{
   const requested=params.get('pages');
-  return requested ? requested.split(',').flatMap(value=>pages[Number(value)-1]?.id ?? []) : null;
+  if(requested)return requested.split(',').flatMap(value=>pages[Number(value)-1]?.id ?? []);
+  const section=params.get('lesson');if(!section||!unit)return null;
+  const ids=new Set(availableLessonSlides(unit).filter(s=>String(s.lesson)===section).map(s=>s.id));
+  return pages.filter(p=>p.slides.some(id=>ids.has(id))).map(p=>p.id);
  }),[teacher,setTeacher]=useState(false),[fonts,setFonts]=useState(false);
  useEffect(()=>{let live=true;void document.fonts.ready.then(()=>{if(live)setFonts(true);});return()=>{live=false;};},[]);
  const shown=pages.filter(p=>selected===null||selected.includes(p.id));

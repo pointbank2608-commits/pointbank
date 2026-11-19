@@ -1056,7 +1056,7 @@ export default function WordListsPage() {
       )}
 
       {launchListId && lists.find((item) => item.id === launchListId) && (
-        <WordListGameLauncher list={lists.find((item) => item.id === launchListId)!}
+        <WordListGameLauncher key={launchListId} list={lists.find((item) => item.id === launchListId)!}
           classes={classes} selectedClassId={selectedId} isPaid={hasFullAccess}
           busy={launchBusy} error={launchError}
           onClose={() => { if (!launchBusyRef.current) setLaunchListId(null); }}

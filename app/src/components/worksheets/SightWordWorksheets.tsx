@@ -58,7 +58,7 @@ function Review({ review }: { review: typeof SIGHT_WORD_REVIEWS[number] }) {
     <header className="sw-banner"><h1>Sight Word Review {review.id}</h1></header>
     <div className="sw-content">
       <section><h2>Read the words.</h2><div className="sw-review-cards">{review.words.map(word => <strong key={word}>{word}</strong>)}</div></section>
-      <section><h2>Find and circle the three words.</h2><p className="sw-find-line">{find.join(' · ')}</p></section>
+      <section><h2>Find and circle the three words.</h2><p className="sw-find-line">{find.map((word,index)=><span key={index}>{word}</span>)}</p></section>
       <section><h2>Read the sentences.</h2>
         {review.sentences.map((sentence, index) => <div className="sw-sentence" key={sentence}>
           <p>{sentence.split(/([A-Za-z]+)/).map((part, i) => review.words.some(word => word.toLowerCase() === part.toLowerCase())

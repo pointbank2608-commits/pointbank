@@ -6,9 +6,8 @@ import {curriculumEntries,unitById} from '../../data/phonicsCurriculum';
 import {courseUnits,availableLessonSlides,type CourseUnit,type CourseSlide} from '../../data/phonicsLessons';
 import {COURSE_TONES,readyClassPages} from '../../data/readyClassWorkbook';
 import {useWorkbookImageChecks} from '../../lib/useWorkbookImageChecks';
-import PhonicsSongs from './PhonicsSongs';
+import PhonicsLessonPreview from './PhonicsLessonPreview';
 import PhonicsCourseSlide from './PhonicsCourseSlide';
-import {ClaySprite} from '../PhonicsGameArt';
 import '../../phonicsStage1.css';
 import '../../styles/phonics-teaching.css';
 import '../../styles/ready-class-catalog.css';
@@ -42,13 +41,10 @@ function lessonDetails(unit:CourseUnit, period:Period) {
 
 function LessonDetail({unit,period,onPeriod,onBack}:{unit:CourseUnit;period:Period;onPeriod:(period:Period)=>void;onBack:()=>void}) {
   const {t}=useTranslation();
-  const {title,flow,representative,recommended,slides,kinds}=lessonDetails(unit,period);
+  const {kinds}=lessonDetails(unit,period);
   const paths=useMemo(()=>[...new Set(unit.entries.flatMap(entry=>entry.image_url?[entry.image_url]:[]))],[unit]);
   const checks=useWorkbookImageChecks(paths);
   const ready=paths.every(path=>checks[path]===true)&&unit.entries.every(entry=>entry.image_url);
-  const unitOne=unit.step===2&&unit.number===1;
-  const check=unitOne&&period===2?'새 단어를 읽고 끝소리 묶음을 골라요.'
-    : `${unit.groups.map(group=>group.entries[0]?.word).filter(Boolean).join(', ')}을(를) 혼자 읽어요.`;
   const worksheetTypes=period===1?[['match','선 잇기']]:[
     ...(kinds.includes('complete')?[['phonicsBlank','규칙 글자 빈칸']]:[]),
     ...(kinds.includes('sort')?[['grouping','소리별 분류']]:[]),
@@ -60,35 +56,7 @@ function LessonDetail({unit,period,onPeriod,onBack}:{unit:CourseUnit;period:Peri
       {([1,2] as const).map(n=><button key={n} className="pc-button" aria-pressed={period===n} onClick={()=>onPeriod(n)}>{n}차시</button>)}
     </div>
     <header className="rc-unit-band"><strong>Level {unit.step} · Unit {unit.number}</strong><h2>{unit.groups.map(group=>group.label).join(' · ')}</h2></header>
-    <div className="pc-teaching-columns">
-      <section className="pc-teaching-panel">
-        <h2>{title}</h2>
-        {representative&&<div className="pc-slide-thumbnail" inert><PhonicsCourseSlide unit={unit} slide={representative} index={slides.indexOf(representative)} total={slides.length}/></div>}
-        {ready?<Link className="pc-primary" to={`/phonics/lesson?unit=${unit.id}&lesson=${period}`}>{period}차시 수업 시작</Link>
-          :<button className="pc-primary" disabled>{period}차시 수업 시작</button>}
-        {!ready&&<p role="status">{t('phonicsLesson.checking')}</p>}
-      </section>
-      <section className="pc-teaching-panel">
-        <h3>오늘의 목표</h3>
-        <p>{title} · {unit.groups.map(group=>group.label).join(' · ')}</p>
-        <p data-teaching-words>{unit.entries.map(entry=>entry.word).join(' · ')}</p>
-        <h3>수업 순서</h3><p>{flow}</p>
-        <h3>권장 인쇄 자료</h3>
-        <div className="flex flex-wrap gap-2">
-          <Link className="pc-button" to={`/phonics/workbook?unit=${unit.id}&lesson=${period}${recommended.length?`&pages=${recommended.join(',')}`:''}`}>
-            워크북{recommended.length?` ${recommended.join('·')}쪽`:''}
-          </Link>
-          {(worksheetTypes.length?worksheetTypes:[['phonicsTracing','따라쓰기']]).map(([tab,label])=>
-            <Link key={tab} className="pc-button" to="/materials/phonics" state={{
-              ...(curriculumUnit?{phonicsUnitIds:[curriculumUnit.id]}:{phonicsWordIds:unit.entries.map(entry=>entry.id)}),
-              materialsTab:tab,
-            }}>{label}</Link>)}
-        </div>
-        <h3>수업 끝 확인</h3><p>{check}</p>
-        <Link className="pc-button" to={`/phonics/lesson?unit=${unit.id}&lesson=extra`}>{t('phonicsLesson.extra')}</Link>
-      </section>
-    </div>
-    <PhonicsSongs unitId={unit.id}/>
+    <PhonicsLessonPreview unit={unit} ready={ready} section={period} printLinks={<>{(worksheetTypes.length?worksheetTypes:[['phonicsTracing','따라쓰기']]).map(([tab,label])=><Link key={tab} className="pc-button" to="/materials/phonics" state={{...(curriculumUnit?{phonicsUnitIds:[curriculumUnit.id]}:{phonicsWordIds:unit.entries.map(entry=>entry.id)}),materialsTab:tab}}>{label}</Link>)}</>}/>
   </div>;
 }
 
@@ -125,11 +93,7 @@ export default function PhonicsCourseCatalog() {
           {([1,2] as const).map(n=>{
             const lesson=lessonDetails(item,n);
             return <article className="rc-period-card" key={n}>
-              <div className="rc-period-art" data-period={n}>
-                <img src={n===1?'/skins/phonics-v2/workshop.webp':'/skins/phonics-v2/garden.webp'} alt="" loading="lazy"/>
-                <ClaySprite kind={n===1?'robot':'dino'} className="rc-period-guide"/>
-                <div>{n===1&&item.step===2&&item.number===1?'d + ad → dad':item.groups.map(group=>group.label).join(' · ')}</div>
-              </div>
+              <div className="rc-period-slide" inert aria-hidden="true">{lesson.representative&&<PhonicsCourseSlide unit={item} slide={lesson.representative} index={lesson.slides.indexOf(lesson.representative)} total={lesson.slides.length}/>}</div>
               <div className="rc-period-copy"><h3>{n}차시 · {lesson.title}</h3><p>{lesson.flow}</p>
                 <button className="pc-primary" onClick={()=>choose(step,item.id,n)}>수업 보기</button>
               </div>
