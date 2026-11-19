@@ -806,6 +806,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
 
       {open === 'class' && panel(<>
         <PanelHead title={text('반 설정', 'Class settings')} onClose={close} text={text} />
+        <div className="space-y-3 pb-8">
         {info && info.classes.length > 0 && (
           <div className="space-y-2 rounded-xl bg-surface-container-low p-3">
             <label className="block text-sm font-bold">{text('반', 'Class')}
@@ -872,10 +873,9 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           </label>
         )}
         {pEff.length > 0 && pMode !== 'none' && (
-          <div className="pb-8">
-            <button type="button" className={btn} onClick={() => setOrderOpen(true)}>{text('팀·순서 정하기 (반 명단)', 'Set teams and order')}</button>
-          </div>
+          <button type="button" className={btn} onClick={() => setOrderOpen(true)}>{text('팀·순서 정하기 (반 명단)', 'Set teams and order')}</button>
         )}
+        </div>
         {panelAction(() => void applyClass())}
       </>)}
 
