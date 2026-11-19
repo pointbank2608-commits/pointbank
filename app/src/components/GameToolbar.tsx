@@ -872,7 +872,9 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           </label>
         )}
         {pEff.length > 0 && pMode !== 'none' && (
-          <button type="button" className={btn} onClick={() => setOrderOpen(true)}>{text('팀·순서 정하기 (반 명단)', 'Set teams and order')}</button>
+          <div className="pb-8">
+            <button type="button" className={btn} onClick={() => setOrderOpen(true)}>{text('팀·순서 정하기 (반 명단)', 'Set teams and order')}</button>
+          </div>
         )}
         {panelAction(() => void applyClass())}
       </>)}
