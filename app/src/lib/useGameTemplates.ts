@@ -596,6 +596,7 @@ export function useGameTemplates(params: {
       if (gameType === 'twodice') {
         draft.config.twoDiceSize = selected?.config.twoDiceSize;
         draft.config.twoDiceTeams = selected?.config.twoDiceTeams;
+        draft.config.twoDiceMode = selected?.config.twoDiceMode;
         draft.config.twoDiceRounds = selected?.config.twoDiceRounds;
       }
       if (gameType !== 'twodice' && selected?.config.pictureWordMode) {

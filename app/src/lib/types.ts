@@ -461,6 +461,7 @@ export interface GameTemplateConfig {
   pictureWordMode?: boolean;
   twoDiceSize?: number;
   twoDiceTeams?: number;
+  twoDiceMode?: 'none' | 'solo' | 'team';
   twoDiceRounds?: number;
   pictureWordListId?: string;
   /** race 정해진 슛을 먼저 끝내기 · timed 제한 시간 안에 많이 넣기, 그리고 제한 시간(초) */

@@ -75,7 +75,12 @@ export default function TeamOrderPanel({ roster, onClose, onApply, children, fix
   const { t, i18n } = useTranslation();
   const { notify } = useToast();
   // 지난번에 정한 팀·순서로 시작한다 — 랜덤 버튼을 다시 누르거나 직접 바꾸기 전까지 그대로 남는다.
-  const [saved] = useState(() => { const old=loadTeamOrder(roster, scope); return fixedTeams ? { ...old, teamCount:fixedTeams, teamOf:Object.fromEntries(Object.entries(old.teamOf).map(([id,team])=>[id,team%fixedTeams])), order:old.mode==='team'?Array.from({length:fixedTeams},(_,i)=>`team-${i}`):old.order } : old; });
+  const [saved] = useState(() => {
+    const old = loadTeamOrder(roster, scope);
+    if (!fixedTeams || fixedTeams === old.teamCount) return old;
+    return { ...old, teamCount: fixedTeams, teamOf: Object.fromEntries(Object.entries(old.teamOf).map(([id, team]) => [id, team % fixedTeams])),
+      order: old.mode === 'team' ? Array.from({ length: fixedTeams }, (_, index) => `team-${index}`) : old.order };
+  });
   const [mode, setMode] = useState<'individual' | 'team'>(saved.mode);
   const fixedApplied = useRef(false);
   useEffect(() => {

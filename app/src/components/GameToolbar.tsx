@@ -151,7 +151,6 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const [pClass, setPClass] = useState('');
   const [pMode, setPMode] = useState<Mode>('none');
   const [pTeams, setPTeams] = useState(2);
-  const [pDiceTeams, setPDiceTeams] = useState(2);
   const [pSound, setPSound] = useState(true);
   const [pItemSource, setPItemSource] = useState<ItemSource>('list');
   const [pText, setPText] = useState('');
@@ -308,10 +307,9 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     setPPictureList('');
     setPSaved('');
     setPClass(info?.classId || '');
-    setPDiceTeams(diceTeams);
-    const teamCap = isGrammar ? 4 : nativeTeams ? 8 : 6;
-    setPMode(isGrammar ? (play.teams > 0 ? 'team' : play.showScore ? 'solo' : 'none') : !isShowOrderOn() ? 'none' : turnState?.mode === 'team' ? 'team' : 'solo');
-    setPTeams(Math.min(teamCap, Math.max(2, nativeTeams ? (info?.teamCount ?? 2) : (turnState?.mode === 'team' ? turnState.teamCount : play.teams || 2))));
+    const teamCap = isGrammar || isTwoDice ? 4 : nativeTeams ? 8 : 6;
+    setPMode(isTwoDice ? info?.selected?.config.twoDiceMode ?? (diceTeams > 1 ? 'team' : 'none') : isGrammar ? (play.teams > 0 ? 'team' : play.showScore ? 'solo' : 'none') : !isShowOrderOn() ? 'none' : turnState?.mode === 'team' ? 'team' : 'solo');
+    setPTeams(Math.min(teamCap, Math.max(2, isTwoDice ? diceTeams : nativeTeams ? (info?.teamCount ?? 2) : (turnState?.mode === 'team' ? turnState.teamCount : play.teams || 2))));
     setPAbsent(info?.classId ? loadAbsent(info.classId) : []);
     setAbsentOpen(false);
     if (!isTwoDice && !info?.classId && info?.classes.length && !(isGrammar ? play.teams === 0 && !play.showScore : !isShowOrderOn())) {
@@ -375,7 +373,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     return () => { live = false; };
   }, [open, pClass]);
 
-  const teamCapOf = () => (isGrammar ? 4 : nativeTeams ? 8 : 6);
+  const teamCapOf = () => (isGrammar || isTwoDice ? 4 : nativeTeams ? 8 : 6);
   const toggle = (next: Exclude<Open, null>, anchor: HTMLButtonElement) => {
     setPanelAnchor(anchor);
     setOpen((o) => (o === next ? null : next));
@@ -447,16 +445,6 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     if (!info) return;
     const classChanged = pClass !== (info.classId || '');
     if (pClass) saveAbsent(pClass, pAbsent);
-    if (isTwoDice) {
-      if (info.selected && pDiceTeams !== diceTeams) {
-        await info.applyGuide({
-          items: info.selected.items,
-          config: { ...info.selected.config, twoDiceTeams: pDiceTeams },
-        });
-      }
-      if (classChanged) info.selectClass(pClass);
-      return;
-    }
     // 차례·팀을 짤 명단(결석 제외). 반을 바꾸는 중이면 그 반 학생을 바로 불러온다.
     const students = pStudents.length > 0 ? pStudents : classChanged && pClass ? (await fetchStudentsOfClass(pClass)).map((row): GameItem => ({ id: row.id, label: row.name })) : fullRoster;
     const gone = pClass ? loadAbsent(pClass) : [];
@@ -479,6 +467,12 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       }
     } else {
       window.dispatchEvent(new Event(TEAM_ORDER_EVENT));
+    }
+    if (isTwoDice && info.selected) {
+      const teams = pMode === 'team' ? pTeams : 1;
+      if (teams !== diceTeams || pMode !== info.selected.config.twoDiceMode) {
+        await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, twoDiceTeams: teams, twoDiceMode: pMode } });
+      }
     }
     if (splitGame && pMode !== 'none' && info.selected) {
       // 사다리의 참가자는 반 설정이 정한다: 개인 = 학생 이름, 팀 = 팀 이름. 결과 칸은 참가자 수에 자동으로 맞춘다(모자라면 꽝).
@@ -854,19 +848,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             )}
           </div>
         )}
-        {isTwoDice ? (
-          <fieldset className="space-y-2">
-            <legend className="text-sm font-bold">{text('참여 방식', 'How to play')}</legend>
-            <div className="flex flex-wrap gap-2">
-              {[1, 2, 3, 4].map(count => (
-                <button key={count} type="button" className={chip(pDiceTeams === count)} aria-pressed={pDiceTeams === count} onClick={() => setPDiceTeams(count)}>
-                  {count === 1 ? text('혼자 연습', 'Solo practice') : text(`${count}팀 대결`, `${count} teams`)}
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-on-surface-variant">{text('반을 선택하지 않아도 참여 방식을 고를 수 있어요. 참여 방식을 바꾸면 새 판을 시작해요.', 'You can choose how to play without a class. Changing this starts a new board.')}</p>
-          </fieldset>
-        ) : <div className="space-y-2">
+        <div className="space-y-2">
           <p className="text-sm font-bold">{text('참여 방식', 'How to play')}</p>
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" className={chip(pMode === 'none')} aria-pressed={pMode === 'none'} onClick={() => setPMode('none')}>{text('없음', 'None')}</button>
@@ -882,14 +864,14 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             </div>
           )}
           <p className="text-xs text-on-surface-variant">{type === 'lightning' ? t('gameLightning.classOrderHint') : text('개인·팀을 고르면 도구줄 아래에 지금 차례가 보여요. 팀은 "적용"을 누르면 학생이 무작위로 나뉘어요. 직접 바꾸려면 아래 팀·순서 정하기를 쓰세요.', 'Press Apply to split students into random teams. Use Set teams and order to adjust by hand.')}</p>
-        </div>}
-        {!isTwoDice && pMode !== 'none' && !isBomb && type !== 'lightning' && (
+        </div>
+        {pMode !== 'none' && !isBomb && type !== 'lightning' && (
           <label className="flex min-h-11 items-center gap-2 font-bold">
             <input type="checkbox" className="h-5 w-5" checked={pAutoTurn} onChange={(e) => setPAutoTurn(e.target.checked)} />
             {text('한 판이 끝나면 자동으로 다음 차례로 넘기기', 'Move to the next turn automatically')}
           </label>
         )}
-        {!isTwoDice && pEff.length > 0 && pMode !== 'none' && (
+        {pEff.length > 0 && pMode !== 'none' && (
           <button type="button" className={btn} onClick={() => setOrderOpen(true)}>{text('팀·순서 정하기 (반 명단)', 'Set teams and order')}</button>
         )}
         {panelAction(() => void applyClass())}

@@ -17,6 +17,11 @@ interface Props {
   size?: number;
   teamCount?: number;
   rounds?: number;
+  teamOrder?: number[];
+  firstTeam?: number;
+  teamNames?: string[];
+  autoAdvance?: boolean;
+  onRoundDone?: () => void;
   /** true면 오른쪽에 항목 개수 조절 + 이름 수정 목록 패널을 보여준다(선생님용 실제 플레이 화면에서만). */
   editable?: boolean;
   onEditItem?: (id: string, label: string) => void;
@@ -61,6 +66,11 @@ export default function TwoDice({
   size = 6,
   teamCount = 2,
   rounds = 9,
+  teamOrder,
+  firstTeam = 0,
+  teamNames,
+  autoAdvance = true,
+  onRoundDone,
   editable,
   onEditItem,
   templateName,
@@ -70,7 +80,15 @@ export default function TwoDice({
 }: Props) {
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
-  const teams = useMemo(() => TEAMS.slice(0, teamCount), [teamCount]);
+  const teamOrderKey = JSON.stringify(teamOrder);
+  const teams = useMemo(() => {
+    const indices = teamOrder?.filter(index => Number.isInteger(index) && index >= 0 && index < teamCount) ?? [];
+    const order = [...new Set([...indices, ...Array.from({ length: teamCount }, (_, index) => index)])];
+    return order.map(index => TEAMS[index]);
+    // The page can recreate the same order while updating team names.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teamCount, teamOrderKey]);
+  const startingTeam = TEAMS[firstTeam] ?? teams[0];
   const solo = teamCount === 1;
   const turnLimit = teamCount >= 3 ? rounds * teamCount : null;
   const [board, setBoard] = useState<GameItem[]>(() => pickBoardItems(items, size));
@@ -83,10 +101,10 @@ export default function TwoDice({
   const [history, setHistory] = useState<{ key: string; label: string; team: Team }[]>([]);
   const [tossKey, setTossKey] = useState(0);
   const [claimed, setClaimed] = useState<Record<number, Team>>({});
-  const [turn, setTurn] = useState<Team>('blue');
+  const [turn, setTurn] = useState<Team>(startingTeam);
   const [rollCount, setRollCount] = useState(0);
   const [result, setResult] = useState<{ leaders: Team[]; bingo: boolean } | null>(null);
-  const teamLabel = (team: Team) => t(solo ? 'gameTwoDice.solo' : `gameTwoDice.teams.${team}`);
+  const teamLabel = (team: Team) => solo ? t('gameTwoDice.solo') : teamNames?.[TEAMS.indexOf(team)] || t(`gameTwoDice.teams.${team}`);
   const turnIndex = teams.indexOf(turn);
   const nextTeam = teams[(turnIndex + 1) % teamCount];
   useNativeGameTurn({ current: teamLabel(turn), next: teamLabel(nextTeam), index: turnIndex, total: teamCount, enabled: !solo && items.length > 0 && !result });
@@ -126,11 +144,11 @@ export default function TwoDice({
     setHistory([]);
     setRolling(false);
     setClaimed({});
-    setTurn('blue');
+    setTurn(startingTeam);
     setRollCount(0);
     setResult(null);
     setWinLine(null);
-  }, [items, size]);
+  }, [items, size, startingTeam]);
 
   const itemIds = JSON.stringify(items.map((item) => item.id));
   const previousItemIds = useRef(itemIds);
@@ -203,10 +221,11 @@ export default function TwoDice({
         const counts = teams.map(team => owners.filter(owner => owner === team).length);
         setResult({ leaders: teams.filter((_, i) => counts[i] === Math.max(...counts)), bingo: false });
       } else {
-        setTurn(nextTeam);
+        if (autoAdvance) setTurn(nextTeam);
       }
       rollingRef.current = false;
       setRolling(false);
+      onRoundDone?.();
     }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 80 : DICE_ROLL_MS);
   }
 
@@ -268,6 +287,7 @@ export default function TwoDice({
         <span data-turn-next hidden>{teamLabel(nextTeam)}</span>
         <div className={`td-turn td-turn-${result?.leaders.length === 1 ? result.leaders[0] : turn}`} role="status">
           {status}
+          {!solo && !autoAdvance && !result && <button type="button" className="ml-2 rounded-xl border bg-white px-3 py-2 text-sm text-deep-navy" disabled={rolling} onClick={() => setTurn(nextTeam)}>{t('gamePlay.nextTurn')}</button>}
           {!result && turnLimit !== null && <small className="td-rolls-left">{t('gameTwoDice.rollsLeft', { count: turnLimit - rollCount })}</small>}
         </div>
         {teamCount === 2 && score('red')}
