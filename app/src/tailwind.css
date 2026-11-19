@@ -4826,9 +4826,20 @@ html[data-game-focus] [data-app-main] { margin-left: 0; padding-top: 0; }
   flex-shrink: 0;
   will-change: auto;
 }
-[data-game-fullscreen="true"] .game-fs-stage[data-game-fit="responsive"] :is(.ad-game, .sb-game) {
-  zoom: var(--game-fullscreen-zoom, 1);
+/* Fit the foreground uniformly; the backdrop fills the surrounding surface. */
+.game-fit-stage { min-width: 0; container-type: size; padding: clamp(8px, 1.2vw, 20px); overflow: hidden; }
+.game-viewport-box { position: relative; flex: none; width: var(--game-fit-width, 100%); height: var(--game-fit-height, auto); }
+.game-fit-canvas {
+  position: relative; flex: none; width: var(--game-canvas-width, 100%) !important;
+  transform: scale(var(--game-fit-scale, 1)) translate(var(--game-fit-x, 0px), var(--game-fit-y, 0px));
+  transform-origin: top left; margin: 0; zoom: 1;
 }
+.game-fit-canvas :is(.ad-game, .sb-game) { width: 100% !important; max-width: none; zoom: 1 !important; }
+.game-fit-canvas [data-game-scene-source="image"] { visibility: hidden !important; }
+.game-fit-canvas [data-game-scene-source="background"] { background-image: none !important; }
+.game-fit-canvas[data-game-has-scenery] :is(.ad-game, .sb-game) { background-color: transparent !important; border-color: transparent; box-shadow: none; }
+.game-fit-canvas[data-game-has-scenery] .ad-game::before { display: none; }
+[data-game-backdrop][data-game-scene-tint="adventure"]::after { content: ''; position: absolute; inset: 0; background: linear-gradient(#ffffff70, transparent 45%, #ffffff35); }
 
 /* 랜딩: 둥근 산세리프 제목 + 본문 산세리프 */
 .landing {

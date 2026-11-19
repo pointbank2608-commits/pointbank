@@ -779,6 +779,15 @@ export interface PdfSlide {
   thumbnailPath: string;
 }
 
+export interface PhonicsClassPlay {
+  classId: string | null;
+  mode: 'none' | 'solo' | 'team';
+  teamCount: number;
+  autoTurn: boolean;
+  absentIds: string[];
+  order?: import('./teamOrder').TeamOrderState;
+}
+
 export interface PhonicsGameSlide {
   id: string;
   kind: 'phonicsGame';
@@ -787,6 +796,7 @@ export interface PhonicsGameSlide {
   rounds?: 3 | 6 | 10;
   level?: 'easy' | 'normal' | 'hard';
   teams?: 1 | 2 | 3 | 4;
+  classPlay?: PhonicsClassPlay;
 }
 
 export interface VideoSlide {
