@@ -6,6 +6,8 @@ import type { CourseUnit } from '../data/phonicsLessons';
 import { lessonPhonicsUnits, phonicsLessonOptions, phonicsSlideState, unitsForGame } from '../lib/phonicsLessonGame';
 import type { FullCardItem, PhonicsGameSlide } from '../lib/types';
 import { useGamePanelAnchor } from './useGamePanelAnchor';
+import PhonicsClassSettingsContent from './PhonicsClassSettingsContent';
+import { phonicsClassPlay } from '../lib/phonicsClassPlay';
 import '../styles/phonics-games.css';
 import '../styles/phonics-games-v2.css';
 import '../styles/phonics-slide.css';
@@ -48,9 +50,9 @@ export default function PhonicsGameSlideDetail({ slide, cards, topic, onUpdate }
         </div>
       </div>
       {panel && <div ref={popup} data-game-toolbar-panel={panel}
-        className="absolute z-40 space-y-3 overflow-y-auto rounded-2xl border border-outline-variant bg-white p-4 text-left shadow-xl">
-        <div className="flex justify-end"><button type="button" className={select}
-          onClick={() => {setPanel(null); anchor?.focus();}}>{l('닫기', 'Close')}</button></div>
+        className={`absolute z-40 space-y-3 overflow-y-auto rounded-2xl border border-outline-variant bg-white p-4 text-left shadow-xl ${panel === 'class' ? 'pt-0' : ''}`}>
+        {panel !== 'class' && <div className="flex justify-end"><button type="button" className={select}
+          onClick={() => {setPanel(null); anchor?.focus();}}>{l('닫기', 'Close')}</button></div>}
         {panel === 'content' && <>
     <div className="grid gap-3 sm:grid-cols-2">
       <label className="block font-bold">{l('단계', 'Level')}
@@ -88,11 +90,9 @@ export default function PhonicsGameSlideDetail({ slide, cards, topic, onUpdate }
             </select>
           </label>
         </fieldset>}
-        {panel === 'class' && <label className="block font-bold">{l('팀', 'Teams')}
-          <select className={`${select} mt-1 w-full`} aria-label={l('팀', 'Teams')} value={options.teams} onChange={e => onUpdate({ teams: Number(e.target.value) as PhonicsGameSlide['teams'] })}>
-            {[1, 2, 3, 4].map(n => <option key={n} value={n}>{n === 1 ? l('모두 함께', 'Everyone together') : l(`${n}팀`, `${n} teams`)}</option>)}
-          </select>
-        </label>}
+        {panel === 'class' && <PhonicsClassSettingsContent value={phonicsClassPlay(slide.classPlay, options.teams)}
+          onApply={classPlay => onUpdate({classPlay, teams: (classPlay.mode === 'team' ? classPlay.teamCount : 1) as PhonicsGameSlide['teams']})}
+          onClose={() => {setPanel(null); anchor?.focus();}} />}
       </div>}
     </div>
     <div className="phonics-slide-cover"><PhonicsGameCover game={game} large /></div>

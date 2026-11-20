@@ -1,14 +1,14 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useOptionalLessonRunner } from '../context/LessonRunnerContext';
 import { PHONICS_STAGES } from '../data/phonicsCurriculum';
 import { type CourseUnit } from '../data/phonicsLessons';
 import { fetchPhonicsBank } from '../lib/api';
-import { fitFullscreenZoom } from '../lib/fullscreenFit';
+import { useGameViewportFit } from '../lib/gameViewportFit';
 import { courseUnits } from '../data/phonicsLessons';
 import { PHONICS_GAMES, alphabetGlyph, gameAvailability, gameName, gamePool, blankOf, makeRound, patternKey, patternLabel, phonicsGameUnits, pictureEligible, shuffled, targetText, type PhonicsGame } from '../lib/phonicsGames';
-import type { PhonicsBankEntry, PhonicsGameSlide } from '../lib/types';
+import type { PhonicsBankEntry, PhonicsGameSlide, PhonicsClassPlay } from '../lib/types';
 import { lessonPhonicsUnits, phonicsLessonOptions } from '../lib/phonicsLessonGame';
 import { useLearningActivity } from '../lib/learningSensors/useLearningActivity';
 import type { SensorAction } from '../lib/learningSensors/core';
@@ -24,6 +24,9 @@ import {GameFavoriteButton, useGameFavorites} from '../components/GameFavoriteBu
 import {DragBox,DragButton} from '../components/PhonicsDrag';
 import {hasPhoneme} from '../lib/phonicsPhonemes';
 import LearningAudioButton from '../components/LearningAudioButton';
+import PhonicsClassSettingsContent from '../components/PhonicsClassSettingsContent';
+import { phonicsClassOrder, phonicsClassPlay, usePhonicsClassRoster } from '../lib/phonicsClassPlay';
+import { useGamePanelAnchor } from '../components/useGamePanelAnchor';
 import {clockSeconds,formFor,twistOf,type PlayForm} from '../lib/phonicsTwists';
 import '../styles/phonics-games.css';
 import '../styles/phonics-games-v2.css';
@@ -69,8 +72,15 @@ export default function PhonicsGamesPage(){
  const sound=usePhonicsGameSound(game??PHONICS_GAMES[0],playing);
  const [guide,setGuide]=useState(false);
  const [teams,setTeams]=useState(1);const [level,setLevel]=useState<PlayLevel>('normal');
+ const [classPlay,setClassPlay]=useState<PhonicsClassPlay>();
  const [autoSpeak,setAutoSpeakState]=useState(()=>{try{return localStorage.getItem('classbank.phonics.autoSpeak')==='1';}catch{return false;}});
  const setAutoSpeak=(on:boolean)=>{setAutoSpeakState(on);try{localStorage.setItem('classbank.phonics.autoSpeak',on?'1':'0');}catch{/* The choice only lasts for this visit. */}};
+ useEffect(()=>{
+  if(!playing)return;
+  const previousOverflow=document.body.style.overflow;
+  document.body.style.overflow='hidden';document.documentElement.dataset.gameFocus='true';
+  return()=>{document.body.style.overflow=previousOverflow;delete document.documentElement.dataset.gameFocus;};
+ },[playing]);
  const [world,setWorld]=useState<PhonicsWorld|'all'>('all');
  const [rewards,setRewards]=useState(readVillageRewards);
  const pick=(id:string)=>{setStartedEntry(null);setParams({unit:id},{replace:true});};
@@ -92,20 +102,18 @@ export default function PhonicsGamesPage(){
    event.preventDefault();
    const values=new FormData(event.currentTarget);
    setRounds(Number(values.get('rounds')));
-   setTeams(Number(values.get('teams')));
    setLevel(values.get('level') as PlayLevel);
    setAutoSpeak(values.has('autoSpeak'));
    start();
   }}>
     <label>{l(en,'문제 수','Rounds')}<select aria-label={l(en,'문제 수','Rounds')} name="rounds" defaultValue={rounds}>{[3,6,10].map(n=><option key={n} value={n}>{n}</option>)}</select></label>
      <fieldset className="pg-options-set"><legend>{l(en,'함께 하는 방법','How to play')}</legend>
-      <label>{l(en,'팀','Teams')}<select aria-label={l(en,'팀','Teams')} name="teams" defaultValue={teams}>{[1,2,3,4].map(n=><option key={n} value={n}>{n===1?l(en,'모두 함께 (1팀)','Everyone together'):l(en,`${n}팀 대결`,`${n} teams`)}</option>)}</select></label>
       <label>{l(en,'난이도','Difficulty')}<select aria-label={l(en,'난이도','Difficulty')} name="level" defaultValue={level}><option value="easy">{l(en,'쉬움 · 그림과 글자를 함께 보여 줘요','Easy · picture and word')}</option><option value="normal">{l(en,'보통','Normal')}</option><option value="hard">{l(en,'도전 · 그림 없이 소리로 풀어요','Challenge · listen, no picture')}</option></select></label>
       <label className="pg-check"><input type="checkbox" name="autoSpeak" defaultChecked={autoSpeak}/>{l(en,'문제마다 설명을 소리로 읽어 줘요 (글을 못 읽는 친구용)','Read each instruction aloud (for pre-readers)')}</label>
      </fieldset>
    </form>;
  return <PhonicsSoundContext.Provider value={sound}><main className={`phonics-games pg-v2 space-y-6 ${playing ? 'pg-is-playing' : 'pg-browse'}`} data-phonics-games>
-  <GameCatalogNav current="/phonics-games" />
+  {!playing&&<GameCatalogNav current="/phonics-games" />}
   {!playing && <header>
     <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-deep-navy md:font-headline-lg md:text-headline-lg">
       {game ? gameName(game, en) : t('phonicsGamesTitle')}
@@ -183,7 +191,7 @@ export default function PhonicsGamesPage(){
       try { sessionStorage.removeItem('classbank.phonics.village.v2'); } catch { /* In-memory village can still be cleared. */ }
       setRewards([]);
     }} />
-   </section>:playing&&!reason?<GameSession key={`${game.id}:${unit.id}:${seed}`} game={game} unit={unit} en={en} rounds={rounds} seed={seed} teams={teams} level={level} autoSpeak={autoSpeak} onReward={reward=>setRewards(addVillageReward(reward))} rewards={rewards} onExit={leaveGame} settings={gameSettings}/>:<section className="pg-panel pg-launch">
+   </section>:playing&&!reason?<GameSession key={`${game.id}:${unit.id}:${seed}`} game={game} unit={unit} en={en} fillStage rounds={rounds} seed={seed} teams={teams} level={level} autoSpeak={autoSpeak} onReward={reward=>setRewards(addVillageReward(reward))} rewards={rewards} onExit={leaveGame} settings={gameSettings} classPlay={classPlay} onRestart={()=>setSeed(n=>n+1)} onClassPlay={play=>{setClassPlay(play);setTeams(play.mode==='team'?play.teamCount:1);setSeed(n=>n+1);}}/>:<section className="pg-panel pg-launch">
     <h2>{l(en,'이 유닛으로 놀아요','Play with this unit')}</h2><p>Level {unit.step} · Unit {unit.number} · {unit.groups.map(g=>g.label).join(' / ')}</p>
     {game.id==='ow-crossroads'&&<p className="pg-note">{l(en,'5단계 Unit 3의 ow /oʊ/와 Unit 6의 ow /aʊ/를 함께 복습합니다.','Reviews ow /oʊ/ from Level 5 Unit 3 and ow /aʊ/ from Unit 6.')}</p>}
     {reason&&<p className="pg-reason" role="status">{reason}</p>}
@@ -204,7 +212,7 @@ export default function PhonicsGamesPage(){
 type LessonObservation = { lessonId: string; position: number };
 
 export function PhonicsLessonGame({gameId,unitId,options,autoStart=false,observation}:{
- gameId:string;unitId:string;options?:Pick<PhonicsGameSlide,'rounds'|'level'|'teams'>;autoStart?:boolean;observation?:LessonObservation;
+ gameId:string;unitId:string;options?:Pick<PhonicsGameSlide,'rounds'|'level'|'teams'|'classPlay'>;autoStart?:boolean;observation?:LessonObservation;
 }) {
  const {i18n}=useTranslation();
  const en=i18n.resolvedLanguage?.startsWith('en')??false;
@@ -213,14 +221,15 @@ export function PhonicsLessonGame({gameId,unitId,options,autoStart=false,observa
  const [playing,setPlaying]=useState(autoStart);
  const [seed,setSeed]=useState(()=>autoStart ? crypto.getRandomValues(new Uint32Array(1))[0] : 1);
  const [config,setConfig]=useState<{rounds:number;teams:number;level:PlayLevel}>(()=>phonicsLessonOptions(options));
+ const [classPlay,setClassPlay]=useState(options?.classPlay);
  const sound=usePhonicsGameSound(game??PHONICS_GAMES[0],playing);
  if(!game||!unit)return <p>{l(en,'파닉스 유닛을 찾을 수 없어요.','This phonics unit is unavailable.')}</p>;
  const reason=gameAvailability(game,unit,en);
  if(reason)return <p>{reason}</p>;
  return <PhonicsSoundContext.Provider value={sound}>
-  <div className="phonics-games pg-v2 activity-native-game">
-   {playing ? <GameSession key={seed} game={game} unit={unit} en={en} {...config} seed={seed} observation={observation}
-      autoSpeak={false} onExit={()=>setPlaying(false)} onRestart={()=>setSeed(n=>n+1)} onSetTeams={teams=>{setConfig(value=>({...value,teams}));setSeed(n=>n+1);}}
+  <div className="phonics-games pg-v2 activity-native-game" style={observation?{height:'100%',paddingBottom:0}:undefined}>
+   {playing ? <GameSession key={seed} game={game} unit={unit} en={en} {...config} seed={seed} fillStage={!!observation} observation={observation}
+      autoSpeak={false} onExit={()=>setPlaying(false)} onRestart={()=>setSeed(n=>n+1)} classPlay={classPlay} onClassPlay={play=>{setClassPlay(play);setConfig(value=>({...value,teams:play.mode==='team'?play.teamCount:1}));setSeed(n=>n+1);}}
       settings={<form id="phonics-game-settings" onSubmit={event=>{
        event.preventDefault();
        const rounds=Number(new FormData(event.currentTarget).get('rounds'));
@@ -238,7 +247,7 @@ export function PhonicsLessonGame({gameId,unitId,options,autoStart=false,observa
  </PhonicsSoundContext.Provider>;
 }
 
-function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onReward,rewards,settings,observation,onRestart,onSetTeams}:{game:PhonicsGame;unit:CourseUnit;en:boolean;rounds:number;seed:number;teams:number;level:PlayLevel;autoSpeak:boolean;onExit:()=>void;settings:ReactNode;onReward:(reward:VillageReward)=>void;rewards:VillageReward[];observation?:LessonObservation;onRestart?:()=>void;onSetTeams?:(teams:number)=>void}){
+function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onReward,rewards,settings,observation,onRestart,classPlay: suppliedClassPlay,onClassPlay,fillStage=false}:{game:PhonicsGame;unit:CourseUnit;en:boolean;rounds:number;seed:number;teams:number;level:PlayLevel;autoSpeak:boolean;onExit:()=>void;settings:ReactNode;onReward:(reward:VillageReward)=>void;rewards:VillageReward[];observation?:LessonObservation;onRestart?:()=>void;fillStage?:boolean;classPlay?:PhonicsClassPlay;onClassPlay:(play:PhonicsClassPlay)=>void}){
  const lesson=useOptionalLessonRunner();
  const {player}=usePhonicsSound();
  const [index,setIndex]=useState(0),[done,setDone]=useState(false),[paused,setPaused]=useState(false),[large,setLarge]=useState(false);
@@ -248,11 +257,23 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
  const [settingsOpen,setSettingsOpen]=useState(false);
  const [reportOpen,setReportOpen]=useState(false);
  const [lessonPanel,setLessonPanel]=useState<'words'|'class'|null>(null);
+ const classPlay=useMemo(()=>phonicsClassPlay(suppliedClassPlay,teams),[suppliedClassPlay,teams]);
+ const classRoster=usePhonicsClassRoster(classPlay.classId);
+ const roster=useMemo(()=>classRoster.students.filter(row=>!classPlay.absentIds.includes(row.id)),[classRoster.students,classPlay.absentIds]);
+ const classOrder=useMemo(()=>phonicsClassOrder(roster,classPlay),[roster,classPlay]);
+ const [turnAt,setTurnAt]=useState(classOrder.turn);
+ useEffect(()=>setTurnAt(classOrder.turn),[classOrder]);
+ const advanceTurn=()=>setTurnAt(value=>(value+1)%Math.max(1,classOrder.order.length));
+ const currentId=classOrder.order[turnAt%Math.max(1,classOrder.order.length)];
+ const labelOf=(id:string)=>classPlay.mode==='team'
+  ? classOrder.teamNames?.[id]||l(en,`${Number(id.split('-')[1])+1}팀`,`Team ${Number(id.split('-')[1])+1}`)
+  : roster.find(row=>row.id===id)?.label||'';
+ const teamLabel=(index:number)=>suppliedClassPlay?labelOf(`team-${index}`):TEAM_NAMES[en?1:0][index];
  const interrupted=paused||leaving||settingsOpen||reportOpen||lessonPanel!==null;
  const [stars,setStars]=useState(0),[combos,setCombos]=useState<number[]>(()=>Array(teams).fill(0)),[bestCombo,setBestCombo]=useState(0);
  const [teamStars,setTeamStars]=useState<number[]>(()=>Array(teams).fill(0));
  const [burst,setBurst]=useState<{key:number;gain:number;praise:string}|null>(null);
- const teamNow=teams>1?index%teams:0;
+ const teamNow=teams>1&&currentId?Number(currentId.split('-')[1]):0;
  const combo=combos[teamNow]??0;// 콤보는 팀마다 따로 센다.
  const gtwist=twistOf(game);
  const lives=teams>1?0:(gtwist.lives??0);
@@ -277,20 +298,13 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
  }
  const panel=useRef<HTMLDivElement>(null);
  const toolbar=useRef<HTMLDivElement>(null);
+ const classPopup=useRef<HTMLDivElement>(null);
+ const [classAnchor,setClassAnchor]=useState<HTMLButtonElement|null>(null);
+ useGamePanelAnchor(classPopup,lessonPanel==='class'?classAnchor:null,512,toolbar);
  const board=useRef<HTMLDivElement>(null);
+ const viewport=useRef<HTMLDivElement>(null);
  const pseudoFull=useRef(false);
- useLayoutEffect(()=>{
-  const stage=panel.current, tools=toolbar.current, content=board.current;
-  if(!large||!stage||!tools||!content)return;
-  const fit=()=>fitFullscreenZoom(stage,content,tools.offsetHeight+parseFloat(getComputedStyle(tools).marginBottom));
-  fit();
-  let frame=0;
-  const observer=new ResizeObserver(()=>{
-   if(!frame)frame=requestAnimationFrame(()=>{frame=0;fit();});
-  });
-  for(const element of [stage,tools,content])observer.observe(element);
-  return ()=>{observer.disconnect();cancelAnimationFrame(frame);stage.style.removeProperty('--game-fullscreen-zoom');};
- },[large]);
+ useGameViewportFit({stage:viewport,canvas:board,fill:large||fillStage,identity:game.id});
  function exitSession() {
   if (panel.current && document.fullscreenElement === panel.current) {
    void document.exitFullscreen().catch(() => {
@@ -329,12 +343,12 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
   return gameAvailability(candidate,unit)?PHONICS_GAMES.find(g=>g.id==='sound-fishing')!:candidate;
  },[game,index,unit]);
  const milestones:Record<string,[string[],string[]]>={farm:[['씨앗 심기','물 주기','수확'],['Plant','Water','Harvest']],dino:[['발자국 찾기','알 발견','공룡 만나기'],['Tracks','Egg','Dinosaur']],space:[['연료 모으기','우주선 수리','친구 구조'],['Fuel','Repair','Rescue']],island:[['해변','숲','보물'],['Beach','Forest','Treasure']],book:[['첫 장','다음 장','책 완성'],['First page','Next page','Book complete']]};
- return <PlayWorld world={gameVisual(game).world}><div ref={panel} className={'pg-session '+(large?'pg-fullscreen':'')} data-phonics-session={game.id} data-paused={paused}>
-  {onSetTeams ? <div ref={toolbar} className="relative z-30 flex flex-wrap items-center gap-2 rounded-2xl border border-outline-variant bg-white/95 p-2 shadow-sm" data-game-toolbar>
+ return <PlayWorld world={gameVisual(game).world}><div ref={panel} className={'pg-session pg-fit-session '+(large?'pg-fullscreen':'')} data-game-view={observation?'presentation':large?'fullscreen':'normal'} data-game-fill={large||fillStage} data-phonics-session={game.id} data-paused={paused}>
+  <div ref={toolbar} className="relative z-30 flex flex-wrap items-center gap-2 rounded-2xl border border-outline-variant bg-white/95 p-2 shadow-sm" data-game-toolbar>
    <strong className="px-2">{gameName(game,en)} · Unit {unit.number}</strong>
    <div className="flex flex-wrap gap-1 rounded-xl bg-surface-container-low p-1" role="group" aria-label={l(en,'설정','Settings')}>
     <button type="button" className="pg-button" onClick={()=>setLessonPanel('words')}>{l(en,'유닛 단어','Unit words')}</button>
-    <button type="button" className="pg-button" onClick={()=>setLessonPanel('class')}>{l(en,'반 설정','Class')}</button>
+    <button type="button" className="pg-button" aria-expanded={lessonPanel==='class'} onClick={event=>{setClassAnchor(event.currentTarget);setLessonPanel(value=>value==='class'?null:'class');}}>{l(en,'반 설정','Class')}</button>
     <button type="button" className="pg-button" onClick={()=>setSettingsOpen(true)}>{l(en,'게임설정','Settings')}</button>
    </div>
    <div className="ml-auto flex flex-wrap gap-1.5">
@@ -344,17 +358,19 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
     <button type="button" className="pg-button pg-exit" onClick={()=>setLeaving(true)}>{l(en,'나가기','Exit')}</button>
     <GameReportButton gameName={gameName(game,en)} className="pg-button" onOpenChange={setReportOpen}/>
    </div>
-  </div> : <div ref={toolbar} className="pg-toolbar"><strong>{gameName(game,en)} · Unit {unit.number}</strong>{settings&&<button type="button" className="pg-button" onClick={()=>setSettingsOpen(true)}>{l(en,'게임 설정','Game settings')}</button>}<button type="button" className={paused ? 'pg-primary' : 'pg-button'} onClick={()=>setPaused(v=>!v)}>{l(en,paused?'계속하기':'잠시 멈춤',paused?'Resume':'Pause')}</button><button type="button" className="pg-button" onClick={()=>void toggleFullscreen()}>{l(en,large?'전체화면 종료':'전체화면',large?'Exit fullscreen':'Fullscreen')}</button><button type="button" className="pg-button pg-exit" onClick={()=>setLeaving(true)}>{l(en,'게임 나가기','Leave game')}</button>
-    <GameReportButton gameName={`${gameName(game,en)} · Level ${unit.step} · Unit ${unit.number}`} className="pg-button" onOpenChange={setReportOpen} />
+   {lessonPanel==='class'&&<div ref={classPopup} data-game-toolbar-panel="class" className="absolute z-40 space-y-3 overflow-y-auto rounded-2xl border border-outline-variant bg-white p-4 pt-0 text-left shadow-xl"
+     onKeyDown={event=>{if(event.key==='Escape'){event.stopPropagation();setLessonPanel(null);classAnchor?.focus();}}}>
+    <PhonicsClassSettingsContent value={classPlay} onApply={onClassPlay} onClose={()=>{setLessonPanel(null);classAnchor?.focus();}}/>
+   </div>}
+  </div>
+  {classPlay.mode!=='none'&&classOrder.order.length>0&&<div className="flex flex-wrap items-center gap-3 rounded-xl bg-surface-container-low p-3 text-deep-navy" data-turn-bar>
+    <span className="text-sm font-bold">{l(en,'지금 차례','Now')}</span><strong className="text-xl">{labelOf(currentId)}</strong>
+    <span className="text-sm">{l(en,'다음','Next')}: {labelOf(classOrder.order[(turnAt+1)%classOrder.order.length])}</span>
+    <button type="button" className="pg-button ml-auto" onClick={advanceTurn}>{l(en,'다음 차례','Next turn')}</button>
   </div>}
-  {lessonPanel&&<AccessibleDialog label={lessonPanel==='words'?l(en,'유닛 단어','Unit words'):l(en,'반 설정','Class')} onClose={()=>setLessonPanel(null)}>
-   <div className="space-y-4 p-4">
-    {lessonPanel==='words'?<p lang="en">{unit.entries.map(entry=>entry.word).join(' · ')}</p>:<form className="flex flex-wrap gap-3" onSubmit={event=>{
-     event.preventDefault();
-     const count=Number(new FormData(event.currentTarget).get('teams'));
-     if(count!==teams)onSetTeams?.(count);
-     setLessonPanel(null);
-    }}><label>{l(en,'팀 수','Teams')} <select name="teams" defaultValue={teams}>{[1,2,3,4].map(n=><option key={n} value={n}>{n}</option>)}</select></label><button className="pg-primary" type="submit">{l(en,'적용','Apply')}</button></form>}
+  {classRoster.error&&<p role="alert">{l(en,'학생 명단을 불러오지 못했어요. 반 설정을 다시 확인해 주세요.','Could not load students. Check class settings.')}</p>}
+  {lessonPanel==='words'&&<AccessibleDialog label={l(en,'유닛 단어','Unit words')} onClose={()=>setLessonPanel(null)}>
+   <div className="space-y-4 p-4"><p lang="en">{unit.entries.map(entry=>entry.word).join(' · ')}</p>
     <button className="pg-button" type="button" onClick={()=>setLessonPanel(null)}>{l(en,'닫기','Close')}</button>
    </div>
   </AccessibleDialog>}
@@ -378,21 +394,25 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
     </div>
    </div>
   </AccessibleDialog>}
-  <div ref={board} className="pg-game-board">
+  <div ref={viewport} data-game-stage data-game-fit="contain" className="game-fs-stage game-fit-stage pg-game-viewport">
+  <div className="game-viewport-box">
+  <div ref={board} data-game-canvas className="pg-game-board game-fit-canvas">
   <PhonicsSoundControls en={en}/>
   <div className="pg-progress"><span>{Math.min(index+1,rounds)} / {rounds}</span><progress value={index} max={rounds} aria-label={l(en,'게임 진행','Game progress')}/>{lives>0&&<span className="pg-hearts" aria-label={l(en,`하트 ${hearts}개`,`${hearts} hearts`)}>{Array.from({length:lives},(_,i)=><b key={i} className={i<hearts?'on':''}>{icon('favorite')}</b>)}</span>}<span className="pg-hud-stars" key={'s'+stars} aria-label={l(en,`모은 별 ${stars}개`,`${stars} stars`)}>{icon('star')}{stars} / {starGoal}</span>{combo>=2&&<span className="pg-hud-combo" key={'c'+combo}>{icon('local_fire_department')}{combo}</span>}<span className="pg-first">{l(en,'첫 시도 정답','First try')}: {results.filter(Boolean).length}</span></div>
-  {teams>1&&<div className="pg-teams" aria-label={l(en,'팀 점수','Team scores')}>{teamStars.map((v,i)=><span key={i} className={i===teamNow&&!finish?'pg-team-on':''} style={{'--team':TEAM_COLORS[i]} as React.CSSProperties}>{TEAM_NAMES[en?1:0][i]} {icon('star')}{v}</span>)}{!finish&&<strong>{l(en,`${TEAM_NAMES[0][teamNow]} 차례예요!`,`${TEAM_NAMES[1][teamNow]} team's turn!`)}</strong>}</div>}
+  {teams>1&&<div className="pg-teams" aria-label={l(en,'팀 점수','Team scores')}>{teamStars.map((v,i)=><span key={i} className={i===teamNow&&!finish?'pg-team-on':''} style={{'--team':TEAM_COLORS[i]} as React.CSSProperties}>{teamLabel(i)} {icon('star')}{v}</span>)}{!finish&&<strong>{l(en,`${teamLabel(teamNow)} 차례예요!`,`${teamLabel(teamNow)}'s turn!`)}</strong>}</div>}
   {game.theme&&<ol className={'pg-journey pg-theme-'+game.theme}>{milestones[game.theme][en?1:0].map((s,i)=><li key={s} aria-current={!finish&&Math.min(2,Math.floor(index*3/rounds))===i?'step':undefined} className={index>=Math.ceil((i+1)*rounds/3)?'pg-milestone-done':''}>{icon(index>=Math.ceil((i+1)*rounds/3)?'check_circle':game.icon)}{s}</li>)}</ol>}
   {paused&&<section className="pg-panel pg-pause" role="status"><h2>{l(en,'잠깐 쉬어가요','Take a break')}</h2><button className="pg-primary" onClick={()=>setPaused(false)}>{l(en,'이어서 하기','Resume')}</button></section>}
   {finish?<section hidden={paused} className="pg-panel pg-results" aria-live="polite"><ClaySprite kind={gameVisual(game).prop} className="pg-result-friend"/><h2>{l(en,'오늘도 잘했어요!','Great work today!')}</h2><p>{rounds}{l(en,'문제를 끝냈어요.',' rounds completed.')}</p><p>{l(en,'첫 시도에 혼자 맞힘','Correct on the first try')}: {results.filter(Boolean).length} · {l(en,'다시 도전·도움 후 완성','Completed after retry / help')}: {results.filter(x=>!x).length}</p><div className="pg-rating" aria-label={l(en,'별 등급','Star rating')}>{[1,2,3].map(n=><span key={n} className={n<=rating?'pg-rating-on':''} style={{animationDelay:`${n*0.25}s`}}>{icon('star')}</span>)}</div><p className="pg-result-stars">{l(en,`모은 별 ${totalStars}개 · 가장 길게 이어 맞힌 콤보 ${bestCombo}`,`${totalStars} stars · best streak ${bestCombo}`)}{heartBonus>0&&<> · {l(en,`하트 보너스 +${heartBonus}`,`Heart bonus +${heartBonus}`)}</>}</p>
-   {teams>1&&<ol className="pg-team-ranking">{teamStars.map((v,i)=>({v,i})).sort((a,b)=>b.v-a.v).map(({v,i},r)=><li key={i} style={{'--team':TEAM_COLORS[i]} as React.CSSProperties}>{r===0&&icon('emoji_events')}{TEAM_NAMES[en?1:0][i]} · {v}</li>)}</ol>}
-   <p>{l(en,'수업 활동 결과예요. 장기 숙련도 평가가 아니에요.','This is a practice summary, not a long-term mastery assessment.')}</p><ClassroomVillage rewards={rewards} en={en}/><button className="pg-primary" onClick={()=>{setIndex(0);setResults([]);setDone(false);setStars(0);setHearts(lives);setMercyAt(-1);setHeartNote('');setCombos(Array(teams).fill(0));setBestCombo(0);setBurst(null);setTeamStars(Array(teams).fill(0));}}>{l(en,'다시 플레이','Play again')}</button><button className="pg-button" onClick={exitSession}>{l(en,'게임 선택으로','Back to setup')}</button></section>:<div hidden={paused} inert={paused}>
+   {teams>1&&<ol className="pg-team-ranking">{teamStars.map((v,i)=>({v,i})).sort((a,b)=>b.v-a.v).map(({v,i},r)=><li key={i} style={{'--team':TEAM_COLORS[i]} as React.CSSProperties}>{r===0&&icon('emoji_events')}{teamLabel(i)} · {v}</li>)}</ol>}
+   <p>{l(en,'수업 활동 결과예요. 장기 숙련도 평가가 아니에요.','This is a practice summary, not a long-term mastery assessment.')}</p><ClassroomVillage rewards={rewards} en={en}/><button className="pg-primary" onClick={()=>{setIndex(0);setTurnAt(classOrder.turn);setResults([]);setDone(false);setStars(0);setHearts(lives);setMercyAt(-1);setHeartNote('');setCombos(Array(teams).fill(0));setBestCombo(0);setBurst(null);setTeamStars(Array(teams).fill(0));}}>{l(en,'다시 플레이','Play again')}</button><button className="pg-button" onClick={exitSession}>{l(en,'게임 선택으로','Back to setup')}</button></section>:<div hidden={paused} inert={paused}>
    {game.mechanic==='adventure'&&<p className="pg-mission">{l(en,'이번 미션','Mission')}: {gameName(activity,en)}</p>}
    {isBoss&&<p className="pg-boss" role="status">{icon('swords')}{l(en,'보스 문제! 그림 없이 풀어요. 첫 시도로 맞히면 별이 2배예요.','Boss round! No pictures. Win on the first try for double stars.')}</p>}
    {heartNote&&<p className="pg-heart-note" role="status">{icon('favorite')}{heartNote}</p>}
-   <RoundActivity key={`${index}:${activity.id}`} game={activity} visualGame={game} unit={unit} en={en} index={index} seed={seed} level={roundLevel} autoSpeak={autoSpeak} last={index+1===rounds} paused={interrupted} observe={observe} onNext={()=>{player.cancelSpeech();setDone(false);setBurst(null);setIndex(n=>n+1);}} onComplete={finishRound}/>
+   <RoundActivity key={`${index}:${activity.id}`} game={activity} visualGame={game} unit={unit} en={en} index={index} seed={seed} level={roundLevel} autoSpeak={autoSpeak} last={index+1===rounds} paused={interrupted} observe={observe} onNext={()=>{player.cancelSpeech();if(classPlay.autoTurn)advanceTurn();setDone(false);setBurst(null);setIndex(n=>n+1);}} onComplete={finishRound}/>
    {done&&burst&&<div className="pg-burst" key={burst.key} aria-hidden="true"><b className="pg-burst-praise">{burst.praise}</b><span className="pg-burst-gain">+{burst.gain}{icon('star')}</span>{Array.from({length:12},(_,i)=><span key={i} className="pg-burst-star" style={{'--a':`${i*30}deg`} as React.CSSProperties}>{icon('star')}</span>)}</div>}
   </div>}
+  </div>
+  </div>
   </div>
  </div></PlayWorld>;
 }

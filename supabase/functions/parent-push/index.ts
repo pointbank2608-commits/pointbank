@@ -1,10 +1,11 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.109.0';
 import webPush from 'npm:web-push@3.6.7';
 import { timingSafeEqual } from 'node:crypto';
+import { parentPushBody, type ParentPushEvent } from '../_shared/parentPushNotice.ts';
 
 type Job = {
   id: string; session_id: string; tries: number; endpoint: string; p256dh: string; auth_key: string;
-  lang: 'ko' | 'en'; event: 'published' | 'completed';
+  lang: 'ko' | 'en'; event: ParentPushEvent;
 };
 const allowed = new Set(['fcm.googleapis.com', 'updates.push.services.mozilla.com', 'web.push.apple.com']);
 const encode = (value: string) => new TextEncoder().encode(value);
@@ -36,12 +37,11 @@ Deno.serve(async (req) => {
         if (endpoint.protocol !== 'https:' || endpoint.port || endpoint.username || endpoint.password || !allowed.has(endpoint.hostname)) {
           result = 'discard';
         } else {
-          const completed = job.event === 'completed';
+          const body = parentPushBody(job.event, job.lang);
+          if (!body) throw new Error('Unknown parent notification event');
           const payload = JSON.stringify({
             title: job.lang === 'en' ? 'ClassBank for parents' : '수업뚝딱 학부모',
-            body: job.lang === 'en'
-              ? (completed ? 'Homework was completed.' : 'New homework was assigned.')
-              : (completed ? '숙제를 완료했어요.' : '새 숙제가 발행됐어요.'),
+            body,
             tag: job.id,
             child: job.session_id,
           });

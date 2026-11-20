@@ -1,6 +1,6 @@
 import {GameTurnProvider,GameTurnDisplay} from './GameTurnDisplay';
 import {GameTurnContext} from '../context/GameTurnContext';
-import { useContext, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useGameWorkspace } from '../context/GameWorkspaceContext';
 import { GRAMMAR_GAME_TYPES } from '../lib/grammarGames';
@@ -18,8 +18,7 @@ import AccessibleDialog from './AccessibleDialog';
 import TeamOrderPanel from './TeamOrderPanel';
 import { PictureWordTurnProvider } from './PictureWordTurn';
 import { pictureWordModeKind } from '../lib/pictureWordQuestions';
-import { fitFullscreenZoom, fullscreenContentSpace } from '../lib/fullscreenFit';
-import { STORY_NAMES } from '../lib/storybook';
+import { useGameViewportFit } from '../lib/gameViewportFit';
 import '../gameSkins.css';
 import type { GameTemplate, GameType, GameItem } from '../lib/types';
 import { COMMON_SFX, playSfx, setGameSoundOn, useGameSoundOn } from '../lib/gameSfx';
@@ -139,6 +138,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
   const navigate = useNavigate();
   const stageRef = useRef<HTMLDivElement>(null);
   const scaleRef = useRef<HTMLDivElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
   const paused = !!workspace?.playing && !workspace.running;
   useEffect(() => {
     if (!paused || typeof CSSTransition === 'undefined') return;
@@ -168,15 +168,8 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
   const [pseudoFs, setPseudoFs] = useState(false);
   const fullOn = isFullscreen || pseudoFs;
   const fill = fullOn || presenting || (!!workspace?.playing && !embed?.slideId);
-  const responsiveScene = gameType === 'grammardetective' || gameType === 'balloonpop'
-    || gameType === 'wordtrain' || gameType === 'wordfishing' || gameType === 'sentencerocket'
-    || gameType === 'wordclaw'
-    || (fullOn && !!gameType && (gameType === 'treasurehunt' || Object.hasOwn(STORY_NAMES, gameType)));
   const reportFullscreen=workspace?.setFullscreen;
   useEffect(()=>{reportFullscreen?.(fullOn);return ()=>reportFullscreen?.(false);},[fullOn,reportFullscreen]);
-  const [scrollContent, setScrollContent] = useState(false);
-  const [scale, setScale] = useState(1);
-  const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
   const [teamOrderOpen, setTeamOrderOpen] = useState(false);
   // 순서 보여주기: 팀·순서 정하기에서 정한 순서를 게임 위에 한 줄로 띄우고 지금 차례를 표시한다. 끄면 아무나.
   const [showOrder, setShowOrder] = useState(isShowOrderOn);
@@ -224,7 +217,6 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
     function onChange() {
       const on = document.fullscreenElement === containerRef.current;
       setIsFullscreen(on);
-      if (!on) setScale(1);
       // 전체화면으로 들어가면 반 전체가 보는 화면이 되니 항목 목록을 기본으로 숨긴다(정답이
       // 미리 보이지 않게). 전체화면을 나오면 다시 보이게 — 선생님은 버튼으로 언제든 뒤집을 수 있다.
       setItemsHidden(on || playHides || presenting);
@@ -245,183 +237,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
     return ()=>document.removeEventListener('keydown',exitOnEscape,true);
   },[isFullscreen]);
 
-  useLayoutEffect(() => {
-    // 전체화면이 아닌 일반 화면에서도, 화면(뷰포트)보다 콘텐츠가 크면 스크롤 없이 한
-    // 화면에 다 보이도록 축소한다 — 사용을 어려워하는 선생님이 많아서(스크롤해서
-    // 버튼/문제를 찾게 하면 안 됨) "화면에 다 보인다"가 "화면보다 커 보인다"보다 우선.
-    // 다만 모바일 폭에서는 그대로 둔다 — 손가락 스크롤은 이미 익숙한 조작이라 억지로
-    // 줄이면 글씨만 작아지고 얻는 게 없다.
-    const DESKTOP_BREAKPOINT = 768;
-
-    // wrap(.game-fs-scale) 자체를 재는 게 아니라 그 안의 실제 시각 요소들을 잰다. wrap과
-    // 그 직계 자식들은 전부 CSS에서 width:100%로 고정해뒀다(tailwind.css
-    // `.game-fs-scale > *`) — 게임 내부의 w-full/max-w-[Npx] 같은 상대 크기 클래스가
-    // 기준(정해진 부모 폭)을 잃고 0에 가깝게 찌그러지는 걸 막기 위함이다. 다만 그 결과
-    // 직계 자식(target) 자신의 offsetWidth는 이제 그 100%(=무대 폭)를 그대로 반영해버려
-    // 실제 콘텐츠 크기로 못 쓴다.
-    //
-    // target의 "직계" 자식만 재던 예전 방식은, 게임 안쪽에 w-full div로 한 번 더 감싼
-    // wrapper가 있으면(예: 항목 숨기기 토글이 생기면서 로또 기계·돌림판 안쪽에 폭 안정용
-    // w-full wrapper를 추가함) 그 wrapper 자신의 offsetWidth가 이미 무대 폭 그대로라
-    // "내용이 이미 꽉 찼다"고 착각해서 확대를 거의 안 하는 버그가 있었다 — 실제 화면엔
-    // 작은 게임만 덩그러니 있고 나머지가 텅 비어 보이는 원인. div wrapper는 몇 겹이든
-    // 계속 파고들어(비-div 요소, 즉 이미지·svg·버튼·입력창처럼 실제 시각 크기를 가진
-    // "진짜 내용물"을 만날 때까지) 그 내용물들의 바운딩 박스 합집합으로 잰다.
-    function contentNodesOf(el: HTMLElement): HTMLElement[] {
-      const kids = Array.from(el.children).filter((k): k is HTMLElement => k instanceof HTMLElement);
-      if (kids.length === 0) return [el];
-      const out: HTMLElement[] = [];
-      for (const k of kids) {
-        if (k.tagName === 'DIV') out.push(...contentNodesOf(k));
-        else out.push(k);
-      }
-      return out;
-    }
-
-    // offsetLeft/offsetWidth는 transform 영향을 안 받아서(getBoundingClientRect와 달리)
-    // 이미 적용된 scale과 무관하게 안정적으로 잴 수 있다 — 다만 offsetParent 체인이 중간에
-    // position:relative 같은 요소를 만나면 ancestor(target)를 그냥 지나쳐버릴 수 있어서,
-    // 잠깐 target을 relative로 만들어 체인이 반드시 target에서 멈추게 한다.
-    function relLeft(el: HTMLElement, ancestor: HTMLElement): number {
-      let x = 0;
-      let node: HTMLElement | null = el;
-      let hops = 0;
-      while (node && node !== ancestor && hops < 50) {
-        x += node.offsetLeft;
-        node = node.offsetParent as HTMLElement | null;
-        hops++;
-      }
-      return x;
-    }
-
-    // 게임 페이지가 게임 컴포넌트 하나만이 아니라 그 옆에 형제 엘리먼트(체크박스, 최근
-    // 결과 등)를 나란히 넘길 때도 있어서(예: 돌림판), wrap의 직계 자식이 여러 개일 수
-    // 있다 — 폭은 그 중 가장 넓은 자식 기준(전부 같은 폭으로 가운데 정렬되니까), 높이는
-    // (.game-fs-scale이 column이라 자연스럽게 위→아래로 쌓이므로) 전부 더한 값을 쓴다.
-    function fit() {
-      const stage = stageRef.current;
-      const wrap = scaleRef.current;
-      if (!stage || !wrap) return;
-
-      if (responsiveScene && fullOn) {
-        const scene = wrap.querySelector<HTMLElement>('.ad-game, .sb-game');
-        if (scene) {
-          fitFullscreenZoom(stage, scene);
-        }
-      } else {
-        stage.style.removeProperty('--game-fullscreen-zoom');
-      }
-
-      if (responsiveScene || (!fill && window.innerWidth < DESKTOP_BREAKPOINT)) {
-        setScale(1);
-        setNaturalSize(old => old.w || old.h ? { w:0, h:0 } : old);
-        setScrollContent(false);
-        return;
-      }
-
-      const { width: availW, height: stageHeight } = fullscreenContentSpace(stage);
-      // 전체화면(·발표 중)에선 스테이지 자체가 채울 영역 전체라 clientHeight가 곧 가용 높이지만,
-      // 일반 화면에선 스테이지가 문서 흐름 속 카드일 뿐이라 "뷰포트 아래쪽 끝까지 남은 높이"를
-      // 따로 재야 한다(지금 스크롤 위치 기준 — 사용자가 이미 스크롤해서 보고 있는 상태를
-      // 쫓아다니며 다시 축소하진 않는다, 새로고침·리사이즈 시점에만 재계산).
-      const availH = fill
-        ? stageHeight
-        : Math.max(240, window.innerHeight - stage.getBoundingClientRect().top - 24);
-      const targets = (Array.from(wrap.children) as HTMLElement[]).length > 0 ? Array.from(wrap.children) as HTMLElement[] : [wrap];
-
-      let w = 0;
-      let h = 0;
-      for (const target of targets) {
-        const prevPosition = target.style.position;
-        const wasStatic = getComputedStyle(target).position === 'static';
-        if (wasStatic) target.style.position = 'relative';
-
-        const nodes = contentNodesOf(target).filter((n) => n.offsetWidth > 0 || n.offsetHeight > 0);
-        const kidW =
-          nodes.length > 0
-            ? Math.max(...nodes.map((n) => relLeft(n, target) + n.offsetWidth)) - Math.min(...nodes.map((n) => relLeft(n, target)))
-            : target.offsetWidth;
-
-        if (wasStatic) target.style.position = prevPosition;
-
-        w = Math.max(w, kidW);
-        // offsetHeight엔 자기 자신의 margin이 안 들어가는데, 형제끼리 쌓일 때(mt-4 등)
-        // 그 margin도 실제로 세로 공간을 차지하므로 같이 더해줘야 총 높이가 안 밀린다.
-        const cs = getComputedStyle(target);
-        h += target.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
-      }
-
-      if (availW < 16 || availH < 16 || w < 16 || h < 16) return;
-      // 저장은 "실제로 scaleRef가 렌더링되는 폭"(=무대 폭)으로 한다 — 안(w)은 화면보다
-      // 콘텐츠가 얼마나 좁은지 잴 때만 쓰고, 축소 후 문서에 얼마만큼 공간을 예약할지는
-      // scaleRef 자체의 폭(availW) 기준이어야 실제로 줄어드는 시각적 크기와 맞아떨어진다.
-      setNaturalSize((old) => old.w === availW && Math.abs(old.h-h) < 0.5 ? old : { w: availW, h });
-      const next = fullOn
-        ? Math.min((availW - 4) / w, (availH - 4) / h)
-        : Math.min(availW / w, availH / h) * 0.96;
-      // 전체화면에선 작은 콘텐츠를 키워서라도 화면을 채우지만(최대 5배), 일반 화면에선
-      // 각 게임이 이미 자기 최대 크기를 스스로 정해뒀으므로 "화면보다 크면 줄이기"만
-      // 하고 원래 크기보다 더 키우진 않는다(1배 상한).
-      // Desktop boards always fit both dimensions. The old 0.75 threshold reset
-      // large games to 1x and hid their controls/results below the viewport.
-      // On narrow screens preserve readable text and touch targets with scrolling.
-      const compactBoard = ['ladder', 'bomb'].includes(gameType ?? bg ?? '');
-      const scroll = fill && window.innerWidth < DESKTOP_BREAKPOINT && !compactBoard && next < 0.75;
-      if (!scroll) {
-        // Do not retain a phone's scroll offset after rotating/resizing to fit mode.
-        stage.scrollTop = 0;
-        stage.scrollLeft = 0;
-      }
-      setScrollContent(scroll);
-      setScale(scroll ? 1 : fill ? Math.min(5, Math.max(0.05, next)) : Math.min(1, Math.max(0.05, next)));
-    }
-
-    fit();
-    const stage = stageRef.current;
-    const wrap = scaleRef.current;
-    if (!stage || !wrap) return;
-    let fitFrame = 0;
-    const scheduleFit = () => { if (!fitFrame) fitFrame = window.requestAnimationFrame(() => { fitFrame=0; fit(); }); };
-    const ro = new ResizeObserver(scheduleFit);
-    ro.observe(stage);
-    ro.observe(wrap);
-    // wrap의 각 target도 관찰한다 — 예를 들어 전체화면에 막 들어간 시점엔 아직 로그인/권한
-    // 정보가 덜 로드돼 "바로 추가" 패널처럼 조건부로 나타나는 내용이 없다가 잠깐 뒤에
-    // 나타나는 경우가 있는데, stage/wrap 자신의 크기는 안 바뀌니 ResizeObserver가 그 변화를
-    // 못 잡는다 — target을 직접 관찰해야 내용이 늘어나는 순간 다시 재도록 잡을 수 있다.
-    for (const target of Array.from(wrap.children) as HTMLElement[]) {
-      ro.observe(target);
-    }
-    // 일반 화면에서는 위쪽에 있는 "게임 소개" 패널을 펼치고 접는 것처럼, 게임 자신의
-    // 크기는 그대로인데 화면 속 위치(stage 위쪽 여백)만 바뀌는 경우가 있다 — 그런 경우도
-    // 페이지 전체 높이가 같이 바뀌므로 body를 관찰해 다시 재도록 한다. 창 크기 자체가
-    // 바뀔 때(회전, 창 리사이즈, 모바일↔데스크탑 폭 경계를 넘나들 때)도 다시 잰다.
-    ro.observe(document.body);
-    // Absolute result overlays can change without resizing their game root.
-    const mutations = new MutationObserver(scheduleFit);
-    mutations.observe(wrap, { childList: true, subtree: true, characterData: true });
-    window.visualViewport?.addEventListener('resize', scheduleFit);
-    window.addEventListener('resize', fit);
-    // 처음 잴 때 웹폰트·그림이 아직 안 불러와져 있으면 안쪽 글자·그림 크기가 나중에 바뀌는데, 그
-    // 안쪽 요소들은 관찰 대상이 아니라 다시 재지 않아 배율이 엉뚱하게(예: 0.5) 굳어버렸다(발표 화면에서
-    // 발견). 폰트 로드·그림 로드·잠깐 뒤 몇 번 더 잰다.
-    const timers = [150, 600, 1500].map((ms) => window.setTimeout(fit, ms));
-    let alive = true;
-    void document.fonts?.ready.then(() => {
-      if (alive) fit();
-    });
-    wrap.addEventListener('load', fit, true);
-    return () => {
-      alive = false;
-      timers.forEach((id) => window.clearTimeout(id));
-      wrap.removeEventListener('load', fit, true);
-      ro.disconnect();
-      mutations.disconnect();
-      window.visualViewport?.removeEventListener('resize', scheduleFit);
-      if (fitFrame) window.cancelAnimationFrame(fitFrame);
-      window.removeEventListener('resize', fit);
-    };
-  }, [fill, fullOn, gameType, bg, responsiveScene]);
+  useGameViewportFit({stage: stageRef, canvas: scaleRef, backdrop: frameGame && OWN_SCENE.includes(frameGame) ? backdropRef : undefined, fill, identity: frameGame});
 
   function enterPseudo() {
     setPseudoFs(true);
@@ -433,7 +249,6 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
     if (pseudoFs) {
       setPseudoFs(false);
       setItemsHidden(playHides || presenting);
-      setScale(1);
       return;
     }
     try {
@@ -456,8 +271,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
       if (e.key === 'Escape' && !document.querySelector('dialog[open]')) {
         setPseudoFs(false);
         setItemsHidden(playHides || presenting);
-        setScale(1);
-      }
+        }
     }
     document.addEventListener('keydown', onKey);
     return () => {
@@ -597,6 +411,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
         ref={containerRef}
         data-game={gameType ?? bg}
         data-game-fullscreen={fullOn ? "true" : "false"}
+        data-game-view={presenting ? "presentation" : fullOn ? "fullscreen" : "normal"}
         className={`relative ${gameType ? 'classroom-play' : ''} ${fill ? 'game-fs' : ''} ${className ?? ''}`}
         style={fullscreenStyle}
       >
@@ -615,6 +430,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
           </button>
         )}
         {workspace && <GameWorkspaceFrameControls participants={!!gameType && GRAMMAR_GAME_TYPES.includes(gameType as never)} onRestart={onRestart ? () => setRestartOpen(true) : undefined} fullscreen={fullOn} presenting={presenting} onFullscreen={()=>void toggleFullscreen()} onExitFullscreen={()=>void toggleFullscreen()} />}
+        <div ref={backdropRef} aria-hidden="true" data-game-backdrop className="pointer-events-none absolute inset-0 z-0" style={{borderRadius: 'inherit', backgroundSize: 'cover', backgroundPosition: 'center'}} />
         {bgUrl && (
           <div
             aria-hidden
@@ -691,22 +507,9 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
             <p role="status" className="rounded-2xl bg-white px-6 py-3 text-xl font-bold text-deep-navy shadow-lg">{t('teacherGame.paused')}</p>
           </div>
         )}
-        <div ref={stageRef} data-game-fit={responsiveScene ? 'responsive' : scrollContent ? 'scroll' : 'contain'} inert={!!workspace && (!workspace.running || !!workspace.panel)} className={fill ? 'game-fs-stage' : undefined} style={{ position: 'relative', zIndex: 1, ...(fill && scrollContent ? { overflow: 'auto', alignItems: 'flex-start', justifyContent: 'flex-start' } : {}) }}>
-          <div
-            className={fill ? 'contents' : 'mx-auto'}
-            style={!fill && naturalSize.h > 0
-              ? { width: naturalSize.w * scale, height: naturalSize.h * scale }
-              : undefined}
-          >
-            <div
-              ref={scaleRef}
-              className={fill ? 'game-fs-scale' : undefined}
-              style={{
-                width: fill ? '100%' : naturalSize.w > 0 ? naturalSize.w : '100%',
-                transform: `scale(${scale})`,
-                transformOrigin: fill && !scrollContent ? 'center center' : 'top left',
-              }}
-            >
+        <div ref={stageRef} data-game-stage data-game-fit="contain" inert={!!workspace && (!workspace.running || !!workspace.panel)} className="game-fs-stage game-fit-stage" style={{position: 'relative', zIndex: 1}}>
+          <div className="game-viewport-box">
+            <div ref={scaleRef} data-game-canvas className="game-fs-scale game-fit-canvas">
               <PictureWordTurnProvider key={pictureModeTemplate?.id ?? 'standard'} config={pictureModeTemplate?.config}>{children}</PictureWordTurnProvider>
             </div>
           </div>

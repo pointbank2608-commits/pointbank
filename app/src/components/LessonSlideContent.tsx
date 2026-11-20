@@ -310,7 +310,7 @@ export default function LessonSlideContent({
   if (slide.kind === 'phonicsGame') {
     const cards = words.length ? words : lessonSlideWords(lessonSlides);
     const result = phonicsSlideState(slide.gameId, slide.unitId, cards, t('lessonUx.language') === 'en', undefined, lessonPhonicsTopic(lessonSlides, slide));
-    return <div className={fill ? 'absolute inset-0 overflow-auto p-3' : 'p-3'}>
+    return <div className={fill ? 'absolute inset-0 overflow-hidden' : 'p-3'}>
       {result.unit && !result.reason
         ? <Suspense fallback={t('common.loading')}><PhonicsLessonGame key={`${slide.id}:${result.unit.id}`}
             gameId={slide.gameId} unitId={result.unit.id} options={slide} autoStart={!!phonicsObservation} observation={phonicsObservation} /></Suspense>

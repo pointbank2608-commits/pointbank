@@ -9,6 +9,7 @@ export type ParentHomework = {
   due_at: string | null;
   completed_at: string | null;
   status: 'pending' | 'started' | 'review' | 'completed' | 'overdue' | 'closed' | 'untracked';
+  daily?: { day: string; started: boolean; completed_at: string | null };
 };
 export type ParentHome = {
   name: string;
@@ -18,6 +19,17 @@ export type ParentHome = {
   snapshot: string;
   push_enabled: boolean;
   push_key?: string | null;
+  notices?: ParentNotice[];
+  attendance?: ParentAttendance[];
+};
+export type ParentNoticeKind = 'published' | 'completed' | 'overdue' | 'attendance' | 'checkout' | 'attendance_changed' | 'feedback' | 'daily_completed' | 'homework_checked' | 'homework_missing';
+export type ParentNotice = {
+  source: string; assignment_id: string; kind: ParentNoticeKind; happened_at: string;
+  title: string | null; body: string | null; details: { day?: string };
+};
+export type ParentAttendance = {
+  id: string; day: string; present: boolean; check_in_kind: 'unknown' | 'time' | 'day';
+  checked_in_at: string | null; checked_out_at: string | null;
 };
 
 const storageKey = 'classbank.parentSessions';
@@ -40,14 +52,17 @@ export function storeParentSessions(sessions: ParentSession[]) {
 }
 
 export class ParentError extends Error {
-  readonly kind: 'expired' | 'invalid_invite' | 'unavailable' | 'failed';
+  readonly kind: 'expired' | 'invalid_invite' | 'unavailable' | 'failed' | 'bad_login' | 'locked';
   constructor(kind: ParentError['kind']) { super(kind); this.kind = kind; }
 }
 
 async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
   const { data, error } = await supabase.rpc(fn, args);
   if (error) throw new ParentError(error.code === 'PGRST202' ? 'unavailable' : 'failed');
-  if (data?.error) throw new ParentError(data.error === 'expired' || data.error === 'invalid_invite' ? data.error : 'failed');
+  if (data?.error) {
+    const supported = ['expired', 'invalid_invite', 'bad_login', 'locked'] as const;
+    throw new ParentError(supported.find((kind) => kind === data.error) ?? 'failed');
+  }
   return data as T;
 }
 
@@ -62,6 +77,10 @@ export const saveParentAccount = (student: string, name: string, phone: string, 
   rpc<void>('parent_save_account', { p_student: student, p_name: name, p_phone: phone, p_consent: consent });
 export const removeParentAccount = (student: string) => rpc<void>('parent_remove_account', { p_student: student });
 export const connectParent = (invite: string) => rpc<ParentSession>('parent_connect', { p_invite: invite });
+export const loginParent = (name: string, phone: string) =>
+  rpc<{ sessions: ParentSession[] }>('parent_login', { p_name: name.trim(), p_phone: phone });
+export const publishParentFeedback = (student: string, body: string, request: string) =>
+  rpc<string>('parent_publish_feedback', { p_student: student, p_body: body.trim(), p_request: request });
 export const loadParent = (token: string, endpoint?: string) =>
   rpc<ParentHome>('parent_home', { p_token: token, p_endpoint: endpoint ?? null });
 export const readParentNotices = (token: string, through: string) =>
@@ -72,6 +91,14 @@ export function setParentPush(token: string, sub: PushSubscription, enabled: boo
   const keys = sub.toJSON().keys;
   return rpc<{ enabled: boolean }>('parent_set_push', {
     p_token: token, p_endpoint: sub.endpoint, p_enabled: enabled,
+    p_p256dh: keys?.p256dh, p_auth: keys?.auth, p_lang: lang,
+  });
+}
+
+export function setFamilyPush(sessions: ParentSession[], sub: PushSubscription, enabled: boolean, lang: string) {
+  const keys = sub.toJSON().keys;
+  return rpc<{ enabled: boolean }>('parent_set_family_push', {
+    p_tokens: sessions.map((session) => session.token), p_endpoint: sub.endpoint, p_enabled: enabled,
     p_p256dh: keys?.p256dh, p_auth: keys?.auth, p_lang: lang,
   });
 }

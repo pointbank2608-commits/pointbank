@@ -4,6 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
 import { fetchReportExtras, type LearningCard, type ReportExtras } from '../../../lib/homework';
 import { strengthsAndFocus, subLabelKey, type Grade, type StatSheet } from '../../../lib/homework/stats';
+import { publishParentFeedback } from '../../../lib/parentPortal';
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const GRADE_BG: Record<Grade, string> = { 'S+': '#f5c542', S: '#f0a93b', A: '#4cc38a', B: '#5aa9f0', C: '#b39ddb' };
@@ -18,6 +19,8 @@ export default function ParentReport({ card, sheet, onBack }: { card: LearningCa
   const { academy, pointUnit } = useAuth();
   const { notify } = useToast();
   const [extras, setExtras] = useState<ReportExtras | null>(null);
+  const [sending, setSending] = useState(false);
+  const [feedbackRequest, setFeedbackRequest] = useState(() => ({ body: '', id: crypto.randomUUID() }));
   const name = card.student.name;
   const days = card.days as 30 | 90;
   const { strengths, focus } = useMemo(() => strengthsAndFocus(sheet), [sheet]);
@@ -147,6 +150,19 @@ ${sheet.enough ? '' : `<p class="muted">${esc(t('studentHw.collectingTitle'))} Â
           {t('studentHw.back')}
         </button>
         <div className="flex-1" />
+        <button type="button" disabled={sending || text.length > 2000}
+          className={`${btn} border border-primary text-primary disabled:opacity-50`}
+          onClick={async () => {
+            if (sending) return;
+            const request = feedbackRequest.body === text ? feedbackRequest : { body: text, id: crypto.randomUUID() };
+            setFeedbackRequest(request);
+            setSending(true);
+            try {
+              await publishParentFeedback(card.student.id, text, request.id);
+              notify(t('parentPortal.feedbackSent'));
+            } catch { notify(t('parentPortal.feedbackSendFailed'), 'error'); }
+            finally { setSending(false); }
+          }}>{t('parentPortal.sendFeedback')}</button>
         <button
           type="button"
           onClick={() =>
@@ -169,6 +185,7 @@ ${sheet.enough ? '' : `<p class="muted">${esc(t('studentHw.collectingTitle'))} Â
         <span className="font-label-md text-label-md text-on-surface">{t('studentHw.rpt_comment')}</span>
         <textarea
           value={finalComment}
+          disabled={sending}
           onChange={(e) => setComment(e.target.value)}
           rows={4}
           className="w-full rounded-xl border border-outline-variant bg-surface-container-lowest p-3 text-base outline-none focus:border-primary"
@@ -182,6 +199,7 @@ ${sheet.enough ? '' : `<p class="muted">${esc(t('studentHw.collectingTitle'))} Â
           )}
         </span>
       </label>
+      {text.length > 2000 && <p className="text-sm text-error">{t('parentPortal.feedbackTooLong')}</p>}
       <iframe title={t('studentHw.rpt_preview')} srcDoc={html} className="h-[560px] w-full rounded-xl border border-outline-variant bg-white" />
     </div>
   );
