@@ -537,6 +537,7 @@ export default function LessonSlideSorter({
         setPickerOpen(false);
         setAddMode(null);
       }}
+      onPowerPoint={()=>{setPickerOpen(false);setAddMode(null);setPowerPoint({afterId:insertAfterId??selected?.id??null});}}
       onPdf={asset=>{if(!inputSession.active)return;pendingActivity.current='media.pdf';addSlide({id:uid(),kind:'pdf',...asset});setPickerOpen(false);setAddMode(null);}}
       onVideo={(block,source)=>{pendingActivity.current=block.id;setPickerOpen(false);setVideoActivity({block,source});}}
       onPick={pickBlock} onBundle={()=>{pendingActivity.current='wordset';setPickerOpen(false);setAddMode('wordset');}}/>}
@@ -610,11 +611,7 @@ export default function LessonSlideSorter({
           <span className="material-symbols-outlined text-[18px]" aria-hidden>add</span>
           {t('lessonUx.add')}
         </button>
-        <button type="button" disabled={!academyId} onClick={() => setPowerPoint({ afterId: selected?.id ?? null })}
-          className="flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-outline-variant bg-white px-3 font-bold text-primary disabled:opacity-50">
-          <span className="material-symbols-outlined text-[18px]" aria-hidden>upload_file</span>
-          {t('lessonPpt.title')}
-        </button>
+
       </div>
 
       {/* 오른쪽: 슬라이드 추가 패널 또는 선택된 슬라이드 상세 */}
@@ -1232,6 +1229,7 @@ function SlideDetail({
         <PreviewFrame title={slide.title || t('curriculum.slides.kindVideo')}>
           <VideoThumbnail id={videoId}/>
         </PreviewFrame>
+        {slide.timedQuestions?.length ? <p>중간 질문 {slide.timedQuestions.length}개가 이 영상에 저장돼 있어요. 영상 주소를 바꾸면 질문은 초기화돼요. 질문은 애니메이션 영어에서 다시 편집할 수 있어요.</p> : null}
         {!videoId && <p>{t('lessonUx.needVideo')}</p>}
         <label className="block">{t('lessonUx.videoTitle')}
           <input className="block w-full rounded-lg border p-2" value={slide.title ?? ''} onChange={e => onUpdate({ title: e.target.value })} />
@@ -1241,14 +1239,14 @@ function SlideDetail({
           aria-label={t('lessonUx.videoLink')}
           placeholder={t('lessonUx.videoLink')}
           value={slide.videoUrl}
-          onChange={(e) => onUpdate({ videoUrl: e.target.value, title: undefined, startSec: undefined, endSec: undefined } as Partial<VideoSlide>)}
+          onChange={(e) => onUpdate({ videoUrl: e.target.value, title: undefined, startSec: undefined, endSec: undefined, clipId: undefined, timedQuestions: undefined, questionLesson: undefined, questionVersion: undefined } as Partial<VideoSlide>)}
           className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
         <details>
           <summary className="cursor-pointer font-bold">{t('videoLibrary.tabLibrary')}</summary>
           <VideoClipLibrary pickLabel={t('lessonUx.useVideo')} onPick={clip => onUpdate({
             title: clip.title, videoUrl: `https://www.youtube.com/watch?v=${clip.youtube_id}`,
-            startSec: clip.start_sec, endSec: clip.end_sec,
+            startSec: clip.start_sec, endSec: clip.end_sec, clipId:clip.id, timedQuestions:undefined,questionLesson:undefined,questionVersion:undefined,
           })} />
         </details>
       </div>

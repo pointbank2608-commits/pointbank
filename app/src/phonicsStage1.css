@@ -121,3 +121,5 @@
   .s1-print-student [data-audience=teacher],.s1-print-teacher [data-audience=student] { display:none!important; }
   .s1-teacher-guide { margin:0;padding:0;max-width:none;font-size:10pt; }.s1-teacher-guide h2{font-size:16pt}.s1-teacher-guide h3{font-size:12pt}
 }
+
+.s1-writing-lines, .pc-lesson-slide .s1-writing-lines { border:0; background:none; padding:0; }

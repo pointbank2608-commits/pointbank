@@ -45,7 +45,7 @@ function LessonDetail({unit,period,onPeriod,onBack}:{unit:CourseUnit;period:Peri
   const paths=useMemo(()=>[...new Set(unit.entries.flatMap(entry=>entry.image_url?[entry.image_url]:[]))],[unit]);
   const checks=useWorkbookImageChecks(paths);
   const ready=paths.every(path=>checks[path]===true)&&unit.entries.every(entry=>entry.image_url);
-  const worksheetTypes=period===1?[['match','선 잇기']]:[
+  const worksheetTypes=period===1?[['match','워크시트 생성기']]:[
     ...(kinds.includes('complete')?[['phonicsBlank','규칙 글자 빈칸']]:[]),
     ...(kinds.includes('sort')?[['grouping','소리별 분류']]:[]),
   ];

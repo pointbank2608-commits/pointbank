@@ -1,0 +1,40 @@
+.vq-editor { width:min(1280px,96vw); padding:20px; color:#18334c; }
+.vq-editor header,.vq-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.vq-editor header { justify-content:space-between; margin-bottom:16px; }
+.vq-grid { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(300px,1fr); gap:20px; }
+.vq-player { height: min(56vh,580px); min-height:320px; position:relative; }
+.vq-editor form { display:flex; flex-direction:column; gap:12px; }
+.vq-editor label { display:flex; flex-direction:column; gap:5px; font-weight:600; }
+.vq-editor input:not([type=radio]),.vq-editor textarea,.vq-editor select { border:1px solid #b1bfd0; border-radius:8px; padding:9px; width:100%; background:white; color:#18334c; }
+.vq-editor textarea { min-height:75px; }
+.vq-editor button,.vq-question button { border:1px solid #9eb3c9; border-radius:9px; padding:9px 14px; min-height:44px; background:#fff; color:#18334c; }
+.vq-editor button:disabled,.vq-question button:disabled { opacity:.45; }
+.vq-primary { background:#236795!important; color:white!important; }
+.vq-question { background:#eff8ff; border:2px solid #94c3e5; border-radius:14px; padding:18px; margin-top:12px; }
+.vq-question h3 { font-size:clamp(22px,2.5vw,32px); font-weight:700; margin-bottom:14px; }
+.vq-sentence,.vq-choices,.vq-answer { font-family:Andika,sans-serif; font-size:clamp(20px,2vw,30px); }
+.vq-choices,.vq-answer { display:flex; gap:10px; flex-wrap:wrap; margin:12px 0; }
+.vq-answer { min-height:60px; border-bottom:2px solid #8fa8bf; }
+.vq-question button[aria-pressed=true],.vq-editor button[aria-pressed=true] { border:2px solid #236795; background:#dbefff; }
+.vq-question .is-correct { background:#dcfce7; border-color:#16804d; }
+.vq-timeline { display:flex; gap:8px; flex-wrap:wrap; padding:15px 0; }
+.vq-time { display:flex; align-items:center; gap:6px; }
+.vq-lesson { width:100%; overflow:auto; max-height:100%; padding:8px; }
+.vq-lesson:has(.vq-question) .vq-player { height: min(43vh,420px); min-height:250px; }
+@media(max-width:800px) { .vq-grid { grid-template-columns:1fr; } .vq-editor{padding:12px;} }
+
+.vq-player .tv-player { min-height:0; height:100%; }
+.vq-player .tv-player[data-simple=true] .tv-controls-space { min-height:110px; }
+.vq-player .tv-video { min-height:110px; }
+
+.vq-lesson:has(.vq-question) .tv-big-play { display:none; }
+
+.classroom-dialog:has(>.vq-editor) { width:min(1280px,calc(100vw - 24px)); max-width:calc(100vw - 24px); }
+.classroom-dialog>.vq-editor { width:100%; min-width:0; box-sizing:border-box; }
+.vq-lesson:has(.vq-question) { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); align-items:start; gap:14px; }
+.vq-lesson:has(.vq-question) .vq-player { height:min(62vh,580px); min-height:300px; }
+.vq-lesson .vq-question { margin-top:0; min-width:0; }
+.vq-lesson .tv-control { min-width:48px; }
+.vq-lesson .tv-main-controls { gap:10px; }
+.vq-player .tv-video iframe { max-width:100%; }
+@media(max-width:850px){ .vq-lesson:has(.vq-question) { grid-template-columns:1fr; } .vq-lesson:has(.vq-question) .vq-player { height:330px; } }

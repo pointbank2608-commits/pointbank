@@ -1,3 +1,4 @@
+import EnglishWritingLines from '../EnglishWritingLines';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { speak } from '../../lib/speech';
@@ -34,7 +35,7 @@ export function Stage1Speaker({entry,text}:{entry?:PhonicsBankEntry;text?:string
   }}><svg aria-hidden viewBox="0 0 24 24"><path d="M3 9h4l5-4v14l-5-4H3zM16 8q4 4 0 8M19 5q7 7 0 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>{failed&&<small role="alert">{t('phonicsStage1.audioFailed')}</small>}</span>;
 }
 export function Stage1Lines({text='',trace=false}:{text?:string;trace?:boolean}) {
-  return <div className="s1-writing-lines" data-writing={trace?'trace':'independent'}>{trace&&<span>{text}</span>}</div>;
+  return <div className="s1-writing-lines" data-writing={trace?'trace':'independent'}><EnglishWritingLines text={trace?text:''}/></div>;
 }
 /** One scene component and stable word-ID coordinates for slides and workbook p.7. */
 export function Stage1Scene({unit,arrow,onChoose}:{unit:Stage1Unit;arrow?:string;onChoose?:(id:string)=>void}) {

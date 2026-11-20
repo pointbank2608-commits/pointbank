@@ -46,7 +46,7 @@ export default function PhonicsCourseSlide({unit:u,slide:s,index,total}:{unit:Co
   }
   case 'writeLetter':body=<div className="pc-letter-writing">{groups.map(g=><div key={g.id}><div className="pc-capitals"><span>{g.label[0]}</span><span>{g.label[1]}</span></div><Stage1Lines text={g.label[0]+'   '+g.label[1]} trace/></div>)}</div>;break;
   case 'write':body=<div className="pc-writing">{words.map(e=><div key={e.id}><Stage1Picture entry={e}/><Stage1Word entry={e}/><Stage1Lines text={e.word} trace/><Stage1Lines/></div>)}</div>;break;
-  case 'complete':body=<div className="pc-word-grid">{words.map(e=><div className="pc-word-card" key={e.id}><Stage1Picture entry={e}/><Stage1Word entry={e} blank={!answer}/></div>)}</div>;break;
+  case 'complete':body=<div className="pc-word-grid">{words.map(e=><div className="pc-word-card" key={e.id}><Stage1Picture entry={e}/><Stage1Word entry={e} blank={!answer}/><Stage1Speaker entry={e}/></div>)}</div>;break;
   case 'puzzle':body=<div className="pc-game" data-game-phase={s.phase}><div className={'pc-puzzle pc-puzzle-'+s.phase}>{[0,1,2,3].map(i=><div key={i} className={'pc-piece pc-piece-'+i} style={{backgroundImage:`url("${words[0].image_url}")`}}/>)}</div>{gameAnswer&&<Stage1Word entry={words[0]}/>}</div>;break;
   case 'memory':body=<div className="pc-memory" data-game-phase={s.phase}>{gameAnswer?tile(words[0]):<span className="pc-recall" aria-label={t('phonicsLesson.recall')}>?</span>}</div>;break;
   case 'readIntro':body=<><strong className="pc-big-title pc-reader-pattern">{s.hint}</strong>{s.draft&&<p className="pc-review-note">{t('phonicsLesson.draftHint')}</p>}</>;break;

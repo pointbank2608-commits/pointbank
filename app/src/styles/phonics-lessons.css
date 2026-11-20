@@ -190,3 +190,5 @@
 .rc-activity-board[data-ready-activity="read"] .rc-activity-heading { background: linear-gradient(#d9f2af, #bde28e); box-shadow: 0 .33cqw 0 #99c86c, 0 .52cqw .9cqw #47782b28; }
 .rc-activity-independent { display: flex; flex: 1; width: 100%; min-height: 0; justify-content: center; align-items: center; gap: 3cqw; font-size: 15cqw; line-height: 1; font-weight: 800; padding-bottom: 1.2cqw; }
 .rc-activity-independent[data-multiple="true"] { font-size: 8.8cqw; }
+
+.pc-lesson-slide .s1-writing-lines { border:0; background:none; }

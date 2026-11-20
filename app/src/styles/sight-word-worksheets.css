@@ -55,3 +55,6 @@
 .sw-check { font-size: 5mm; }
 .sw-picture-choices { display: flex; justify-content: space-around; gap: 7mm; padding-top: 1mm; }
 .sw-picture-choices img { width: 32mm; height: 30mm; object-fit: contain; }
+
+.sw-writing-line { display:block; border:0; padding:0; background:none; }
+.sw-writing-line::before { content:none; }

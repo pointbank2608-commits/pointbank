@@ -16,7 +16,7 @@ export default function WordListGameLauncher({ list, classes, selectedClassId, i
   const [game, setGame] = useState<GameType>(games[0]?.type ?? 'wheel');
   const preferred = list.class_id ?? selectedClassId;
   const classId = classes.find(row => row.id === preferred)?.id ?? '';
-  const prepared = useMemo(() => { const content = prepareClassroomGame(game,list); return { ready: !!content, count: content ? list.items.length : 0 }; }, [list, game]);
+  const prepared = useMemo(() => { const content = prepareClassroomGame(game,list); return { ready: !!content, count: content ? list.items.filter(item => item.word.trim()).length : 0 }; }, [list, game]);
   const canLaunch = prepared.ready && (isPaid || isFreeTierGame(game));
   return (
     <AccessibleDialog label={t('classroomUx.launchTitle')} onClose={() => { if (!busy) onClose(); }}>
@@ -55,7 +55,7 @@ export default function WordListGameLauncher({ list, classes, selectedClassId, i
           </fieldset>
         </fieldset>
         <p aria-live="polite" className="mt-4 text-sm text-on-surface-variant">
-          {prepared.ready ? t('classroomUx.usableWords', { count: prepared.count }) : t(list.kind === 'sentence' ? 'wordLists.sentence.needSentences' : 'classroomUx.needWords')}
+          {prepared.ready ? t(isSentenceList(list)?'classroomUx.usableSentences':'classroomUx.usableWords', { count: prepared.count }) : t(list.kind === 'sentence' ? 'wordLists.sentence.needSentences' : 'classroomUx.needWords')}
         </p>
         {error && <p role="alert" className="mt-3 rounded-xl bg-error-container p-3 text-on-error-container">{t('classroomUx.launchFailed')}</p>}
         <button type="button" disabled={busy || !canLaunch} onClick={() => onLaunch(game, classId)} className="mt-5 min-h-12 w-full rounded-xl bg-primary px-5 py-3 font-bold text-on-primary disabled:opacity-50">

@@ -229,6 +229,7 @@ const en: Ko = {
     creating: "Preparing your game…",
     launchFailed: "Could not prepare your game. Your word list is safe. Please try again.",
     needWords: "Add at least two distinct words and meanings.",
+    usableSentences: "Uses {{count}} sentences.",
     usableWords: "Uses {{count}} words.",
     paidGame: "Available on a paid plan",
     searchGames: "Search by game name or classroom activity",

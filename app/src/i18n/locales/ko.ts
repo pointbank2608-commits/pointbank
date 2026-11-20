@@ -227,6 +227,7 @@ const ko = {
     creating: "수업 게임 준비 중…",
     launchFailed: "게임을 준비하지 못했어요. 단어장은 그대로 있으니 잠시 후 다시 시도해 주세요.",
     needWords: "다른 단어와 뜻을 2개 이상 넣어 주세요.",
+    usableSentences: "{{count}}개 문장으로 진행해요.",
     usableWords: "{{count}}개 단어로 진행해요.",
     paidGame: "유료 플랜에서 이용 가능",
     searchGames: "게임 이름이나 수업 활동으로 검색",

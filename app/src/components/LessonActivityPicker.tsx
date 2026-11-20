@@ -36,7 +36,8 @@ export const worksheetCards: BlockDef[] = WORKSHEET_TAB_CATALOG.map(tab => ({
   id: `worksheet.${tab.tab}`, role: 'main', category: 'print', icon: tab.icon, uses: ['group'], status: 'ready',
   nameKey: `materials.worksheet.${tab.labelKey}`, slide: { kind: 'material', materialId: 'worksheet' },
 }));
-const activities = [...GROUP_ACTIVITIES, ...worksheetCards];
+const pptCard:BlockDef={id:'media.ppt',role:'main',category:'media',icon:'upload_file',uses:['group'],status:'ready',nameKey:'lessonPpt.title'};
+const activities = [...GROUP_ACTIVITIES, ...worksheetCards, pptCard];
 const gameGroups = new Map(GAME_CATALOG.map(game => [game.type, gameBrowseGroups(game)]));
 const gameCards = activities.filter(block => activityCategory(block) === 'games');
 const belongsToGameGroup = (block: BlockDef, group: GameBrowseGroup) => block.slide?.kind === 'phonicsGame'
@@ -56,12 +57,12 @@ function isWorkbook(block: BlockDef) {
   return !!materialId && !!(workbookOfMaterial(materialId) || workbookStep(materialId));
 }
 
-export default function LessonActivityPicker({onPick,onVideo,onPdf,onStem,onBundle,onClose,canAttachHelper,storageKey,cards,gameSources,slides,replaceTargetId,insertAfterId,selected,sourceName,entries,lessonName,academyId}:{
+export default function LessonActivityPicker({onPick,onVideo,onPdf,onPowerPoint,onStem,onBundle,onClose,canAttachHelper,storageKey,cards,gameSources,slides,replaceTargetId,insertAfterId,selected,sourceName,entries,lessonName,academyId}:{
  onPick:(b:BlockDef,layout?:CanvasExample,theme?:string|null, worksheet?:ActivityWorksheetOptions)=>void;onBundle:()=>void;onClose:()=>void;canAttachHelper:boolean;storageKey:string;
  cards:FullCardItem[];gameSources:ReturnType<typeof lessonGameSources>;slides:LessonSlide[];replaceTargetId:string|null;insertAfterId?:string|null;
  selected:LessonSlide|null;sourceName:string;entries:PhonicsBankEntry[];lessonName:string;
  academyId:string;onPdf:(asset:Omit<PdfSlide,'id'|'kind'>)=>void;
- onStem:(lesson:StemLesson)=>void;
+ onStem:(lesson:StemLesson)=>void; onPowerPoint?:()=>void;
  onVideo?:(block:BlockDef,source:'provided'|'custom')=>void;
 }){
  const {t,i18n}=useTranslation(),ko=i18n.language.startsWith('ko');
@@ -123,7 +124,7 @@ export default function LessonActivityPicker({onPick,onVideo,onPdf,onStem,onBund
   cat==='games'?gameCards.filter(block=>gameGroup==='all'||belongsToGameGroup(block,gameGroup)):
   cat==='print'?printSections.flatMap(section=>section.blocks):activities.filter(b=>activityCategory(b)===cat);
  const bundleShown=!q||`${t('lessonUx.bundle')} 단어장으로 단어 수업 word lesson set bundle`.toLocaleLowerCase().includes(q);
- const choose=(b:BlockDef,layout?:CanvasExample)=>{if(locked.current)return;if(b.id==='media.pdf'){pdfInput.current?.click();return;}if(b.slide?.kind==='stem'){setStemOpen(true);return;}if(b.slide?.materialId==='library'||(b.slide?.materialId==='worksheet'&&!b.id.startsWith('worksheet.'))){setWorksheetBlock(b);return;}locked.current=true;onPick(b,layout,theme);};
+ const choose=(b:BlockDef,layout?:CanvasExample)=>{if(locked.current)return;if(b.id==='media.ppt'){onPowerPoint?.();return;}if(b.id==='media.pdf'){pdfInput.current?.click();return;}if(b.slide?.kind==='stem'){setStemOpen(true);return;}if(b.slide?.materialId==='library'||(b.slide?.materialId==='worksheet'&&!b.id.startsWith('worksheet.'))){setWorksheetBlock(b);return;}locked.current=true;onPick(b,layout,theme);};
  const canvasTitle = lessonName.trim() || t('lessonUx.sampleTitle');
  const selectedName = sourceName || t('lessonUx.linked');
  const after = insertAfterId ? slides.findIndex(slide => slide.id === insertAfterId) : -1;
@@ -145,7 +146,7 @@ export default function LessonActivityPicker({onPick,onVideo,onPdf,onStem,onBund
    const match = block.slide?.gameType ? gameExamples.get(block.slide.gameType) : null;
    return !match?.content ? 2 : match.kind === 'builtin' ? 1 : 0;
  };
- const mediaOrder=['media.image','media.pdf','media.video','media.web','learn.shadow','learn.reading.cloze'];
+ const mediaOrder=['media.image','media.video','media.pdf','media.ppt','media.web','learn.shadow','learn.reading.cloze'];
  const shown = !q && cat === 'games' ? [...filtered].sort((a, b) => gamePriority(a) - gamePriority(b)) : !q&&cat==='media'?[...filtered].sort((a,b)=>mediaOrder.indexOf(a.id)-mediaOrder.indexOf(b.id)):filtered;
  const canvasVisible = shown.some(b => b.id === 'free.canvas');
  const phonicsMatches = useMemo(() => {
@@ -212,10 +213,10 @@ export default function LessonActivityPicker({onPick,onVideo,onPdf,onStem,onBund
              else choose(block,layout);
            }}>
            <span className="activity-card-label"><span className="material-symbols-outlined activity-icon" aria-hidden>{block.icon}</span><strong>{label}</strong></span>
-           {!helper && example(block, layout)}
+           {!helper && (block.id==='media.ppt'?<p>PowerPoint 파일에서 슬라이드를 가져와요.</p>:example(block, layout))}
            {description && <small className="activity-description">{description}</small>}
          </button>
-         {!helper && block.id!=='media.pdf' && <button type="button" className="activity-preview-button" aria-label={t('lessonUx.previewActivity', { name: label })}
+         {!helper && !['media.pdf','media.ppt'].includes(block.id) && <button type="button" className="activity-preview-button" aria-label={t('lessonUx.previewActivity', { name: label })}
            onClick={event => {if(block.slide?.kind==='stem')setStemOpen(true);else openPreview(block,layout,event.currentTarget);}}>
            {t('lessonUx.preview')}
          </button>}

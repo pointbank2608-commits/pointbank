@@ -1,3 +1,4 @@
+import EnglishWritingLines from '../EnglishWritingLines';
 import { useState } from 'react';
 import { SIGHT_WORDS, SIGHT_WORD_REVIEWS } from '../../data/sightWords';
 import '../../styles/ready-class-workbook.css';
@@ -22,7 +23,7 @@ function Picture({ word }: { word: string }) {
 
 function WritingLine({ word }: { word?: string }) {
   return <div className="sw-writing-line">
-    {word && Array.from({ length: 3 }, (_, i) => <span key={i}>{word}</span>)}
+    <EnglishWritingLines text={word} copies={3}/>
   </div>;
 }
 

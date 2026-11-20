@@ -789,6 +789,9 @@ export interface PhonicsGameSlide {
 }
 
 export interface VideoSlide {
+  timedQuestions?: import('./videoQuestions').VideoQuestion[];
+  questionLesson?: boolean;
+  questionVersion?: 1;
   clipId?: string;
   stemFrame?: import('./stemTypes').StemFrame;
   stemMeta?: import('./stemTypes').StemMeta;
