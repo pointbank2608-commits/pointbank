@@ -38,3 +38,7 @@
 .vq-lesson .tv-main-controls { gap:10px; }
 .vq-player .tv-video iframe { max-width:100%; }
 @media(max-width:850px){ .vq-lesson:has(.vq-question) { grid-template-columns:1fr; } .vq-lesson:has(.vq-question) .vq-player { height:330px; } }
+.vq-error { color:#b42318;font-weight:600; }
+.vq-editor .vq-time button { white-space:nowrap; }
+.vq-player:has(.tv-question-marker),.vq-player .tv-player:has(.tv-question-marker) { height:auto; }
+.vq-player .tv-player:has(.tv-question-marker) .tv-video { flex:none;height:clamp(180px,23vw,310px); }

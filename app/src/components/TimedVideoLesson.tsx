@@ -41,8 +41,8 @@ export default function TimedVideoLesson({ slide, source = '', previewQuestion, 
   const [playerKey] = useState(() => crypto.randomUUID());
   const player = useRef<TeachingVideoControl | null>(null);
   const served = useRef(new Set<string>());
-  const [active, setActive] = useState<VideoQuestion | null>(null);
-  const activeRef = useRef<VideoQuestion | null>(null);
+  const [active, setActive] = useState<VideoQuestion | null>(previewQuestion ?? null);
+  const activeRef = useRef<VideoQuestion | null>(previewQuestion ?? null);
   const replaying = useRef(false);
   const replayEntered=useRef(false);
   const [isReplaying, setIsReplaying] = useState(false);
@@ -66,7 +66,7 @@ export default function TimedVideoLesson({ slide, source = '', previewQuestion, 
     if (next) { pause(); player.current?.seek(next.at); activeRef.current = next; setActive(next); observe?.('shown', next); }
   };
   return <div className="vq-lesson">
-    <div className="vq-player"><PlainTeachingVideo fullscreenDocument rememberKey={playerKey} videoUrl={slide.videoUrl} title={slide.title} start={slide.startSec} end={slide.endSec} simple source={source} controlRef={player} onTime={timeChanged} playbackLocked={!!active} onReady={() => { if (previewQuestion) player.current?.playFrom(Math.max(slide.startSec ?? 0, previewQuestion.at - 1)); }}/></div>
-    {active && <VideoQuestionCard key={active.id} question={active} cancelReplay={()=>{pause();if(activeRef.current)player.current?.seek(activeRef.current.at);replaying.current=false;setIsReplaying(false);}} observation={observation&&!previewQuestion?{context:{source:'group',resource:observation.lessonId,credential:''},position:observation.position,question:questions.findIndex(q=>q.id===active.id)}:undefined} pause={pause} replaying={isReplaying} observe={action => observe?.(action, active)} replay={active.replayStart === undefined ? undefined : () => { replaying.current = true; replayEntered.current=false; setIsReplaying(true); player.current?.playFrom(active.replayStart!); }} continuing={() => { pause(); served.current.add(active.id); activeRef.current = null; setActive(null); player.current?.playFrom(active.at + .04); }}/>}
+    <div className="vq-player"><PlainTeachingVideo fullscreenDocument rememberKey={playerKey} videoUrl={slide.videoUrl} title={slide.title} start={slide.startSec} end={slide.endSec} simple source={source} controlRef={player} onTime={timeChanged} playbackLocked={!!active} onReady={() => { if (previewQuestion) player.current?.seek(previewQuestion.at); }}/></div>
+    {active && <VideoQuestionCard key={active.id} question={active} cancelReplay={()=>{pause();if(activeRef.current)player.current?.seek(activeRef.current.at);replaying.current=false;setIsReplaying(false);}} observation={observation&&!previewQuestion?{context:{source:'group',resource:observation.lessonId,credential:''},position:observation.position,question:questions.findIndex(q=>q.id===active.id)}:undefined} pause={pause} replaying={isReplaying} observe={action => { if (!previewQuestion) observe?.(action, active); }} replay={active.replayStart === undefined || !Number.isFinite(active.replayStart) || active.replayStart < (slide.startSec ?? 0) || active.replayStart >= active.at ? undefined : () => { replaying.current = true; replayEntered.current=false; setIsReplaying(true); player.current?.playFrom(active.replayStart!); }} continuing={() => { pause(); served.current.add(active.id); activeRef.current = null; setActive(null); player.current?.playFrom(active.at + .04); }}/>}
   </div>;
 }
