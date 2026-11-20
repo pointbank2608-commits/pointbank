@@ -73,10 +73,11 @@ function Vocabulary({type,c,e,r}:{type:AdventureType;c:AdventureConfig;e:Adventu
     setPicked(id);
     if(fishing)setCast({fish:node,correct,duration,reducedMotion});
   }
-  return <><div className="ad-prompt">{r.imageUrl
+  return <><div className={`ad-prompt ${fishing&&!r.imageUrl?'ad-fishing-text-prompt':''} ${listening?'ad-fishing-listening-prompt':''}`}>{r.imageUrl
     ? <img data-picture-word src={r.imageUrl} alt={t('gameWordHoops.askWord')} className="h-[min(14vh,132px)] object-contain" draggable={false}/>
-    : <><span>{listening?'소리를 듣고 물고기를 찾아요':type==='balloonpop'?r.word.meaning:`${r.word.meaning} — 영어로 무엇일까요?`}</span>{fishing&&<Voice text={r.word.word} onFallback={()=>setFallback(true)}/>}</>}</div>{fallback&&c.listening&&<p className="ad-fallback">영어 음성을 사용할 수 없어 뜻을 보여드려요.</p>}
-    <div className={`ad-vocab-board ${fishing?'ad-sea':'ad-sky'}`} data-choices={r.choices.length} style={{'--rise':`${c.seconds?(1-e.remaining/({slow:45,normal:30,fast:20}[c.speed]))*28:0}%`,'--speed':c.speed==='slow'?'6s':c.speed==='normal'?'4s':'2.5s',gridTemplateColumns:fishing&&r.choices.length===4?'repeat(2,minmax(0,1fr))':undefined} as CSSProperties}>
+    : fishing?<><span className="ad-fishing-prompt-copy"><strong className="ad-fishing-prompt-text">{listening?'소리를 듣고 물고기를 찾아요':r.word.meaning}</strong>{!listening&&<small>영어로 무엇일까요?</small>}</span><Voice text={r.word.word} onFallback={()=>setFallback(true)}/></>
+    : <span>{r.word.meaning}</span>}</div>{fallback&&c.listening&&<p className="ad-fallback">영어 음성을 사용할 수 없어 뜻을 보여드려요.</p>}
+    <div className={`ad-vocab-board ${fishing?'ad-sea':'ad-sky'}`} data-choices={r.choices.length} style={{'--rise':`${c.seconds?(1-e.remaining/({slow:45,normal:30,fast:20}[c.speed]))*28:0}%`,'--speed':c.speed==='slow'?'6s':c.speed==='normal'?'4s':'2.5s'} as CSSProperties}>
       {fishing&&<FishingTackle cast={e.busy?cast:null}/>}
       {r.choices.map((w,i)=>{
         const reacting = picked === w.id && (e.busy || (fishing && e.phase === 'review'));
