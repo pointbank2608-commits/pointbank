@@ -31,6 +31,7 @@ export interface AdventureConfig {
   cases: DetectiveCase[];
   places: IslandPlace[];
   clues: IslandClue[];
+  /** Legacy saved data only; word drawing no longer reads classification missions. */
   missions: ClawMission[];
   count: number;
   choices: 3 | 4 | 5 | 6;
@@ -87,7 +88,7 @@ export function sampleAdventure(type: AdventureType): AdventureConfig {
       {id:'case-1',incorrect:'She go to school every day.',correct:'She goes to school every day.',errors:[{id:'error-1',start:4,end:6,replacement:'goes',choices:['go','goes','going']}],accepted:[],explanation:'She와 함께 쓰는 현재형 동사에는 -s가 필요해요.'},
       {id:'case-2',incorrect:'They is happy.',correct:'They are happy.',errors:[{id:'error-2',start:5,end:7,replacement:'are',choices:['is','are','am']}],accepted:[],explanation:'They에는 are를 사용해요.'},
       {id:'case-3',incorrect:'He like apples and she like bananas.',correct:'He likes apples and she likes bananas.',errors:[{id:'error-3a',start:3,end:7,replacement:'likes',choices:['like','likes','liking']},{id:'error-3b',start:23,end:27,replacement:'likes',choices:['like','likes','liking']}],accepted:[],explanation:'반복되는 like를 각각 찾아 고쳐요.'},
-    ], places, clues, missions:[{id:'verbs',text:'Find the verbs!',tag:'verb'}],
+    ], places, clues, missions:[],
     count: defaultAdventureQuestionCount(type), choices:4, speed:'slow',seconds:0,sound:true,shuffle:false,listening:false,
     detectiveMode:'choice',caseSensitive:true,punctuationSensitive:true,simpleClaw:false,
   };
@@ -131,8 +132,7 @@ export function adventureErrors(type: AdventureType,c: AdventureConfig): string[
     const unique=new Set(c.words.map(w=>wordKey(w.word)));
     if(c.words.some(w=>!w.word.trim()||((type==='balloonpop'||type==='wordfishing')&&!w.meaning.trim())))out.push('영어 단어와 뜻을 빠짐없이 입력해 주세요.');
     if(type==='wordclaw'){
-      if(c.words.length<2||c.words.length>12||unique.size!==c.words.length)out.push('뽑기에는 서로 다른 단어 2~12개를 사용해 주세요.');
-      if(!c.missions.length||c.missions.some(m=>!m.text.trim()||!m.tag.trim()||!c.words.some(w=>w.tags.some(t=>wordKey(t)===wordKey(m.tag)))||c.words.every(w=>w.tags.some(t=>wordKey(t)===wordKey(m.tag)))))out.push('미션의 문장·태그와 정답 단어, 다른 분류의 단어가 필요해요.');
+      if(!c.words.length||unique.size!==c.words.length)out.push('뽑기에는 서로 다른 단어를 1개 이상 사용해 주세요.');
     }else{
       if(![3,4,5,6].includes(c.choices)||unique.size<c.choices)out.push(`서로 다른 영어 단어가 최소 ${c.choices}개 필요해요. 보기 개수를 줄이거나 단어를 추가하세요.`);
       if(c.words.some(w=>!c.words.some(other=>wordKey(other.meaning)!==wordKey(w.meaning))))out.push('서로 다른 뜻의 단어도 등록해 주세요. 같은 뜻의 단어는 모두 정답으로 인정해요.');
@@ -172,7 +172,7 @@ export function adventureErrors(type: AdventureType,c: AdventureConfig): string[
       if(points.some((p,j)=>points.some((q,k)=>j!==k&&Math.hypot(p.x-q.x,p.y-q.y)<7)))out.push(`${i+1}번: 클릭 지점이 겹쳐요. 장소나 지점의 위치를 바꿔 주세요.`);
     });
   }
-  for(const rows of [c.words,c.sentences,c.cases,c.places,c.clues,c.missions])if(new Set(rows.map(r=>r.id)).size!==rows.length)out.push('항목 식별자가 중복돼요. 해당 항목을 다시 추가해 주세요.');
+  for(const rows of [c.words,c.sentences,c.cases,c.places,c.clues])if(new Set(rows.map(r=>r.id)).size!==rows.length)out.push('항목 식별자가 중복돼요. 해당 항목을 다시 추가해 주세요.');
   return [...new Set(out)];
 }
 export type AdventureRound =
@@ -180,7 +180,7 @@ export type AdventureRound =
  | {kind:'sentence';id:string;sentence:AdventureSentence}
  | {kind:'case';id:string;item:DetectiveCase}
  | {kind:'clue';id:string;clue:IslandClue}
- | {kind:'mission';id:string;mission:ClawMission; picture?: { imageUrl: string; answer: string; words: AdventureWord[] }};
+ | {kind:'draw';id:string; picture?: { imageUrl: string; answer: string; words: AdventureWord[] }};
 export function adventureRounds(type: AdventureType,c: AdventureConfig): AdventureRound[] {
   let rows:AdventureRound[];
   if(type==='balloonpop'||type==='wordfishing'){
@@ -189,7 +189,7 @@ export function adventureRounds(type: AdventureType,c: AdventureConfig): Adventu
   }else if(type==='wordtrain'||type==='sentencerocket')rows=c.sentences.map(sentence=>({kind:'sentence',id:sentence.id,sentence}));
   else if(type==='grammardetective')rows=c.cases.map(item=>({kind:'case',id:item.id,item}));
   else if(type==='treasurehunt')rows=c.clues.map(clue=>({kind:'clue',id:clue.id,clue}));
-  else rows=c.missions.map(mission=>({kind:'mission',id:mission.id,mission}));
+  else rows=c.words.map(word=>({kind:'draw',id:word.id}));
   if(type==='grammardetective'){
     const roundSize=detectiveRoundSize(rows.length,c.detectiveQuestionLimit);
     return (c.shuffle?shuffled(rows):rows).slice(0,roundSize??0);
@@ -206,9 +206,9 @@ export function sentenceOrderCorrect(sentence: AdventureSentence,ids:string[]):b
 }
 export function adventureSource(type: AdventureType,cards:FullCardItem[]):AdventureConfig|null {
   const c=sampleAdventure(type);
-  if(type==='balloonpop'||type==='wordfishing'){
+  if(type==='balloonpop'||type==='wordfishing'||type==='wordclaw'){
     c.words=importedAdventureWords(cards);c.choices=Math.min(4,new Set(c.words.map(w=>wordKey(w.word))).size) as AdventureConfig['choices'];
-  }else if(type==='wordtrain')c.sentences=cards.filter(w=>wordTokens(w.word).length>1).map(w=>({id:adventureId(),text:w.word,tokens:wordTokens(w.word)}));
+  }else if(type==='wordtrain'||type==='sentencerocket')c.sentences=cards.filter(w=>wordTokens(w.word).length>1).map(w=>({id:adventureId(),text:w.word,tokens:wordTokens(w.word)}));
   else return null; // Grammar, chunks, map relations and tags always require teacher confirmation.
   return adventureErrors(type,c).length?null:c;
 }

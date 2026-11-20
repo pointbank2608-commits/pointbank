@@ -32,6 +32,12 @@ import { resolveResultSound } from '../lib/gameMusic';
 import { PASS_BALL_MUSIC, passBallMusic } from '../lib/passBallMusic';
 import GameReportButton from './GameReportButton';
 import GameClassSettingsContent from './GameClassSettingsContent';
+import GameContentEditor from './GameContentEditor';
+import SavedGameMaterialList from './SavedGameMaterialList';
+import GameNativeOptions from './GameNativeOptions';
+import { gameEditContent, gameEditDraft, materialForGame, usesUnifiedGameSettings, type GameEditDraft } from '../lib/unifiedGameSettings';
+import { guideProblem } from '../lib/gameGuide';
+import type { GameTemplateConfig } from '../lib/types';
 
 const btn = 'min-h-11 rounded-xl border border-outline-variant bg-white px-4 py-2 text-base font-bold text-deep-navy focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40';
 const primaryBtn = 'min-h-11 rounded-xl bg-primary px-5 py-2 text-base font-bold text-white focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40';
@@ -39,10 +45,35 @@ const tab = (on: boolean) => `min-h-10 rounded-lg px-3.5 text-sm font-bold text-
 const util = 'min-h-10 rounded-lg border border-outline-variant bg-white px-3 text-sm font-bold text-deep-navy hover:bg-surface-container-low focus-visible:outline-4 focus-visible:outline-primary';
 const field = 'mt-1 min-h-11 w-full rounded-xl border border-outline-variant bg-white px-3 py-2 font-normal';
 const ITEM_SETTINGS_GAMES = new Set<string>(['wheel', 'order']);
+const EMPTY_ROSTER: GameItem[] = [];
 /** 게임설정 패널에서 바로 고르는 간단한 옵션(옛 페이지 아래 편집 카드를 대신한다). */
 type SimpleOpt = { key: string; ko: string; en: string; kind: 'choice' | 'number'; def: string | number; min?: number; max?: number; choices?: { v: string; ko: string; en: string }[]; parse?: (v: string) => unknown; nullAs?: string };
 const PICTURE_WORD_OPTION = { v: 'picture', ko: '그림 보고 영어 단어 고르기', en: 'Pick the English word from a picture' };
 const SIMPLE_OPTS: Record<string, SimpleOpt[]> = {
+  whackamole: [
+    {key:'whackMode',ko:'문제 방식',en:'Question type',kind:'choice',def:'wordToMeaning',choices:[{v:'wordToMeaning',ko:'영어 보고 뜻 고르기',en:'Word to meaning'},{v:'meaningToWord',ko:'뜻 보고 영어 고르기',en:'Meaning to word'}]},
+    {key:'whackSeconds',ko:'제한 시간(초, 0은 제한 없음)',en:'Time limit (0 = none)',kind:'number',def:0,min:0,max:600},
+  ],
+  sentencesplash: [{key:'splashSeconds',ko:'문장당 제한 시간',en:'Time per sentence',kind:'choice',def:'45',parse:Number,choices:[30,45,60,90].map(n=>({v:String(n),ko:n+'초',en:n+'s'}))}],
+  typeanswer: [{key:'typeAnswerStyle',ko:'모양',en:'Look',kind:'choice',def:'notebook',choices:[{v:'notebook',ko:'공책',en:'Notebook'},{v:'bubble',ko:'말풍선',en:'Bubbles'}]},{key:'typeAnswerMode',ko:'문제 방식',en:'Question type',kind:'choice',def:'question',choices:[{v:'question',ko:'문제 보고 답 입력',en:'Question and answer'},{v:'cloze',ko:'빈칸 채우기',en:'Fill in the blank'}]}],
+  matchup: [{key:'matchupStyle',ko:'모양',en:'Look',kind:'choice',def:'trays',choices:[{v:'trays',ko:'나무 쟁반',en:'Wooden trays'},{v:'tags',ko:'나무 이름표',en:'Wooden tags'}]}],
+  groupsort: [{key:'groupSortStyle',ko:'모양',en:'Look',kind:'choice',def:'crates',choices:[{v:'crates',ko:'나무 상자',en:'Wooden crates'},{v:'baskets',ko:'점토 바구니',en:'Clay baskets'}]}],
+  unscramble: [{key:'unscrambleStyle',ko:'모양',en:'Look',kind:'choice',def:'rack',choices:[{v:'rack',ko:'나무 글자판',en:'Wooden rack'},{v:'tags',ko:'나무 이름표',en:'Wooden tags'}]}],
+  imagequiz: [
+    {key:'imageQuizStyle',ko:'모양',en:'Look',kind:'choice',def:'wood',choices:[{v:'wood',ko:'나무 액자',en:'Wooden frame'},{v:'clay',ko:'점토 카드',en:'Clay cards'}]},
+    {key:'imageQuizRevealSeconds',ko:'그림 공개 시간(초)',en:'Reveal time (sec)',kind:'number',def:6,min:1,max:30},
+  ],
+  gameshowquiz: [
+    {key:'gameShowStyle',ko:'모양',en:'Look',kind:'choice',def:'wood',choices:[{v:'wood',ko:'나무 무대',en:'Wooden stage'},{v:'clay',ko:'점토 무대',en:'Clay stage'}]},
+    {key:'gameShowBonusEvery',ko:'보너스 문제 간격',en:'Bonus question interval',kind:'number',def:5,min:2,max:20},
+    {key:'gameShowLifelines',ko:'도움 기회',en:'Lifelines',kind:'number',def:2,min:0,max:10},
+  ],
+  winlosequiz: [
+    {key:'winLoseStyle',ko:'모양',en:'Look',kind:'choice',def:'wood',choices:[{v:'wood',ko:'나무 무대',en:'Wooden stage'},{v:'clay',ko:'점토 무대',en:'Clay stage'}]},
+    {key:'winLoseStartScore',ko:'시작 점수',en:'Starting score',kind:'number',def:100,min:0,max:100000},
+  ],
+  labeleddiagram: [{key:'labeledDiagramStyle',ko:'모양',en:'Look',kind:'choice',def:'wood',choices:[{v:'wood',ko:'나무 액자',en:'Wooden frame'},{v:'clay',ko:'점토 카드',en:'Clay cards'}]}],
+  quizshow: [{key:'liveSpeedBonus',ko:'속도 보너스',en:'Speed bonus',kind:'choice',def:'true',parse:v=>v==='true',choices:[{v:'true',ko:'켜기',en:'On'},{v:'false',ko:'끄기',en:'Off'}]}],
   anagram: [{ key: 'anagramStyle', ko: '모양', en: 'Look', kind: 'choice', def: 'rack', choices: [{ v: 'rack', ko: '나무 글자판', en: 'Wooden rack' }, { v: 'tags', ko: '나무 이름표', en: 'Wooden tags' }] }],
   rankorder: [{ key: 'rankOrderStyle', ko: '모양', en: 'Look', kind: 'choice', def: 'podium', choices: [{ v: 'podium', ko: '나무 단상', en: 'Wooden podium' }, { v: 'plates', ko: '점토 명패', en: 'Clay plates' }] }],
   spellword: [
@@ -93,6 +124,12 @@ const SIMPLE_OPTS: Record<string, SimpleOpt[]> = {
   ],
   baskin31: [{ key: 'targetCount', ko: '목표 숫자', en: 'Target number', kind: 'number', def: 31, min: 2, max: 500 }],
 };
+// Reuse the two import directions previously offered by WordListPicker.
+for(const game of ['quiz','gameshowquiz','winlosequiz','tugofwar','truefalse']) SIMPLE_OPTS[game]=[
+  {key:'wordQuestionDirection',ko:'글 문제 출제 방향',en:'Text question direction',kind:'choice',def:'wordToMeaning',choices:[{v:'wordToMeaning',ko:'영어 보고 뜻 고르기',en:'Word to meaning'},{v:'meaningToWord',ko:'뜻 보고 영어 고르기',en:'Meaning to word'}]},
+  ...(SIMPLE_OPTS[game]??[]),
+];
+
 type ItemSource = 'list' | 'class' | 'type' | 'number';
 type Open = 'content' | 'class' | 'settings' | 'saves' | null;
 type Mode = 'none' | 'solo' | 'team';
@@ -142,6 +179,9 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const [name, setName] = useState('');
   const [savedMsg, setSavedMsg] = useState('');
   // 적용을 누르기 전까지 고른 값
+  const [contentDraft, setContentDraft] = useState<GameEditDraft|null>(null);
+  const [nativeOptions, setNativeOptions] = useState<GameTemplateConfig>({});
+  const [itemEditing, setItemEditing] = useState(false);
   const [pGrammar, setPGrammar] = useState('');
   const [pList, setPList] = useState('');
   const selectedDetectiveList = useRef<{ templateId: string | undefined; listId: string } | null>(null);
@@ -201,6 +241,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   }, []);
 
   const type = info?.gameType;
+  const unified = usesUnifiedGameSettings(type);
   const hasRoundSettings = hasAdventureRoundSettings(type);
   const isDetective = type === 'grammardetective';
   const pictureKind = pictureWordModeKind(type);
@@ -208,7 +249,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const pictureLists = pictureKind ? (info?.lists ?? []).filter(list => !isSentenceList(list)) : [];
   const pictureList = pictureLists.find(list => list.id === pPictureList);
   const pictureCards = pictureList ? wordListToCards(pictureList).map(({id, word, imageUrl}) => ({id, word, imageUrl})) : undefined;
-  const pictureConfig = { ...info?.selected?.config, ...(pictureCards ? { pictureWords: pictureCards, pictureWordListId: pictureList?.id } : {}) };
+  const editedPictureCards = unified && contentDraft?.cards ? contentDraft.rows.map(row=>({id:row.id,word:row.cells[0]??'',imageUrl:row.cells[2]||null})) : undefined;
+  const pictureConfig = { ...info?.selected?.config, ...(editedPictureCards ? {pictureWords:editedPictureCards} : pictureCards ? { pictureWords: pictureCards, pictureWordListId: pictureList?.id } : {}) };
   const pictureCount = pPictureMode ? pictureWordQuestions(pictureConfig).length : 0;
   const isGrammar = !!type && (GRAMMAR_GAME_TYPES as readonly string[]).includes(type);
   const caps = gamePreparation(type || 'wheel');
@@ -221,14 +263,15 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const sample = !info?.selected || isActivityDraft(info.selected.id);
   const saved = (info?.templates ?? []).filter((row) => !isActivityDraft(row.id) && !row.config.lessonSnapshot);
   const current = (info?.selected?.config.grammarId as string | undefined) ?? 'third-s';
-  const fullRoster = info?.roster ?? [];
+  const fullRoster = info?.roster ?? EMPTY_ROSTER;
   const absentIds = useMemo(() => { void orderRev; return info?.classId ? loadAbsent(info.classId) : []; }, [info?.classId, orderRev]);
   const currentSource = info?.selected?.config.classroomSource;
-  const sourceListId = currentSource?.id ?? lesson?.sourceListId;
+  const sourceListId = info?.lists.some(row=>row.id===currentSource?.id) ? currentSource?.id : info?.selected?.config.gameMaterialId ?? lesson?.sourceListId;
   const currentSourceId = info?.lists.find(row => row.id === sourceListId)?.id ?? '';
   const detectiveSource = info?.selected?.config.adventure?.detectiveSource;
   const detectiveListId = detectiveSource && detectiveSource.kind !== 'default'
-    && info?.lists.some(row => row.id === detectiveSource.listId) ? detectiveSource.listId : '';
+    && info?.lists.some(row => row.id === detectiveSource.listId) ? detectiveSource.listId
+    : info?.lists.some(row=>row.id===info.selected?.config.gameMaterialId) ? info.selected?.config.gameMaterialId ?? '' : '';
   const detectiveList = isDetective && open === 'content' ? info?.lists.find(row => row.id === pList) : undefined;
   const detectiveQuestionCount = detectiveList ? workspace.countDetectiveListQuestions?.(detectiveList) : undefined;
   const roster = useMemo(() => fullRoster.filter((row) => !absentIds.includes(row.id)), [fullRoster, absentIds]);
@@ -270,7 +313,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const isPopcorn = type === 'popcorn';
   const isPassBall = type === 'passball';
   const lightningUsesClass = type === 'lightning' && fullRoster.length > 0;
-  const simpleOpts = (SIMPLE_OPTS[type ?? ''] ?? []).filter(option => option.key !== 'lightningPlayers' || !lightningUsesClass);
+  const simpleOpts = (SIMPLE_OPTS[type ?? ''] ?? []).filter(option => (option.key !== 'lightningPlayers' || !lightningUsesClass) && (option.key !== 'wordQuestionDirection' || !!info?.selected?.config.classroomSource));
   // 개인·팀은 반 학생이 있어야 하므로 반이 없으면 첫 반을 자동으로 고른다.
   function pickMode(next: Mode) {
     setPMode(next);
@@ -285,7 +328,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const hasNumbers = type === 'order';
   const nonEmpty = (v: string) => v.split(/\r?\n/).map((row) => row.trim()).filter(Boolean);
   const gameName = (() => { const g = GAME_CATALOG.find((row) => row.type === type); return g ? t(g.nameKey) : ''; })();
-  const hasContentButton = isGrammar || kinds.length > 0 || !!lessonMaterials;
+  const hasContentButton = unified || isGrammar || kinds.length > 0 || !!lessonMaterials;
 
   const options = useMemo(
     () => (isGrammar ? GRAMMAR_POINTS.filter((p) => grammarGameSupport(p.id)[type as GrammarGameType] >= MIN_ROUNDS[type as GrammarGameType]) : []),
@@ -296,6 +339,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   // 패널을 열 때마다 지금 상태로 초기화
   useEffect(() => {
     if (!open) return;
+    if (info?.selected) {setContentDraft(gameEditDraft(info.selected));setNativeOptions(structuredClone(info.selected.config));}
+    setItemEditing(false);
     const play = getGrammarPlay();
     setPGrammar(current);
     const selection = selectedDetectiveList.current;
@@ -310,7 +355,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     setPMode(isTwoDice ? info?.selected?.config.twoDiceMode ?? (diceTeams > 1 ? 'team' : 'none') : isGrammar ? (play.teams > 0 ? 'team' : play.showScore ? 'solo' : 'none') : !isShowOrderOn() ? 'none' : turnState?.mode === 'team' ? 'team' : 'solo');
     setPTeams(Math.min(teamCap, Math.max(2, isTwoDice ? diceTeams : nativeTeams ? (info?.teamCount ?? 2) : (turnState?.mode === 'team' ? turnState.teamCount : play.teams || 2))));
     setPAbsent(info?.classId ? loadAbsent(info.classId) : []);
-    setPSound(soundOn);
+    setPSound(unified ? info?.selected?.config.adventure?.sound ?? info?.selected?.config.storybook?.sound ?? soundOn : soundOn);
     setPItemSource('type');
     setPItemClass(info?.classId || '');
     setPText((info?.selected?.items ?? []).map((row) => row.label).join('\n'));
@@ -408,6 +453,15 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
 
   const applyContent = (reload = false) => run(async () => {
     if (!info) return;
+    if (unified && !isDetective) {
+      const list=info.lists.find(row=>row.id===pList);
+      if (!list || !info.selected) throw new Error(text('사용할 자료를 선택해 주세요.','Choose a material.'));
+      const content=materialForGame(info.gameType,list,info.selected.config);
+      if(!content) throw new Error(text('이 게임에 사용할 수 없는 자료예요.','This material is unavailable for this game.'));
+      if(isBomb) content.items=info.selected.items;
+      await workspace.applyGuideAndPlay(content);
+      return;
+    }
     if (isBomb && info.selected) {
       let labels: string[] = [];
       if (pBombSrc === 'type') labels = nonEmpty(pBombWords);
@@ -490,6 +544,55 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     if (nativeTeams && pMode === 'team' && pTeams !== info.teamCount) await info.configureTeams(pTeams);
   });
   const applySettings = () => run(async () => {
+    if (unified && info?.selected && contentDraft) {
+      if (itemEditing) throw new Error(text('입력 중인 항목을 확인하거나 취소해 주세요.', 'Confirm or cancel the open item first.'));
+      const config = structuredClone(nativeOptions);
+      config.pictureWordMode = pPictureMode;
+      for (const o of simpleOpts) {
+        const raw = pOpt[o.key] ?? String(o.def);
+        const value = o.kind === 'number' ? Number(raw) : o.parse ? o.parse(raw) : raw;
+        if (o.kind === 'number' && (!Number.isInteger(value) || Number(value) < (o.min ?? 0) || Number(value) > (o.max ?? 9999))) throw new Error(text(o.ko + '의 입력 범위를 확인해 주세요.', 'Check the range for ' + o.en));
+        (config as Record<string, unknown>)[o.key] = value;
+      }
+      if (typeof config.lightningMin === 'number' && typeof config.lightningMax === 'number' && config.lightningMin >= config.lightningMax) throw new Error(text('번개 최소 시간은 최대 시간보다 작아야 해요.', 'Min must be less than max.'));
+      if (config.adventure) {
+        config.adventure.sound = pSound;
+        if (hasRoundSettings) {
+          const count = Number(pAdventureCount);
+          if (!Number.isInteger(count) || count < 1 || count > MAX_ADVENTURE_QUESTIONS) throw new Error(text('라운드당 문제 수는 1~50 사이 정수로 입력해 주세요.', 'Questions per round: 1–50.'));
+          config.adventure.count = count;
+        }
+      }
+      if (config.storybook) config.storybook.sound = pSound;
+      if (isPopcorn) {
+        const pop = Number(pPop), round = pRound.trim() ? Number(pRound) : 0;
+        if (!Number.isInteger(pop) || pop < 0 || pop > MAX_POP_CARDS || !Number.isInteger(round) || round < 0 || round > MAX_ROUND_CARDS || (round > 0 && pop > round)) throw new Error(text('라운드 카드와 POP 카드 수를 확인해 주세요.', 'Check round and POP card counts.'));
+        config.popcornPopCount = pop; config.popcornRoundCards = round || undefined;
+      }
+      if (isPassBall) {
+        const min = Number(pBallMin), max = Number(pBallMax), words = Number(pBallWords);
+        if (!Number.isInteger(min) || !Number.isInteger(max) || min < 1 || max < min || !Number.isInteger(words) || words < 1 || words > 100) throw new Error(text('시간과 라운드당 단어/문장 수를 확인해 주세요.', 'Check the time and words per round.'));
+        Object.assign(config, {ballRange:{min,max}, passBallRoundWords:words, music:pTimerMusic, resultSound:pTimerResult});
+      }
+      if (isBomb) {
+        const min = Number(pBombMin), max = Number(pBombMax);
+        if (!Number.isInteger(min) || !Number.isInteger(max) || min < 1 || max < min) throw new Error(text('시간 범위를 확인해 주세요.', 'Check the time range.'));
+        Object.assign(config, {bombMode:pBombMode,bombTimerWords:pBombTW,bombStartFromCaught:pBombCaught,bombRange:{min,max},bombSound:pBombSound});
+      }
+      if(type==='winlosequiz'&&config.winLoseBetOptions?.some(n=>!Number.isFinite(n)||n<1)) throw new Error(text('걸 수 있는 점수는 1 이상으로 입력하세요.','Bet amounts must be at least 1.'));
+      if(type==='saveorgive'&&((config.rewardPool?.some(r=>r.kind==='points'&&!Number.isFinite(r.value)))||(config.saveOrGiveTeamCount!==undefined&&(!Number.isInteger(config.saveOrGiveTeamCount)||config.saveOrGiveTeamCount<2||config.saveOrGiveTeamCount>8)))) throw new Error(text('반전 점수와 팀 수를 확인해 주세요.','Check reward points and team count.'));
+      if(type==='quizshow'&&config.liveContestRounds?.some(r=>r.on&&((r.count!==-1&&(!Number.isInteger(r.count)||r.count<1))||(r.seconds!==undefined&&(!Number.isFinite(r.seconds)||r.seconds<5||r.seconds>120))||(r.points!==undefined&&(!Number.isFinite(r.points)||r.points<0))))) throw new Error(text('라운드별 문제 수·시간·점수를 확인해 주세요.','Check questions, time and points for each round.'));
+      const content = gameEditContent(info.selected, contentDraft, config);
+      if (isBomb) {
+        const labels = nonEmpty(pPartText);
+        if (pBombMode === 'pass' && labels.length < 2) throw new Error(text('참가자가 2명 이상 필요해요.', 'Need at least 2 players.'));
+        content.items = labels.length >= 2 ? labels.map((label,i)=>({id:info.selected!.items[i]?.id??crypto.randomUUID(),label})) : info.selected.items;
+      }
+      if (guideProblem({game_type:info.gameType,...content})) throw new Error(text('이 게임에 필요한 항목 수·문제·정답을 확인해 주세요.', 'Check the number of items, questions and answers for this game.'));
+      setGameSoundOn(pSound);
+      await workspace.applyGuideAndPlay(content);
+      return;
+    }
     setGameSoundOn(pSound);
     if (pictureKind && info?.selected && (hasRoundSettings || pPictureMode || currentPictureMode)) {
       if (pPictureMode && !pictureCount) throw new Error(t('gameWordHoops.pictureNeedsList'));
@@ -661,9 +764,9 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         <p className="min-w-0 max-w-[14rem] truncate px-2 text-base font-extrabold text-deep-navy" role="status">{status}</p>
         <div className="flex flex-wrap gap-1 rounded-xl bg-surface-container-low p-1" role="group" aria-label={text('설정', 'Settings')}>
           {isLadder && <button className={`${tab(false)} cursor-not-allowed opacity-40`} disabled title={text('사다리는 참가자를 반 설정에서, 결과를 게임설정에서 정해요', 'Set players in Class and results in Settings')}>{text('내 단어/문장', 'My words')}</button>}
-          {hasContentButton && !isLadder && <button className={tab(open === 'content')} disabled={!!info?.sharedView} aria-expanded={open==='content'} onClick={event => toggle('content',event.currentTarget)}>{isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
+          {hasContentButton && !isLadder && <button className={tab(open === 'content')} disabled={!!info?.sharedView} aria-expanded={open==='content'} onClick={event => toggle('content',event.currentTarget)}>{isGrammar && !unified ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
           <button className={tab(open === 'class')} disabled={!!info?.sharedView} aria-expanded={open === 'class'} onClick={event => toggle('class',event.currentTarget)}>{text('반 설정', 'Class')}</button>
-          <button ref={settingsButton} className={tab(open === 'settings' || workspace.panel === 'settings')} disabled={!!info?.sharedView} aria-expanded={open === 'settings' || workspace.panel === 'settings'} onClick={event => (pictureKind || isGrammar || itemSettings || splitGame || isPopcorn || isPassBall || simpleOpts.length > 0 ? toggle('settings',event.currentTarget) : (close(), workspace.open('settings',event.currentTarget)))}>{text('게임설정', 'Settings')}</button>
+          <button ref={settingsButton} className={tab(open === 'settings' || workspace.panel === 'settings')} disabled={!!info?.sharedView} aria-expanded={open === 'settings' || workspace.panel === 'settings'} onClick={event => (unified || pictureKind || isGrammar || itemSettings || splitGame || isPopcorn || isPassBall || simpleOpts.length > 0 ? toggle('settings',event.currentTarget) : (close(), workspace.open('settings',event.currentTarget)))}>{text('게임설정', 'Settings')}</button>
           <button className={tab(open === 'saves')} aria-expanded={open === 'saves'} onClick={event => toggle('saves',event.currentTarget)}>{text('저장/불러오기', 'Save / Load')}</button>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-1.5">
@@ -707,7 +810,15 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         );
       })()}
 
-      {open === 'content' && isDetective && panel(<>
+      {open === 'content' && unified && panel(<>
+        <PanelHead title={text('내 단어/문장','My words / sentences')} onClose={close} text={text}/>
+        <p className="text-sm text-on-surface-variant">{text('저장한 자료를 선택하세요. 이번 게임의 목록은 게임설정에서 수정할 수 있어요.','Choose a saved material, then edit this game’s list in Game settings.')}</p>
+        <SavedGameMaterialList lists={info?.lists??[]} value={pList} onChange={setPList} loading={!!info?.loading} wordOnly={kinds.length===1&&kinds[0]==='word'} canUse={list=>isDetective?!!workspace.countDetectiveListQuestions?.(list):!!info?.selected&&!!materialForGame(info.gameType,list,{...info.selected.config,pictureWordMode:false})}/>
+        {lessonMaterials}
+        {panelAction(()=>isDetective?void applyDetectiveList():void applyContent(),text('선택','Select'),!pList||!!info?.loading||!!info?.sharedView)}
+      </>)}
+
+      {open === 'content' && !unified && isDetective && panel(<>
         <PanelHead title={text('내 단어/문장', 'My words / sentences')} onClose={close} text={text} />
         <p className="text-sm text-on-surface-variant">{lesson?.slideId ? t('curriculum.ownWords.localHint') : text('저장한 자료를 고르세요. 게임설정에서 출제할 문법을 정할 수 있어요.', 'Choose a saved list. You can choose the grammar rules in Game settings.')}</p>
         <label className="block font-bold">{text('내 단어장 · 문장 모음', 'My word / sentence lists')}
@@ -729,7 +840,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         }}>{text('직접 입력 · 문제 편집','Enter text or edit questions')}</button>
         {panelAction(()=>void applyDetectiveList(), detectiveQuestionCount === 0 ? text('출제 문법 확인', 'Review grammar topics') : lesson?.slideId && pList && pList === detectiveListId ? t('curriculum.ownWords.reloadSource') : text('선택','Select'), !!info?.loading || !!info?.sharedView)}
       </>)}
-      {open === 'content' && !isDetective && panel(<>
+      {open === 'content' && !unified && !isDetective && panel(<>
         <PanelHead title={isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words / sentences')} onClose={close} text={text} />
         {lesson?.slideId && <p className="text-sm text-on-surface-variant">{t('curriculum.ownWords.localHint')}</p>}
         {!isGrammar && (
@@ -817,12 +928,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
               <input className={`${field} !w-28`} type="number" min={1} max={MAX_ADVENTURE_QUESTIONS} step={1}
                 value={pAdventureCount} onChange={event => setPAdventureCount(event.target.value)} />
             </label>
-            {type === 'wordclaw' && !pPictureMode && <p className="text-sm text-on-surface-variant">
-              {text(
-                `미션 1개가 문제 1개예요. 현재 미션은 ${info?.selected?.config.adventure?.missions.length ?? 1}개이며, 게임별 설정에서 추가할 수 있어요.`,
-                `Each mission counts as one question. You have ${info?.selected?.config.adventure?.missions.length ?? 1} missions. Add more in Game-specific settings.`,
-              )}
-            </p>}
+
             <p className="text-sm text-on-surface-variant">{text('선택한 자료의 문제 수가 더 적으면, 만들 수 있는 문제만 나와요.', 'If your material has fewer questions, the round uses the available questions.')}</p>
           </div>
         )}
@@ -833,18 +939,18 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             <button type="button" className={chip(pPictureMode)} aria-pressed={pPictureMode} onClick={() => setPPictureMode(true)}>{text(PICTURE_WORD_OPTION.ko, PICTURE_WORD_OPTION.en)}</button>
           </div>
           {pPictureMode && <>
-            <label className="block text-sm font-bold">{text('그림 문제에 쓸 단어장', 'Word list for picture questions')}
+            {!unified && <label className="block text-sm font-bold">{text('그림 문제에 쓸 단어장', 'Word list for picture questions')}
               <select className={field} value={pPictureList} onChange={event => setPPictureList(event.target.value)}>
                 <option value="">{pictureLists.find(list => list.id === info?.selected?.config.pictureWordListId)?.name ?? text('지금 게임 자료 사용', 'Use current game material')}</option>
                 {pictureLists.map(list => <option key={list.id} value={list.id}>{list.name}</option>)}
               </select>
-            </label>
+            </label>}
             <p className="text-sm text-on-surface-variant">{pictureCount ? text(`그림 문제 ${pictureCount}개`, `${pictureCount} picture questions`) : t('gameWordHoops.pictureNeedsList')}</p>
             {pictureKind === 'turn' && <p className="text-sm text-on-surface-variant">{text('게임을 진행하는 중에 그림 문제가 나와요. 영어 단어를 고르면 이어서 진행돼요.', 'Picture questions appear during the game. Pick the English word to continue the move.')}</p>}
           </>}
         </fieldset>}
-        {pictureKind && !pPictureMode && !currentPictureMode && <button type="button" className={btn} onClick={() => { close(); workspace.open('settings',settingsButton.current??undefined); }}>{text('게임별 설정', 'Game-specific settings')}</button>}
-        {!(pictureKind && (pPictureMode || currentPictureMode)) && <>
+        {!unified && pictureKind && !pPictureMode && !currentPictureMode && <button type="button" className={btn} onClick={() => { close(); workspace.open('settings',settingsButton.current??undefined); }}>{text('게임별 설정', 'Game-specific settings')}</button>}
+        {(unified || !(pictureKind && (pPictureMode || currentPictureMode))) && <>
         {isPopcorn && (
           <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
             <p className="font-bold">{text('팝콘 설정', 'Popcorn settings')}</p>
@@ -1099,7 +1205,12 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           <input type="checkbox" className="h-5 w-5" checked={pSound} onChange={(e) => setPSound(e.target.checked)} />
           {text('효과음 켜기', 'Sound effects')}
         </label>
-        {panelAction(() => void applySettings())}
+        {unified && info?.selected && <GameNativeOptions type={info.gameType} value={nativeOptions} onChange={next=>{
+          setNativeOptions(next);
+          if(next.adventure?.cases!==nativeOptions.adventure?.cases && contentDraft) setContentDraft(gameEditDraft({...info.selected!,config:next}));
+        }}/>}
+        {unified && contentDraft && type && <GameContentEditor key={open+':'+info?.selected?.id} type={type} value={contentDraft} config={nativeOptions} onChange={setContentDraft} onEditing={setItemEditing}/>}
+        {panelAction(() => void applySettings(),text('적용','Apply'),unified&&itemEditing)}
       </>)}
 
       {open === 'saves' && panel(<>

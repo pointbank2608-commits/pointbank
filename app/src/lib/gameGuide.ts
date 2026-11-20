@@ -73,7 +73,7 @@ export function guideCards(rows: string[][], previous: FullCardItem[] = []): Ful
 }
 export function guideRows(template: GameTemplate, kind: GuideKind): string[][] {
   const c=template.config, family=guideFamily(template.game_type);
-  if(c.adventure){const a=c.adventure;switch(template.game_type){case 'balloonpop':case 'wordfishing':return a.words.map(w=>[w.word,w.meaning]);case 'wordtrain':case 'sentencerocket':return a.sentences.map(s=>[s.text,s.tokens.join(' | ')]);case 'grammardetective':return a.cases.map(s=>[s.incorrect,s.correct]);case 'treasurehunt':return a.clues.map(s=>[s.text]);case 'wordclaw':return a.missions.map(s=>[s.text,s.tag]);}}
+  if(c.adventure){const a=c.adventure;switch(template.game_type){case 'balloonpop':case 'wordfishing':return a.words.map(w=>[w.word,w.meaning]);case 'wordtrain':case 'sentencerocket':return a.sentences.map(s=>[s.text,s.tokens.join(' | ')]);case 'grammardetective':return a.cases.map(s=>[s.incorrect,s.correct]);case 'treasurehunt':return a.clues.map(s=>[s.text]);case 'wordclaw':return a.words.map(s=>[s.word,s.meaning]);}}
   if(family==='pairs') return (template.game_type==='typeanswer'?c.typeAnswerEntries?.map(p=>({left:p.prompt,right:p.answer})):template.game_type==='flashcards'?c.flashcards:c.pairs||[] )?.map(p=>[p.left,p.right])||[];
   if(family==='quiz')return (c.questions||[]).map(q=>[q.question,q.choices[q.correctIndex]||'',...q.choices.filter((_,i)=>i!==q.correctIndex)]);
   if(family==='online')return (c.liveQuestions||[]).filter(q=>q.kind==='choice'&&q.choices?.length).map(q=>[q.prompt,q.choices?.[q.correctIndex||0]||'',...(q.choices?.filter((_,i)=>i!==(q.correctIndex||0))||[])]);

@@ -2551,7 +2551,7 @@ const en: Ko = {
     sentencerocketName: 'Sentence Rocket', sentencerocketDesc: 'Build sentences to fuel a rocket',
     grammardetectiveName: 'Grammar Detective', grammardetectiveDesc: 'Find and correct grammar errors',
     treasurehuntName: 'Treasure Hunt', treasurehuntDesc: 'Follow clues to spatial map targets',
-    wordclawName: 'Word Claw Machine', wordclawDesc: 'Collect every word matching the mission tag',
+    wordclawName: 'Word Claw Machine', wordclawDesc: 'Move the claw and draw English words',
     feedmonsterName: 'Feed the Monster',
     feedmonsterDesc: 'Feed word cards to a friendly monster.',
     sentencebridgeName: 'Sentence Bridge',

@@ -1,12 +1,12 @@
 import { useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
-import { wordKey, type AdventureConfig, type AdventureRound } from '../../lib/adventureGames';
+import { type AdventureConfig, type AdventureRound } from '../../lib/adventureGames';
 import type { AdventureEngine } from '../../lib/useAdventureEngine';
 import { shuffled } from '../../lib/storybook';
 
 const COLUMNS = 3;
 const DROP_DURATION = 2400;
 const capsuleColors = ['#f7a9cf', '#9becd6', '#ffd875', '#b9a5fa'];
-type Mission = Extract<AdventureRound, { kind: 'mission' }>;
+type Draw = Extract<AdventureRound, { kind: 'draw' }>;
 type Pick = { index: number; fromColumn: number; correct: boolean; x: number; y: number; width: number };
 
 const controls = [
@@ -28,8 +28,8 @@ function Grabber() {
   </span>;
 }
 
-export default function ClawMachine({c,e,r}:{c:AdventureConfig;e:AdventureEngine;r:Mission}) {
-  const [words] = useState(()=>shuffled(r.picture?.words ?? c.words));
+export default function ClawMachine({c,e,r}:{c:AdventureConfig;e:AdventureEngine;r:Draw}) {
+  const [words] = useState(()=>shuffled(r.picture?.words ?? c.words.filter(word=>!e.records.some(record=>record.answer===word.word))).slice(0,12));
   const [selected,setSelected] = useState(0);
   const [collected,setCollected] = useState<string[]>([]);
   const [pick,setPick] = useState<Pick>();
@@ -37,10 +37,10 @@ export default function ClawMachine({c,e,r}:{c:AdventureConfig;e:AdventureEngine
   const capsules = useRef<(HTMLButtonElement | null)[]>([]);
   const matches = words.filter(word=>r.picture
     ? word.word === r.picture.answer
-    : word.tags.some(tag=>wordKey(tag)===wordKey(r.mission.tag)));
+    : true);
   const active = e.busy ? pick : undefined;
   const collectedNow = active?.correct ? collected.filter(id=>id!==words[active.index].id) : collected;
-  const complete = collected.length === matches.length;
+  const complete = collected.length >= 1;
   const style = {
     '--claw-column': selected % COLUMNS,
     '--claw-from-column': active?.fromColumn ?? selected % COLUMNS,
@@ -57,9 +57,9 @@ export default function ClawMachine({c,e,r}:{c:AdventureConfig;e:AdventureEngine
     const capsule = capsules.current[index]?.getBoundingClientRect();
     if (e.busy || !word || collected.includes(word.id) || !bounds?.width || !bounds.height || !capsule) return;
     const correct = matches.some(match=>match.id===word.id);
-    const done = correct && collected.length+1===matches.length;
+    const done = correct;
     const duration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 650 : DROP_DURATION;
-    if (!e.judge(correct,r.mission.text,done?matches.map(match=>match.word).join(' · '):word.word,{complete:done,duration})) return;
+    if (!e.judge(correct,r.picture?'Which word matches the picture?':'Draw a word',word.word,{complete:done,duration})) return;
     setSelected(index);
     setPick({
       index,fromColumn:selected % COLUMNS,correct,
@@ -94,8 +94,8 @@ export default function ClawMachine({c,e,r}:{c:AdventureConfig;e:AdventureEngine
 
   return <>
     <div className="ad-prompt">
-      {r.picture?<img data-picture-word src={r.picture.imageUrl} alt={r.mission.text}/>:r.mission.text}
-      <span>{collectedNow.length} / {matches.length}</span>
+      {r.picture?<img data-picture-word src={r.picture.imageUrl} alt="그림에 맞는 단어를 뽑으세요"/>:'단어를 골라 뽑아 보세요.'}
+      <span>{e.index + 1} / {e.total}</span>
     </div>
     <div className="claw-cabinet" data-pick={active ? active.correct?'catch':'miss':'idle'} style={style}>
       <div className="claw-marquee" aria-hidden="true">
@@ -124,7 +124,7 @@ export default function ClawMachine({c,e,r}:{c:AdventureConfig;e:AdventureEngine
       </div>
       <div className="claw-outlet" aria-live="polite">
         <strong>획득함</strong>
-        <span>{collectedNow.length ? words.filter(word=>collectedNow.includes(word.id)).map(word=>word.word).join(' · ') : '미션에 맞는 단어를 모아요.'}</span>
+        <span>{collectedNow.length ? words.filter(word=>collectedNow.includes(word.id)).map(word=>word.word).join(' · ') : '집게로 단어를 뽑아요.'}</span>
       </div>
     </div>
     <p className="ad-control-help">{c.simpleClaw?'단어를 누르면 집게가 바로 내려가요.':'단어를 누르거나 방향키로 집게를 옮긴 뒤, 집게 내리기를 누르세요.'}</p>

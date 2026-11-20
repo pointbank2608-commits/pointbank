@@ -2548,7 +2548,7 @@ const ko = {
     sentencerocketName: '문장 로켓 발사', sentencerocketDesc: '문장으로 연료를 채우고 발사해요',
     grammardetectiveName: '문법 탐정', grammardetectiveDesc: '오류를 찾아 문장을 고쳐요',
     treasurehuntName: '영어 보물찾기', treasurehuntDesc: '영어 힌트로 지도 속 보물을 찾아요',
-    wordclawName: '단어 뽑기', wordclawDesc: '분류 태그에 맞는 단어를 모두 뽑아요',
+    wordclawName: '단어 뽑기', wordclawDesc: '집게를 움직여 원하는 영어 단어를 뽑아요',
     feedmonsterName: 'Feed the Monster',
     feedmonsterDesc: '단어 카드를 몬스터에게 먹이며 영어를 배워요.',
     sentencebridgeName: 'Sentence Bridge',

@@ -34,7 +34,7 @@ export default function AdventureGamePage({ type }: { type: AdventureType }) {
     ? pictureQuizDeck(selected.config, []).slice(0, config.count).map(row => {
       const choices = row.choices.map((word, index) => ({ id: `${row.id}-${index}`, word, meaning: '', tags: [] }));
       const word = choices[row.correctIndex];
-      if (type === 'wordclaw' && row.imageUrl) return { kind: 'mission', id: row.id, mission: { id: row.id, text: 'Which word matches the picture?', tag: '' }, picture: { imageUrl: row.imageUrl, answer: word.word, words: choices } };
+      if (type === 'wordclaw' && row.imageUrl) return { kind: 'draw', id: row.id, picture: { imageUrl: row.imageUrl, answer: word.word, words: choices } };
       return { kind: 'vocab', id: row.id, word, choices, accepted: [wordKey(word.word)], imageUrl: row.imageUrl };
     })
     : undefined;

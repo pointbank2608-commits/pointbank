@@ -332,6 +332,12 @@ export interface GameTemplateConfig {
   /** Current-session guided edit; save updates this existing game without changing its scope. */
   editingTemplateId?: string;
   setupKind?: 'word' | 'sentence' | 'names' | 'numbers';
+  /** Name of the source retained while this game's local question copy is edited. */
+  gameMaterialName?: string;
+  gameMaterialId?: string;
+  wordQuestionDirection?: 'wordToMeaning' | 'meaningToWord';
+  /** UI guard: native question edits must not be replaced by an older source snapshot. */
+  gameSourceFingerprint?: string;
   /** Internal lesson snapshot, not an explicit My games save. Legacy games remain visible. */
   lessonSnapshot?: boolean;
   adventure?: import('./adventureGames').AdventureConfig;
