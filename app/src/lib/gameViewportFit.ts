@@ -113,6 +113,8 @@ export function useGameViewportFit({stage, canvas, backdrop, fill, identity}: {
       if (width < 16 || height < 16) return;
       // A stable layout width keeps pixel-sized objects and their labels in proportion.
       set(board, '--game-canvas-width', `${Math.min(1280, width)}px`);
+      // Responsive scenes can lay out against the available shape before uniform scaling.
+      set(board, '--game-surface-ratio', `${width} / ${height}`);
       const bounds = gameCanvasBounds(board);
       board.dataset.gameBounds = JSON.stringify(bounds);
       if (bounds.width < 8 || bounds.height < 8) return;

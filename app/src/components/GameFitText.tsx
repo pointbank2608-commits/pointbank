@@ -14,13 +14,15 @@ interface Props {
   maxSize?: number;
   /** 최소 글자 크기에서도 칸에 들어가지 않는 단어만 줄바꿈한다. */
   wrapLongWord?: boolean;
+  /** Keep every label on one line, shrinking below the normal minimum if needed. */
+  singleLine?: boolean;
 }
 
 /**
  * 단어면 칸이 허락하는 한 크게, 문장이면 줄바꿈해서 잘리지 않게.
  * 부모에 크기가 있어야 box 모드가 동작한다.
  */
-export default function GameFitText({ text, className, fit = 'box', align = 'center', maxSize, wrapLongWord }: Props) {
+export default function GameFitText({ text, className, fit = 'box', align = 'center', maxSize, wrapLongWord, singleLine = false }: Props) {
   const wrapRef = useRef<HTMLSpanElement>(null);
   const innerRef = useRef<HTMLSpanElement>(null);
   const kind = useMemo(() => classifyPlayText(text), [text]);
@@ -38,7 +40,7 @@ export default function GameFitText({ text, className, fit = 'box', align = 'cen
         maxH = kind === 'word' ? 96 : 160;
       }
 
-      const min = 11;
+      const min = singleLine ? .1 : 11;
       const wordDefault = fit === 'box' ? 68 : 72;
       const sentenceDefault = fit === 'box' ? 32 : 40;
       const wordCap = Math.min(maxSize ?? wordDefault, Math.floor(maxH * 0.82) || 48);
@@ -46,12 +48,17 @@ export default function GameFitText({ text, className, fit = 'box', align = 'cen
         maxSize ? Math.round(maxSize * 0.55) : sentenceDefault,
         Math.floor(maxH * 0.36) || 26,
       );
-      const max = Math.max(min, kind === 'word' ? wordCap : sentenceCap);
+      const max = Math.max(min, singleLine
+        ? Math.min(maxSize ?? Infinity, parseFloat(getComputedStyle(wrap).fontSize) || wordDefault)
+        : kind === 'word' ? wordCap : sentenceCap);
 
-      el.style.whiteSpace = kind === 'word' ? 'nowrap' : 'pre-wrap';
-      el.style.overflowWrap = kind === 'word' ? 'normal' : 'break-word';
+      el.style.whiteSpace = singleLine || kind === 'word' ? 'nowrap' : 'pre-wrap';
+      el.style.overflowWrap = singleLine || kind === 'word' ? 'normal' : 'break-word';
       el.style.wordBreak = 'keep-all';
-      if (kind === 'word' && wrapLongWord) {
+      el.style.width = singleLine ? 'max-content' : '';
+      el.style.maxWidth = singleLine ? 'none' : '';
+      el.style.marginInline = singleLine ? 'auto' : '';
+      if (!singleLine && kind === 'word' && wrapLongWord) {
         el.style.fontSize = `${min}px`;
         if (el.scrollWidth > maxW + 1) {
           el.style.whiteSpace = 'normal';
@@ -65,7 +72,7 @@ export default function GameFitText({ text, className, fit = 'box', align = 'cen
       for (let i = 0; i < 14; i++) {
         const mid = (lo + hi) / 2;
         el.style.fontSize = `${mid}px`;
-        const tooWide = el.scrollWidth > maxW + 1;
+        const tooWide = el.scrollWidth > (singleLine ? maxW - 2 : maxW + 1);
         const tooTall = el.scrollHeight > maxH + 1;
         if (tooWide || tooTall) {
           hi = mid;
@@ -81,8 +88,14 @@ export default function GameFitText({ text, className, fit = 'box', align = 'cen
     let frame = 0;
     const ro = new ResizeObserver(() => { if (!frame) frame=window.requestAnimationFrame(() => { frame=0; apply(); }); });
     ro.observe(wrap);
-    return () => { ro.disconnect(); if (frame) window.cancelAnimationFrame(frame); };
-  }, [text, kind, fit, maxSize, wrapLongWord]);
+    let live = true;
+    const fontsChanged = () => { if (live) apply(); };
+    if (singleLine) {
+      document.fonts.addEventListener('loadingdone', fontsChanged);
+      void document.fonts.ready.then(fontsChanged);
+    }
+    return () => { live = false; ro.disconnect(); document.fonts.removeEventListener('loadingdone', fontsChanged); if (frame) window.cancelAnimationFrame(frame); };
+  }, [text, kind, fit, maxSize, wrapLongWord, singleLine]);
 
   return (
     <span
