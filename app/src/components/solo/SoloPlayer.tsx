@@ -816,7 +816,7 @@ export default function SoloPlayer({
           <p className="text-center text-lg">영상 속 목소리를 들으면서 한 박자 뒤에 따라 말해요.</p>
         )}
         {sourceVideo && clip && !questionVideo && (
-          <SoloSourceVideo key={idx + ':' + nonce} clip={clip}
+          <SoloSourceVideo key={idx + ':' + nonce} clip={clip} bounded
             playLabel={pronunciationPractice === 'shadow' ? '쉐도잉 시작' : pronunciationPractice === 'repeat' ? '이 부분 듣기' : undefined}
             onCaptionShown={() => sensor('hint')}
             onPlay={() => { setSourceError(false); sensor('audio'); }}
