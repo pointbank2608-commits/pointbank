@@ -142,7 +142,10 @@ try{
   await page.getByText('선택한 단어·표현을 내 단어장에 저장했어요.',{exact:true}).waitFor();
   assert.equal(wordWrites.length,1);assert.equal(wordWrites[0].items.length,bee.words.length);assert.equal(wordWrites[0].class_id,classId);
   for(const item of wordWrites[0].items){assert.equal(item.videoSource.youtubeId,bee.source.youtubeId);assert.equal(item.videoSource.episodeId,bee.episode.id);assert.ok(item.videoSource.chapters.length);}
+  // The real iframe object exists before its API methods are installed. Configuration must still open.
+  await page.evaluate(()=>{const player=window.__episodePlayers.at(-1);player.savedPause=player.pauseVideo;player.pauseVideo=undefined;});
   await page.getByRole('button',{name:'구성·학생 미리보기',exact:true}).click();
+  await page.evaluate(()=>{const player=window.__episodePlayers.at(-1);player.pauseVideo=player.savedPause;});
   await page.getByRole('button',{name:'학생 화면 미리보기',exact:true}).click();
   const draft=episodeLessonDraft(bee,bee.chapters.map((_,index)=>index),bee.words.map(word=>word.id),10);
   const games=videoReviewSteps(videoReviewChoices(videoSelectedSteps(draft)),{matchup:true},key=>key);
