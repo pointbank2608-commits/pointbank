@@ -20,6 +20,16 @@ const server = await createServer({
   server: { host: '127.0.0.1', port, strictPort: true },
   plugins: [react(), tailwindcss(), {
     name: 'animation-preview-only',
+    enforce: 'pre',
+    resolveId(id) {
+      if (process.env.ANIMATION_PREVIEW_CATALOG && id.endsWith('/animationEpisodes.json')) return '\0reviewed-animation-catalog';
+    },
+    async load(id) {
+      if (id !== '\0reviewed-animation-catalog') return;
+      const file = process.env.ANIMATION_PREVIEW_CATALOG;
+      this.addWatchFile(file);
+      return 'export default ' + await readFile(file, 'utf8');
+    },
     configureServer(vite) {
       vite.middlewares.use('/rest/v1', async (request, response) => {
         let data = [];

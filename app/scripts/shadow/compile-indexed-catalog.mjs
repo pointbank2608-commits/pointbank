@@ -4,6 +4,7 @@ const [metadataFile,framesDir,analysisDir,imageDir,out,dictionaryFile]=process.a
 const excluded=new Set(JSON.parse(await readFile('app/src/data/animationExcludedSources.json','utf8')).map(source=>source.youtubeId));
 const sources=JSON.parse(await readFile(metadataFile,'utf8')).filter(source=>!excluded.has(source.youtubeId));
 const provider=JSON.parse(await readFile('app/src/data/animationEpisodes.json','utf8'));
+if(provider.some(source=>source.episodes.some(episode=>episode.boundary?.revision>=2))&&process.env.ALLOW_COARSE_REBUILD!=='true')throw Error('AV-reviewed catalogue is protected. Use assemble-av-catalog.mjs; coarse rebuild requires explicit ALLOW_COARSE_REBUILD=true.');
 const corrections=JSON.parse(await readFile('app/src/data/animationEpisodeCorrections.json','utf8'));
 const normalize=text=>text.toLowerCase().replace(/[^a-z' ]/g,' ').replace(/\s+/g,' ').trim();
 const dictionary=dictionaryFile?JSON.parse(await readFile(dictionaryFile,'utf8')):[];

@@ -16,13 +16,14 @@ try{
   const {videoDraftSteps,videoSelectedSteps}=await server.ssrLoadModule('/src/lib/soloVideoTemplate.ts');
   const {videoReviewSteps,videoReviewChoices}=await server.ssrLoadModule('/src/lib/videoReviewGames.ts');
   const library=animationEpisodeLibrary(clips);
-  assert.equal(originalCount,29);assert.equal(library.sources.length,originalCount);assert.equal(library.episodes.length,169);assert.equal(library.episodes.length,episodeCount);assert.equal(library.pending.length,0);
+  assert.equal(originalCount,29);assert.equal(library.sources.length,originalCount);assert.equal(library.episodes.length,181);assert.equal(library.episodes.length,episodeCount);assert.equal(library.pending.length,0);
   assert.equal(excluded.length,6);assert.equal(clips.filter(clip=>excluded.some(source=>source.youtubeId===clip.youtube_id)).length,14);
   for(const source of excluded){assert.ok(!catalog.some(item=>item.youtubeId===source.youtubeId));assert.ok(!library.sources.some(item=>item.youtubeId===source.youtubeId));}
   for(const source of catalog){
     assert.equal(source.episodes[0].start,0);assert.equal(source.episodes.at(-1).end,source.duration);
     for(let index=1;index<source.episodes.length;index++)assert.equal(source.episodes[index-1].end,source.episodes[index].start);
     for(const episode of source.episodes){
+      assert.equal(episode.boundary.revision,2);assert.equal(episode.boundary.sampleSeconds,0);
       assert.ok(episode.chapters.length);assert.ok(episode.thumbnail.startsWith('/animation-episodes/'));
       await readFile(new URL('../../public'+episode.thumbnail,import.meta.url));
       for(const chapter of episode.chapters){assert.ok(chapter.intent);assert.ok(chapter.words.length>=1);for(const word of chapter.words){assert.equal(word.basis,'scene-context');assert.match(word.word,/[A-Za-z]/);assert.ok(!/[가-힣]/.test(word.word));}}
@@ -30,9 +31,9 @@ try{
   }
   assert.equal(new Set(library.episodes.map(material=>material.episode.id)).size,episodeCount);
   const skating=library.episodes.find(material=>material.source.youtubeId==='O37zFRCQhEQ'&&material.episode.start===0);
-  const easter=library.episodes.find(material=>material.source.youtubeId==='O37zFRCQhEQ'&&material.episode.start===306);
-  assert.equal(skating.episode.end,306);assert.ok(!skating.words.some(word=>word.word==='brush'));
-  assert.ok(easter.words.some(word=>word.word==='brush'));assert.equal(easter.episode.end,630);
+  const easter=library.episodes.find(material=>material.episode.id==='O37zFRCQhEQ:episode:306000');
+  assert.equal(skating.episode.end,305.722);assert.ok(!skating.words.some(word=>word.word==='brush'));
+  assert.equal(easter.episode.start,305.722);assert.ok(easter.words.some(word=>word.word==='brush'));assert.equal(easter.episode.end,625.333);
   for(const material of library.episodes){
     const {episode,chapters,words}=material;
     assert.ok(episode.start>=0&&episode.end<=material.source.duration&&episode.end>episode.start);
@@ -63,7 +64,7 @@ try{
       getCurrentTime(){return this.time;}getDuration(){return 10000;}getPlayerState(){return this.state;}
       playVideo(){this.state=1;this.options.events?.onStateChange?.({data:1});}pauseVideo(){this.state=2;this.options.events?.onStateChange?.({data:2});}
       seekTo(value){this.time=value;}setPlaybackRate(){}getAvailablePlaybackRates(){return [0.75,1];}setVolume(value){this.volume=value;}getVolume(){return this.volume;}destroy(){this.state=2;this.destroyed=true;}
-      loadVideoById(value){this.time=value.startSeconds??0;this.playVideo();}
+      loadVideoById(value){this.lastLoad={...value};this.time=value.startSeconds??0;this.playVideo();}
     }};
   },session);
   const lessonWrites=[],wordWrites=[],rpc=[];
@@ -88,8 +89,8 @@ try{
   for(const source of excluded)assert.equal(await page.locator(`[data-episode-id^="${source.youtubeId}:"]`).count(),0);
   assert.equal(await page.getByRole('option',{name:'Peppa Pig',exact:true}).count(),0);
   await page.screenshot({path:'../output/animation-solo/library-episodes.jpg',type:'jpeg',quality:85});
-  const newOriginals=[...new Set(library.episodes.filter(material=>material.episode.boundary?.method==='original-video-and-indexed-frames').map(material=>material.source.youtubeId))];
-  assert.equal(newOriginals.length,7);
+  const newOriginals=catalog.filter(source=>source.episodes.length>1).map(source=>source.youtubeId);
+  assert.equal(newOriginals.length,9);
   for(const youtubeId of newOriginals){
     const sample=library.episodes.find(material=>material.source.youtubeId===youtubeId&&material.episode.start>0);
     assert.ok(sample);
@@ -114,6 +115,11 @@ try{
   await page.waitForFunction(start=>window.__episodePlayers.at(-1)?.time===start,second.episode.start);
   await input.press('Home');await input.press('ArrowRight');
   assert.ok(await page.evaluate(start=>window.__episodePlayers.at(-1).time>=start,second.episode.start));
+  await input.press('End');
+  assert.ok(await page.evaluate(end=>window.__episodePlayers.at(-1).time<end,second.episode.end),'End seek must stay before the next story frame');
+  await page.getByRole('button',{name:'재생',exact:true}).last().click();
+  await page.waitForFunction(end=>window.__episodePlayers.at(-1).lastLoad?.endSeconds===end,second.episode.end);
+  assert.equal(await page.evaluate(()=>window.__episodePlayers.at(-1).lastLoad.startSeconds),second.episode.start);
   await page.evaluate(end=>{const player=window.__episodePlayers.at(-1);player.time=end+.2;player.state=1;},second.episode.end);
   await page.waitForFunction(()=>window.__episodePlayers.at(-1).state===2);
   await page.getByRole('button',{name:'← 에피소드 목록',exact:true}).click();
@@ -141,7 +147,7 @@ try{
   await page.getByRole('button',{name:'나가기',exact:true}).click();
   await page.getByRole('button',{name:'이 초안으로 수업 만들기',exact:true}).click();
   await page.waitForFunction(()=>!document.body.textContent.includes('학생 화면 미리보기'));
-  assert.equal(lessonWrites.length,1);assert.match(lessonWrites[0].source,/^animation-episode-yCzDip2ma9o-0-v1$/);
+  assert.equal(lessonWrites.length,1);assert.match(lessonWrites[0].source,/^animation-episode-yCzDip2ma9o-0-v2$/);
   assert.equal(lessonWrites[0].steps.filter(step=>step.t==='meet').length,bee.words.length);
   assert.ok(lessonWrites[0].steps.some(step=>step.t==='game'));
   assert.ok(!rpc.some(name=>/solo_assign|sensor.*report|learning_run_open/.test(name)));assert.deepEqual(errors,[]);

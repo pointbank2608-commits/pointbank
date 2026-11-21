@@ -13,7 +13,6 @@ export function useYoutubeSegment(videoId: string | null | undefined, initialSta
   const playerRef = useRef<YoutubePlayer | null>(null);
   const pollRef = useRef<number | null>(null);
   const doneRef = useRef<((completed: boolean) => void) | null>(null);
-  const segmentVideoId = useRef<string | null>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [playing, setPlaying] = useState(false);
@@ -51,7 +50,6 @@ export function useYoutubeSegment(videoId: string | null | undefined, initialSta
               setPlaying(false);
               doneRef.current?.(false);
               doneRef.current = null;
-              segmentVideoId.current = null;
             },
           },
         });
@@ -67,7 +65,6 @@ export function useYoutubeSegment(videoId: string | null | undefined, initialSta
       stopPoll();
       doneRef.current?.(false);
       doneRef.current = null;
-      segmentVideoId.current = null;
       playerRef.current?.destroy();
       playerRef.current = null;
       setReady(false);
@@ -91,10 +88,9 @@ export function useYoutubeSegment(videoId: string | null | undefined, initialSta
         doneRef.current?.(false);
         doneRef.current = resolve;
         p.setPlaybackRate(rate);
-        if (onTime && videoId && segmentVideoId.current !== videoId) {
-          // Loading with an explicit start prevents the first play from reverting to time zero.
-          p.loadVideoById({ videoId, startSeconds: start });
-          segmentVideoId.current = videoId;
+        if (onTime && videoId) {
+          // Native bounds are reapplied on every replay: seekTo alone clears endSeconds.
+          p.loadVideoById({ videoId, startSeconds: start, endSeconds: end });
         } else {
           p.seekTo(Math.max(0, start - (onTime ? 0 : 0.05)), true);
           p.playVideo();
@@ -112,7 +108,8 @@ export function useYoutubeSegment(videoId: string | null | undefined, initialSta
           }
           const duration = p.getDuration?.();
           const atSourceEnd = p.getPlayerState?.() === 0 && !!duration && end >= duration - 0.15 && time >= duration - 0.3;
-          const complete = onTime ? reached && (time >= end || atSourceEnd) : time >= end - 0.05;
+          const atSegmentEnd = p.getPlayerState?.() === 0 && time >= end - 0.15;
+          const complete = onTime ? reached && (time >= end || atSourceEnd || atSegmentEnd) : time >= end - 0.05;
           if (onTime && reached) onTime(time);
           if (complete || (onTime && performance.now() - movedAt > 10000)) {
             p.pauseVideo();

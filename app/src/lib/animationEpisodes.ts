@@ -10,7 +10,8 @@ import {excludedAnimationSources} from './animationExclusions';
 export type EpisodeChapter = {title:string;start:number;end:number;thumbnail:string|null;intent?:string;providerTitle?:string;
   frames?:number[];words?:{word:string;meaning:string;basis:'scene-context';imageUrl?:string|null}[]};
 export type Episode = {id:string;title:string;titleOrigin:string;start:number;end:number;thumbnail:string|null;chapters:EpisodeChapter[];
-  boundary?:{method:string;sampleSeconds:number;beforeFrame?:number;afterFrame?:number};};
+  aliases?:string[];
+  boundary?:{method:string;sampleSeconds:number;revision?:number;reviewedAt?:string;beforeFrame?:number;afterFrame?:number};};
 type EpisodeSource={youtubeId:string;title:string;duration:number;checkedAt:string;status:string;episodes:Episode[]};
 // JSON imports widen string literals; the catalogue generator and coverage check validate this schema.
 const catalogue=catalogueData as EpisodeSource[];

@@ -34,7 +34,7 @@ export default function EpisodeLessonPanel({material,academyId,classId,teacherId
   }
   return <section className="min-w-0 space-y-5 break-words" data-episode-detail={episode.id}>
     <button type="button" onClick={onBack} className="min-h-11 font-bold text-primary">← {t('animationSolo.backEpisodes')}</button>
-    <header><p className="text-sm font-bold text-primary">{source.series}</p><h2 className="mt-1 text-2xl font-bold text-deep-navy">{episode.title}</h2><p className="mt-2 text-sm">{t('animationSolo.episodeDuration',{time:sourceTime(episode.end-episode.start)})}</p>{episode.boundary?.method==='original-video-and-indexed-frames'&&<p className="mt-2 text-sm text-on-surface-variant">{t('animationSolo.boundaryNotice',{seconds:episode.boundary.sampleSeconds})}</p>}</header>
+    <header><p className="text-sm font-bold text-primary">{source.series}</p><h2 className="mt-1 text-2xl font-bold text-deep-navy">{episode.title}</h2><p className="mt-2 text-sm">{t('animationSolo.episodeDuration',{time:sourceTime(episode.end-episode.start)})}</p>{episode.boundary?.method==='original-video-and-indexed-frames'&&<p className="mt-2 text-sm text-on-surface-variant">{t('animationSolo.boundaryNotice',{seconds:episode.boundary.sampleSeconds})}</p>}{episode.boundary?.revision===2&&<p className="mt-2 text-sm text-on-surface-variant">{t('animationSolo.boundaryVerifiedNotice')}</p>}</header>
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] items-start gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(260px,1fr)]">
       <div className="h-[480px] min-w-0 w-full"><PlainTeachingVideo key={episode.id} videoUrl={`https://www.youtube.com/watch?v=${source.youtubeId}`} title={episode.title} start={episode.start} end={episode.end} simple controlRef={control} chapters={chapters} onReady={()=>setReady(true)} onTime={time=>setNow(time)} onChapterSelect={index=>{setScope('chapters');setWordChapter(index);}}/></div>
       <fieldset className="max-h-[480px] min-w-0 space-y-2 overflow-y-auto rounded-2xl border border-outline-variant bg-white p-4"><legend className="px-1 font-bold">{t('animationSolo.chooseChapters')}</legend>
@@ -68,7 +68,7 @@ export default function EpisodeLessonPanel({material,academyId,classId,teacherId
     </div>
     {!hasActivities&&<p className="text-sm text-on-surface-variant">{t('animationSolo.activitiesPending')}</p>}
     <details className="text-sm text-on-surface-variant"><summary className="cursor-pointer">{t('animationSolo.originalInfo')}</summary><p>{source.title} · {sourceTime(episode.start)}–{sourceTime(episode.end)}</p></details>
-    {configuring&&<SoloCatalogModal academyId={academyId} classId={classId} initialVideoDraft={{draft,source:`animation-episode-${source.youtubeId}-${Math.round(episode.start*1000)}-v1`}} allowInitialVideoSave={!!classId} onClose={()=>setConfiguring(false)} onScratch={async()=>{}} onBatch={async(lessons,level,sourceId)=>{
+    {configuring&&<SoloCatalogModal academyId={academyId} classId={classId} initialVideoDraft={{draft,source:`animation-episode-${source.youtubeId}-${Math.round(episode.start*1000)}-v${episode.boundary?.revision??1}`}} allowInitialVideoSave={!!classId} onClose={()=>setConfiguring(false)} onScratch={async()=>{}} onBatch={async(lessons,level,sourceId)=>{
       if(!classId)return;
       for(const lesson of lessons)await createSoloLesson({academyId,classId,name:lesson.name,minutes:lesson.minutes,level,source:sourceId,steps:lesson.steps});
       notify(t('animationSolo.saved'));setConfiguring(false);onSaved?.();
