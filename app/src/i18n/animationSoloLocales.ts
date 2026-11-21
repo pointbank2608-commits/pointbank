@@ -1,4 +1,5 @@
 export const animationSoloKo = {
+  groupTitle:'애니메이션 영어 단체수업', groupCatalogue:'단체수업 영상 목록', episodeCatalogue:'이야기별 에피소드', excerptCatalogue:'기존 발췌 수업', makeGroupLesson:'선택한 챕터로 단체수업 만들기',
   title: '애니메이션 영어 개별수업',
   entry: '영상 고르기 → 분량과 활동 선택 → 학생 미리보기 → 이 반에 저장',
   flow: '짧은 대화 듣기 → 듣기 확인 → 표현·따라 말하기 → 쉐도잉 → 게임·총정리',
@@ -46,6 +47,7 @@ export const animationSoloKo = {
 };
 
 export const animationSoloEn: Record<keyof typeof animationSoloKo, string> = {
+  groupTitle:'Animation English classroom lessons', groupCatalogue:'Classroom video catalogue', episodeCatalogue:'Story episodes', excerptCatalogue:'Existing scene lessons', makeGroupLesson:'Create a classroom lesson with these chapters',
   title: 'Animation English individual lessons',
   entry: 'Choose a video → Select activities → Preview as a student → Save to this class',
   flow: 'Short dialogue → Listening check → Expressions and repetition → Shadowing → Games and final check',

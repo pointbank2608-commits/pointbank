@@ -6,6 +6,8 @@ import StartCheck, { startCheckSkipped } from '../components/StartCheck';
 import LessonWrapUp, { type WrapUpInfo } from '../components/LessonWrapUp';
 import { useCallback,useEffect, useRef, useState } from 'react';
 import { fetchVideoClips, type VideoClip } from '../lib/videoClips';
+import {animationEpisodeLibrary} from '../lib/animationEpisodes';
+import {episodeGroupLesson,type EpisodeGroupSelection} from '../lib/animationEpisodeGroup';
 import { setToCards } from '../lib/curriculumWords';
 import LessonRecipePicker from '../components/LessonRecipePicker';
 import LessonLibraryModal from '../components/LessonLibraryModal';
@@ -15,7 +17,7 @@ import SoloLessonsPanel from '../components/solo/SoloLessonsPanel';
 import { makeUnscrambleTemplate } from '../lib/lessonRecipes';
 import ShareLessonModal from '../components/ShareLessonModal';
 import LessonWordListModal from '../components/LessonWordListModal';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ClassChipRow from '../components/ClassChipRow';
 import LessonSlideSorter from '../components/LessonSlideSorter';
@@ -79,7 +81,8 @@ export default function CurriculumPage() {
   const homeworkOpen = useFeature('homework');
   // 단체수업(선생님이 진행) / 개별수업(학생이 혼자) — 목록과 만들기가 따로
   const [mode, setModeRaw] = useState<'group' | 'solo'>(() => {
-    if (new URLSearchParams(location.search).get('mode') === 'solo') return 'solo';
+    const requestedMode=new URLSearchParams(location.search).get('mode');
+    if(requestedMode==='solo'||requestedMode==='group')return requestedMode;
     try {
       return localStorage.getItem('classbank.lessonMode') === 'solo' ? 'solo' : 'group';
     } catch {
@@ -422,6 +425,21 @@ export default function CurriculumPage() {
   const [autoClipPlan,setAutoClipPlan]=useState<import('../lib/animationScene').AnimationLessonPlan>();
   const [autoClip, setAutoClip] = useState<VideoClip | null>(null);
   const clipHandled = useRef<string | null>(null);
+  const episodeHandled = useRef<string|null>(null);
+  useEffect(()=>{
+    const selection=(location.state as {createFromEpisode?:EpisodeGroupSelection}|null)?.createFromEpisode;
+    if(!selection||loading||episodeHandled.current===location.key)return;
+    episodeHandled.current=location.key;
+    void fetchVideoClips().then(clips=>{
+      const material=animationEpisodeLibrary(clips).episodes.find(item=>item.episode.id===selection.episodeId);
+      if(!material)throw Error('Episode unavailable');
+      const draft=episodeGroupLesson(material,selection);
+      openCreateForm();setMode('group');setName(draft.name);setPlaylist(draft.slides);
+      navigate('/curriculum?mode=group',{replace:true});
+    }).catch(()=>notify(t('animationSolo.loadError'),'error'));
+    // The inbound selection is consumed once; subsequent form edits are the teacher's draft.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[location.key,loading]);
   // 오늘 화면의 "샘플로 1분 체험하기"(2026-10-17) — 새 수업 창을 열고 샘플 단어 수업을 바로 채운다
   const [autoSample, setAutoSample] = useState(false);
   const sampleHandled = useRef<string | null>(null);
@@ -838,7 +856,7 @@ export default function CurriculumPage() {
       }} onReorder={reorderClasses} />
       </div>
 
-      {!showForm && (mode === 'group' || !soloOpen) && <h2 className="text-xl font-bold text-deep-navy">{t('lessonUx.create')}</h2>}
+      {!showForm && (mode === 'group' || !soloOpen) && <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-bold text-deep-navy">{t('lessonUx.create')}</h2><Link to="/videos" className="inline-flex min-h-11 items-center rounded-xl border border-primary px-4 font-bold text-primary">{t('animationSolo.groupTitle')} →</Link></div>}
       {!showForm && (mode === 'group' || !soloOpen) && (
         <div className="lesson-create-actions grid gap-4">
           <button

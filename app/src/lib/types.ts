@@ -809,6 +809,10 @@ export interface PhonicsGameSlide {
 }
 
 export interface VideoSlide {
+  /** Episode/chapter snapshot chosen by the teacher; remains editable with the lesson. */
+  animationEpisode?: {id:string;revision:number;start:number;end:number};
+  chapters?: {title:string;start:number;end:number}[];
+  source?: string;
   timedQuestions?: import('./videoQuestions').VideoQuestion[];
   questionLesson?: boolean;
   questionVersion?: 1;

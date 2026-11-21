@@ -1239,14 +1239,14 @@ function SlideDetail({
           aria-label={t('lessonUx.videoLink')}
           placeholder={t('lessonUx.videoLink')}
           value={slide.videoUrl}
-          onChange={(e) => onUpdate({ videoUrl: e.target.value, title: undefined, startSec: undefined, endSec: undefined, clipId: undefined, timedQuestions: undefined, questionLesson: undefined, questionVersion: undefined } as Partial<VideoSlide>)}
+          onChange={(e) => onUpdate({ videoUrl: e.target.value, title: undefined, startSec: undefined, endSec: undefined, clipId: undefined, timedQuestions: undefined, questionLesson: undefined, questionVersion: undefined, chapters:undefined, source:undefined, animationEpisode:undefined } as Partial<VideoSlide>)}
           className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
         <details>
           <summary className="cursor-pointer font-bold">{t('videoLibrary.tabLibrary')}</summary>
           <VideoClipLibrary pickLabel={t('lessonUx.useVideo')} onPick={clip => onUpdate({
             title: clip.title, videoUrl: `https://www.youtube.com/watch?v=${clip.youtube_id}`,
-            startSec: clip.start_sec, endSec: clip.end_sec, clipId:clip.id, timedQuestions:undefined,questionLesson:undefined,questionVersion:undefined,
+            startSec: clip.start_sec, endSec: clip.end_sec, clipId:clip.id, timedQuestions:undefined,questionLesson:undefined,questionVersion:undefined,chapters:undefined,source:undefined,animationEpisode:undefined,
           })} />
         </details>
       </div>

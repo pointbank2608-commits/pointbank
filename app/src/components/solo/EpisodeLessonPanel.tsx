@@ -3,20 +3,21 @@ import {useTranslation} from 'react-i18next';
 import PlainTeachingVideo,{type TeachingVideoControl} from '../PlainTeachingVideo';
 import {episodeLessonDraft,type EpisodeMaterial} from '../../lib/animationEpisodes';
 import {sourceTime} from '../../lib/animationSources';
-import {VIDEO_LESSON_MINUTES,type VideoLessonMinutes} from '../../lib/caillouVideoCourse';
+import {VIDEO_LESSON_MINUTES} from '../../lib/caillouVideoCourse';
 import {createSoloLesson} from '../../lib/soloApi';
 import {createWordList} from '../../lib/api';
 import {useToast} from '../../context/ToastContext';
 import SoloCatalogModal from './SoloCatalogModal';
+import type {EpisodeGroupSelection} from '../../lib/animationEpisodeGroup';
 
-export default function EpisodeLessonPanel({material,academyId,classId,teacherId,onBack,onSaved}:{material:EpisodeMaterial;academyId:string;classId:string|null;teacherId?:string;onBack:()=>void;onSaved?:()=>void}){
+export default function EpisodeLessonPanel({material,academyId,classId,teacherId,onBack,onSaved,onGroupLesson,onGroupPreview}:{material:EpisodeMaterial;academyId:string;classId:string|null;teacherId?:string;onBack:()=>void;onSaved?:()=>void;onGroupLesson?:(selection:EpisodeGroupSelection)=>void;onGroupPreview?:(selection:EpisodeGroupSelection)=>void}){
   const {t}=useTranslation();const {notify}=useToast();
   const {episode,source,chapters,words}=material;
   const [selectedChapters,setSelectedChapters]=useState(chapters.map((_,index)=>index));
   const [selectedWords,setSelectedWords]=useState(words.slice(0,4).map(word=>word.id));
   const [scope,setScope]=useState<'episode'|'chapters'>('episode');
   const [wordChapter,setWordChapter]=useState(0);
-  const [minutes,setMinutes]=useState<VideoLessonMinutes>(10);
+  const [minutes,setMinutes]=useState<number>(onGroupLesson?30:10);
   const [configuring,setConfiguring]=useState(false);
   const [ready,setReady]=useState(false);
   const [now,setNow]=useState(episode.start);
@@ -27,6 +28,7 @@ export default function EpisodeLessonPanel({material,academyId,classId,teacherId
   const effective=words.filter(word=>selectedWords.includes(word.id)&&word.chapterIds.some(index=>selectedChapters.includes(index)));
   const draft=useMemo(()=>episodeLessonDraft(material,selectedChapters,selectedWords,minutes),[material,selectedChapters,selectedWords,minutes]);
   const hasActivities=draft.steps.some(step=>step.t==='meet'||step.t==='lineSing');
+  const groupSelection=():EpisodeGroupSelection=>({episodeId:episode.id,chapterStarts:chapters.filter((_,index)=>selectedChapters.includes(index)).map(chapter=>chapter.start),wordIds:effective.map(word=>word.id),minutes});
   function toggleChapter(index:number){
     const next=selectedChapters.includes(index)?selectedChapters.filter(value=>value!==index):[...selectedChapters,index].sort((a,b)=>a-b);
     setSelectedChapters(next);
@@ -58,15 +60,16 @@ export default function EpisodeLessonPanel({material,academyId,classId,teacherId
       <div className="flex flex-wrap gap-2"><button type="button" className="min-h-11 rounded-xl border px-4" onClick={()=>setSelectedWords(words.filter(word=>word.chapterIds.some(index=>selectedChapters.includes(index))).map(word=>word.id))}>{t('animationSolo.selectAllWords')}</button>
         <button type="button" disabled={!teacherId||!effective.length||saving} className="min-h-11 rounded-xl border px-4 disabled:opacity-50" onClick={async()=>{
           if(saveLock.current||!teacherId)return;saveLock.current=true;setSaving(true);
-          try{await createWordList({academyId,classId,teacherId,name:episode.title,groupName:t('animationSolo.title'),items:effective.map(word=>({id:word.id,word:word.word,meaning:word.meaning,image_url:word.imageUrl,category:source.series,example:word.example,
+          try{await createWordList({academyId,classId,teacherId,name:episode.title,groupName:t(onGroupLesson?'animationSolo.groupTitle':'animationSolo.title'),items:effective.map(word=>({id:word.id,word:word.word,meaning:word.meaning,image_url:word.imageUrl,category:source.series,example:word.example,
             videoSource:{version:1,youtubeId:source.youtubeId,episodeId:episode.id,episodeStart:episode.start,episodeEnd:episode.end,basis:word.basis,chapters:word.chapterIds.map(index=>({start:chapters[index].start,end:chapters[index].end,basis:word.scriptChapterIds.includes(index)?'script' as const:'scene-context' as const}))}}))});notify(t('animationSolo.wordListSaved'));}
           catch{notify(t('animationSolo.saveError'),'error');}finally{saveLock.current=false;setSaving(false);}
         }}>{t('animationSolo.saveWordList')}</button></div>
     </section>
-    <div className="flex flex-wrap items-center gap-3"><fieldset className="flex gap-2"><legend className="mb-2 font-bold">{t('animationSolo.time')}</legend>{VIDEO_LESSON_MINUTES.map(value=><label className="flex min-h-11 items-center gap-2 rounded-xl border bg-white px-3" key={value}><input type="radio" name="episodeMinutes" checked={minutes===value} onChange={()=>setMinutes(value)}/>{t('animationSolo.minutes',{count:value})}</label>)}</fieldset>
-      <button type="button" className="min-h-12 rounded-xl bg-primary px-5 font-bold text-on-primary disabled:opacity-50" disabled={!selectedChapters.length||!hasActivities} onClick={()=>{control.current?.pause();setConfiguring(true);}}>{t('animationSolo.preview')}</button>
+    <div className="flex flex-wrap items-center gap-3"><fieldset className="flex gap-2"><legend className="mb-2 font-bold">{t('animationSolo.time')}</legend>{(onGroupLesson?[30,40]:VIDEO_LESSON_MINUTES).map(value=><label className="flex min-h-11 items-center gap-2 rounded-xl border bg-white px-3" key={value}><input type="radio" name="episodeMinutes" checked={minutes===value} onChange={()=>setMinutes(value)}/>{t('animationSolo.minutes',{count:value})}</label>)}</fieldset>
+      {onGroupPreview&&<button type="button" className="min-h-12 rounded-xl border border-primary px-5 font-bold text-primary disabled:opacity-50" disabled={!selectedChapters.length} onClick={()=>{control.current?.pause();onGroupPreview(groupSelection());}}>단체수업 미리보기</button>}
+      <button type="button" className="min-h-12 rounded-xl bg-primary px-5 font-bold text-on-primary disabled:opacity-50" disabled={!selectedChapters.length||(!onGroupLesson&&!hasActivities)} onClick={()=>{control.current?.pause();if(onGroupLesson)onGroupLesson(groupSelection());else setConfiguring(true);}}>{t(onGroupLesson?'animationSolo.makeGroupLesson':'animationSolo.preview')}</button>
     </div>
-    {!hasActivities&&<p className="text-sm text-on-surface-variant">{t('animationSolo.activitiesPending')}</p>}
+    {!hasActivities&&!onGroupLesson&&<p className="text-sm text-on-surface-variant">{t('animationSolo.activitiesPending')}</p>}
     <details className="text-sm text-on-surface-variant"><summary className="cursor-pointer">{t('animationSolo.originalInfo')}</summary><p>{source.title} · {sourceTime(episode.start)}–{sourceTime(episode.end)}</p></details>
     {configuring&&<SoloCatalogModal academyId={academyId} classId={classId} initialVideoDraft={{draft,source:`animation-episode-${source.youtubeId}-${Math.round(episode.start*1000)}-v${episode.boundary?.revision??1}`}} allowInitialVideoSave={!!classId} onClose={()=>setConfiguring(false)} onScratch={async()=>{}} onBatch={async(lessons,level,sourceId)=>{
       if(!classId)return;
