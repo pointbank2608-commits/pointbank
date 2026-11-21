@@ -26,6 +26,7 @@ export function useFeature(key: FeatureKey): boolean {
 
 /** 이 경로가 어느 기능에 속하는지(속하지 않으면 null) — 막힌 기능이면 대시보드로 돌려보낸다 */
 export function featureOfPath(pathname: string): FeatureKey | null {
+  if (pathname === '/solo/animation') return 'solo';
   if (pathname === '/curriculum' || pathname.startsWith('/curriculum/') || pathname === '/videos' || pathname.startsWith('/videos/')) return 'group';
   if (pathname === '/homework' || pathname.startsWith('/homework/')) return 'homework';
   return null;

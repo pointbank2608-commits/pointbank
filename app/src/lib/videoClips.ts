@@ -4,6 +4,7 @@ import { parseShadowText } from './shadowLines';
 import type { QnaItem } from './qnaLines';
 import type { AnimationPrintContent } from './animationPrint';
 import type { SceneTeaching } from './animationScene';
+import { excludedAnimationSources } from './animationExclusions';
 
 /**
  * 영상 쉐도잉 라이브러리(2026-10-03, `supabase/039_video_clips.sql`).
@@ -16,6 +17,16 @@ import type { SceneTeaching } from './animationScene';
  * time 은 영상 전체 기준 초.
  */
 export interface ClipPack {
+  /** Full original transcript, kept in the library DB rather than bundled with the app. */
+  fullVideo?: {
+    version: 1;
+    title: string;
+    duration: number;
+    script: string;
+    origin: 'youtube-captions';
+    timing: 'subtitle-cues';
+    fetchedAt: string;
+  };
   scene?: SceneTeaching;
   animationPrint?: AnimationPrintContent;
   /** Separate catalogue; existing video_clips admin permissions and RLS apply. */
@@ -70,7 +81,7 @@ export function fetchVideoClips(force = false): Promise<VideoClip[]> {
   listPromise ??= (async () => {
     const { data, error } = await supabase.from('video_clips').select('*').order('series').order('sort_order').order('start_sec');
     if (error) throw error;
-    return (data ?? []) as VideoClip[];
+    return ((data ?? []) as VideoClip[]).filter(clip=>!clip.hidden&&!excludedAnimationSources.has(clip.youtube_id));
   })().catch((e) => {
     listPromise = null;
     throw e;

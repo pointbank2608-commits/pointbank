@@ -67,6 +67,7 @@ const firstDir = (k: LessonSortKey): 'asc' | 'desc' => (k === 'name' ? 'asc' : '
 
 export default function CurriculumPage() {
   const { t } = useTranslation();
+  const location = useLocation();
   const { start } = useLessonRunner();
   const { academy, profile } = useAuth();
   const { notify, run } = useToast();
@@ -78,6 +79,7 @@ export default function CurriculumPage() {
   const homeworkOpen = useFeature('homework');
   // 단체수업(선생님이 진행) / 개별수업(학생이 혼자) — 목록과 만들기가 따로
   const [mode, setModeRaw] = useState<'group' | 'solo'>(() => {
+    if (new URLSearchParams(location.search).get('mode') === 'solo') return 'solo';
     try {
       return localStorage.getItem('classbank.lessonMode') === 'solo' ? 'solo' : 'group';
     } catch {
@@ -213,7 +215,6 @@ export default function CurriculumPage() {
   // 편집을 연 순간의 내용 — 취소할 때 바뀐 게 있으면 한 번 묻는다.
   const [savedSnapshot, setSavedSnapshot] = useState('');
   const [reopenSlideId, setReopenSlideId] = useState<string | null>(null);
-  const location = useLocation();
   const navigate = useNavigate();
   const formSnapshot = JSON.stringify({ name, wordListId, level, playlist });
   const dirty = showForm && formSnapshot !== savedSnapshot;

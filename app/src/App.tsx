@@ -28,6 +28,7 @@ const AdminNoticesPage = lazyPage(() => import('./pages/AdminNoticesPage'));
 const AdminVideosPage = lazyPage(() => import('./pages/AdminVideosPage'));
 const AdminBrandPage = lazyPage(() => import('./pages/AdminBrandPage'));
 const VideoLibraryPage = lazyPage(() => import('./pages/VideoLibraryPage'));
+const AnimationSoloPage = lazyPage(() => import('./pages/AnimationSoloPage'));
 const HomeworkPage = lazyPage(() => import('./pages/HomeworkPage'));
 const HomeworkStudentPage = lazyPage(() => import('./pages/HomeworkStudentPage'));
 const WordMemoryStudentPage = lazyPage(() => import('./pages/WordMemoryStudentPage'));
@@ -329,6 +330,7 @@ function AppRoutes() {
             <Route path="/materials/phonics-stage-1" element={<PhonicsWorkbookPage step={1} />} />
             <Route path="/grammar" element={<GrammarPage />} />
             <Route path="/videos" element={<VideoLibraryPage />} />
+            <Route path="/solo/animation" element={<AnimationSoloPage />} />
             <Route path="/homework" element={<HomeworkPage />} />
             <Route path="/wordlists" element={<WordListsPage />} />
             <Route path="/resources" element={<ResourcesHomePage />} />

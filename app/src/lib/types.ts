@@ -728,6 +728,9 @@ export interface GameTemplate {
 /* ---------------- 단어장(선생님이 반/수업별로 만드는 것 — word_bank 와 다름) ---------------- */
 
 export interface WordListItem {
+  /** Source/provenance of episode vocabulary; context suggestions are not transcript quotations. */
+  videoSource?: {version:1;youtubeId:string;episodeId:string;episodeStart:number;episodeEnd:number;
+    chapters:{start:number;end:number;basis?:'script'|'scene-context'}[];basis:'script'|'scene-context'};
   /** Optional dictionary example retained when saving workbook vocabulary. */
   example?: string | null;
   id: string;
