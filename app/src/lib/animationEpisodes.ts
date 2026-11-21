@@ -26,6 +26,21 @@ const norm=(text:string)=>text.toLowerCase().replace(/[’]/g,"'").replace(/[^a-
 const includesWord=(text:string,word:string)=>` ${norm(text)} `.includes(` ${norm(word)} `);
 export const episodeChapters=(episode:Episode):EpisodeChapter[]=>episode.chapters.length?episode.chapters:[{title:episode.title,start:episode.start,end:episode.end,thumbnail:episode.thumbnail}];
 
+/** Reviewed narration split: keep the dependent clause with its main clause. */
+function reviewedSourceLines(youtubeId:string,lines:ReturnType<typeof parseShadowText>){
+  if(youtubeId!=='6P84M_sXCHM')return lines;
+  const result:typeof lines=[];
+  for(const line of lines){
+    const previous=result.at(-1);
+    if(previous?.start===3.3&&previous.end===6.3&&line.start===6.3&&line.end===10&&
+      previous.en==='It was another busy day in the classroom.'&&line.en==='When Mrs. Martin called for the kids to quiet down.'){
+      result[result.length-1]={...previous,end:line.end,en:previous.en.slice(0,-1)+' when '+line.en.slice(5),
+        ko:'마틴 선생님이 아이들에게 조용히 하라고 할 때, 교실은 여느 때처럼 분주했어요.'};
+    }else result.push(line);
+  }
+  return result;
+}
+
 export function animationEpisodeLibrary(clips:VideoClip[]){
   const visible=clips.filter(clip=>!clip.hidden&&!clip.pack?.phonicsSong&&!excludedAnimationSources.has(clip.youtube_id));
   const sources=catalogue.flatMap(source=>{
@@ -33,7 +48,7 @@ export function animationEpisodeLibrary(clips:VideoClip[]){
     if(!rows.length)return [];
     const full=rows.find(row=>row.pack.fullVideo)?.pack.fullVideo;
     const scripts=full?[full.script]:rows.map(row=>row.script);
-    const lines=[...new Map(scripts.flatMap(script=>parseShadowText(script)).map(line=>[`${line.start}:${line.en}`,line])).values()].sort((a,b)=>a.start-b.start);
+    const lines=reviewedSourceLines(source.youtubeId,[...new Map(scripts.flatMap(script=>parseShadowText(script)).map(line=>[`${line.start}:${line.en}`,line])).values()].sort((a,b)=>a.start-b.start));
     return [{...source,rows,lines,series:rows[0].series}];
   });
   const episodes=sources.flatMap(source=>source.episodes.map(episode=>{

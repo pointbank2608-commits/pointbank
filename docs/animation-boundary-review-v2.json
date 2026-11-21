@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "reviewedAt": "2026-11-21T10:21:57.522Z",
+  "reviewedAt": "2026-11-21T10:36:58.139Z",
   "sources": [
     {
       "youtubeId": "DhKIqYVB_Ws",
@@ -5404,31 +5404,20 @@
       "from": null,
       "to": 0,
       "end": 270.781,
-      "method": "single-upload-and-full-story-av",
+      "method": "manual-frame-dialogue-review",
+      "reason": "Decoded original classroom/bedroom/stage frames and existing timed narration: preserve the complete question before searching, and both practice/next-day narration before the performance. Cut at native cut-6 and detected pause-81; no independent curtain chapter.",
       "chapters": [
         {
           "start": 0,
           "candidateId": "episode-start"
         },
         {
-          "start": 37.243,
-          "candidateId": "pause-8"
+          "start": 30.4,
+          "candidateId": "cut-6"
         },
         {
-          "start": 86.281,
-          "candidateId": "pause-29"
-        },
-        {
-          "start": 138.248,
-          "candidateId": "pause-53"
-        },
-        {
-          "start": 181.54,
-          "candidateId": "pause-74"
-        },
-        {
-          "start": 198.417,
-          "candidateId": "pause-82"
+          "start": 190.722,
+          "candidateId": "pause-81"
         }
       ]
     },

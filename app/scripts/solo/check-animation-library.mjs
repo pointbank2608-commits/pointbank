@@ -34,6 +34,12 @@ try{
   const easter=library.episodes.find(material=>material.episode.id==='O37zFRCQhEQ:episode:306000');
   assert.equal(skating.episode.end,305.722);assert.ok(!skating.words.some(word=>word.word==='brush'));
   assert.equal(easter.episode.start,305.722);assert.ok(easter.words.some(word=>word.word==='brush'));assert.equal(easter.episode.end,625.333);
+  const talent=library.episodes.find(material=>material.source.youtubeId==='6P84M_sXCHM');
+  assert.deepEqual(talent.chapters.map(chapter=>chapter.start),[0,30.4,190.722]);
+  assert.ok(!talent.lines.some(line=>line.en.startsWith('When Mrs. Martin')));
+  const joinedNarration=talent.lines.find(line=>line.start===3.3);
+  assert.equal(joinedNarration.end,10);assert.ok(joinedNarration.en.includes('classroom when Mrs. Martin'));
+  for(const chapter of talent.chapters)assert.ok(!talent.lines.some(line=>line.start<chapter.start&&line.end>chapter.start),'Talent-show chapters must not divide a known timed utterance');
   for(const material of library.episodes){
     const {episode,chapters,words}=material;
     assert.ok(episode.start>=0&&episode.end<=material.source.duration&&episode.end>episode.start);

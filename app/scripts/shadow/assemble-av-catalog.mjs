@@ -56,7 +56,7 @@ for(const original of base){
    const chapters=data.chapters.map((chapter,i)=>({title:wording(chapter.title),intent:wording(chapter.intent),start:chapter.start,end:data.chapters[i+1]?.start??episode.end,thumbnail:null,words:dedupe(chapter.words.map(word=>word.word==='dandruff / dirty dishes'?{...word,word:'dirty dishes'}:word)),frames:[chapter.start]}));
    episodes.push({id:episode.id,title:wording(data.title),titleOrigin:'summary',start:episode.start,end:episode.end,thumbnail:episode.thumbnail,aliases:episode.aliases,chapters,
     boundary:{method:'original-av-v2',revision:2,sampleSeconds:0,reviewedAt:data.reviewedAt}});
-   evidence.push({id:episode.id,from:null,to:episode.start,end:episode.end,method:plan.episodes.length===1?'single-upload-and-full-story-av':'decoded-original-title-transition-and-full-story-av',chapters:data.chapters.map(chapter=>({start:chapter.start,candidateId:chapter.candidateId}))});
+   evidence.push({id:episode.id,from:null,to:episode.start,end:episode.end,method:data.method==='manual-frame-dialogue-review'?data.method:plan.episodes.length===1?'single-upload-and-full-story-av':'decoded-original-title-transition-and-full-story-av',...(data.reviewNote?{reason:data.reviewNote}:{}),chapters:data.chapters.map(chapter=>({start:chapter.start,candidateId:chapter.candidateId}))});
   }
   if(episodes.length===plan.episodes.length)source.episodes=episodes;
   source.checkedAt=new Date().toISOString();
