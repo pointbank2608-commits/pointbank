@@ -22,7 +22,7 @@ function Matching({items,pictures,teacher,start}:{items:PaperItem[];pictures:boo
   if (teacher) return <ol start={start} className="animation-match-key">{items.map(item=><li key={item.id}>{item.label} → {String.fromCharCode(65+right.indexOf(item))}{!pictures&&' · '+item.answer}</li>)}</ol>;
   return <div className="animation-match-grid">
     <div>{items.map((item,index)=><div key={item.id}>{start+index}. {item.label}<span className="animation-match-dot" aria-hidden="true"/></div>)}</div>
-    <div>{right.map((item,index)=><div key={item.id}><span className="animation-match-dot" aria-hidden="true"/>{String.fromCharCode(65+index)}. {pictures?<div><img src={item.image} alt=""/><small>{item.meaning}</small></div>:item.answer}</div>)}</div>
+    <div>{right.map((item,index)=><div key={item.id}><span className="animation-match-dot" aria-hidden="true"/>{String.fromCharCode(65+index)}. {pictures?<div>{item.image&&<img src={item.image} alt=""/>}<small lang="ko">{item.meaning}</small></div>:item.answer}</div>)}</div>
   </div>;
 }
 
@@ -61,19 +61,18 @@ function Worksheet({ clip }: { clip: VideoClip }) {
   const {puzzle,included}=useMemo(()=>animationCrossword(crosswordSelected),[crosswordSelected]);
   const crosswordMissing=crosswordSelected.filter(item=>!included.has(item.id));
 
-  const available = (type: (typeof groups)[number]['types'][number]) => type.items.length >= (minimumFive.has(type.id) ? 5 : 1) && (type.id !== 'pictureMatch' || pictureSelected.some(item=>item.image)) && (type.id !== 'crossword' || included.size >= 2);
+  const available = (type: (typeof groups)[number]['types'][number]) => type.items.length >= (minimumFive.has(type.id) ? 5 : 1) && (type.id !== 'crossword' || included.size >= 2);
   const missing = groups.flatMap(group=>group.types.filter(type=>!available(type)));
   const rows = useMemo(() => groups.flatMap(group=>group.types.flatMap<Row>(type=>{
     if (!enabled.has(type.id) || !available(type)) return [];
-    let items=type.items;
+    const items=type.items;
     const base={group:group.id,groupTitle:group.en,type:type.id,title:type.title,instruction:type.instruction};
-    if (type.id==='pictureMatch') items=items.filter(item=>item.image);
     if (matchTypes.includes(type.id)) return chunk(items,type.id==='pictureMatch'?5:7).map((matching,index)=>({...base,id:String(index),label:type.title,number:index*(type.id==='pictureMatch'?5:7)+1,matching}));
     if (type.id==='crossword') return included.size?[{...base,id:'puzzle',label:type.title,number:1,puzzle,bank:options.bank?shuffled(puzzle.entries.map(entry=>entry.word.word),makeRng(67)):undefined}]:[];
     return items.map((item,index)=>({...base,...item,number:index+1,
       ...(type.id==='fromMeaning'&&options.bank&&index===0?{bank:shuffled(items.map(word=>word.answer!),makeRng(67))}:{}),
     }));
-  })), [groups, enabled, options.bank, puzzle, included, pictureSelected]);
+  })), [groups, enabled, options.bank, puzzle, included]);
   const sections = useMemo(() => {
     const grouped: {content: Row[]; teacher: boolean}[] = [];
     for (const isTeacher of teacher ? [false, true] : [false]) {
@@ -166,7 +165,7 @@ function Worksheet({ clip }: { clip: VideoClip }) {
           {group.types.filter(available).map(type=>{ return <section key={type.id} data-print-activity={type.id}>
               <label className="animation-group-toggle"><input type="checkbox" checked={enabled.has(type.id)}
                 onChange={event=>toggleType(type.id,event.target.checked)}/> {en?type.title:type.label}</label>
-              {type.id==="pictureMatch"&&pictureMissing.length>0&&<p className="animation-activity-note">그림 없는 단어 · {pictureMissing.map(item=>item.label).join(", ")}</p>}
+              {type.id==="pictureMatch"&&pictureMissing.length>0&&<p className="animation-activity-note">{t('readyMedia.pictureMatchFallback', {words:pictureMissing.map(item=>item.label).join(', ')})}</p>}
               {type.id==='crossword'&&enabled.has(type.id)&&<p className="animation-activity-note">{en?`Used ${included.size} of ${crosswordSelected.length} words`:`선택한 ${crosswordSelected.length}개 중 ${included.size}개 사용`}{crosswordMissing.length>0&&' · '+crosswordMissing.map(item=>item.label).join(', ')}{!included.size&&' · 교차할 단어를 다시 고르거나 단어 스크램블을 선택하세요.'}</p>}
             </section>;
           })}
