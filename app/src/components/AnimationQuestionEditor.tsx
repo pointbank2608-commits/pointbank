@@ -6,6 +6,7 @@ import { createCurriculumLesson, fetchAllCurriculumLessons, updateCurriculumLess
 import { announceLessonChange } from '../lib/lessonChanges';
 import { parseShadowText } from '../lib/shadowLines';
 import { learningRange } from '../lib/animationScene';
+import { findVideoQuestionLesson } from '../lib/videoQuestionLessons';
 import { formatQuestionTime, parseQuestionTime, questionError, questionKinds, questionNumber, questionTimeInClip, questionTimeInVideo, sentenceWords, sortedQuestions, type VideoQuestion } from '../lib/videoQuestions';
 import type { CurriculumLesson, VideoSlide } from '../lib/types';
 import type { VideoClip } from '../lib/videoClips';
@@ -32,8 +33,8 @@ export default function AnimationQuestionEditor({ clip, onClose }: { clip: Video
     if (!academy || !profile) return;
     void fetchAllCurriculumLessons(academy.id).then(rows => {
       if (!live) return;
-      const found = rows.filter(row => row.created_by === profile.id && effectiveSlides(row).some(s => s.kind === 'video' && s.clipId === clip.id && s.questionLesson)).sort((a, b) => (b.updated_at ?? b.created_at).localeCompare(a.updated_at ?? a.created_at))[0];
-      if (found) { setLesson(found); setSlide(effectiveSlides(found).find((s): s is VideoSlide => s.kind === 'video' && s.clipId === clip.id && !!s.questionLesson)!); }
+      const found = findVideoQuestionLesson(rows, clip.id, profile.id);
+      if (found) { setLesson(found.lesson); setSlide(found.slide); }
       setLoading(false);
     }).catch(() => { if (live) setError('편집본을 불러오지 못했어요. 닫았다가 다시 열어 주세요.'); });
     return () => { live = false; };
@@ -82,7 +83,7 @@ export default function AnimationQuestionEditor({ clip, onClose }: { clip: Video
     {loading && <p role="status">편집본을 불러오고 있어요.</p>}
     {error && <p role="alert">{error}</p>}
     <div className="vq-grid"><div>
-      {!loading && <div className="vq-player"><PlainTeachingVideo key={`${slide.startSec}:${slide.endSec}`} videoUrl={slide.videoUrl} start={slide.startSec} end={slide.endSec} title={clip.title} source={clip.script} simple onReady={()=>setVideoReady(true)} controlRef={player} onSeek={seekDraft} questionMarkers={questions} onQuestionMarker={openSaved}/></div>}
+      {!loading && <div className="vq-player"><PlainTeachingVideo key={`${slide.startSec}:${slide.endSec}`} videoUrl={slide.videoUrl} start={slide.startSec} end={slide.endSec} title={clip.title} source={clip.script} simple settingsLabel="수업 설정" onReady={()=>setVideoReady(true)} controlRef={player} onSeek={seekDraft} questionMarkers={questions} onQuestionMarker={openSaved}/></div>}
       <button disabled={loading || busy || !videoReady} className="vq-primary" onClick={() => { const time = player.current?.getTime() ?? slide.startSec ?? 0; player.current?.pause(); open({ id: crypto.randomUUID(), kind: 'spoken', at: Math.round(time * 100) / 100, prompt: '' }); }}>여기에 질문 넣기</button>
       <nav aria-label="저장된 질문 타임라인" className="vq-timeline">{questions.map((q, i) => <button key={q.id} disabled={busy} onClick={() => openSaved(q.id)}>{questionNumber(i)} {formatQuestionTime(questionTimeInClip(q.at, slide.startSec))} · {questionKinds[q.kind].split(' · ')[0]}</button>)}</nav>
       <div className="vq-actions"><button disabled={!slide.timedQuestions?.length || busy || !!draft} onClick={() => { player.current?.pause(); setRun(true); }}>저장한 질문으로 수업 재생</button>{lesson && <Link to="/curriculum">내 수업에서 편집본 열기</Link>}</div>

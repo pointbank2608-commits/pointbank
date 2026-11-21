@@ -145,3 +145,10 @@ export function shadowCloze(en: string, seed: number): { text: string; blank: bo
     return tail ? [{ text: word, blank: true }, { text: tail, blank: false }] : [{ text: word, blank: true }];
   });
 }
+/** Match a scene to its current line, retaining the last heard line in a gap. */
+export function shadowLineAtTime(lines: {start:number;end:number}[], time: number): number {
+  const containing = lines.findIndex(line => line.start <= time && time < line.end);
+  if (containing >= 0) return containing;
+  const preceding = lines.findLastIndex(line => line.start <= time);
+  return Math.max(0, preceding);
+}
