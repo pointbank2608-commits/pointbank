@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import i18n from '../i18n';
+import ClassCommunication from '../components/ClassCommunication';
 import ClassChipRow from '../components/ClassChipRow';
 import ClassroomHeader from '../components/ClassroomHeader';
 import LearningCardModal from '../components/homework/teacher/LearningCardModal';
@@ -51,6 +52,10 @@ export default function AttendancePage() {
   const { notify, run } = useToast();
   const { t } = useTranslation();
   const { classes, selectedId, select, reload: reloadClasses, reorder } = useClasses(academy?.id);
+  useEffect(() => {
+    const target = new URLSearchParams(location.search).get('classId');
+    if (target && classes.some(c => c.id === target)) select(target);
+  }, [classes, select]);
   /** 무료 플랜 학생 10명 한도는 반 하나가 아니라 학원 전체 기준이라, 반별 학생 목록(students
    * state)과는 별도로 학원 전체 학생 수를 따로 추적한다. */
   const [academyStudentCount, setAcademyStudentCount] = useState(0);
@@ -296,6 +301,8 @@ export default function AttendancePage() {
         )}
       </div>
 
+      {selectedId && profile && ['owner','teacher'].includes(profile.role) &&
+        <ClassCommunication key={selectedId + profile.id} classId={selectedId} userId={profile.id} owner={profile.role === 'owner'} />}
       {selectedId && students.length > 0 && (
         <div className="rounded-[20px] bg-deep-navy px-2 py-5 shadow-card sm:px-4">
           <div className="grid grid-cols-1 gap-y-4 sm:grid-cols-3 sm:divide-x sm:divide-white/20">

@@ -32,6 +32,16 @@ interface AuthValue {
   signOut: () => Promise<void>;
 }
 
+async function disconnectTeacherPush() {
+  try {
+    const reg = await navigator.serviceWorker?.getRegistration('/attendance');
+    if (reg && new URL(reg.scope).pathname === '/attendance') {
+      const sub = await reg.pushManager.getSubscription();
+      await sub?.unsubscribe();
+    }
+  } catch { /* Sign-out must also work offline. */ }
+}
+
 const AuthContext = createContext<AuthValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -75,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data } = await supabase.auth.getSession();
         if (controller.signal.aborted || data.session?.access_token !== accessToken) return;
         setSessionReplaced(true);
+        await disconnectTeacherPush();
         await supabase.auth.signOut({ scope: 'local' });
       } finally {
         checking = false;
@@ -134,6 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [loadProfile]);
 
   const signOut = useCallback(async () => {
+    await disconnectTeacherPush();
     await supabase.auth.signOut({ scope: 'local' });
     setProfile(null);
     setAcademy(null);

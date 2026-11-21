@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import InquiryBoard from '../components/InquiryBoard';
 import BrandMark from '../components/BrandMark';
 import {
-  applicationServerKey, connectParent, inviteFromHash, inviteFromText, iosNeedsInstall, loadParent,
+  askTeacher, applicationServerKey, connectParent, inviteFromHash, inviteFromText, iosNeedsInstall, loadParent,
   logoutParent, ParentError, parentSessions, pushKey, readParentNotices, setFamilyPush, storeParentSessions,
   loginParent, type ParentHome, type ParentSession, type ParentNotice,
 } from '../lib/parentPortal';
@@ -22,7 +23,8 @@ export default function ParentPortalPage() {
   const [phone, setPhone] = useState('');
   const [adding, setAdding] = useState(() => !!inviteFromHash());
   const [installedRequired] = useState(iosNeedsInstall);
-  const [view, setView] = useState<'homework' | 'attendance' | 'notices'>(() =>
+  const [selectedView, setView] = useState<'homework' | 'attendance' | 'notices' | 'inquiry'>(() =>
+    new URLSearchParams(location.search).has('inquiry') ? 'inquiry' :
     new URLSearchParams(location.search).get('view') === 'notices' ? 'notices' : 'homework');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
@@ -33,6 +35,11 @@ export default function ParentPortalPage() {
   const [workerFailed, setWorkerFailed] = useState(false);
   const active = sessions.find((s) => s.id === chosen) ?? sessions[0];
   const home = active && homes[active.id];
+  const channels = home?.settings;
+  const view = (selectedView === 'homework' && channels?.published === false) ||
+    (selectedView === 'attendance' && channels?.attendance === false) ||
+    (selectedView === 'inquiry' && !channels?.inquiry) ? 'notices' : selectedView;
+  const en = i18n.resolvedLanguage === 'en';
   const applicationKey = home?.push_key ?? pushKey;
   const supportsPush = !installedRequired && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
   const hasSessions = sessions.length > 0;
@@ -43,7 +50,7 @@ export default function ParentPortalPage() {
   useEffect(() => {
     function acceptFragment() {
       const child = new URLSearchParams(location.hash.slice(1)).get('child');
-      if (child) { setChosen(child); setView('notices'); }
+      if (child) { setChosen(child); setView(new URLSearchParams(location.search).has('inquiry') ? 'inquiry' : 'notices'); }
       const incomingInvite = inviteFromHash();
       if (incomingInvite) { setInvite(incomingInvite); setAdding(true); }
       if (/^#(invite|child)=/.test(location.hash)) history.replaceState(history.state, '', location.pathname + location.search);
@@ -279,16 +286,21 @@ export default function ParentPortalPage() {
                 disabled={!worker || busy || !familyReady} onClick={togglePush}>{t(familyPushEnabled ? 'parentPortal.disable' : 'parentPortal.enable')}</button>}
             </section>
             <nav className="flex flex-wrap gap-2" aria-label={t('parentPortal.title')}>
-              <button type="button" className={view === 'homework' ? primary : secondary}
-                aria-pressed={view === 'homework'} onClick={() => setView('homework')}>{t('parentPortal.homework')}</button>
-              <button type="button" className={view === 'attendance' ? primary : secondary}
-                aria-pressed={view === 'attendance'} onClick={() => setView('attendance')}>{t('parentPortal.attendance')}</button>
+              {channels?.published !== false && <button type="button" className={view === 'homework' ? primary : secondary}
+                aria-pressed={view === 'homework'} onClick={() => setView('homework')}>{t('parentPortal.homework')}</button>}
+              {channels?.attendance !== false && <button type="button" className={view === 'attendance' ? primary : secondary}
+                aria-pressed={view === 'attendance'} onClick={() => setView('attendance')}>{t('parentPortal.attendance')}</button>}
               <button type="button" className={view === 'notices' ? primary : secondary}
                 aria-pressed={view === 'notices'} onClick={() => setView('notices')}>
                 {t('parentPortal.notices')}{unreadCount > 0 ? ` · ${unreadCount}` : ''}
               </button>
+              {channels?.inquiry && <button className={view === 'inquiry' ? primary : secondary} aria-pressed={view === 'inquiry'}
+                onClick={() => setView('inquiry')}>{en ? 'Ask your teacher' : '선생님께 문의하기'}</button>}
             </nav>
-            {view === 'homework' ? (
+            {view === 'inquiry' ? <InquiryBoard key={active.id} threads={home.threads ?? []} onAsk={async (question, request) => {
+              await askTeacher(active.token, request, question);
+              setRefresh(x => x + 1);
+            }} /> : view === 'homework' ? (
               <section className={card}>
                 <h2 className="text-lg font-bold">{t('parentPortal.homework')}</h2>
                 <p className="mt-1 text-sm text-on-surface-variant">{t('parentPortal.historyHint')}</p>
@@ -302,7 +314,7 @@ export default function ParentPortalPage() {
                         {item.due_at ? ` · ${t('parentPortal.dueDate', { date: date(item.due_at) })}` : ''}
                       </p>
                       {item.completed_at && <p className="text-sm text-on-surface-variant">{t('parentPortal.completedDate', { date: date(item.completed_at) })}</p>}
-                      {item.daily && item.status !== 'closed' && <p className="mt-1 text-sm font-bold text-primary">
+                      {item.daily && (item.daily.completed_at || channels?.started !== false) && item.status !== 'closed' && <p className="mt-1 text-sm font-bold text-primary">
                         {t(item.daily.completed_at ? 'parentPortal.dailyDone' : item.daily.started ? 'parentPortal.dailyStarted' : 'parentPortal.dailyPending', { day: item.daily.day })}
                       </p>}
                     </div>
@@ -343,6 +355,12 @@ export default function ParentPortalPage() {
                       {notice.title ? `${notice.title} · ` : ''}{date(notice.happened_at)}
                       {notice.details.day ? ` · ${t('parentPortal.recordDay', { day: notice.details.day })}` : ''}
                     </p>
+                    {notice.kind === 'answered' && <button className="min-h-11 text-primary underline" onClick={() => {
+                      const url = new URL(location.href);
+                      url.searchParams.set('inquiry', notice.assignment_id);
+                      history.replaceState(history.state, '', url);
+                      setView('inquiry');
+                    }}>{en ? 'View reply' : '답변 보기'}</button>}
                     {notice.body && <p className="mt-2 whitespace-pre-wrap break-words text-sm">{notice.body}</p>}
                   </li>)}
                 </ul>

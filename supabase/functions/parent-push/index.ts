@@ -5,7 +5,7 @@ import { parentPushBody, type ParentPushEvent } from '../_shared/parentPushNotic
 
 type Job = {
   id: string; session_id: string; tries: number; endpoint: string; p256dh: string; auth_key: string;
-  lang: 'ko' | 'en'; event: ParentPushEvent;
+  thread_id?: string; class_id?: string; lang: 'ko' | 'en'; event: ParentPushEvent;
 };
 const allowed = new Set(['fcm.googleapis.com', 'updates.push.services.mozilla.com', 'web.push.apple.com']);
 const encode = (value: string) => new TextEncoder().encode(value);
@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
     return new Response('Push configuration is incomplete', { status: 503 });
   }
   const db = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data, error } = await db.rpc('parent_claim_push');
+  const { data, error } = await db.rpc('inquiry_claim_push');
   if (error) return new Response('Queue unavailable', { status: 503 });
   const jobs = data as Job[];
   let failed = 0;
@@ -40,7 +40,9 @@ Deno.serve(async (req) => {
           const body = parentPushBody(job.event, job.lang);
           if (!body) throw new Error('Unknown parent notification event');
           const payload = JSON.stringify({
-            title: job.lang === 'en' ? 'ClassBank for parents' : '수업뚝딱 학부모',
+            title: job.event === 'inquiry' ? (job.lang === 'en' ? 'ClassBank' : '수업뚝딱 교사용')
+              : job.lang === 'en' ? 'ClassBank for parents' : '수업뚝딱 학부모',
+            thread: job.thread_id, classId: job.class_id,
             body,
             tag: job.id,
             child: job.session_id,
@@ -63,7 +65,7 @@ Deno.serve(async (req) => {
       }
       if (result === 'retry') failed++;
       else {
-        const { error: finishError } = await db.rpc('parent_finish_push', { p_id: job.id, p_try: job.tries, p_result: result });
+        const { error: finishError } = await db.rpc(job.event === 'inquiry' ? 'teacher_finish_inquiry_push' : 'parent_finish_push', { p_id: job.id, p_try: job.tries, p_result: result });
         if (finishError) failed++;
       }
     }));
