@@ -66,4 +66,3 @@ Every chapter must name an actual supplied FRAME_ID. Never create IDs not suppli
 await Promise.all(Array.from({length:Number(process.env.ANIMATION_WORKERS??2)},async()=>{while(cursor<sources.length){const source=sources[cursor++];try{await classify(source);}catch(error){failed.push(source.youtubeId);console.error('SOURCE_RETRY_NEEDED',source.youtubeId,error.message);}}}));
 console.log('source pass finished',JSON.stringify({sources:sources.length,retryNeeded:failed}));
 if(failed.length)process.exitCode=1;
-

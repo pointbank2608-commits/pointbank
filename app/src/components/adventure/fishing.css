@@ -1,0 +1,96 @@
+/* Size the prompt and fish against the game surface, including embedded lessons. */
+.ad-game.ad-wordfishing { container:fishing-scene / size;padding:clamp(10px,2cqh,20px); }
+.game-fit-canvas .ad-game.ad-wordfishing {
+  aspect-ratio:var(--game-surface-ratio,3 / 2);height:auto;min-height:0;
+}
+.ad-wordfishing .ad-play { min-height:0;gap:clamp(8px,1.5cqh,18px); }
+.ad-wordfishing .ad-play:not(:has([data-picture-word])) {
+  display:flex;flex-direction:column;align-items:center;
+}
+.ad-wordfishing .ad-fishing-text-prompt {
+  flex-shrink:0;max-width:min(96cqw,64rem);
+  padding:clamp(10px,2cqh,22px) clamp(14px,2.5cqw,30px);
+}
+.ad-fishing-prompt-copy { display:grid;gap:4px;min-width:0; }
+.ad-fishing-prompt-text {
+  display:block;font-size:clamp(24px,5.2cqw,64px);line-height:1.16;
+  font-weight:950;overflow-wrap:anywhere;
+}
+.ad-fishing-prompt-copy small { font-size:clamp(12px,1.8cqw,18px);line-height:1.3;font-weight:650; }
+.ad-fishing-listening-prompt .ad-fishing-prompt-text { font-size:clamp(20px,3.8cqw,40px); }
+.ad-wordfishing .ad-sea {
+  width:100%;max-width:none;min-height:0;
+  grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);
+  gap:clamp(8px,2cqh,24px) clamp(12px,2.5cqw,36px);
+  padding:clamp(4px,1cqh,12px) clamp(4px,1cqw,12px);
+}
+.ad-wordfishing .ad-sea[data-choices="4"] { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.ad-wordfishing .ad-vocab-slot {
+  align-self:stretch;height:100%;min-width:0;min-height:0;container-type:size;
+}
+.ad-wordfishing .ad-fish {
+  width:min(94cqw,calc(90cqh * 244 / 150));max-width:100%;height:auto;min-height:0;
+  container-type:inline-size;
+}
+.ad-game.ad-wordfishing .ad-fish>.game-fit {
+  left:23%;right:20%;width:auto;max-height:none;overflow:visible;
+  padding:clamp(3px,.8cqw,6px) 0;border-radius:clamp(8px,4cqw,18px);
+  font-size:clamp(14px,13cqw,56px);line-height:1.15;white-space:nowrap;
+}
+.ad-wordfishing .ad-prompt:has([data-picture-word]) {
+  --fishing-picture-size:min(56cqw,30cqh);
+  flex-shrink:0;padding:clamp(8px,1.5cqh,18px);
+}
+.ad-wordfishing .ad-prompt img[data-picture-word] {
+  display:block;width:var(--fishing-picture-size);height:auto;aspect-ratio:1;
+  max-width:100%;max-height:var(--fishing-picture-size);object-fit:contain;
+}
+@container fishing-scene (max-width:600px) {
+  .ad-wordfishing .ad-sea { grid-template-columns:repeat(2,minmax(0,1fr));gap:10px; }
+}
+/* A large picture and a two-row fishing area share the width of classroom screens. */
+@container fishing-scene (min-width:600px) and (min-aspect-ratio:3 / 2) {
+  .ad-wordfishing .ad-play:has([data-picture-word]) {
+    display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,2fr);
+    grid-template-rows:minmax(0,1fr) auto;
+    grid-template-areas:'prompt board' 'help help';
+    column-gap:clamp(16px,3cqw,40px);
+  }
+  .ad-wordfishing .ad-play:has([data-picture-word]) .ad-prompt {
+    --fishing-picture-size:min(28cqw,60cqh);
+    grid-area:prompt;align-self:center;justify-self:center;min-width:0;
+  }
+  .ad-wordfishing .ad-play:has([data-picture-word]) .ad-sea { grid-area:board;height:100%; }
+  .ad-wordfishing .ad-play:has([data-picture-word]) .ad-gold { grid-area:bonus;justify-self:center; }
+  .ad-wordfishing .ad-play:has([data-picture-word]) .ad-control-help { grid-area:help;justify-self:center; }
+  .ad-wordfishing .ad-play:has([data-picture-word]):has(.ad-gold) {
+    grid-template-rows:minmax(0,1fr) auto auto;
+    grid-template-areas:'prompt board' '. bonus' 'help help';
+  }
+}
+/* Keep the usable height for the picture and choices on shorter displays. */
+@container fishing-scene (max-height:680px) {
+  .ad-wordfishing .ad-header small,.ad-wordfishing .ad-control-help { display:none; }
+  .ad-wordfishing .ad-header h1 { margin:0;font-size:clamp(18px,5cqh,28px);line-height:1.1; }
+  .ad-wordfishing .ad-header>span { font-size:13px;padding:6px 9px; }
+  .ad-wordfishing .ad-notice { min-height:24px;padding:4px 10px;font-size:13px; }
+}
+@container fishing-scene (max-height:360px) {
+  .ad-wordfishing .ad-header small,.ad-wordfishing .ad-control-help { display:none; }
+  .ad-wordfishing .ad-header h1 { font-size:18px; }
+  .ad-wordfishing .ad-header>span { font-size:12px;padding:4px 8px; }
+  .ad-wordfishing .ad-play { gap:6px; }
+  .ad-wordfishing .ad-prompt { padding:6px 10px;font-size:18px; }
+  .ad-wordfishing .ad-fishing-prompt-text { font-size:clamp(18px,6cqh,24px); }
+  .ad-wordfishing .ad-fishing-prompt-copy small { font-size:11px; }
+  .ad-wordfishing .ad-notice { min-height:22px;padding:4px 10px;font-size:12px; }
+}
+@container fishing-scene (min-width:600px) and (max-height:360px) {
+  .ad-wordfishing .ad-play:not(:has([data-picture-word])) .ad-sea[data-choices="3"] { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .ad-wordfishing .ad-play:not(:has([data-picture-word])) .ad-sea[data-choices="4"] { grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .ad-wordfishing .ad-play:not(:has([data-picture-word])) .ad-sea[data-choices="5"] { grid-template-columns:repeat(5,minmax(0,1fr)); }
+  .ad-wordfishing .ad-play:not(:has([data-picture-word])) .ad-sea[data-choices="6"] { grid-template-columns:repeat(6,minmax(0,1fr)); }
+}
+@container (max-height:360px) {
+  .ad-game.ad-wordfishing { padding:8px;gap:6px; }
+}

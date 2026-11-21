@@ -173,9 +173,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const [panelAnchor, setPanelAnchor] = useState<HTMLElement | null>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const contentButton = useRef<HTMLButtonElement>(null);
   const settingsButton = useRef<HTMLButtonElement>(null);
   useGamePanelAnchor(panelRef, open ? panelAnchor : null, 512, toolbarRef);
   const [busy, setBusy] = useState(false);
+  const [panelError, setPanelError] = useState('');
   const [name, setName] = useState('');
   const [savedMsg, setSavedMsg] = useState('');
   // 적용을 누르기 전까지 고른 값
@@ -252,6 +254,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const editedPictureCards = unified && contentDraft?.cards ? contentDraft.rows.map(row=>({id:row.id,word:row.cells[0]??'',imageUrl:row.cells[2]||null})) : undefined;
   const pictureConfig = { ...info?.selected?.config, ...(editedPictureCards ? {pictureWords:editedPictureCards} : pictureCards ? { pictureWords: pictureCards, pictureWordListId: pictureList?.id } : {}) };
   const pictureCount = pPictureMode ? pictureWordQuestions(pictureConfig).length : 0;
+  const pictureSelectionIssue = text('현재 자료로 만들 수 있는 그림 문제가 없어요. 내 단어/문장에서 그림이 포함된 단어장을 고르거나, 기존 게임 방식을 선택해 주세요.', 'This material has no usable picture questions. Choose a word list with pictures from My words / sentences, or select Original game.');
   const isGrammar = !!type && (GRAMMAR_GAME_TYPES as readonly string[]).includes(type);
   const caps = gamePreparation(type || 'wheel');
   const kinds = caps.kinds as readonly string[];
@@ -338,6 +341,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
 
   // 패널을 열 때마다 지금 상태로 초기화
   useEffect(() => {
+    setPanelError('');
     if (!open) return;
     if (info?.selected) {setContentDraft(gameEditDraft(info.selected));setNativeOptions(structuredClone(info.selected.config));}
     setItemEditing(false);
@@ -419,13 +423,16 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const done = () => { notify(text('설정이 적용되었습니다.', 'Your settings have been applied.')); setOpen(null); };
   async function run(fn: () => Promise<void> | void) {
     if (busy) return;
+    setPanelError('');
     setBusy(true);
     try {
       await fn();
       done();
     } catch (err) {
       const msg = err instanceof Error ? err.message : '';
-      notify(msg === 'guide_not_available' ? text('저장한 게임의 항목은 여기서 바꿀 수 없어요. 새 게임에서 다시 시도해 주세요.', 'Items of a saved game cannot be changed here.') : msg || text('적용하지 못했어요. 다시 시도해 주세요.', 'Could not apply. Please try again.'), 'error');
+      const message = msg === 'guide_not_available' ? text('저장한 게임의 항목은 여기서 바꿀 수 없어요. 새 게임에서 다시 시도해 주세요.', 'Items of a saved game cannot be changed here.') : msg || text('적용하지 못했어요. 다시 시도해 주세요.', 'Could not apply. Please try again.');
+      setPanelError(message);
+      notify(message, 'error');
     } finally {
       setBusy(false);
     }
@@ -583,6 +590,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       if(type==='saveorgive'&&((config.rewardPool?.some(r=>r.kind==='points'&&!Number.isFinite(r.value)))||(config.saveOrGiveTeamCount!==undefined&&(!Number.isInteger(config.saveOrGiveTeamCount)||config.saveOrGiveTeamCount<2||config.saveOrGiveTeamCount>8)))) throw new Error(text('반전 점수와 팀 수를 확인해 주세요.','Check reward points and team count.'));
       if(type==='quizshow'&&config.liveContestRounds?.some(r=>r.on&&((r.count!==-1&&(!Number.isInteger(r.count)||r.count<1))||(r.seconds!==undefined&&(!Number.isFinite(r.seconds)||r.seconds<5||r.seconds>120))||(r.points!==undefined&&(!Number.isFinite(r.points)||r.points<0))))) throw new Error(text('라운드별 문제 수·시간·점수를 확인해 주세요.','Check questions, time and points for each round.'));
       const content = gameEditContent(info.selected, contentDraft, config);
+      if (pPictureMode && !pictureWordQuestions(content.config).length) throw new Error(pictureSelectionIssue);
       if (isBomb) {
         const labels = nonEmpty(pPartText);
         if (pBombMode === 'pass' && labels.length < 2) throw new Error(text('참가자가 2명 이상 필요해요.', 'Need at least 2 players.'));
@@ -595,7 +603,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     }
     setGameSoundOn(pSound);
     if (pictureKind && info?.selected && (hasRoundSettings || pPictureMode || currentPictureMode)) {
-      if (pPictureMode && !pictureCount) throw new Error(t('gameWordHoops.pictureNeedsList'));
+      if (pPictureMode && !pictureCount) throw new Error(pictureSelectionIssue);
       const config = { ...pictureConfig, pictureWordMode: pPictureMode };
       if (hasRoundSettings) {
         const count = Number(pAdventureCount);
@@ -754,6 +762,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   );
   const panelAction = (onClick: () => void, label = text('적용', 'Apply'), disabled = false) => (
     <div className="sticky bottom-0 z-10 -mx-4 -mb-4 rounded-b-2xl border-t border-outline-variant bg-white px-4 py-3">
+      {(panelError || (open === 'settings' && pPictureMode && !pictureCount)) && <p role="alert" className="mb-2 text-sm font-semibold text-error">{panelError || pictureSelectionIssue}</p>}
+      {open === 'settings' && unified && pPictureMode && !pictureCount && <button type="button" className={`${btn} mb-2 w-full`} disabled={busy} onClick={() => { setPanelAnchor(contentButton.current); setOpen('content'); }}>{text('내 단어/문장에서 고르기', 'Choose from My words / sentences')}</button>}
       <button type="button" className={`${primaryBtn} w-full`} disabled={busy || disabled} onClick={onClick}>{label}</button>
     </div>
   );
@@ -764,7 +774,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         <p className="min-w-0 max-w-[14rem] truncate px-2 text-base font-extrabold text-deep-navy" role="status">{status}</p>
         <div className="flex flex-wrap gap-1 rounded-xl bg-surface-container-low p-1" role="group" aria-label={text('설정', 'Settings')}>
           {isLadder && <button className={`${tab(false)} cursor-not-allowed opacity-40`} disabled title={text('사다리는 참가자를 반 설정에서, 결과를 게임설정에서 정해요', 'Set players in Class and results in Settings')}>{text('내 단어/문장', 'My words')}</button>}
-          {hasContentButton && !isLadder && <button className={tab(open === 'content')} disabled={!!info?.sharedView} aria-expanded={open==='content'} onClick={event => toggle('content',event.currentTarget)}>{isGrammar && !unified ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
+          {hasContentButton && !isLadder && <button ref={contentButton} className={tab(open === 'content')} disabled={!!info?.sharedView} aria-expanded={open==='content'} onClick={event => toggle('content',event.currentTarget)}>{isGrammar && !unified ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
           <button className={tab(open === 'class')} disabled={!!info?.sharedView} aria-expanded={open === 'class'} onClick={event => toggle('class',event.currentTarget)}>{text('반 설정', 'Class')}</button>
           <button ref={settingsButton} className={tab(open === 'settings' || workspace.panel === 'settings')} disabled={!!info?.sharedView} aria-expanded={open === 'settings' || workspace.panel === 'settings'} onClick={event => (unified || pictureKind || isGrammar || itemSettings || splitGame || isPopcorn || isPassBall || simpleOpts.length > 0 ? toggle('settings',event.currentTarget) : (close(), workspace.open('settings',event.currentTarget)))}>{text('게임설정', 'Settings')}</button>
           <button className={tab(open === 'saves')} aria-expanded={open === 'saves'} onClick={event => toggle('saves',event.currentTarget)}>{text('저장/불러오기', 'Save / Load')}</button>
@@ -935,8 +945,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         {pictureKind && <fieldset className="space-y-3 rounded-xl bg-surface-container-low p-3">
           <legend className="px-1 font-bold">{text('문제 방식', 'Question type')}</legend>
           <div className="flex flex-wrap gap-2">
-            <button type="button" className={chip(!pPictureMode)} aria-pressed={!pPictureMode} onClick={() => setPPictureMode(false)}>{text('기존 게임 방식', 'Original game')}</button>
-            <button type="button" className={chip(pPictureMode)} aria-pressed={pPictureMode} onClick={() => setPPictureMode(true)}>{text(PICTURE_WORD_OPTION.ko, PICTURE_WORD_OPTION.en)}</button>
+            <button type="button" className={chip(!pPictureMode)} aria-pressed={!pPictureMode} onClick={() => { setPanelError(''); setPPictureMode(false); }}>{text('기존 게임 방식', 'Original game')}</button>
+            <button type="button" className={chip(pPictureMode)} aria-pressed={pPictureMode} onClick={() => { setPanelError(''); setPPictureMode(true); }}>{text(PICTURE_WORD_OPTION.ko, PICTURE_WORD_OPTION.en)}</button>
           </div>
           {pPictureMode && <>
             {!unified && <label className="block text-sm font-bold">{text('그림 문제에 쓸 단어장', 'Word list for picture questions')}

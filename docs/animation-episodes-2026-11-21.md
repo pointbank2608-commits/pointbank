@@ -36,7 +36,11 @@
 
 **실제 재생 13개 모두 통과라고 보고하면 안 된다.** 페파는 재생 권한/허용 상태 해결 또는 재생 가능한 원본 교체가 필요하다. 무단 재호스팅·제한 우회는 하지 않았다. 다른 환경의 재생까지 이 로컬 확인만으로 확정하지 않는다.
 
-카이유 「부활절 달걀 찾기」 306–630초를 실제 재생해 상대 시간, 마지막 챕터 이동과 garden 선택을 확인한 뒤 첫 챕터에서 일시정지해 사용자에게 열어 두었다. 캡처: `output/animation-solo/episode-preview.jpg`. 로컬 저장은 테스트 반의 메모리만 사용한다. 운영 DB 수정, 커밋·푸시·배포 없음.
+카이유 「부활절 달걀 찾기」 306–630초를 실제 재생해 상대 시간, 마지막 챕터 이동과 garden 선택을 확인한 뒤 첫 챕터에서 일시정지해 사용자에게 열어 두었다. 캡처: `output/animation-solo/episode-preview.jpg`. 로컬 저장은 테스트 반의 메모리만 사용했다. 이는 위의 영상 내리기·배포 추가 요청 전 검수 기록이다.
+
+### 운영 코드 통합 검사
+
+최신 main의 영상 중간 질문·이어 재생·문장 연습 변경을 함께 보존했다. 공통 재생기의 상대 시간 트랙에 선택적 챕터 바를 추가했으며, 기존 질문 마커와 잠금 시각·탐색 콜백을 유지했다. 통합 후 타입 검사·Vite 빌드, 애니메이션 개별수업 격리 검사, 기존 `check-animation-flow.mjs`와 `check-video-questions.mjs`를 실행한다. 운영에는 새 수업·단어장을 테스트 저장하거나 학생에게 자동 배정하지 않는다.
 
 활성 재생성 절차는 `app/scripts/shadow/`의 `storyboard-corpus.mjs` → `extract-storyboard-frames.ps1` → `classify-indexed-frames.mjs` → `compile-indexed-catalog.mjs` → 필요한 범위의 `consolidate-episode-chapters.mjs` → 최종 컴파일이다. `ANIMATION_BLUEY_DIR`, `ANIMATION_CONTEXT_DIR`, `ANIMATION_SEMANTIC_DIR`로 재검수 자료를 지정한다. 원본 대본·스토리보드 전체·분석 중간 결과는 로컬 `output/animation-solo/`에 두고 git에서 제외한다. 초기 추정 시간 분석과 무음 접촉 시트만 쓴 실험 결과는 게시 입력으로 사용하지 않는다.
 
