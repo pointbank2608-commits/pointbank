@@ -31,7 +31,7 @@ export default function EpisodeLessonPanel({material,academyId,classId,teacherId
   const [now,setNow]=useState(episode.start);
   const [saving,setSaving]=useState(false);const saveLock=useRef(false);
   const control=useRef<TeachingVideoControl|null>(null);const stage=useRef<HTMLDivElement|null>(null);
-  useLayoutEffect(()=>{let frame=0;const measure=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{const el=stage.current;if(el)el.style.height=Math.max(280,Math.min(800,window.innerHeight-Math.max(70,el.getBoundingClientRect().top)-12))+'px';});};measure();window.addEventListener('resize',measure);window.addEventListener('scroll',measure,true);return()=>{cancelAnimationFrame(frame);window.removeEventListener('resize',measure);window.removeEventListener('scroll',measure,true);};},[episode.id]);
+  useLayoutEffect(()=>{let frame=0;const measure=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{const el=stage.current;if(el)el.style.height=Math.max(500,Math.min(900,window.innerHeight-90))+'px';});};measure();window.addEventListener('resize',measure);return()=>{cancelAnimationFrame(frame);window.removeEventListener('resize',measure);};},[episode.id]);
   const activeChapter=Math.max(0,chapters.findIndex(chapter=>now>=chapter.start&&now<chapter.end));
   const visibleWords=scope==='episode'?words:words.filter(word=>word.chapterIds.includes(wordChapter));
   const effective=useMemo(()=>words.filter(word=>selectedWords.includes(word.id)&&word.chapterIds.some(index=>selectedChapters.includes(index))),[words,selectedWords,selectedChapters]);

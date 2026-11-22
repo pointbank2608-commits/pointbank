@@ -6,8 +6,8 @@ import '../styles/teaching-video-v2.css';
 import '../styles/video-classroom-v3.css';
 const icon=(name:string)=><span className="material-symbols-outlined" aria-hidden>{name}</span>;
 export function VideoControl({name,label,onClick,disabled=false,active=false,primary=false}:{name:string;label:string;onClick:()=>void;disabled?:boolean;active?:boolean;primary?:boolean}){return <button type="button" className={'tv-control '+(active?'is-active ':'')+(primary?'tv-primary-control':'')} aria-label={label} disabled={disabled} onClick={onClick}>{icon(name)}<span>{label}</span></button>;}
-export default function TeachingVideoFrame({title,video,caption,playing,ready,error,pending,onPlay,onReplay,onPrev,onNext,previousDisabled,nextDisabled,follow,settings,subtitles,summary,progress,expanded=false,retry,youtube,simple=false,subtitleLabel,speedControl,onSkip,replayLabel,fullscreenDocument=false,playbackLocked=false,overlay,practice,tools,mainControls,pausedOverlay=true,resumeWhileLocked=false,settingsLabel,settingsOnlySpeed=false,compactControls=false,activities}:{
- activities?:ReactNode;title?:string;video:ReactNode;caption?:ReactNode;playing:boolean;ready:boolean;error?:string;pending?:boolean;onPlay:()=>void;onReplay:()=>void;onPrev?:()=>void;onNext?:()=>void;previousDisabled?:boolean;nextDisabled?:boolean;follow?:ReactNode;settings?:(always:boolean,setAlways:(v:boolean)=>void)=>ReactNode;subtitles?:ReactNode;summary?:ReactNode;progress?:ReactNode;expanded?:boolean;retry?:()=>void;youtube?:string;simple?:boolean;subtitleLabel?:string;
+export default function TeachingVideoFrame({title,video,caption,playing,ready,error,pending,onPlay,onReplay,onPrev,onNext,previousDisabled,nextDisabled,follow,settings,subtitles,summary,progress,expanded=false,retry,youtube,simple=false,subtitleLabel,speedControl,onSkip,replayLabel,fullscreenDocument=false,playbackLocked=false,overlay,practice,tools,mainControls,pausedOverlay=true,resumeWhileLocked=false,settingsLabel,settingsOnlySpeed=false,compactControls=false,activities,sentence}:{
+ sentence?:ReactNode;activities?:ReactNode;title?:string;video:ReactNode;caption?:ReactNode;playing:boolean;ready:boolean;error?:string;pending?:boolean;onPlay:()=>void;onReplay:()=>void;onPrev?:()=>void;onNext?:()=>void;previousDisabled?:boolean;nextDisabled?:boolean;follow?:ReactNode;settings?:(always:boolean,setAlways:(v:boolean)=>void)=>ReactNode;subtitles?:ReactNode;summary?:ReactNode;progress?:ReactNode;expanded?:boolean;retry?:()=>void;youtube?:string;simple?:boolean;subtitleLabel?:string;
  onSkip?: (seconds:number)=>void;
  replayLabel?:string; fullscreenDocument?:boolean; playbackLocked?:boolean; overlay?:ReactNode;practice?:ReactNode;tools?:ReactNode;mainControls?:ReactNode;pausedOverlay?:boolean;resumeWhileLocked?:boolean;settingsLabel?:string;settingsOnlySpeed?:boolean;compactControls?:boolean;
  speedControl?: {value:number;values:readonly number[];onChange:(value:number)=>void};
@@ -63,7 +63,8 @@ export default function TeachingVideoFrame({title,video,caption,playing,ready,er
     </div>}
   </div>}
   <div className="tv-video">{video}{error?<div className="tv-message" role="alert"><p>{t('mediaV2.error',{code:error})}</p>{retry&&<button onClick={retry}>{t('mediaV2.retry')}</button>}{youtube&&<a href={youtube} target="_blank" rel="noopener noreferrer">{t('mediaV2.youtube')}</a>}</div>:!playing&&pausedOverlay&&<button className="tv-big-play" type="button" onClick={onPlay} disabled={!ready||playbackLocked} aria-label={t('mediaV2.play')}>{icon('play_arrow')}<span>{!ready?t('mediaV2.loading'):pending?t('mediaV2.buffering'):t('mediaV2.play')}</span></button>}{overlay}</div>
-  {caption&&<div data-shadow-caption className="tv-caption">{caption}</div>}
+  {sentence&&<div className="tv-sentence">{sentence}</div>}
+  {caption&&!sentence&&<div data-shadow-caption className="tv-caption">{caption}</div>}
   <div className="tv-controls-space"><div className={'tv-controls '+(!chrome.visible?'is-hidden':'')} data-video-controls {...chrome.lock}>
    {progress&&<div className="tv-progress">{progress}</div>}
    {practice}
