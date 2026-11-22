@@ -46,7 +46,7 @@ try {
   });
   assert.equal(data.options.length,count);
   for(const o of data.options){assert(o.inside,'Clipped '+JSON.stringify(o));assert(o.uncovered,'Covered '+o.text);assert(o.labelFits,'Clipped label '+o.text);}
-  if(count===4&&mode!=='picture'&&data.viewport==='3440x1300')assert(data.options[0].h>data.prompt*2,'Balloons too small');
+  if(count===4&&!mode.startsWith('picture')&&data.viewport==='3440x1300')assert(data.options[0].h>data.prompt*2,'Balloons too small');
   results.push({count,mode,...data});console.log('PASS choices',data.viewport,mode,count);
  }
  async function outcome(selector){
@@ -78,12 +78,17 @@ try {
    await apply(count);await choices(count,'picture');
    const picture=await page.evaluate(()=>{
     const scene=document.querySelector('.ad-balloonpop').getBoundingClientRect(),header=document.querySelector('.ad-header').getBoundingClientRect(),image=document.querySelector('[data-picture-word]').getBoundingClientRect(),prompt=document.querySelector('.ad-prompt').getBoundingClientRect();
-    return {height:image.height,sceneHeight:scene.height,headerHeight:header.height,inside:image.left>=scene.left&&image.right<=scene.right&&image.top>=scene.top&&image.bottom<=scene.bottom,
+    const balloons=[...document.querySelectorAll('.ad-balloon')].map(e=>e.getBoundingClientRect());
+    return {height:image.height,sceneHeight:scene.height,sceneWidth:scene.width,headerHeight:header.height,inside:image.left>=scene.left&&image.right<=scene.right&&image.top>=scene.top&&image.bottom<=scene.bottom,
+     leftOfChoices:balloons.every(r=>prompt.right<r.left),rows:Math.abs(balloons[0].top-balloons[1].top)<30&&balloons[2].top>balloons[0].bottom&&Math.abs(balloons[2].top-balloons[3]?.top)<30,
      overlaps:[...document.querySelectorAll('.ad-balloon')].some(e=>{const r=e.getBoundingClientRect();return r.left<prompt.right&&r.right>prompt.left&&r.top<prompt.bottom&&r.bottom>prompt.top;})};
    });
    assert(picture.inside,'Picture outside scene');assert(!picture.overlaps,'Picture overlaps balloon');
-   if(size.width===3440){assert(picture.height>picture.sceneHeight*.24,'Picture too small for classroom display');assert(picture.headerHeight<picture.sceneHeight*.09,'Title takes too much height');}
+   if(picture.sceneWidth>=600&&picture.sceneWidth/picture.sceneHeight>=1.5){assert(picture.leftOfChoices,'Picture must be left of balloon choices');if(count===4)assert(picture.rows,'Four picture choices must form two rows');}
+   if(size.width===3440){assert(picture.height>picture.sceneHeight*.4,'Picture too small for classroom display');assert(picture.headerHeight<picture.sceneHeight*.09,'Title takes too much height');}
    if(count===4)await shot('picture-'+size.width);
+   await page.getByRole('button',{name:'전체화면',exact:true}).click();await page.waitForFunction(()=>!!document.fullscreenElement);await choices(count,'picture-fullscreen');
+   await page.evaluate(()=>document.exitFullscreen());await settle();
   }
  }
  await page.setViewportSize({width:3440,height:1300});

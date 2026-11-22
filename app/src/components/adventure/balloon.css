@@ -58,3 +58,32 @@
 @container (max-height:360px) {
   .ad-game.ad-balloonpop { padding:8px;gap:6px; }
 }
+/* Picture questions share the classroom screen with a full-height balloon board. */
+@container balloon-scene (min-width:600px) and (min-aspect-ratio:3 / 2) {
+  .ad-balloonpop .ad-play:has(.ad-picture-prompt) {
+    display:grid;padding-left:0;
+    grid-template-columns:minmax(0,.8fr) minmax(0,2fr);
+    grid-template-rows:minmax(0,1fr) auto;
+    grid-template-areas:'prompt board' 'help help';
+    column-gap:clamp(16px,3cqw,40px);
+  }
+  .ad-balloonpop .ad-play .ad-picture-prompt {
+    grid-area:prompt;position:relative;left:auto;top:auto;translate:none;
+    align-self:center;justify-self:center;min-width:0;max-width:100%;
+    padding:clamp(6px,1.2cqh,12px);
+  }
+  .ad-balloonpop .ad-picture-prompt img {
+    width:min(28cqw,60cqh);height:auto;aspect-ratio:1;
+    max-height:min(28cqw,60cqh);
+  }
+  .ad-balloonpop .ad-play:has(.ad-picture-prompt) .ad-sky {
+    grid-area:board;height:100%;grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+  .ad-balloonpop .ad-play:has(.ad-picture-prompt) .ad-sky[data-choices="4"] { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .ad-balloonpop .ad-play:has(.ad-picture-prompt) .ad-control-help { grid-area:help;justify-self:center; }
+  .ad-balloonpop .ad-play:has(.ad-picture-prompt) .ad-gold { grid-area:bonus;justify-self:center; }
+  .ad-balloonpop .ad-play:has(.ad-picture-prompt):has(.ad-gold) {
+    grid-template-rows:minmax(0,1fr) auto auto;
+    grid-template-areas:'prompt board' '. bonus' 'help help';
+  }
+}
