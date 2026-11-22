@@ -41,11 +41,12 @@ try {
    const s=document.querySelector('[data-game-stage]').getBoundingClientRect(),p=document.querySelector('.ad-prompt').getBoundingClientRect();
    return {viewport:innerWidth+'x'+innerHeight,prompt:p.height,options:[...document.querySelectorAll('.ad-balloon')].map(e=>{
     const r=e.getBoundingClientRect(),label=e.querySelector('.game-fit-inner').getBoundingClientRect(),top=document.elementFromPoint(r.left+r.width/2,r.top+r.height*.35);
-    return {text:e.dataset.word,w:r.width,h:r.height,labelHeight:label.height,inside:r.left>=s.left-2&&r.right<=s.right+2&&r.top>=s.top-2&&r.bottom<=s.bottom+2,uncovered:!!top&&e.contains(top),labelFits:label.left>=r.left-2&&label.right<=r.right+2};
+    const body=e.querySelector('[data-balloon-body]').getBBox(),svg=e.querySelector('svg'),matrix=svg.getScreenCTM();
+    return {text:e.dataset.word,w:r.width,h:r.height,labelHeight:label.height,bodyRatio:body.width/body.height,uniformScale:Math.abs(Math.hypot(matrix.a,matrix.b)-Math.hypot(matrix.c,matrix.d))<.001,inside:r.left>=s.left-2&&r.right<=s.right+2&&r.top>=s.top-2&&r.bottom<=s.bottom+2,uncovered:!!top&&e.contains(top),labelFits:label.left>=r.left-2&&label.right<=r.right+2};
    })};
   });
   assert.equal(data.options.length,count);
-  for(const o of data.options){assert(o.inside,'Clipped '+JSON.stringify(o));assert(o.uncovered,'Covered '+o.text);assert(o.labelFits,'Clipped label '+o.text);}
+  for(const o of data.options){assert(o.inside,'Clipped '+JSON.stringify(o));assert(o.uncovered,'Covered '+o.text);assert(o.labelFits,'Clipped label '+o.text);assert(o.bodyRatio>.80&&o.bodyRatio<.83&&o.uniformScale,'Original balloon shape must not stretch');}
   if(count===4&&!mode.startsWith('picture')&&data.viewport==='3440x1300')assert(data.options[0].h>data.prompt*2,'Balloons too small');
   if(count===4&&mode.startsWith('picture')&&data.viewport==='3440x1300'){
    assert(data.options.every(o=>o.w>400),'Picture balloons too narrow for classroom display');
@@ -84,11 +85,11 @@ try {
     const scene=document.querySelector('.ad-balloonpop').getBoundingClientRect(),header=document.querySelector('.ad-header').getBoundingClientRect(),image=document.querySelector('[data-picture-word]').getBoundingClientRect(),prompt=document.querySelector('.ad-prompt').getBoundingClientRect();
     const balloons=[...document.querySelectorAll('.ad-balloon')].map(e=>e.getBoundingClientRect());
     return {height:image.height,sceneHeight:scene.height,sceneWidth:scene.width,headerHeight:header.height,inside:image.left>=scene.left&&image.right<=scene.right&&image.top>=scene.top&&image.bottom<=scene.bottom,
-     leftOfChoices:balloons.every(r=>prompt.right<r.left),rows:Math.abs(balloons[0].top-balloons[1].top)<30&&balloons[2].top>balloons[0].bottom&&Math.abs(balloons[2].top-balloons[3]?.top)<30,
+     leftOfChoices:balloons.every(r=>prompt.right<r.left),oneRow:balloons.every(r=>Math.abs(r.top-balloons[0].top)<30),rows:Math.abs(balloons[0].top-balloons[1].top)<30&&balloons[2].top>balloons[0].bottom&&Math.abs(balloons[2].top-balloons[3]?.top)<30,
      overlaps:[...document.querySelectorAll('.ad-balloon')].some(e=>{const r=e.getBoundingClientRect();return r.left<prompt.right&&r.right>prompt.left&&r.top<prompt.bottom&&r.bottom>prompt.top;})};
    });
    assert(picture.inside,'Picture outside scene');assert(!picture.overlaps,'Picture overlaps balloon');
-   if(picture.sceneWidth>=600&&picture.sceneWidth/picture.sceneHeight>=1.5){assert(picture.leftOfChoices,'Picture must be left of balloon choices');if(count===4)assert(picture.rows,'Four picture choices must form two rows');}
+   if(picture.sceneWidth>=600&&picture.sceneWidth/picture.sceneHeight>=1.5){assert(picture.leftOfChoices,'Picture must be left of balloon choices');if(count===4)assert(picture.sceneWidth/picture.sceneHeight>=2.2?picture.oneRow:picture.rows,'Balloon rows must fit the scene proportions');}
    if(size.width===3440){assert(picture.height>picture.sceneHeight*.4,'Picture too small for classroom display');assert(picture.headerHeight<picture.sceneHeight*.09,'Title takes too much height');}
    if(count===4)await shot('picture-'+size.width);
    await page.getByRole('button',{name:'전체화면',exact:true}).click();await page.waitForFunction(()=>!!document.fullscreenElement);await choices(count,'picture-fullscreen');
