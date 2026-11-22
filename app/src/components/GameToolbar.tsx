@@ -247,7 +247,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const hasRoundSettings = hasAdventureRoundSettings(type);
   const isDetective = type === 'grammardetective';
   const pictureKind = pictureWordModeKind(type);
-  const currentPictureMode = !!info?.selected?.config.pictureWordMode;
+  const currentPictureMode = type !== 'telepathy' && !!info?.selected?.config.pictureWordMode;
   const pictureLists = pictureKind ? (info?.lists ?? []).filter(list => !isSentenceList(list)) : [];
   const pictureList = pictureLists.find(list => list.id === pPictureList);
   const pictureCards = pictureList ? wordListToCards(pictureList).map(({id, word, imageUrl}) => ({id, word, imageUrl})) : undefined;

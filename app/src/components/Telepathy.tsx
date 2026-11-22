@@ -1,4 +1,3 @@
-import { usePictureWordTurn } from './PictureWordTurn';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { gameClock } from '../lib/gameClock';
@@ -43,7 +42,6 @@ const STYLE = `
 `;
 
 export default function Telepathy({ items, teams, choices: wantChoices, rounds, seconds, mode='team', players:givenPlayers }: Props) {
-  const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const players=givenPlayers??(mode==='none'?[]:mode==='solo'?[{id:'solo',label:t('gameTelepathy.me')}]:Array.from({length:teams},(_,i)=>({id:`team-${i}`,label:t('gameTelepathy.teamLabel',{n:i+1})})));
   const playerKey=players.map(player=>player.id).join(',');
@@ -312,7 +310,7 @@ export default function Telepathy({ items, teams, choices: wantChoices, rounds, 
         <div className="flex flex-wrap items-center justify-center gap-3">
           {phase === 'ready' && <button data-initial-game-start type="button" onClick={startRound} className={`${btn} min-h-20 bg-primary px-8 text-2xl`}>{t('flow.start')}</button>}
           {phase === 'predict' && (
-            <button type="button" onClick={() => pictureTurn(reveal)} className={`${btn} bg-primary ${left === 0 && seconds > 0 ? 'tp-anim' : ''}`} style={left === 0 && seconds > 0 ? { animation: 'tp-pulse 1.2s ease-in-out infinite' } : undefined}>
+            <button type="button" onClick={reveal} className={`${btn} bg-primary ${left === 0 && seconds > 0 ? 'tp-anim' : ''}`} style={left === 0 && seconds > 0 ? { animation: 'tp-pulse 1.2s ease-in-out infinite' } : undefined}>
               {t('gameTelepathy.reveal')}
             </button>
           )}

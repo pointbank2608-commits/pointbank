@@ -12,6 +12,10 @@ let browser;
 try{
  await server.listen();
  const {telepathyPlayers}=await server.ssrLoadModule('/src/lib/telepathy.ts');
+ const {pictureWordModeKind}=await server.ssrLoadModule('/src/lib/pictureWordQuestions.ts');
+ assert.equal(pictureWordModeKind('telepathy'),null);
+ for(const type of ['balloonpop','wordfishing','wordclaw'])assert.equal(pictureWordModeKind(type),'native');
+ assert.equal(pictureWordModeKind('wheel'),'turn');
  const roster=[{id:'s1',label:'민지'},{id:'s2',label:'준호'},{id:'s3',label:'서연'}];
  const order={mode:'individual',order:['s3','s1','s2'],teamCount:2,teamNames:{'team-0':'해님','team-1':'달님'}};
  const label=n=>n+'팀';
@@ -28,6 +32,10 @@ try{
  page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(15000);
  await page.addInitScript(()=>localStorage.setItem('classbank.startCheck.skip','1'));
  await page.goto('http://127.0.0.1:5589/games/telepathy');
+ assert(await page.evaluate(async()=>{
+  const {isNativeGameReady}=await import('/src/lib/gamePreparation.ts');
+  return isNativeGameReady({game_type:'telepathy',items:[{id:'a',label:'cat'},{id:'b',label:'dog'},{id:'c',label:'bird'}],config:{pictureWordMode:true,pictureWords:[]}});
+ }));
  async function start(){
   await page.locator('[data-game="telepathy"] [data-game-canvas]').waitFor();
   const workspace=page.locator('[data-game-start-card]').getByRole('button',{name:'게임 시작',exact:true});
@@ -40,10 +48,22 @@ try{
  await page.evaluate(async()=>{
   const {readActivityDraft,writeActivityDraft,draftId}=await import('/src/lib/quickActivity.ts');
   const draft=readActivityDraft(draftId('teacher','academy','telepathy'));
-  writeActivityDraft({...draft,config:{...draft.config,telepathyRounds:1,telepathySeconds:0}});
+  writeActivityDraft({...draft,config:{...draft.config,telepathyRounds:1,telepathySeconds:0,pictureWordMode:true,pictureWords:[
+   {id:'apple',word:'apple',imageUrl:'/phonics-images/apple.webp'},
+   {id:'ant',word:'ant',imageUrl:'/phonics-images/ant.webp'},
+  ]}});
   window.__lessonQA.students={a:[{id:'s1',name:'민지'},{id:'s2',name:'준호'},{id:'s3',name:'서연'}]};window.__saveLessonQA();
  });
  await page.reload();await start();
+ await page.getByRole('button',{name:'알 열기!',exact:true}).click();
+ await page.getByRole('button',{name:'결과 보기',exact:true}).waitFor();
+ assert.equal(await page.locator('[data-picture-turn]').count(),0);
+ await page.reload();await start();
+ await page.getByRole('button',{name:'게임설정',exact:true}).click();
+ assert.equal(await page.getByRole('button',{name:'그림 보고 영어 단어 고르기',exact:true}).count(),0);
+ await page.getByRole('button',{name:'적용',exact:true}).click();
+ await page.getByRole('button',{name:'알 열기!',exact:true}).waitFor();
+ console.log('PASS legacy picture-mode telepathy starts normally, picture option removed, settings still apply');
  async function classSettings(mode,classId=''){
   await page.getByRole('button',{name:'반 설정',exact:true}).click();
   const fields=page.locator('[data-class-settings-fields]');
@@ -57,6 +77,7 @@ try{
  async function reveal(){
   await start();
   await page.getByRole('button',{name:'알 열기!',exact:true}).click();
+  assert.equal(await page.locator('[data-picture-turn]').count(),0);
   await page.getByRole('button',{name:'결과 보기',exact:true}).waitFor();
  }
  async function labels(){return page.locator('[data-telepathy-score]').allTextContents();}
@@ -123,5 +144,10 @@ try{
  await reveal();assert.equal(await page.getByRole('group',{name:/맞힌/}).count(),0);
  assert(!/\d팀|맞힌 팀/.test(await page.locator('[data-testid="telepathy"]').innerText()));
  console.log('PASS custom team names/order and points retained, switching to no-score mode hides team controls without errors');
+ await page.goto('http://127.0.0.1:5589/games/balloonpop');
+ await page.locator('[data-game="balloonpop"] [data-game-canvas]').waitFor();
+ await page.getByRole('button',{name:'게임설정',exact:true}).click();
+ await page.getByRole('button',{name:'그림 보고 영어 단어 고르기',exact:true}).waitFor();
+ console.log('PASS other games keep the picture-word option');
  assert.deepEqual(errors,[]);
 }finally{await browser?.close();await server.close();}
