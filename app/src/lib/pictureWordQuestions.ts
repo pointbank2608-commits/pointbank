@@ -19,9 +19,9 @@ export function pictureWordModeKind(type?: GameType): 'native' | 'turn' | null {
   return game && (EXTRA_WORD_GAMES.has(type) || gameBrowseGroups(game).includes('word')) ? 'turn' : null;
 }
 
-export function pictureQuizDeck(config: GameTemplateConfig | undefined, questions: QuizQuestion[]): QuizQuestion[] {
+export function pictureQuizDeck(config: GameTemplateConfig | undefined, questions: QuizQuestion[], choiceCount = 4): QuizQuestion[] {
   if (!config?.pictureWordMode) return questions;
-  return pictureWordQuestions(config).map((question, index) => {
+  return pictureWordQuestions(config, choiceCount).map((question, index) => {
     const shift = (index + 1) % question.choices.length;
     return { ...question, id: `picture-${question.id}`, choices: [...question.choices.slice(shift), ...question.choices.slice(0, shift)],
       correctIndex: (question.correctIndex - shift + question.choices.length) % question.choices.length };

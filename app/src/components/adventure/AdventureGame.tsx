@@ -9,6 +9,7 @@ import ArrangePieces from './ArrangePieces';
 import { FishArt, FishingTackle, type FishingCast } from './FishingArt';
 import ClawMachine from './ClawMachine';
 import BalloonArt from './BalloonArt';
+import AdventureOutcome from './AdventureOutcome';
 import GameFitText from '../GameFitText';
 import './adventure.css';
 import './balloon.css';
@@ -40,9 +41,9 @@ export default function AdventureGame({type,config:c,onRestart,onContinue,prepar
         <Round key={e.current.id} type={type} c={c} e={e} round={e.current}/>
       </div>}
       {e.phase==='ready'&&!workspace&&<div className="ad-overlay"><h2>{ADVENTURE_NAMES[type][1]}</h2><p>클릭·터치·키보드로 함께 배워요.</p><button className="ad-primary" onClick={e.start}>게임 시작</button></div>}
-      {e.phase==='review'&&<div className="ad-overlay ad-review" role="status"><span className="ad-medal">★</span><h2>{type==='grammardetective'?'사건 해결!':'잘했어요!'}</h2><p className="ad-learned">{e.records.at(-1)?.answer}</p>{e.current.kind==='case'&&<p>{e.current.item.explanation}</p>}<Voice text={e.records.at(-1)?.answer||''}/><button className="ad-primary" onClick={e.next}>{e.index+1===e.total?(type==='sentencerocket'?'로켓 발사':'결과 보기'):'다음 문제 →'}</button></div>}
+      {e.phase==='review'&&<AdventureOutcome className="ad-review"><span className="ad-medal">★</span><h2>{type==='grammardetective'?'사건 해결!':'잘했어요!'}</h2><p className="ad-learned">{e.records.at(-1)?.answer}</p>{e.current.kind==='case'&&<p>{e.current.item.explanation}</p>}<Voice text={e.records.at(-1)?.answer||''}/><button className="ad-primary" onClick={e.next}>{e.index+1===e.total?(type==='sentencerocket'?'로켓 발사':'결과 보기'):'다음 문제 →'}</button></AdventureOutcome>}
       {e.phase==='finale'&&<RocketFinale finish={e.finish} sound={e.sound}/>}
-      {e.phase==='finished'&&<div className="ad-overlay ad-results"><span className="ad-medal">🏆</span><h2>모험 완료!</h2><p>{type==='wordclaw'?`${e.total}개 단어 뽑기 완료`:`${e.total}개 미션 완료 · 다시 도전한 횟수 ${e.mistakes}회`}</p>{type==='grammardetective'&&<p>한 번에 오류를 찾은 문제 {e.records.filter(record=>record.detective?.foundOnFirstTry).length}개 · 한 번에 고친 문제 {e.records.filter(record=>record.detective?.repairedOnFirstTry).length}개</p>}<ol>{e.records.map((r,i)=><li key={i}>{r.answer}</li>)}</ol><button className="ad-primary" onClick={onContinue ?? onRestart}>{onContinue ? t('solo.next') : '다시 플레이'}</button></div>}
+      {e.phase==='finished'&&<AdventureOutcome className="ad-results"><span className="ad-medal">🏆</span><h2>모험 완료!</h2><p>{type==='wordclaw'?`${e.total}개 단어 뽑기 완료`:`${e.total}개 미션 완료 · 다시 도전한 횟수 ${e.mistakes}회`}</p>{type==='grammardetective'&&<p>한 번에 오류를 찾은 문제 {e.records.filter(record=>record.detective?.foundOnFirstTry).length}개 · 한 번에 고친 문제 {e.records.filter(record=>record.detective?.repairedOnFirstTry).length}개</p>}<ol>{e.records.map((r,i)=><li key={i}>{r.answer}</li>)}</ol><button className="ad-primary" onClick={onContinue ?? onRestart}>{onContinue ? t('solo.next') : '다시 플레이'}</button></AdventureOutcome>}
       {e.expired&&<div className="ad-overlay"><h2>잠깐 쉬었다 다시 도전해요!</h2><p>아직 같은 문제예요. 단어를 다시 살펴봐요.</p><button className="ad-primary" onClick={e.retry}>같은 문제 다시 도전</button></div>}
       {e.phase==='playing'&&<p className={`ad-notice ${e.reaction}`} role="status" aria-live="polite">{e.notice||'천천히 살펴보고 도전해요.'}</p>}
     </>}
@@ -77,7 +78,7 @@ function Vocabulary({type,c,e,r}:{type:AdventureType;c:AdventureConfig;e:Adventu
     ? <img data-picture-word src={r.imageUrl} alt={t('gameWordHoops.askWord')} className="h-[min(14vh,132px)] object-contain" draggable={false}/>
     : fishing?<><span className="ad-fishing-prompt-copy"><strong className="ad-fishing-prompt-text">{listening?'소리를 듣고 물고기를 찾아요':r.word.meaning}</strong>{!listening&&<small>영어로 무엇일까요?</small>}</span><Voice text={r.word.word} onFallback={()=>setFallback(true)}/></>
     : <span>{r.word.meaning}</span>}</div>{fallback&&c.listening&&<p className="ad-fallback">영어 음성을 사용할 수 없어 뜻을 보여드려요.</p>}
-    <div className={`ad-vocab-board ${fishing?'ad-sea':'ad-sky'}`} data-choices={r.choices.length} style={{'--rise':`${c.seconds?(1-e.remaining/({slow:45,normal:30,fast:20}[c.speed]))*28:0}%`,'--speed':c.speed==='slow'?'6s':c.speed==='normal'?'4s':'2.5s'} as CSSProperties}>
+    <div className={`ad-vocab-board ${fishing?'ad-sea':'ad-sky'}`} role="group" aria-label={`보기 ${r.choices.length}개`} data-choices={r.choices.length} style={{'--rise':`${c.seconds?(1-e.remaining/({slow:45,normal:30,fast:20}[c.speed]))*28:0}%`,'--speed':c.speed==='slow'?'6s':c.speed==='normal'?'4s':'2.5s'} as CSSProperties}>
       {fishing&&<FishingTackle cast={e.busy?cast:null}/>}
       {r.choices.map((w,i)=>{
         const reacting = picked === w.id && (e.busy || (fishing && e.phase === 'review'));

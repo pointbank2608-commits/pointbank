@@ -31,7 +31,7 @@ export default function AdventureGamePage({ type }: { type: AdventureType }) {
   const selected=g.selected;
   const config=selected?.config.adventure || fallback.adventure;
   const pictureRounds: AdventureRound[] | undefined = selected?.config.pictureWordMode && hasAdventureRoundSettings(type)
-    ? pictureQuizDeck(selected.config, []).slice(0, config.count).map(row => {
+    ? pictureQuizDeck(selected.config, [], config.choices).slice(0, config.count).map(row => {
       const choices = row.choices.map((word, index) => ({ id: `${row.id}-${index}`, word, meaning: '', tags: [] }));
       const word = choices[row.correctIndex];
       if (type === 'wordclaw' && row.imageUrl) return { kind: 'draw', id: row.id, picture: { imageUrl: row.imageUrl, answer: word.word, words: choices } };

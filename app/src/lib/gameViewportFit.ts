@@ -17,7 +17,7 @@ export function gameCanvasBounds(canvas: HTMLElement): Bounds {
     if (!rect.width || !rect.height) return;
     const image = ['IMG', 'SVG', 'CANVAS', 'VIDEO', 'IFRAME'].includes(element.tagName);
     const control = element.matches('button,input,select,textarea');
-    const scrollArea = element instanceof HTMLElement && (
+    const scrollArea = element.hasAttribute('data-game-contained') || element instanceof HTMLElement && (
       (/auto|scroll/.test(style.overflowY) && element.scrollHeight > element.clientHeight + 2)
       || (/auto|scroll/.test(style.overflowX) && element.scrollWidth > element.clientWidth + 2));
     const painted = !transparent(style.backgroundColor) || style.backgroundImage !== 'none'
