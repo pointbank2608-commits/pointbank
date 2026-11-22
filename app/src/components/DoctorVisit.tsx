@@ -1,5 +1,6 @@
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useRef, useState } from 'react';
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
+
+import {useRef} from 'react';
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
@@ -43,12 +44,16 @@ function shuffle<T>(a: T[]): T[] {
 }
 
 export default function DoctorVisit({ showKo: showKoProp }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/DoctorVisit.tsx:DoctorVisit',()=>({state:{step,showKo,openWord,setIdx,pickedWord,done,wrong,order,pIdx,pShown,patientId,shown,swapped},refs:{timers:captureGameRef(timers.current)}}),(snapshot,elapsed)=>{setStep(()=>snapshot.state.step);setShowKo(()=>snapshot.state.showKo);setOpenWord(()=>snapshot.state.openWord);setSetIdx(()=>snapshot.state.setIdx);setPickedWord(()=>snapshot.state.pickedWord);setDone(()=>snapshot.state.done);setWrong(()=>snapshot.state.wrong);setOrder(()=>snapshot.state.order);setPIdx(()=>snapshot.state.pIdx);setPShown(()=>snapshot.state.pShown);setPatientId(()=>snapshot.state.patientId);setShown(()=>snapshot.state.shown);setSwapped(()=>snapshot.state.swapped);restoreGameRef(timers,snapshot.refs.timers,elapsed,false);});
+
   const { t } = useTranslation();
-  const [step, setStep] = useState<Step>('words');
-  const [showKo, setShowKo] = useState(showKoProp);
+  const [step, setStep] = useGameHistoryState<Step>("app/src/components/DoctorVisit.tsx:DoctorVisit:step",'words');
+  const [showKo, setShowKo] = useGameHistoryState("app/src/components/DoctorVisit.tsx:DoctorVisit:showKo",showKoProp);
 
   /* ① 낱말 */
-  const [openWord, setOpenWord] = useState<Set<PatientId>>(new Set());
+  const [openWord, setOpenWord] = useGameHistoryState<Set<PatientId>>("app/src/components/DoctorVisit.tsx:DoctorVisit:openWord",new Set());
   function reveal(p: Patient) {
     setOpenWord((s) => new Set(s).add(p.id));
     playSfx(GAME_SFX.doctor.reveal);
@@ -56,16 +61,16 @@ export default function DoctorVisit({ showKo: showKoProp }: Props) {
   }
 
   /* ② 짝 맞추기 */
-  const [setIdx, setSetIdx] = useState(0);
-  const [pickedWord, setPickedWord] = useState<PatientId | null>(null);
-  const [done, setDone] = useState<Set<PatientId>>(new Set());
-  const [wrong, setWrong] = useState<PatientId | null>(null);
-  const [order, setOrder] = useState<PatientId[]>(() => shuffle(MATCH_SETS[0]));
-  const timers = useRef<number[]>([]);
-  useEffect(() => {
+  const [setIdx, setSetIdx] = useGameHistoryState("app/src/components/DoctorVisit.tsx:DoctorVisit:setIdx",0);
+  const [pickedWord, setPickedWord] = useGameHistoryState<PatientId | null>("app/src/components/DoctorVisit.tsx:DoctorVisit:pickedWord",null);
+  const [done, setDone] = useGameHistoryState<Set<PatientId>>("app/src/components/DoctorVisit.tsx:DoctorVisit:done",new Set());
+  const [wrong, setWrong] = useGameHistoryState<PatientId | null>("app/src/components/DoctorVisit.tsx:DoctorVisit:wrong",null);
+  const [order, setOrder] = useGameHistoryState<PatientId[]>("app/src/components/DoctorVisit.tsx:DoctorVisit:order",() => shuffle(MATCH_SETS[0]));
+  const timers = useGameHistoryRef<number[]>("app/src/components/DoctorVisit.tsx:DoctorVisit:timers",[]);
+  useGameHistoryEffect(() => {
     const l = timers.current;
-    return () => l.forEach((id) => gameClock.clearTimeout(id));
-  }, []);
+    return () => l.forEach((id) => historyClock.clearTimeout(id));
+  }, [], false, "app/src/components/DoctorVisit.tsx:effect1");
   function loadSet(i: number) {
     setSetIdx(i);
     setDone(new Set());
@@ -82,14 +87,14 @@ export default function DoctorVisit({ showKo: showKoProp }: Props) {
     } else {
       setWrong(id);
       playSfx(GAME_SFX.doctor.wrong);
-      timers.current.push(gameClock.setTimeout(() => setWrong(null), 500));
+      timers.current.push(historyClock.setTimeout(() => setWrong(null), 500));
     }
   }
   const setDoneAll = done.size >= MATCH_SETS[setIdx].length;
 
   /* ③ What's the problem? */
-  const [pIdx, setPIdx] = useState(0);
-  const [pShown, setPShown] = useState(false);
+  const [pIdx, setPIdx] = useGameHistoryState("app/src/components/DoctorVisit.tsx:DoctorVisit:pIdx",0);
+  const [pShown, setPShown] = useGameHistoryState("app/src/components/DoctorVisit.tsx:DoctorVisit:pShown",false);
   function revealProblem() {
     setPShown(true);
     playSfx(GAME_SFX.doctor.reveal);
@@ -101,16 +106,16 @@ export default function DoctorVisit({ showKo: showKoProp }: Props) {
   }
 
   /* ④ 진료실 */
-  const [patientId, setPatientId] = useState<PatientId>('headache');
-  const [shown, setShown] = useState(0);
-  const [swapped, setSwapped] = useState(false);
+  const [patientId, setPatientId] = useGameHistoryState<PatientId>("app/src/components/DoctorVisit.tsx:DoctorVisit:patientId",'headache');
+  const [shown, setShown] = useGameHistoryState("app/src/components/DoctorVisit.tsx:DoctorVisit:shown",0);
+  const [swapped, setSwapped] = useGameHistoryState("app/src/components/DoctorVisit.tsx:DoctorVisit:swapped",false);
   const patient = patientById(patientId);
   const lines = clinicLines(patient);
   const chatRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     const el = chatRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [shown]);
+  }, [shown], false, "app/src/components/DoctorVisit.tsx:effect2");
   function nextLine() {
     if (shown >= lines.length) return;
     setShown(shown + 1);

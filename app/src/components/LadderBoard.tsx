@@ -1,7 +1,8 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
 import { shuffledResultIds, type LadderResultOrder } from '../lib/ladderSetup';
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+
+import {useLayoutEffect, useMemo, useRef, type CSSProperties} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGamePlay } from './GameThemeFrame';
 import { announceRoundDone } from '../lib/teamOrder';
@@ -69,37 +70,41 @@ export default function LadderBoard({
   templateName,
   onRenameTemplate,
 }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/LadderBoard.tsx:LadderBoard',()=>({state:{mapping,resultIds,mode,grid,revealed,runningSet},refs:{revealedBefore:captureGameRef(revealedBefore.current),stopMusicRef:captureGameRef(stopMusicRef.current),oneStopsRef:captureGameRef(oneStopsRef.current),timersRef:captureGameRef(timersRef.current)}}),(snapshot,elapsed)=>{setMapping(()=>snapshot.state.mapping);setResultIds(()=>snapshot.state.resultIds);setMode(()=>snapshot.state.mode);setGrid(()=>snapshot.state.grid);setRevealed(()=>snapshot.state.revealed);setRunningSet(()=>snapshot.state.runningSet);restoreGameRef(revealedBefore,snapshot.refs.revealedBefore,elapsed,false);stopMusicRef.current();restoreGameRef(stopMusicRef,snapshot.refs.stopMusicRef,elapsed,false);restoreGameRef(oneStopsRef,snapshot.refs.oneStopsRef,elapsed,false);restoreGameRef(timersRef,snapshot.refs.timersRef,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden, fullscreen } = useGamePlay();
   const n = participants.length;
-  const [mapping, setMapping] = useState<number[] | null>(null);
-  const [resultIds, setResultIds] = useState<string[]>([]);
+  const [mapping, setMapping] = useGameHistoryState<number[] | null>("app/src/components/LadderBoard.tsx:LadderBoard:mapping",null);
+  const [resultIds, setResultIds] = useGameHistoryState<string[]>("app/src/components/LadderBoard.tsx:LadderBoard:resultIds",[]);
   const arrangedResults = mapping === null || resultOrder === 'input' ? results : [
     ...resultIds.map(id => results.find(r => r.id === id)).filter((r): r is GameItem => !!r),
     ...results.filter(r => !resultIds.includes(r.id)),
   ];
-  const [mode, setMode] = useState<Mode>('all');
-  const [grid, setGrid] = useState<LadderGrid>(() => emptyLadder(Math.max(n, 2), DEFAULT_ROWS));
-  const [revealed, setRevealed] = useState<Set<number>>(new Set());
+  const [mode, setMode] = useGameHistoryState<Mode>("app/src/components/LadderBoard.tsx:LadderBoard:mode",'all');
+  const [grid, setGrid] = useGameHistoryState<LadderGrid>("app/src/components/LadderBoard.tsx:LadderBoard:grid",() => emptyLadder(Math.max(n, 2), DEFAULT_ROWS));
+  const [revealed, setRevealed] = useGameHistoryState<Set<number>>("app/src/components/LadderBoard.tsx:LadderBoard:revealed",new Set());
   // 결과가 열릴 때마다 "한 판 끝"을 알린다 — 차례 바가 자동 넘김을 켜 두었으면 다음 차례로 넘어간다
-  const revealedBefore = useRef(0);
-  useEffect(() => {
+  const revealedBefore = useGameHistoryRef("app/src/components/LadderBoard.tsx:LadderBoard:revealedBefore",0);
+  useGameHistoryEffect(() => {
     if (revealed.size > revealedBefore.current) announceRoundDone();
     revealedBefore.current = revealed.size;
-  }, [revealed]);
-  const [runningSet, setRunningSet] = useState<Set<number>>(new Set());
-  const [labelEdit, setLabelEdit] = useState<LabelEdit | null>(null);
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
+  }, [revealed], false, "app/src/components/LadderBoard.tsx:effect1");
+  const [runningSet, setRunningSet] = useGameHistoryState<Set<number>>("app/src/components/LadderBoard.tsx:LadderBoard:runningSet",new Set());
+  const [labelEdit, setLabelEdit] = useGameHistoryState<LabelEdit | null>("app/src/components/LadderBoard.tsx:LadderBoard:labelEdit",null);
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/LadderBoard.tsx:LadderBoard:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/LadderBoard.tsx:LadderBoard:templateNameDraft",'');
   const pathRefs = useRef<(SVGPathElement | null)[]>([]);
-  const stopMusicRef = useRef<() => void>(() => {});
-  const oneStopsRef = useRef<(() => void)[]>([]);
-  const timersRef = useRef<ReturnType<typeof gameClock.setTimeout>[]>([]);
+  const stopMusicRef = useGameHistoryRef<() => void>("app/src/components/LadderBoard.tsx:LadderBoard:stopMusicRef",() => {});
+  const oneStopsRef = useGameHistoryRef<(() => void)[]>("app/src/components/LadderBoard.tsx:LadderBoard:oneStopsRef",[]);
+  const timersRef = useGameHistoryRef<ReturnType<typeof historyClock.setTimeout>[]>("app/src/components/LadderBoard.tsx:LadderBoard:timersRef",[]);
   const scaleOuterRef = useRef<HTMLDivElement>(null);
   const scaleContentRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-  const [naturalSize, setNaturalSize] = useState({ w: 0, h: 0 });
+  const [scale, setScale] = useGameHistoryState("app/src/components/LadderBoard.tsx:LadderBoard:scale",1);
+  const [naturalSize, setNaturalSize] = useGameHistoryState("app/src/components/LadderBoard.tsx:LadderBoard:naturalSize",{ w: 0, h: 0 });
 
   const canEditBoard = !!editable && !itemsHidden && mapping === null;
   const editItems = labelEdit?.kind === 'participant' ? participants : results;
@@ -129,11 +134,11 @@ export default function LadderBoard({
 
   // 게임을 시작하기 전(참가자만 편집 중)에는 세로줄 + 이름 칸만 미리 보여준다.
   // 실제로 사다리를 탄 적이 없는 동안은(mapping === null) 참가자 수가 바뀔 때마다 빈 틀을 다시 맞춘다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (mapping) return;
     setGrid(emptyLadder(Math.max(n, 2), DEFAULT_ROWS));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [n]);
+  }, [n], false, "app/src/components/LadderBoard.tsx:effect2");
 
   const width = Math.max(n, 2) * COL_W;
   // 사다리를 새로 만들면 줄 수가 늘어나(참가자 × 3) 화면보다 길어져 위가 잘렸다(2026-10-03 사용자 제보) —
@@ -229,8 +234,8 @@ export default function LadderBoard({
   }
 
   function revealPathEls(indices: number[], onDone: () => void) {
-    gameClock.requestAnimationFrame(() => {
-      gameClock.requestAnimationFrame(() => {
+    historyClock.requestAnimationFrame(() => {
+      historyClock.requestAnimationFrame(() => {
         indices.forEach((i) => {
           const el = pathRefs.current[i];
           if (!el) return;
@@ -239,7 +244,7 @@ export default function LadderBoard({
         });
       });
     });
-    const timer = gameClock.setTimeout(onDone, RUN_MS + 150);
+    const timer = historyClock.setTimeout(onDone, RUN_MS + 150);
     timersRef.current.push(timer);
   }
 

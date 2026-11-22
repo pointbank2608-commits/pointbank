@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
+import {useRef, type CSSProperties} from 'react';
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
@@ -131,25 +132,29 @@ function cardOrder(): Order {
 }
 
 export default function IceCreamShop({ showKo: showKoProp, menu = 'full', currency = '£' }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/IceCreamShop.tsx:IceCreamShop',()=>({state:{step,showKo,shown,order,open,swapped,card},refs:{timers:captureGameRef(timers.current)}}),(snapshot,elapsed)=>{setStep(()=>snapshot.state.step);setShowKo(()=>snapshot.state.showKo);setShown(()=>snapshot.state.shown);setOrder(()=>snapshot.state.order);setOpen(()=>snapshot.state.open);setSwapped(()=>snapshot.state.swapped);setCard(()=>snapshot.state.card);restoreGameRef(timers,snapshot.refs.timers,elapsed,false);});
+
   const { t } = useTranslation();
   configureShop({ menu, currency });
-  const [step, setStep] = useState<Step>('menu');
-  useEffect(() => () => { window.speechSynthesis?.cancel(); }, [step]);
-  const [showKo, setShowKo] = useState(showKoProp);
-  const timers = useRef<number[]>([]);
-  useEffect(() => {
+  const [step, setStep] = useGameHistoryState<Step>("app/src/components/IceCreamShop.tsx:IceCreamShop:step",'menu');
+  useGameHistoryEffect(() => () => { window.speechSynthesis?.cancel(); }, [step], false, "app/src/components/IceCreamShop.tsx:effect1");
+  const [showKo, setShowKo] = useGameHistoryState("app/src/components/IceCreamShop.tsx:IceCreamShop:showKo",showKoProp);
+  const timers = useGameHistoryRef<number[]>("app/src/components/IceCreamShop.tsx:IceCreamShop:timers",[]);
+  useGameHistoryEffect(() => {
     const l = timers.current;
-    return () => l.forEach((id) => window.clearTimeout(id));
-  }, []);
+    return () => l.forEach((id) => historyClock.clearTimeout(id));
+  }, [], false, "app/src/components/IceCreamShop.tsx:effect2");
 
   /* ---- 주문하기 ---- */
-  const [shown, setShown] = useState(0);
-  const [order, setOrder] = useState<Order>(EMPTY_ORDER);
+  const [shown, setShown] = useGameHistoryState("app/src/components/IceCreamShop.tsx:IceCreamShop:shown",0);
+  const [order, setOrder] = useGameHistoryState<Order>("app/src/components/IceCreamShop.tsx:IceCreamShop:order",EMPTY_ORDER);
   const chatRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     const el = chatRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [shown, order]);
+  }, [shown, order], false, "app/src/components/IceCreamShop.tsx:effect3");
 
   const lastIdx = shown - 1;
   const lastLine = lastIdx >= 0 ? SHOP_LINES[lastIdx] : null;
@@ -223,18 +228,18 @@ export default function IceCreamShop({ showKo: showKoProp, menu = 'full', curren
     } else if (need === 'topping') chooseTopping(randomOf<ShopOption | 'none'>([...TOPPINGS, 'none']));
   }
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (step === 'order' && finished) playSfx(GAME_SFX.icecream.done);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [finished]);
+  }, [finished], false, "app/src/components/IceCreamShop.tsx:effect4");
 
   /* ---- 기억하기 ---- */
-  const [open, setOpen] = useState<Set<string>>(new Set());
+  const [open, setOpen] = useGameHistoryState<Set<string>>("app/src/components/IceCreamShop.tsx:IceCreamShop:open",new Set());
   const bank = [...new Set(REMEMBER_LINES.flatMap((l) => l.blank))];
 
   /* ---- 짝 연습 ---- */
-  const [swapped, setSwapped] = useState(false);
-  const [card, setCard] = useState<Order | null>(null);
+  const [swapped, setSwapped] = useGameHistoryState("app/src/components/IceCreamShop.tsx:IceCreamShop:swapped",false);
+  const [card, setCard] = useGameHistoryState<Order | null>("app/src/components/IceCreamShop.tsx:IceCreamShop:card",null);
   function drawCard() {
     setCard(cardOrder());
     playSfx(GAME_SFX.icecream.pick);

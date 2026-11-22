@@ -1,7 +1,9 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
+import {captureWatermelonWorld,restoreWatermelonWorld} from '../lib/watermelonWorld';
 import { gameKeyboardAllowed } from '../lib/gameKeyboard';
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
+
+import {useMemo, useRef, type CSSProperties, type PointerEvent} from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   asSentenceSlot,
@@ -214,31 +216,36 @@ function FruitBall({
 }
 
 export default function Watermelon({ items, patternId }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('watermelon-physics',()=>captureWatermelonWorld(worldRef.current),snapshot=>restoreWatermelonWorld(worldRef.current,snapshot));
+ useGameHistorySnapshot('src/components/Watermelon.tsx:Watermelon',()=>({state:{fruits,nextItem,aimX,score,popping,over,burst},refs:{pictureTurnRef:captureGameRef(pictureTurnRef.current),nextRef:captureGameRef(nextRef.current),dropLock:captureGameRef(dropLock.current),overflowMs:captureGameRef(overflowMs.current),patternRef:captureGameRef(patternRef.current),overRef:captureGameRef(overRef.current),aimXRef:captureGameRef(aimXRef.current),poolRef:captureGameRef(poolRef.current),nudgeTimer:captureGameRef(nudgeTimer.current)}}),(snapshot,elapsed)=>{setFruits(()=>snapshot.state.fruits);setNextItem(()=>snapshot.state.nextItem);setAimX(()=>snapshot.state.aimX);setScore(()=>snapshot.state.score);setPopping(()=>snapshot.state.popping);setOver(()=>snapshot.state.over);setBurst(()=>snapshot.state.burst);restoreGameRef(pictureTurnRef,snapshot.refs.pictureTurnRef,elapsed,false);restoreGameRef(nextRef,snapshot.refs.nextRef,elapsed,false);restoreGameRef(dropLock,snapshot.refs.dropLock,elapsed,false);restoreGameRef(overflowMs,snapshot.refs.overflowMs,elapsed,false);restoreGameRef(patternRef,snapshot.refs.patternRef,elapsed,false);restoreGameRef(overRef,snapshot.refs.overRef,elapsed,false);restoreGameRef(aimXRef,snapshot.refs.aimXRef,elapsed,false);restoreGameRef(poolRef,snapshot.refs.poolRef,elapsed,false);restoreGameRef(nudgeTimer,snapshot.refs.nudgeTimer,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
-  const pictureTurnRef = useRef(pictureTurn);
+  const pictureTurnRef = useGameHistoryRef("app/src/components/Watermelon.tsx:Watermelon:pictureTurnRef",pictureTurn);
   pictureTurnRef.current = pictureTurn;
   const { t } = useTranslation();
   const pattern = useMemo(() => getSentencePattern(patternId), [patternId]);
   const pool = useMemo(() => poolForPattern(items, patternId), [items, patternId]);
   const tankRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<WatermelonWorld | null>(null);
-  const nextRef = useRef<GameItem | null>(null);
-  const dropLock = useRef(false);
-  const overflowMs = useRef(0);
-  const patternRef = useRef(pattern);
-  const overRef = useRef(false);
+  const nextRef = useGameHistoryRef<GameItem | null>("app/src/components/Watermelon.tsx:Watermelon:nextRef",null);
+  const dropLock = useGameHistoryRef("app/src/components/Watermelon.tsx:Watermelon:dropLock",false);
+  const overflowMs = useGameHistoryRef("app/src/components/Watermelon.tsx:Watermelon:overflowMs",0);
+  const patternRef = useGameHistoryRef("app/src/components/Watermelon.tsx:Watermelon:patternRef",pattern);
+  const overRef = useGameHistoryRef("app/src/components/Watermelon.tsx:Watermelon:overRef",false);
   const mergeRef = useRef<(world: WatermelonWorld, a: FruitBody, b: FruitBody) => boolean>(() => false);
   patternRef.current = pattern;
-  const [fruits, setFruits] = useState<FruitSnapshot[]>([]);
-  const [nextItem, setNextItem] = useState<GameItem | null>(null);
-  const [aimX, setAimX] = useState(TANK_W / 2);
-  const aimXRef = useRef(aimX);
-  const poolRef = useRef(pool);
-  const nudgeTimer = useRef<number | null>(null);
+  const [fruits, setFruits] = useGameHistoryState<FruitSnapshot[]>("app/src/components/Watermelon.tsx:Watermelon:fruits",[]);
+  const [nextItem, setNextItem] = useGameHistoryState<GameItem | null>("app/src/components/Watermelon.tsx:Watermelon:nextItem",null);
+  const [aimX, setAimX] = useGameHistoryState("app/src/components/Watermelon.tsx:Watermelon:aimX",TANK_W / 2);
+  const aimXRef = useGameHistoryRef("app/src/components/Watermelon.tsx:Watermelon:aimXRef",aimX);
+  const poolRef = useGameHistoryRef("app/src/components/Watermelon.tsx:Watermelon:poolRef",pool);
+  const nudgeTimer = useGameHistoryRef<number | null>("app/src/components/Watermelon.tsx:Watermelon:nudgeTimer",null);
   aimXRef.current = aimX;
   poolRef.current = pool;
-  const [score, setScore] = useState(0);
-  const [popping, setPopping] = useState<{
+  const [score, setScore] = useGameHistoryState("app/src/components/Watermelon.tsx:Watermelon:score",0);
+  const [popping, setPopping] = useGameHistoryState<{
     id: string;
     x: number;
     y: number;
@@ -246,11 +253,11 @@ export default function Watermelon({ items, patternId }: Props) {
     tokens: SentenceToken[];
     agreement?: TokenChange | null;
     agreeing?: boolean;
-  } | null>(null);
-  const [over, setOver] = useState(false);
-  const [burst, setBurst] = useState<string | null>(null);
+  } | null>("app/src/components/Watermelon.tsx:Watermelon:popping",null);
+  const [over, setOver] = useGameHistoryState("app/src/components/Watermelon.tsx:Watermelon:over",false);
+  const [burst, setBurst] = useGameHistoryState<string | null>("app/src/components/Watermelon.tsx:Watermelon:burst",null);
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (pool.length === 0) {
       nextRef.current = null;
       setNextItem(null);
@@ -261,9 +268,9 @@ export default function Watermelon({ items, patternId }: Props) {
     const first = pickItem(pool);
     nextRef.current = first;
     setNextItem(first);
-  }, [pool]);
+  }, [pool], false, "app/src/components/Watermelon.tsx:effect1");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     const world = createWatermelonWorld({
       width: TANK_W,
       height: TANK_H,
@@ -276,9 +283,9 @@ export default function Watermelon({ items, patternId }: Props) {
     worldRef.current = world;
     preloadWatermelonSfx();
     let raf = 0;
-    let last = gameClock.now();
+    let last = historyClock.now();
     const loop = (now: number) => {
-      const dt = now - last;
+      const dt = Math.max(0, Math.min(50,now - last));
       last = now;
       stepWatermelonWorld(world, dt);
       setFruits(snapshotFruits(world));
@@ -292,15 +299,15 @@ export default function Watermelon({ items, patternId }: Props) {
       } else if (overflowBodies(world).length === 0) {
         overflowMs.current = 0;
       }
-      raf = gameClock.requestAnimationFrame(loop);
+      raf = historyClock.requestAnimationFrame(loop);
     };
-    raf = gameClock.requestAnimationFrame(loop);
+    raf = historyClock.requestAnimationFrame(loop);
     return () => {
-      gameClock.cancelAnimationFrame(raf);
+      historyClock.cancelAnimationFrame(raf);
       destroyWatermelonWorld(world);
       worldRef.current = null;
     };
-  }, []);
+  }, [], false, "app/src/components/Watermelon.tsx:effect2");
 
   mergeRef.current = (world, a, b) => {
     if (overRef.current) return false;
@@ -321,14 +328,14 @@ export default function Watermelon({ items, patternId }: Props) {
     if (isCompleteSentence(tokens, current.slots)) {
       const delay = agreement ? AGREE_MS : COMPLETE_HOLD_MS;
       const id = body.fruitData.id;
-      gameClock.setTimeout(() => {
+      historyClock.setTimeout(() => {
         const live = worldRef.current;
         if (!live || overRef.current) return;
         const still = findFruit(live, id);
         if (!still) return;
         const stage = fruitStageForCount(tokens.length);
         setPopping({
-          id: `pop-${gameClock.dateNow()}`,
+          id: `pop-${historyClock.dateNow()}`,
           x: still.position.x,
           y: still.position.y,
           r: stage.radius,
@@ -339,7 +346,7 @@ export default function Watermelon({ items, patternId }: Props) {
         playWatermelonSfx('pop');
         setScore((s) => s + pointsForComplete(current));
         removeFruit(live, still);
-        gameClock.setTimeout(() => {
+        historyClock.setTimeout(() => {
           setPopping(null);
           setBurst(null);
         }, 700);
@@ -373,7 +380,7 @@ export default function Watermelon({ items, patternId }: Props) {
 
   function clearNudge() {
     if (nudgeTimer.current != null) {
-      gameClock.clearInterval(nudgeTimer.current);
+      historyClock.clearInterval(nudgeTimer.current);
       nudgeTimer.current = null;
     }
   }
@@ -384,7 +391,7 @@ export default function Watermelon({ items, patternId }: Props) {
     event.currentTarget.setPointerCapture(event.pointerId);
     clearNudge();
     nudgeBy(dir);
-    nudgeTimer.current = gameClock.setInterval(() => nudgeBy(dir), 70);
+    nudgeTimer.current = historyClock.setInterval(() => nudgeBy(dir), 70);
   }
 
   function drop() {
@@ -407,12 +414,12 @@ export default function Watermelon({ items, patternId }: Props) {
     const following = pickItem(poolRef.current, item.id);
     nextRef.current = following;
     setNextItem(following);
-    gameClock.setTimeout(() => {
+    historyClock.setTimeout(() => {
       dropLock.current = false;
     }, 420);
   }
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     function onKey(event: KeyboardEvent) {
       if (!gameKeyboardAllowed(event)) return;
       if (event.key === 'ArrowLeft') {
@@ -431,7 +438,7 @@ export default function Watermelon({ items, patternId }: Props) {
       window.removeEventListener('keydown', onKey);
       clearNudge();
     };
-  }, []);
+  }, [], true, "app/src/components/Watermelon.tsx:effect3");
 
   if (pool.length === 0) {
     return (

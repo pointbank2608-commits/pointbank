@@ -1,7 +1,8 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
 import { gameKeyboardAllowed } from '../lib/gameKeyboard';
-import { gameClock } from '../lib/gameClock';
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+
+import {forwardRef, useImperativeHandle} from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import { useGamePlay } from './GameThemeFrame';
@@ -54,29 +55,33 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
   { items, maxAttempts, editable, onEditItem, templateName, onRenameTemplate, onAddItem, onRemoveItem, onComplete },
   ref,
 ) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/Hangman.tsx:Hangman',()=>({state:{order,pos,guessed,wrongCount,status,score,inputValue,prevSnapshot,keyCase},refs:{playRef:captureGameRef(playRef.current),doneRef:captureGameRef(doneRef.current)}}),(snapshot,elapsed)=>{setOrder(()=>snapshot.state.order);setPos(()=>snapshot.state.pos);setGuessed(()=>snapshot.state.guessed);setWrongCount(()=>snapshot.state.wrongCount);setStatus(()=>snapshot.state.status);setScore(()=>snapshot.state.score);setInputValue(()=>snapshot.state.inputValue);setPrevSnapshot(()=>snapshot.state.prevSnapshot);setKeyCase(()=>snapshot.state.keyCase);restoreGameRef(playRef,snapshot.refs.playRef,elapsed,false);restoreGameRef(doneRef,snapshot.refs.doneRef,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
-  const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
-  const [pos, setPos] = useState(0);
-  const [guessed, setGuessed] = useState<Set<string>>(new Set());
-  const [wrongCount, setWrongCount] = useState(0);
-  const [status, setStatus] = useState<Status>('playing');
-  const [score, setScore] = useState(0);
-  const [inputValue, setInputValue] = useState('');
-  const [prevSnapshot, setPrevSnapshot] = useState<Snapshot | null>(null);
-  const [keyCase, setKeyCase] = useState<'upper' | 'lower'>('upper');
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/Hangman.tsx:Hangman:order",() => shuffle(items.map((_, i) => i)));
+  const [pos, setPos] = useGameHistoryState("app/src/components/Hangman.tsx:Hangman:pos",0);
+  const [guessed, setGuessed] = useGameHistoryState<Set<string>>("app/src/components/Hangman.tsx:Hangman:guessed",new Set());
+  const [wrongCount, setWrongCount] = useGameHistoryState("app/src/components/Hangman.tsx:Hangman:wrongCount",0);
+  const [status, setStatus] = useGameHistoryState<Status>("app/src/components/Hangman.tsx:Hangman:status",'playing');
+  const [score, setScore] = useGameHistoryState("app/src/components/Hangman.tsx:Hangman:score",0);
+  const [inputValue, setInputValue] = useGameHistoryState("app/src/components/Hangman.tsx:Hangman:inputValue",'');
+  const [prevSnapshot, setPrevSnapshot] = useGameHistoryState<Snapshot | null>("app/src/components/Hangman.tsx:Hangman:prevSnapshot",null);
+  const [keyCase, setKeyCase] = useGameHistoryState<'upper' | 'lower'>("app/src/components/Hangman.tsx:Hangman:keyCase",'upper');
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/Hangman.tsx:Hangman:itemDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/Hangman.tsx:Hangman:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/Hangman.tsx:Hangman:templateNameDraft",'');
   const itemKey = items.map((item) => item.id).join(',');
   const count = items.length;
 
   // 오른쪽 목록 입력창의 초안 텍스트를 실제 항목과 맞춰둔다 — 타이핑 중엔 이 draft를
   // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
-  }, [items]);
+  }, [items], false, "app/src/components/Hangman.tsx:effect1");
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -104,10 +109,10 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
   const word =
     items.length > 0 && order.length > 0 && pos < order.length ? (items[order[pos]]?.label ?? '') : '';
 
-  const playRef = useRef({ status, guessed, word, wrongCount, maxAttempts, score });
+  const playRef = useGameHistoryRef("app/src/components/Hangman.tsx:Hangman:playRef",{ status, guessed, word, wrongCount, maxAttempts, score });
   playRef.current = { status, guessed, word, wrongCount, maxAttempts, score };
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setOrder(shuffle(items.map((_, i) => i)));
     setPos(0);
     setGuessed(new Set());
@@ -116,7 +121,7 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
     setScore(0);
     setInputValue('');
     setPrevSnapshot(null);
-  }, [itemKey]);
+  }, [itemKey], false, "app/src/components/Hangman.tsx:effect2");
 
   function applyGuess(raw: string) {
     const ch = raw.trim().slice(0, 1);
@@ -140,7 +145,7 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
         play.status = 'lost';
         setStatus('lost');
         playSfx(GAME_SFX.hangman.lose);
-        gameClock.setTimeout(() => playSfx(COMMON_SFX.tryAgain), 1400);
+        historyClock.setTimeout(() => playSfx(COMMON_SFX.tryAgain), 1400);
       } else playSfx(GAME_SFX.hangman.miss);
       return;
     }
@@ -150,7 +155,7 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
       setStatus('won');
       setScore((s) => s + 1);
       playSfx(GAME_SFX.hangman.win);
-      gameClock.setTimeout(() => playSfx(COMMON_SFX.praise), 1100);
+      historyClock.setTimeout(() => playSfx(COMMON_SFX.praise), 1100);
     } else playSfx(GAME_SFX.hangman.hit);
   }
 
@@ -165,7 +170,7 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
     },
   }));
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (!gameKeyboardAllowed(e)) return;
       const tag = (e.target as HTMLElement | null)?.tagName;
@@ -177,10 +182,10 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [], true, "app/src/components/Hangman.tsx:effect3");
 
-  const doneRef = useRef(false);
-  useEffect(() => {
+  const doneRef = useGameHistoryRef("app/src/components/Hangman.tsx:Hangman:doneRef",false);
+  useGameHistoryEffect(() => {
     if (!onComplete) return;
     if (order.length > 0 && pos >= order.length) {
       if (!doneRef.current) {
@@ -191,7 +196,7 @@ const Hangman = forwardRef<UndoHandle, Props>(function Hangman(
       doneRef.current = false;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pos, order.length]);
+  }, [pos, order.length], false, "app/src/components/Hangman.tsx:effect4");
 
   if (items.length === 0) {
     return (

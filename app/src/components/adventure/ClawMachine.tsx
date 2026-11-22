@@ -1,4 +1,5 @@
-import { useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
+import {useGameHistorySnapshot, useGameHistoryState} from '../../context/GameHistoryContext';
+import {useRef, type CSSProperties, type KeyboardEvent} from 'react';
 import { wordKey, type AdventureConfig, type AdventureRound } from '../../lib/adventureGames';
 import type { AdventureEngine } from '../../lib/useAdventureEngine';
 import { shuffled } from '../../lib/storybook';
@@ -29,10 +30,13 @@ function Grabber() {
 }
 
 export default function ClawMachine({c,e,r}:{c:AdventureConfig;e:AdventureEngine;r:Draw}) {
-  const [words] = useState(()=>shuffled(r.picture ? r.picture.words : r.choices));
-  const [selected,setSelected] = useState(0);
-  const [collected,setCollected] = useState<string[]>([]);
-  const [pick,setPick] = useState<Pick>();
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/adventure/ClawMachine.tsx:ClawMachine',()=>({state:{words,selected,collected,pick},refs:{}}),(snapshot,elapsed)=>{historySetWords(()=>snapshot.state.words);setSelected(()=>snapshot.state.selected);setCollected(()=>snapshot.state.collected);setPick(()=>snapshot.state.pick);void elapsed;});
+
+  const [words, historySetWords] = useGameHistoryState("app/src/components/adventure/ClawMachine.tsx:ClawMachine:words",()=>shuffled(r.picture ? r.picture.words : r.choices));
+  const [selected,setSelected] = useGameHistoryState("app/src/components/adventure/ClawMachine.tsx:ClawMachine:selected",0);
+  const [collected,setCollected] = useGameHistoryState<string[]>("app/src/components/adventure/ClawMachine.tsx:ClawMachine:collected",[]);
+  const [pick,setPick] = useGameHistoryState<Pick|undefined>("app/src/components/adventure/ClawMachine.tsx:ClawMachine:pick",undefined);
   const glass = useRef<HTMLDivElement>(null);
   const capsules = useRef<(HTMLButtonElement | null)[]>([]);
   const matches = words.filter(word=>r.picture

@@ -1,7 +1,8 @@
+import {useGameHistory,useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
 import { gameKeyboardAllowed } from '../lib/gameKeyboard';
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+
+import {useLayoutEffect} from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
@@ -90,31 +91,35 @@ export default function FindMissing({
   onAddItem,
   onRemoveItem,
 }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/FindMissing.tsx:FindMissing',()=>({state:{phase,board,missingIds,foundIds,offsets,instant,countdown,bigCard},refs:{timerRef:captureGameRef(timerRef.current),tickIntervalRef:captureGameRef(tickIntervalRef.current),stopTickRef:captureGameRef(stopTickRef.current),runIdRef:captureGameRef(runIdRef.current),cardEls:captureGameRef(cardEls.current),firstRectsRef:captureGameRef(firstRectsRef.current),shuffleRef:captureGameRef(shuffleRef.current)}}),(snapshot,elapsed)=>{setPhase(()=>snapshot.state.phase);setBoard(()=>snapshot.state.board);setMissingIds(()=>snapshot.state.missingIds);setFoundIds(()=>snapshot.state.foundIds);setOffsets(()=>snapshot.state.offsets);setInstant(()=>snapshot.state.instant);setCountdown(()=>snapshot.state.countdown);setBigCard(()=>snapshot.state.bigCard);restoreGameRef(timerRef,snapshot.refs.timerRef,elapsed,false);restoreGameRef(tickIntervalRef,snapshot.refs.tickIntervalRef,elapsed,false);stopTickRef.current?.();restoreGameRef(stopTickRef,snapshot.refs.stopTickRef,elapsed,false);restoreGameRef(runIdRef,snapshot.refs.runIdRef,elapsed,false);restoreGameRef(cardEls,snapshot.refs.cardEls,elapsed,false);restoreGameRef(firstRectsRef,snapshot.refs.firstRectsRef,elapsed,false);restoreGameRef(shuffleRef,snapshot.refs.shuffleRef,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
-  const [phase, setPhase] = useState<Phase>('idle');
-  const [board, setBoard] = useState<GameItem[]>([]);
-  const [missingIds, setMissingIds] = useState<Set<string>>(new Set());
-  const [foundIds, setFoundIds] = useState<Set<string>>(new Set());
-  const [offsets, setOffsets] = useState<Record<string, CardOffset>>({});
-  const [instant, setInstant] = useState(false);
-  const [countdown, setCountdown] = useState(memorizeSeconds ?? 0);
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
-  const timerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
-  const tickIntervalRef = useRef<ReturnType<typeof gameClock.setInterval> | null>(null);
-  const stopTickRef = useRef<(() => void) | null>(null);
-  const runIdRef = useRef(0);
-  const cardEls = useRef(new Map<string, HTMLElement>());
-  const firstRectsRef = useRef<Map<string, DOMRect> | null>(null);
-  const shuffleRef = useRef(shuffleCards);
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/FindMissing.tsx:FindMissing:phase",'idle');
+  const [board, setBoard] = useGameHistoryState<GameItem[]>("app/src/components/FindMissing.tsx:FindMissing:board",[]);
+  const [missingIds, setMissingIds] = useGameHistoryState<Set<string>>("app/src/components/FindMissing.tsx:FindMissing:missingIds",new Set());
+  const [foundIds, setFoundIds] = useGameHistoryState<Set<string>>("app/src/components/FindMissing.tsx:FindMissing:foundIds",new Set());
+  const [offsets, setOffsets] = useGameHistoryState<Record<string, CardOffset>>("app/src/components/FindMissing.tsx:FindMissing:offsets",{});
+  const [instant, setInstant] = useGameHistoryState("app/src/components/FindMissing.tsx:FindMissing:instant",false);
+  const [countdown, setCountdown] = useGameHistoryState("app/src/components/FindMissing.tsx:FindMissing:countdown",memorizeSeconds ?? 0);
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/FindMissing.tsx:FindMissing:itemDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/FindMissing.tsx:FindMissing:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/FindMissing.tsx:FindMissing:templateNameDraft",'');
+  const timerRef = useGameHistoryRef<ReturnType<typeof historyClock.setTimeout> | null>("app/src/components/FindMissing.tsx:FindMissing:timerRef",null);
+  const tickIntervalRef = useGameHistoryRef<ReturnType<typeof historyClock.setInterval> | null>("app/src/components/FindMissing.tsx:FindMissing:tickIntervalRef",null);
+  const stopTickRef = useGameHistoryRef<(() => void) | null>("app/src/components/FindMissing.tsx:FindMissing:stopTickRef",null);
+  const runIdRef = useGameHistoryRef("app/src/components/FindMissing.tsx:FindMissing:runIdRef",0);
+  const cardEls = useGameHistoryRef("app/src/components/FindMissing.tsx:FindMissing:cardEls",new Map<string, HTMLElement>());
+  const firstRectsRef = useGameHistoryRef<Map<string, DOMRect> | null>("app/src/components/FindMissing.tsx:FindMissing:firstRectsRef",null);
+  const shuffleRef = useGameHistoryRef("app/src/components/FindMissing.tsx:FindMissing:shuffleRef",shuffleCards);
   shuffleRef.current = shuffleCards;
 
   function stopTicking() {
     if (tickIntervalRef.current) {
-      gameClock.clearInterval(tickIntervalRef.current);
+      historyClock.clearInterval(tickIntervalRef.current);
       tickIntervalRef.current = null;
     }
     if (stopTickRef.current) {
@@ -127,15 +132,15 @@ export default function FindMissing({
 
   // 오른쪽 목록 입력창의 초안 텍스트를 실제 항목과 맞춰둔다 — 타이핑 중엔 이 draft를
   // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
-  }, [items]);
+  }, [items], false, "app/src/components/FindMissing.tsx:effect1");
 
   // 카드 섞기 소리를 처음 섞는 순간 새로 받아오면 살짝 늦게 시작될 수 있어, 화면이 뜨는
   // 시점에 미리 캐시해둔다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     preloadCardSwish();
-  }, []);
+  }, [], false, "app/src/components/FindMissing.tsx:effect2");
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -159,18 +164,18 @@ export default function FindMissing({
 
   function clearTimer() {
     if (timerRef.current) {
-      gameClock.clearTimeout(timerRef.current);
+      historyClock.clearTimeout(timerRef.current);
       timerRef.current = null;
     }
   }
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     return () => {
       clearTimer();
       stopTicking();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [], false, "app/src/components/FindMissing.tsx:effect3");
 
   useLayoutEffect(() => {
     const first = firstRectsRef.current;
@@ -189,8 +194,8 @@ export default function FindMissing({
     setInstant(true);
     setOffsets(next);
     let cancelled = false;
-    const play = gameClock.requestAnimationFrame(() => {
-      gameClock.requestAnimationFrame(() => {
+    const play = historyClock.requestAnimationFrame(() => {
+      historyClock.requestAnimationFrame(() => {
         if (cancelled) return;
         firstRectsRef.current = null;
         setInstant(false);
@@ -199,7 +204,7 @@ export default function FindMissing({
     });
     return () => {
       cancelled = true;
-      gameClock.cancelAnimationFrame(play);
+      historyClock.cancelAnimationFrame(play);
     };
   }, [board, phase]);
 
@@ -224,12 +229,12 @@ export default function FindMissing({
     setPhase('shuffling');
     playShuffleSwish();
     clearTimer();
-    timerRef.current = gameClock.setTimeout(() => {
+    timerRef.current = historyClock.setTimeout(() => {
       if (runId !== runIdRef.current) return;
       if (remaining > 1) {
         shuffleRound(next, remaining - 1, runId);
       } else {
-        timerRef.current = gameClock.setTimeout(() => {
+        timerRef.current = historyClock.setTimeout(() => {
           if (runId !== runIdRef.current) return;
           setOffsets({});
           setPhase('hidden');
@@ -243,7 +248,7 @@ export default function FindMissing({
     hideSome(nextBoard);
     if (shuffleRef.current && nextBoard.length >= 2) {
       setPhase('shuffling');
-      timerRef.current = gameClock.setTimeout(() => {
+      timerRef.current = historyClock.setTimeout(() => {
         if (runId !== runIdRef.current) return;
         shuffleRound(nextBoard, SHUFFLE_ROUNDS, runId);
       }, HIDE_PAUSE_MS);
@@ -278,7 +283,7 @@ export default function FindMissing({
     // 쓴다 — setState updater 안에서 다음 로직을 이어가면 React 배치 타이밍에 따라 ref/state가
     // 아직 안 갱신된 값을 참조하는 버그가 생길 수 있어서(과거에 겪은 패턴), 아예 분리해둔다.
     let secondsLeft = memorizeSeconds;
-    tickIntervalRef.current = gameClock.setInterval(() => {
+    tickIntervalRef.current = historyClock.setInterval(() => {
       if (runId !== runIdRef.current) return;
       secondsLeft -= 1;
       setCountdown(Math.max(secondsLeft, 0));
@@ -298,7 +303,7 @@ export default function FindMissing({
 
   // [?] 카드를 누르면 화면 가득 크게 띄워 뒤집으며 정답을 보여 준다(2026-09-26, 선생님 요청).
   // 닫을 때 판에서도 찾은 것으로 표시한다.
-  const [bigCard, setBigCard] = useState<GameItem | null>(null);
+  const [bigCard, setBigCard] = useGameHistoryState<GameItem | null>("app/src/components/FindMissing.tsx:FindMissing:bigCard",null);
 
   function openBig(itemId: string) {
     if (!missingIds.has(itemId) || foundIds.has(itemId)) return;
@@ -544,18 +549,23 @@ export default function FindMissing({
 /** 화면 가득 뜨는 카드 — 물음표 면으로 커지며 들어온 뒤 뒤집혀 정답 면이 보인다. 아무 데나 누르거나
  * Esc·Space·Enter 로 닫는다. 전체화면(게임 전체화면·발표)에서도 보이게 전체화면 요소 안으로 띄운다. */
 function BigFlipCard({ label, onClose }: { label: string; onClose: () => void }) {
-  const [flipped, setFlipped] = useState(false);
-  const [shown, setShown] = useState(false);
-  useEffect(() => {
+ const history=useGameHistory();
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/FindMissing.tsx:BigFlipCard',()=>({state:{flipped,shown},refs:{}}),(snapshot,elapsed)=>{setFlipped(()=>snapshot.state.flipped);setShown(()=>snapshot.state.shown);void elapsed;});
+
+  const [flipped, setFlipped] = useGameHistoryState("app/src/components/FindMissing.tsx:BigFlipCard:flipped",false);
+  const [shown, setShown] = useGameHistoryState("app/src/components/FindMissing.tsx:BigFlipCard:shown",false);
+  useGameHistoryEffect(() => {
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const a = gameClock.setTimeout(() => setShown(true), 20);
-    const b = gameClock.setTimeout(() => setFlipped(true), reduce ? 60 : 650);
+    const a = historyClock.setTimeout(() => setShown(true), 20);
+    const b = historyClock.setTimeout(() => setFlipped(true), reduce ? 60 : 650);
     return () => {
-      gameClock.clearTimeout(a);
-      gameClock.clearTimeout(b);
+      historyClock.clearTimeout(a);
+      historyClock.clearTimeout(b);
     };
-  }, []);
-  useEffect(() => {
+  }, [], false, "app/src/components/FindMissing.tsx:effect4");
+  useGameHistoryEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (!gameKeyboardAllowed(e)) return;
       if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ' || e.key === 'PageDown') {
@@ -566,7 +576,7 @@ function BigFlipCard({ label, onClose }: { label: string; onClose: () => void })
     }
     document.addEventListener('keydown', onKey, true);
     return () => document.removeEventListener('keydown', onKey, true);
-  }, [onClose]);
+  }, [onClose], true, "app/src/components/FindMissing.tsx:effect5");
 
   const face: React.CSSProperties = {
     position: 'absolute',
@@ -579,6 +589,7 @@ function BigFlipCard({ label, onClose }: { label: string; onClose: () => void })
   return createPortal(
     <div
       role="dialog"
+      data-game-history-owned={history?.owner}
       aria-label={label}
       onClick={onClose}
       className="fixed inset-0 z-[80] flex cursor-pointer items-center justify-center"

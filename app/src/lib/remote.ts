@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import {useGameHistory} from '../context/GameHistoryContext';
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 
@@ -295,11 +296,15 @@ export function runRemoteAction(id: string): boolean {
  * 게임 화면이 사라지면 저절로 지운다.
  */
 export function useRemoteActions(defs: RemoteActionDef[]): void {
+  const history=useGameHistory();
   const latest = useRef(defs);
   latest.current = defs;
   const sig = defs.map((d) => `${d.id}:${d.label}:${d.tone}:${d.color ?? ''}`).join('|');
   useEffect(() => {
-    setRemoteActions(latest.current.map((d) => ({ ...d, run: () => latest.current.find((x) => x.id === d.id)?.run() })));
+    setRemoteActions(latest.current.map((d) => ({ ...d, run: () => {
+      if(history?.restoring)return;
+      history?.begin();latest.current.find((x) => x.id === d.id)?.run();requestAnimationFrame(()=>history?.changed());
+    } })));
     return () => setRemoteActions([]);
-  }, [sig]);
+  }, [sig,history]);
 }

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import {useGameHistorySnapshot, useGameHistoryEffect, useGameHistoryState} from '../context/GameHistoryContext';
+import {} from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { QuizQuestion } from '../lib/types';
@@ -23,19 +24,22 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export default function Quiz({ questions, onContinue }: Props) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/Quiz.tsx:Quiz',()=>({state:{order,pos,selectedChoice,score},refs:{}}),(snapshot,elapsed)=>{setOrder(()=>snapshot.state.order);setPos(()=>snapshot.state.pos);setSelectedChoice(()=>snapshot.state.selectedChoice);setScore(()=>snapshot.state.score);void elapsed;});
+
   const { t } = useTranslation();
-  const [order, setOrder] = useState<number[]>(() => shuffle(questions.map((_, i) => i)));
-  const [pos, setPos] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
-  const [score, setScore] = useState(0);
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/Quiz.tsx:Quiz:order",() => shuffle(questions.map((_, i) => i)));
+  const [pos, setPos] = useGameHistoryState("app/src/components/Quiz.tsx:Quiz:pos",0);
+  const [selectedChoice, setSelectedChoice] = useGameHistoryState<number | null>("app/src/components/Quiz.tsx:Quiz:selectedChoice",null);
+  const [score, setScore] = useGameHistoryState("app/src/components/Quiz.tsx:Quiz:score",0);
   const questionKey = questions.map((q) => q.id).join(',');
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setOrder(shuffle(questions.map((_, i) => i)));
     setPos(0);
     setSelectedChoice(null);
     setScore(0);
-  }, [questionKey]);
+  }, [questionKey], false, "app/src/components/Quiz.tsx:effect1");
 
   const sfx = useGameSfx('quiz');
   useStepSounds(pos, questions.length > 0 && pos >= order.length, sfx.question, sfx.finish);

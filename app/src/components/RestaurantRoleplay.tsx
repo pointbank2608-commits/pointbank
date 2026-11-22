@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
+import {useMemo, useRef} from 'react';
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
@@ -39,41 +40,45 @@ function randomPick<T>(a: T[]): T {
 }
 
 export default function RestaurantRoleplay({ levels, showKo: showKoProp }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/RestaurantRoleplay.tsx:RestaurantRoleplay',()=>({state:{restId,step,showKo,shown,picks,swapped,card},refs:{timers:captureGameRef(timers.current)}}),(snapshot,elapsed)=>{setRestId(()=>snapshot.state.restId);setStep(()=>snapshot.state.step);setShowKo(()=>snapshot.state.showKo);setShown(()=>snapshot.state.shown);setPicks(()=>snapshot.state.picks);setSwapped(()=>snapshot.state.swapped);setCard(()=>snapshot.state.card);restoreGameRef(timers,snapshot.refs.timers,elapsed,false);});
+
   const { t } = useTranslation();
   const list = useMemo(() => {
     const picked = RESTAURANTS.filter((r) => levels.includes(r.id));
     return picked.length > 0 ? picked : RESTAURANTS;
   }, [levels]);
-  const [restId, setRestId] = useState<RestaurantId>(list[0].id);
-  const [step, setStep] = useState<Step>('menu');
-  const [showKo, setShowKo] = useState(showKoProp);
+  const [restId, setRestId] = useGameHistoryState<RestaurantId>("app/src/components/RestaurantRoleplay.tsx:RestaurantRoleplay:restId",list[0].id);
+  const [step, setStep] = useGameHistoryState<Step>("app/src/components/RestaurantRoleplay.tsx:RestaurantRoleplay:step",'menu');
+  const [showKo, setShowKo] = useGameHistoryState("app/src/components/RestaurantRoleplay.tsx:RestaurantRoleplay:showKo",showKoProp);
   const rest: Restaurant = list.find((r) => r.id === restId) ?? list[0];
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (!list.some((r) => r.id === restId)) setRestId(list[0].id);
-  }, [list, restId]);
+  }, [list, restId], false, "app/src/components/RestaurantRoleplay.tsx:effect1");
 
   /* ---- 주문하기 ---- */
-  const [shown, setShown] = useState(0); // 열린 대화 줄 수
-  const [picks, setPicks] = useState<Record<number, MenuItem>>({});
-  const timers = useRef<number[]>([]);
+  const [shown, setShown] = useGameHistoryState("app/src/components/RestaurantRoleplay.tsx:RestaurantRoleplay:shown",0); // 열린 대화 줄 수
+  const [picks, setPicks] = useGameHistoryState<Record<number, MenuItem>>("app/src/components/RestaurantRoleplay.tsx:RestaurantRoleplay:picks",{});
+  const timers = useGameHistoryRef<number[]>("app/src/components/RestaurantRoleplay.tsx:RestaurantRoleplay:timers",[]);
   const chatRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     const l = timers.current;
-    return () => l.forEach((id) => window.clearTimeout(id));
-  }, []);
+    return () => l.forEach((id) => historyClock.clearTimeout(id));
+  }, [], false, "app/src/components/RestaurantRoleplay.tsx:effect2");
 
   function resetOrder() {
     setShown(0);
     setPicks({});
   }
-  useEffect(resetOrder, [restId]);
+  useGameHistoryEffect(resetOrder, [restId], false, "app/src/components/RestaurantRoleplay.tsx:effect3");
 
   // 새 대사가 열리면 맨 아래로
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     const el = chatRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [shown, picks]);
+  }, [shown, picks], false, "app/src/components/RestaurantRoleplay.tsx:effect4");
 
   const lastIdx = shown - 1;
   const lastLine = lastIdx >= 0 ? rest.lines[lastIdx] : null;
@@ -110,14 +115,14 @@ export default function RestaurantRoleplay({ levels, showKo: showKoProp }: Props
     .map((l, i) => ({ l, i, item: picks[i] }))
     .filter((x) => x.l.who === 'customer' && x.l.pick && x.item);
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (step === 'order' && finished && shown > 0) playSfx(GAME_SFX.restaurant.done);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [finished]);
+  }, [finished], false, "app/src/components/RestaurantRoleplay.tsx:effect5");
 
   /* ---- 짝 연습 ---- */
-  const [swapped, setSwapped] = useState(false);
-  const [card, setCard] = useState<MenuItem[] | null>(null);
+  const [swapped, setSwapped] = useGameHistoryState("app/src/components/RestaurantRoleplay.tsx:RestaurantRoleplay:swapped",false);
+  const [card, setCard] = useGameHistoryState<MenuItem[] | null>("app/src/components/RestaurantRoleplay.tsx:RestaurantRoleplay:card",null);
   function drawCard() {
     const items = rest.lines.filter((l) => l.who === 'customer' && l.pick).map((l) => {
       const choices = pickChoices(rest, l);
@@ -130,10 +135,10 @@ export default function RestaurantRoleplay({ levels, showKo: showKoProp }: Props
     setSwapped((v) => !v);
     playSfx(COMMON_SFX.yourTurn);
   }
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setCard(null);
     setSwapped(false);
-  }, [restId]);
+  }, [restId], false, "app/src/components/RestaurantRoleplay.tsx:effect6");
 
   /* ---- 선생님 폰 리모컨 ---- */
   const stepIdx = STEPS.indexOf(step);

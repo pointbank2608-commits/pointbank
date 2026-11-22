@@ -1,5 +1,6 @@
+import {useGameHistorySnapshot, useGameHistoryEffect, useGameHistoryState} from '../context/GameHistoryContext';
 import { usePictureWordDeck } from './PictureWordTurn';
-import { useEffect, useMemo, useState } from 'react';
+import {useMemo} from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { TrueFalseStatement } from '../lib/types';
@@ -24,22 +25,25 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export default function TrueFalse({ statements: sourceStatements, onContinue }: Props) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/TrueFalse.tsx:TrueFalse',()=>({state:{order,pos,selected,score},refs:{}}),(snapshot,elapsed)=>{setOrder(()=>snapshot.state.order);setPos(()=>snapshot.state.pos);setSelected(()=>snapshot.state.selected);setScore(()=>snapshot.state.score);void elapsed;});
+
   const { t } = useTranslation();
   const deck = usePictureWordDeck();
   const questions = useMemo(() => deck.map(row => ({ ...row, decoy: (row.correctIndex + 1) % row.choices.length })), [deck]);
   const statements = useMemo(() => questions.length ? questions.map((row, index) => ({ id: row.id, text: '', isTrue: index % 2 === 0, explanation: row.choices[row.correctIndex] })) : sourceStatements, [questions, sourceStatements]);
-  const [order, setOrder] = useState<number[]>(() => shuffle(statements.map((_, i) => i)));
-  const [pos, setPos] = useState(0);
-  const [selected, setSelected] = useState<boolean | null>(null);
-  const [score, setScore] = useState(0);
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/TrueFalse.tsx:TrueFalse:order",() => shuffle(statements.map((_, i) => i)));
+  const [pos, setPos] = useGameHistoryState("app/src/components/TrueFalse.tsx:TrueFalse:pos",0);
+  const [selected, setSelected] = useGameHistoryState<boolean | null>("app/src/components/TrueFalse.tsx:TrueFalse:selected",null);
+  const [score, setScore] = useGameHistoryState("app/src/components/TrueFalse.tsx:TrueFalse:score",0);
   const statementKey = statements.map((s) => s.id).join(',');
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setOrder(shuffle(statements.map((_, i) => i)));
     setPos(0);
     setSelected(null);
     setScore(0);
-  }, [statementKey]);
+  }, [statementKey], false, "app/src/components/TrueFalse.tsx:effect1");
 
   const sfx = useGameSfx('truefalse');
   useStepSounds(pos, statements.length > 0 && pos >= order.length, undefined, sfx.finish);

@@ -1,6 +1,7 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useRef, useState } from 'react';
+
+import {} from 'react';
 import { useTranslation } from 'react-i18next';
 import LotteryMachine, { LOTTERY_FLY_MS } from './LotteryMachine';
 import { playMusic } from '../lib/gameMusic';
@@ -31,13 +32,17 @@ function shuffle<T>(arr: T[]): T[] {
  * 어디에든 쓸 수 있다.
  */
 export default function OrderPicker({ pool, music, resultSound }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/OrderPicker.tsx:OrderPicker',()=>({state:{phase,order,drawnCount,flying},refs:{timersRef:captureGameRef(timersRef.current)}}),(snapshot,elapsed)=>{setPhase(()=>snapshot.state.phase);setOrder(()=>snapshot.state.order);setDrawnCount(()=>snapshot.state.drawnCount);setFlying(()=>snapshot.state.flying);restoreGameRef(timersRef,snapshot.refs.timersRef,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
-  const [phase, setPhase] = useState<Phase>('idle');
-  const [order, setOrder] = useState<GameItem[] | null>(null);
-  const [drawnCount, setDrawnCount] = useState(0);
-  const [flying, setFlying] = useState(false);
-  const timersRef = useRef<ReturnType<typeof gameClock.setTimeout>[]>([]);
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/OrderPicker.tsx:OrderPicker:phase",'idle');
+  const [order, setOrder] = useGameHistoryState<GameItem[] | null>("app/src/components/OrderPicker.tsx:OrderPicker:order",null);
+  const [drawnCount, setDrawnCount] = useGameHistoryState("app/src/components/OrderPicker.tsx:OrderPicker:drawnCount",0);
+  const [flying, setFlying] = useGameHistoryState("app/src/components/OrderPicker.tsx:OrderPicker:flying",false);
+  const timersRef = useGameHistoryRef<ReturnType<typeof historyClock.setTimeout>[]>("app/src/components/OrderPicker.tsx:OrderPicker:timersRef",[]);
 
   const canMix = pool.length >= 2;
   const drawnList = order ? order.slice(0, drawnCount) : [];
@@ -45,16 +50,16 @@ export default function OrderPicker({ pool, music, resultSound }: Props) {
 
   // 배경음악(선생님이 고른 "섞기" 사운드)도 기계가 도는 내내(뽑는 도중까지) 반복 재생하고,
   // 기계가 멈추는 순간(phase가 idle로 돌아가는 순간) 같이 멈춘다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (phase !== 'mixing') return;
     const stop = playMusic(music, { loop: true, pauseWithGame: true });
     return () => stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase]);
+  }, [phase], false, "app/src/components/OrderPicker.tsx:effect1");
 
   function mix() {
     if (!canMix || phase === 'mixing') return;
-    timersRef.current.forEach(gameClock.clearTimeout);
+    timersRef.current.forEach(historyClock.clearTimeout);
     timersRef.current = [];
     setOrder(shuffle(pool));
     setDrawnCount(0);
@@ -68,7 +73,7 @@ export default function OrderPicker({ pool, music, resultSound }: Props) {
     setDrawnCount(nextCount);
     if (nextCount >= order.length) setPhase('idle');
     playMusic(resultSound);
-    const timer = gameClock.setTimeout(() => setFlying(false), LOTTERY_FLY_MS);
+    const timer = historyClock.setTimeout(() => setFlying(false), LOTTERY_FLY_MS);
     timersRef.current.push(timer);
   }
 

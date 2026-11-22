@@ -1,4 +1,8 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
+import {GameHistoryProvider} from '../context/GameHistoryContext';
+import GameHistoryButtons from '../components/GameHistoryButtons';
+import GameHistoryRegion from '../components/GameHistoryRegion';
+import {useMemo, useRef, type ReactNode} from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useOptionalLessonRunner } from '../context/LessonRunnerContext';
@@ -49,40 +53,46 @@ function PhonemeButton({ruleId,label,en,onPlayback}:{ruleId:string;label:string;
  return <LearningAudioButton text={label} ruleId={ruleId} en={en} onPlayback={onPlayback}/>;
 }
 function WordPicture({entry,en}:{entry:PhonicsBankEntry;en:boolean}){
- const [broken,setBroken]=useState(false);
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/pages/PhonicsGamesPage.tsx:WordPicture',()=>({state:{broken},refs:{}}),(snapshot,elapsed)=>{setBroken(()=>snapshot.state.broken);void elapsed;});
+
+ const [broken,setBroken]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:WordPicture:broken",false);
  return entry.image_url&&!broken?<img className="pg-picture" src={entry.image_url} alt="" onError={()=>setBroken(true)}/>:<span className="pg-picture-fallback">{l(en,'그림 대신 단어로 읽어요','Read the word instead')}<strong lang="en">{entry.word}</strong></span>;
 }
 export default function PhonicsGamesPage(){
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/pages/PhonicsGamesPage.tsx:PhonicsGamesPage',()=>({state:{units,query,rounds,favoritesOnly,startedEntry,seed,guide,teams,level,classPlay,autoSpeak,world,rewards},refs:{}}),(snapshot,elapsed)=>{setUnits(()=>snapshot.state.units);setQuery(()=>snapshot.state.query);setRounds(()=>snapshot.state.rounds);setFavoritesOnly(()=>snapshot.state.favoritesOnly);setStartedEntry(()=>snapshot.state.startedEntry);setSeed(()=>snapshot.state.seed);setGuide(()=>snapshot.state.guide);setTeams(()=>snapshot.state.teams);setLevel(()=>snapshot.state.level);setClassPlay(()=>snapshot.state.classPlay);setAutoSpeakState(()=>snapshot.state.autoSpeak);setWorld(()=>snapshot.state.world);setRewards(()=>snapshot.state.rewards);void elapsed;});
+
  const {t,i18n}=useTranslation();const en=i18n.resolvedLanguage?.startsWith('en')??false;
  const {gameId}=useParams();const [params,setParams]=useSearchParams();
  const location=useLocation();
  const navigate=useNavigate();
- const [units,setUnits]=useState(phonicsGameUnits);
- useEffect(()=>{let active=true;void fetchPhonicsBank().then(rows=>{if(active)setUnits(courseUnits(rows));}).catch(()=>{});return()=>{active=false;};},[]);
+ const [units,setUnits]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:PhonicsGamesPage:units",phonicsGameUnits);
+ useGameHistoryEffect(()=>{let active=true;void fetchPhonicsBank().then(rows=>{if(active)setUnits(courseUnits(rows));}).catch(()=>{});return()=>{active=false;};}, [], false, "app/src/pages/PhonicsGamesPage.tsx:effect1");
  const rawUnit=params.get('unit');const requested=units.find(u=>u.id===rawUnit);
  const game=PHONICS_GAMES.find(g=>g.id===gameId);
  const unit=requested??(game&&!rawUnit?units.find(candidate=>!gameAvailability(game,candidate)):undefined)??units[0];
- const [query,setQuery]=useState('');const [rounds,setRounds]=useState(6);
+ const [query,setQuery]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:PhonicsGamesPage:query",'');const [rounds,setRounds]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:PhonicsGamesPage:rounds",6);
  const favorites=useGameFavorites();
- const [favoritesOnly,setFavoritesOnly]=useState(false);
+ const [favoritesOnly,setFavoritesOnly]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:PhonicsGamesPage:favoritesOnly",false);
  const entryKey=`${location.pathname}:${location.key}:${unit.id}`;
- const [startedEntry,setStartedEntry]=useState<string|null>(null);
+ const [startedEntry,setStartedEntry]=useGameHistoryState<string|null>("app/src/pages/PhonicsGamesPage.tsx:PhonicsGamesPage:startedEntry",null);
  const playing=startedEntry===entryKey;
- const [seed,setSeed]=useState(1);
+ const [seed,setSeed]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:PhonicsGamesPage:seed",1);
  const sound=usePhonicsGameSound(game??PHONICS_GAMES[0],playing);
- const [guide,setGuide]=useState(false);
- const [teams,setTeams]=useState(1);const [level,setLevel]=useState<PlayLevel>('normal');
- const [classPlay,setClassPlay]=useState<PhonicsClassPlay>();
- const [autoSpeak,setAutoSpeakState]=useState(()=>{try{return localStorage.getItem('classbank.phonics.autoSpeak')==='1';}catch{return false;}});
+ const [guide,setGuide]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:PhonicsGamesPage:guide",false);
+ const [teams,setTeams]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:PhonicsGamesPage:teams",1);const [level,setLevel]=useGameHistoryState<PlayLevel>("app/src/pages/PhonicsGamesPage.tsx:PhonicsGamesPage:level",'normal');
+ const [classPlay,setClassPlay]=useGameHistoryState<PhonicsClassPlay|undefined>("app/src/pages/PhonicsGamesPage.tsx:PhonicsGamesPage:classPlay",undefined);
+ const [autoSpeak,setAutoSpeakState]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:PhonicsGamesPage:autoSpeak",()=>{try{return localStorage.getItem('classbank.phonics.autoSpeak')==='1';}catch{return false;}});
  const setAutoSpeak=(on:boolean)=>{setAutoSpeakState(on);try{localStorage.setItem('classbank.phonics.autoSpeak',on?'1':'0');}catch{/* The choice only lasts for this visit. */}};
- useEffect(()=>{
+ useGameHistoryEffect(()=>{
   if(!playing)return;
   const previousOverflow=document.body.style.overflow;
   document.body.style.overflow='hidden';document.documentElement.dataset.gameFocus='true';
   return()=>{document.body.style.overflow=previousOverflow;delete document.documentElement.dataset.gameFocus;};
- },[playing]);
- const [world,setWorld]=useState<PhonicsWorld|'all'>('all');
- const [rewards,setRewards]=useState(readVillageRewards);
+ }, [playing], false, "app/src/pages/PhonicsGamesPage.tsx:effect2");
+ const [world,setWorld]=useGameHistoryState<PhonicsWorld|'all'>("app/src/pages/PhonicsGamesPage.tsx:PhonicsGamesPage:world",'all');
+ const [rewards,setRewards]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:PhonicsGamesPage:rewards",readVillageRewards);
  const pick=(id:string)=>{setStartedEntry(null);setParams({unit:id},{replace:true});};
  const invalid=Boolean(rawUnit&&!requested)||Boolean(gameId&&!game);
  const reason=game?gameAvailability(game,unit,en):null;
@@ -214,14 +224,17 @@ type LessonObservation = { lessonId: string; position: number };
 export function PhonicsLessonGame({gameId,unitId,options,autoStart=false,observation}:{
  gameId:string;unitId:string;options?:Pick<PhonicsGameSlide,'rounds'|'level'|'teams'|'classPlay'>;autoStart?:boolean;observation?:LessonObservation;
 }) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/pages/PhonicsGamesPage.tsx:PhonicsLessonGame',()=>({state:{playing,seed,config,classPlay},refs:{}}),(snapshot,elapsed)=>{setPlaying(()=>snapshot.state.playing);setSeed(()=>snapshot.state.seed);setConfig(()=>snapshot.state.config);setClassPlay(()=>snapshot.state.classPlay);void elapsed;});
+
  const {i18n}=useTranslation();
  const en=i18n.resolvedLanguage?.startsWith('en')??false;
  const game=PHONICS_GAMES.find(candidate=>candidate.id===gameId);
  const unit=lessonPhonicsUnits().find(candidate=>candidate.id===unitId);
- const [playing,setPlaying]=useState(autoStart);
- const [seed,setSeed]=useState(()=>autoStart ? crypto.getRandomValues(new Uint32Array(1))[0] : 1);
- const [config,setConfig]=useState<{rounds:number;teams:number;level:PlayLevel}>(()=>phonicsLessonOptions(options));
- const [classPlay,setClassPlay]=useState(options?.classPlay);
+ const [playing,setPlaying]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:PhonicsLessonGame:playing",autoStart);
+ const [seed,setSeed]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:PhonicsLessonGame:seed",()=>autoStart ? crypto.getRandomValues(new Uint32Array(1))[0] : 1);
+ const [config,setConfig]=useGameHistoryState<{rounds:number;teams:number;level:PlayLevel}>("app/src/pages/PhonicsGamesPage.tsx:PhonicsLessonGame:config",()=>phonicsLessonOptions(options));
+ const [classPlay,setClassPlay]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:PhonicsLessonGame:classPlay",options?.classPlay);
  const sound=usePhonicsGameSound(game??PHONICS_GAMES[0],playing);
  if(!game||!unit)return <p>{l(en,'파닉스 유닛을 찾을 수 없어요.','This phonics unit is unavailable.')}</p>;
  const reason=gameAvailability(game,unit,en);
@@ -247,22 +260,27 @@ export function PhonicsLessonGame({gameId,unitId,options,autoStart=false,observa
  </PhonicsSoundContext.Provider>;
 }
 
-function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onReward,rewards,settings,observation,onRestart,classPlay: suppliedClassPlay,onClassPlay,fillStage=false}:{game:PhonicsGame;unit:CourseUnit;en:boolean;rounds:number;seed:number;teams:number;level:PlayLevel;autoSpeak:boolean;onExit:()=>void;settings:ReactNode;onReward:(reward:VillageReward)=>void;rewards:VillageReward[];observation?:LessonObservation;onRestart?:()=>void;fillStage?:boolean;classPlay?:PhonicsClassPlay;onClassPlay:(play:PhonicsClassPlay)=>void}){
+function GameSession(props:Parameters<typeof GameSessionContent>[0]) {return <GameHistoryProvider><GameSessionContent {...props}/></GameHistoryProvider>;}
+function GameSessionContent({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onReward,rewards,settings,observation,onRestart,classPlay: suppliedClassPlay,onClassPlay,fillStage=false}:{game:PhonicsGame;unit:CourseUnit;en:boolean;rounds:number;seed:number;teams:number;level:PlayLevel;autoSpeak:boolean;onExit:()=>void;settings:ReactNode;onReward:(reward:VillageReward)=>void;rewards:VillageReward[];observation?:LessonObservation;onRestart?:()=>void;fillStage?:boolean;classPlay?:PhonicsClassPlay;onClassPlay:(play:PhonicsClassPlay)=>void}){
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/pages/PhonicsGamesPage.tsx:GameSession',()=>({state:{index,done,results,turnAt,stars,combos,bestCombo,teamStars,burst,hearts,mercyAt,heartNote},refs:{rewardAdded:captureGameRef(rewardAdded.current)}}),(snapshot,elapsed)=>{setIndex(()=>snapshot.state.index);setDone(()=>snapshot.state.done);setResults(()=>snapshot.state.results);setTurnAt(()=>snapshot.state.turnAt);setStars(()=>snapshot.state.stars);setCombos(()=>snapshot.state.combos);setBestCombo(()=>snapshot.state.bestCombo);setTeamStars(()=>snapshot.state.teamStars);setBurst(()=>snapshot.state.burst);setHearts(()=>snapshot.state.hearts);setMercyAt(()=>snapshot.state.mercyAt);setHeartNote(()=>snapshot.state.heartNote);restoreGameRef(rewardAdded,snapshot.refs.rewardAdded,elapsed,false);});
+
  const lesson=useOptionalLessonRunner();
  const {player}=usePhonicsSound();
- const [index,setIndex]=useState(0),[done,setDone]=useState(false),[paused,setPaused]=useState(false),[large,setLarge]=useState(false);
+ const [index,setIndex]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:index",0),[done,setDone]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:done",false),[paused,setPaused]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:paused",false),[large,setLarge]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:large",false);
  const observe=useLearningActivity(observation ? {source:'group',credential:'',resource:observation.lessonId} : undefined,
   index<rounds ? observation?.position ?? null : null,index);
- const [results,setResults]=useState<boolean[]>([]);const [leaving,setLeaving]=useState(false);
- const [settingsOpen,setSettingsOpen]=useState(false);
- const [reportOpen,setReportOpen]=useState(false);
- const [lessonPanel,setLessonPanel]=useState<'words'|'class'|null>(null);
+ const [results,setResults]=useGameHistoryState<boolean[]>("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:results",[]);const [leaving,setLeaving]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:leaving",false);
+ const [settingsOpen,setSettingsOpen]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:settingsOpen",false);
+ const [reportOpen,setReportOpen]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:reportOpen",false);
+ const [lessonPanel,setLessonPanel]=useGameHistoryState<'words'|'class'|null>("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:lessonPanel",null);
  const classPlay=useMemo(()=>phonicsClassPlay(suppliedClassPlay,teams),[suppliedClassPlay,teams]);
  const classRoster=usePhonicsClassRoster(classPlay.classId);
  const roster=useMemo(()=>classRoster.students.filter(row=>!classPlay.absentIds.includes(row.id)),[classRoster.students,classPlay.absentIds]);
  const classOrder=useMemo(()=>phonicsClassOrder(roster,classPlay),[roster,classPlay]);
- const [turnAt,setTurnAt]=useState(classOrder.turn);
- useEffect(()=>setTurnAt(classOrder.turn),[classOrder]);
+ const [turnAt,setTurnAt]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:turnAt",classOrder.turn);
+ useGameHistoryEffect(()=>setTurnAt(classOrder.turn), [classOrder], false, "app/src/pages/PhonicsGamesPage.tsx:effect3");
  const advanceTurn=()=>setTurnAt(value=>(value+1)%Math.max(1,classOrder.order.length));
  const currentId=classOrder.order[turnAt%Math.max(1,classOrder.order.length)];
  const labelOf=(id:string)=>classPlay.mode==='team'
@@ -270,19 +288,19 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
   : roster.find(row=>row.id===id)?.label||'';
  const teamLabel=(index:number)=>suppliedClassPlay?labelOf(`team-${index}`):TEAM_NAMES[en?1:0][index];
  const interrupted=paused||leaving||settingsOpen||reportOpen||lessonPanel!==null;
- const [stars,setStars]=useState(0),[combos,setCombos]=useState<number[]>(()=>Array(teams).fill(0)),[bestCombo,setBestCombo]=useState(0);
- const [teamStars,setTeamStars]=useState<number[]>(()=>Array(teams).fill(0));
- const [burst,setBurst]=useState<{key:number;gain:number;praise:string}|null>(null);
+ const [stars,setStars]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:stars",0),[combos,setCombos]=useGameHistoryState<number[]>("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:combos",()=>Array(teams).fill(0)),[bestCombo,setBestCombo]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:bestCombo",0);
+ const [teamStars,setTeamStars]=useGameHistoryState<number[]>("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:teamStars",()=>Array(teams).fill(0));
+ const [burst,setBurst]=useGameHistoryState<{key:number;gain:number;praise:string}|null>("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:burst",null);
  const teamNow=teams>1&&currentId?Number(currentId.split('-')[1]):0;
  const combo=combos[teamNow]??0;// 콤보는 팀마다 따로 센다.
  const gtwist=twistOf(game);
  const lives=teams>1?0:(gtwist.lives??0);
- const [hearts,setHearts]=useState(lives),[mercyAt,setMercyAt]=useState(-1),[heartNote,setHeartNote]=useState('');
+ const [hearts,setHearts]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:hearts",lives),[mercyAt,setMercyAt]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:mercyAt",-1),[heartNote,setHeartNote]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:heartNote",'');
  const hasBoss=Boolean(gtwist.boss)&&rounds>=3;
  const isBoss=hasBoss&&index===rounds-1;
  const roundLevel:PlayLevel=isBoss?'hard':mercyAt===index?'easy':level;
  const starGoal=rounds*3+(hasBoss?3:0);
- useEffect(()=>{if(!heartNote)return;const id=window.setTimeout(()=>setHeartNote(''),3200);return()=>window.clearTimeout(id);},[heartNote]);
+ useGameHistoryEffect(()=>{if(!heartNote)return;const id=historyClock.setTimeout(()=>setHeartNote(''),3200);return()=>historyClock.clearTimeout(id);}, [heartNote], false, "app/src/pages/PhonicsGamesPage.tsx:effect4");
  /** 한 문제의 별: 첫 시도 ★3, 한 번 다시 ★2, 그 밖 ★1. 도전 난이도 첫 시도 +1, 3연속 첫 시도부터 콤보 +1. */
  function finishRound(first:boolean,errors:number){
   observe('submitted');
@@ -293,13 +311,13 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
   setCombos(c=>c.map((v,i)=>i===teamNow?nextCombo:v));setBestCombo(b=>Math.max(b,nextCombo));setStars(v=>v+gain);
   setTeamStars(t=>t.map((v,i)=>i===teamNow?v+gain:v));
   const words=PRAISE[en?1:0];
-  setBurst({key:Date.now(),gain,praise:nextCombo>=3?l(en,`콤보 ${nextCombo}!`,`Combo ×${nextCombo}!`):words[(index+gain)%words.length]});
+  setBurst({key:historyClock.dateNow(),gain,praise:nextCombo>=3?l(en,`콤보 ${nextCombo}!`,`Combo ×${nextCombo}!`):words[(index+gain)%words.length]});
   setResults(old=>[...old,first]);setDone(true);
  }
  const panel=useRef<HTMLDivElement>(null);
  const toolbar=useRef<HTMLDivElement>(null);
  const classPopup=useRef<HTMLDivElement>(null);
- const [classAnchor,setClassAnchor]=useState<HTMLButtonElement|null>(null);
+ const [classAnchor,setClassAnchor]=useGameHistoryState<HTMLButtonElement|null>("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:classAnchor",null);
  useGamePanelAnchor(classPopup,lessonPanel==='class'?classAnchor:null,512,toolbar);
  const board=useRef<HTMLDivElement>(null);
  const viewport=useRef<HTMLDivElement>(null);
@@ -317,25 +335,25 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
    if(large){if(document.fullscreenElement===panel.current)await document.exitFullscreen();pseudoFull.current=false;setLarge(false);return;}
    try{if(!panel.current?.requestFullscreen)throw Error('unsupported');await panel.current.requestFullscreen();setLarge(true);}catch{pseudoFull.current=true;setLarge(true);}
  }
- useEffect(()=>{const changed=()=>{if(!pseudoFull.current)setLarge(document.fullscreenElement===panel.current);};document.addEventListener('fullscreenchange',changed);return()=>document.removeEventListener('fullscreenchange',changed);},[]);
+ useGameHistoryEffect(()=>{const changed=()=>{if(!pseudoFull.current)setLarge(document.fullscreenElement===panel.current);};document.addEventListener('fullscreenchange',changed);return()=>document.removeEventListener('fullscreenchange',changed);}, [], true, "app/src/pages/PhonicsGamesPage.tsx:effect5");
 
- useEffect(()=>{const key=(e:KeyboardEvent)=>{if(e.key==='Escape'&&!leaving){pseudoFull.current=false;setLarge(false);setPaused(true);}};window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key);},[leaving]);
- useEffect(()=>{if(!large)return;const old=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=old;};},[large]);
- useEffect(()=>{if(interrupted)player.cancelSpeech();},[player,interrupted]);
+ useGameHistoryEffect(()=>{const key=(e:KeyboardEvent)=>{if(e.key==='Escape'&&!leaving){pseudoFull.current=false;setLarge(false);setPaused(true);}};window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key);}, [leaving], true, "app/src/pages/PhonicsGamesPage.tsx:effect6");
+ useGameHistoryEffect(()=>{if(!large)return;const old=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=old;};}, [large], false, "app/src/pages/PhonicsGamesPage.tsx:effect7");
+ useGameHistoryEffect(()=>{if(interrupted)player.cancelSpeech();}, [player,interrupted], false, "app/src/pages/PhonicsGamesPage.tsx:effect8");
  const finish=index>=rounds;
  const heartBonus=lives>0?hearts:0;
  const totalStars=stars+(finish?heartBonus:0);
  const rating=totalStars>=starGoal*.85?3:totalStars>=starGoal*.55?2:1;
- useEffect(()=>{player.pause(interrupted);return()=>player.pause(false);},[player,interrupted]);
- useEffect(()=>{
+ useGameHistoryEffect(()=>{player.pause(interrupted);return()=>player.pause(false);}, [player,interrupted], false, "app/src/pages/PhonicsGamesPage.tsx:effect9");
+ useGameHistoryEffect(()=>{
   player.play(finish?'finish':index===0?'start':'next');
   return ()=>{
    player.stop();
    player.cancelSpeech();
   };
- },[player,index,finish]);
- const rewardAdded=useRef(false);
- useEffect(()=>{if(!finish){rewardAdded.current=false;return;}if(rewardAdded.current)return;rewardAdded.current=true;onReward({world:gameVisual(game).world,gameId:game.id,unitId:unit.id,label:gameName(game,en)});},[finish,game,unit.id,en,onReward]);
+ }, [player,index,finish], false, "app/src/pages/PhonicsGamesPage.tsx:effect10");
+ const rewardAdded=useGameHistoryRef("app/src/pages/PhonicsGamesPage.tsx:GameSessionContent:rewardAdded",false);
+ useGameHistoryEffect(()=>{if(!finish){rewardAdded.current=false;return;}if(rewardAdded.current)return;rewardAdded.current=true;onReward({world:gameVisual(game).world,gameId:game.id,unitId:unit.id,label:gameName(game,en)});}, [finish,game,unit.id,en,onReward], false, "app/src/pages/PhonicsGamesPage.tsx:effect11");
  const activity=useMemo(()=>{
   if(game.mechanic!=='adventure')return game;
   const ids=game.theme==='book'?['read-and-move','sentence-bridge','read-and-move']:unit.step===1?['sound-balloons','sound-baskets','memory-cards']:['sound-fishing',unit.step===2?'sound-train':unit.step===3?'magic-builder':unit.step===4?'consonant-repair':'vowel-chef','word-treasure'];
@@ -343,8 +361,8 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
   return gameAvailability(candidate,unit)?PHONICS_GAMES.find(g=>g.id==='sound-fishing')!:candidate;
  },[game,index,unit]);
  const milestones:Record<string,[string[],string[]]>={farm:[['씨앗 심기','물 주기','수확'],['Plant','Water','Harvest']],dino:[['발자국 찾기','알 발견','공룡 만나기'],['Tracks','Egg','Dinosaur']],space:[['연료 모으기','우주선 수리','친구 구조'],['Fuel','Repair','Rescue']],island:[['해변','숲','보물'],['Beach','Forest','Treasure']],book:[['첫 장','다음 장','책 완성'],['First page','Next page','Book complete']]};
- return <PlayWorld world={gameVisual(game).world}><div ref={panel} className={'pg-session pg-fit-session '+(large?'pg-fullscreen':'')} data-game-view={observation?'presentation':large?'fullscreen':'normal'} data-game-fill={large||fillStage} data-phonics-session={game.id} data-paused={paused}>
-  <div ref={toolbar} className="relative z-30 flex flex-wrap items-center gap-2 rounded-2xl border border-outline-variant bg-white/95 p-2 shadow-sm" data-game-toolbar>
+ return <GameHistoryRegion containerRef={panel} identity={`${game.id}:${unit.id}:${seed}`}><PlayWorld world={gameVisual(game).world}><div ref={panel} className={'pg-session pg-fit-session '+(large?'pg-fullscreen':'')} data-game-view={observation?'presentation':large?'fullscreen':'normal'} data-game-fill={large||fillStage} data-phonics-session={game.id} data-paused={paused}>
+  <div ref={toolbar} className="relative z-30 flex flex-wrap items-center gap-2 rounded-2xl border border-outline-variant bg-white/95 p-2 shadow-sm" data-game-toolbar data-history-ignore>
    <strong className="px-2">{gameName(game,en)} · Unit {unit.number}</strong>
    <div className="flex flex-wrap gap-1 rounded-xl bg-surface-container-low p-1" role="group" aria-label={l(en,'설정','Settings')}>
     <button type="button" className="pg-button" onClick={()=>setLessonPanel('words')}>{l(en,'유닛 단어','Unit words')}</button>
@@ -352,6 +370,7 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
     <button type="button" className="pg-button" onClick={()=>setSettingsOpen(true)}>{l(en,'게임설정','Settings')}</button>
    </div>
    <div className="ml-auto flex flex-wrap gap-1.5">
+    <GameHistoryButtons/>
     <button type="button" className={paused?'pg-primary':'pg-button'} onClick={()=>setPaused(v=>!v)}>{l(en,paused?'계속하기':'잠시 멈춤',paused?'Resume':'Pause')}</button>
     <button type="button" className="pg-button" onClick={onRestart}>{l(en,'다시하기','Restart')}</button>
     <button type="button" className="pg-button" onClick={()=>lesson?.runner?lesson.toggleFullscreen():void toggleFullscreen()}>{l(en,(lesson?.isFullscreen||large)?'전체화면 종료':'전체화면',(lesson?.isFullscreen||large)?'Exit fullscreen':'Fullscreen')}</button>
@@ -414,31 +433,35 @@ function GameSession({game,unit,en,rounds,seed,teams,level,autoSpeak,onExit,onRe
   </div>
   </div>
   </div>
- </div></PlayWorld>;
+ </div></PlayWorld></GameHistoryRegion>;
 }
 
 interface ActivityProps {game:PhonicsGame;visualGame?:PhonicsGame;unit:CourseUnit;en:boolean;index:number;seed:number;level?:PlayLevel;autoSpeak?:boolean;last?:boolean;paused?:boolean;observe?:(action:SensorAction)=>void;onNext:()=>void;onComplete:(first:boolean,errors:number)=>void}
 function RoundActivity({game,visualGame,unit,en,index,seed,level='normal',autoSpeak=false,last=false,paused=false,observe,onNext,onComplete}:ActivityProps){
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/pages/PhonicsGamesPage.tsx:RoundActivity',()=>({state:{errors,help,solved,wrong,selected,opened,matched,preview,tiles,covered,connected,tracePoints,drawn,toast,ready,hintLevel,hintShow,step,left,timedOut},refs:{drawing:captureGameRef(drawing.current),previousWork:captureGameRef(previousWork.current),autoSpoken:captureGameRef(autoSpoken.current)}}),(snapshot,elapsed)=>{setErrors(()=>snapshot.state.errors);setHelp(()=>snapshot.state.help);setSolved(()=>snapshot.state.solved);setWrong(()=>snapshot.state.wrong);setSelected(()=>snapshot.state.selected);setOpened(()=>snapshot.state.opened);setMatched(()=>snapshot.state.matched);setPreview(()=>snapshot.state.preview);setTiles(()=>snapshot.state.tiles);setCovered(()=>snapshot.state.covered);setConnected(()=>snapshot.state.connected);setTracePoints(()=>snapshot.state.tracePoints);setDrawn(()=>snapshot.state.drawn);setToast(()=>snapshot.state.toast);setReady(()=>snapshot.state.ready);setHintLevel(()=>snapshot.state.hintLevel);setHintShow(()=>snapshot.state.hintShow);setStep(()=>snapshot.state.step);setLeft(()=>snapshot.state.left);setTimedOut(()=>snapshot.state.timedOut);restoreGameRef(drawing,snapshot.refs.drawing,elapsed,false);restoreGameRef(previousWork,snapshot.refs.previousWork,elapsed,false);restoreGameRef(autoSpoken,snapshot.refs.autoSpoken,elapsed,false);});
+
  const heardAudio=()=>observe?.('audio');
  const {player}=usePhonicsSound();
  const round=useMemo(()=>makeRound(game,unit,index,seed),[game,unit,index,seed]);
- const [errors,setErrors]=useState(0),[help,setHelp]=useState(false),[solved,setSolved]=useState(false),[wrong,setWrong]=useState(false);
- const [selected,setSelected]=useState<number[]>([]),[opened,setOpened]=useState<number[]>([]),[matched,setMatched]=useState<number[]>([]);
- const [preview,setPreview]=useState(true),[tiles,setTiles]=useState<number[]>([]),[covered,setCovered]=useState<number[]>([]);
- const [connected,setConnected]=useState<number[]>([]),[tracePoints,setTracePoints]=useState<string[]>([]);
- const [drawn,setDrawn]=useState(false);const drawing=useRef(false);
- const [toast,setToast]=useState(false),[ready,setReady]=useState(false);
- const [hintLevel,setHintLevel]=useState(0),[hintShow,setHintShow]=useState(false);
- useEffect(()=>{if(!hintShow)return;const id=window.setTimeout(()=>setHintShow(false),9000);return()=>window.clearTimeout(id);},[hintShow,hintLevel]);
- useEffect(()=>{if(!wrong)return;setToast(true);const id=window.setTimeout(()=>setToast(false),2600);return()=>window.clearTimeout(id);},[wrong,errors]);
+ const [errors,setErrors]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:errors",0),[help,setHelp]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:help",false),[solved,setSolved]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:solved",false),[wrong,setWrong]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:wrong",false);
+ const [selected,setSelected]=useGameHistoryState<number[]>("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:selected",[]),[opened,setOpened]=useGameHistoryState<number[]>("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:opened",[]),[matched,setMatched]=useGameHistoryState<number[]>("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:matched",[]);
+ const [preview,setPreview]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:preview",true),[tiles,setTiles]=useGameHistoryState<number[]>("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:tiles",[]),[covered,setCovered]=useGameHistoryState<number[]>("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:covered",[]);
+ const [connected,setConnected]=useGameHistoryState<number[]>("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:connected",[]),[tracePoints,setTracePoints]=useGameHistoryState<string[]>("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:tracePoints",[]);
+ const [drawn,setDrawn]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:drawn",false);const drawing=useGameHistoryRef("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:drawing",false);
+ const [toast,setToast]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:toast",false),[ready,setReady]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:ready",false);
+ const [hintLevel,setHintLevel]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:hintLevel",0),[hintShow,setHintShow]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:hintShow",false);
+ useGameHistoryEffect(()=>{if(!hintShow)return;const id=historyClock.setTimeout(()=>setHintShow(false),9000);return()=>historyClock.clearTimeout(id);}, [hintShow,hintLevel], false, "app/src/pages/PhonicsGamesPage.tsx:effect12");
+ useGameHistoryEffect(()=>{if(!wrong)return;setToast(true);const id=historyClock.setTimeout(()=>setToast(false),2600);return()=>historyClock.clearTimeout(id);}, [wrong,errors], false, "app/src/pages/PhonicsGamesPage.tsx:effect13");
  const nextRef=useRef<HTMLButtonElement>(null);
- useEffect(()=>{if(ready)nextRef.current?.focus({preventScroll:true});},[ready]);// 켜지면 바로 엔터·스페이스로 넘길 수 있게
- useEffect(()=>{if(!solved){setReady(false);return;}const id=window.setTimeout(()=>setReady(true),650);return()=>window.clearTimeout(id);},[solved]);
+ useGameHistoryEffect(()=>{if(ready)nextRef.current?.focus({preventScroll:true});}, [ready], false, "app/src/pages/PhonicsGamesPage.tsx:effect14");// 켜지면 바로 엔터·스페이스로 넘길 수 있게
+ useGameHistoryEffect(()=>{if(!solved){setReady(false);return;}const id=historyClock.setTimeout(()=>setReady(true),650);return()=>historyClock.clearTimeout(id);}, [solved], false, "app/src/pages/PhonicsGamesPage.tsx:effect15");
  const good=(isCorrect:boolean)=>{if(solved)return;if(!isCorrect){player.play('retry');setWrong(true);setErrors(n=>n+1);return;}player.answer();setWrong(false);setSolved(true);onComplete(errors===0&&!help,errors);};
  const uniquePool=useMemo(()=>[...new Map(gamePool(game,unit).map(e=>[e.word,e])).values()],[game,unit]);
  const twist=twistOf(game);
  const batchN=game.mechanic==='sort'||game.mechanic==='fill'?(twist.batch??1):1;
- const [step,setStep]=useState(0);
+ const [step,setStep]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:step",0);
  const cards=useMemo(()=>batchN>1?[round.entry,...shuffled(uniquePool.filter(e=>e.id!==round.entry.id&&e.word!==round.entry.word),seed+index+5)].slice(0,batchN):[round.entry],[batchN,round.entry,uniquePool,seed,index]);
  const cur=cards[Math.min(step,cards.length-1)];
  const speakTarget=round.sentence??cur.word;
@@ -446,9 +469,9 @@ function RoundActivity({game,visualGame,unit,en,index,seed,level='normal',autoSp
   : game.id === 'diner-ingredients' ? (level === 'hard' || !pictureEligible(round.entry) ? 'hear-word' : 'picture-word')
   : formFor(twist,index,level,pictureEligible(round.entry));
  const secs=clockSeconds(twist,level);
- const [left,setLeft]=useState(secs),[timedOut,setTimedOut]=useState(false);
- useEffect(()=>{if(!secs||solved||paused||timedOut)return;const id=window.setInterval(()=>setLeft(v=>v-1),1000);return()=>window.clearInterval(id);},[secs,solved,paused,timedOut]);
- useEffect(()=>{if(secs&&left<=0&&!solved&&!timedOut){setTimedOut(true);setHelp(true);setHintLevel(2);setErrors(n=>n+1);player.play('retry');setWrong(true);}},[secs,left,solved,timedOut,player]);
+ const [left,setLeft]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:left",secs),[timedOut,setTimedOut]=useGameHistoryState("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:timedOut",false);
+ useGameHistoryEffect(()=>{if(!secs||solved||paused||timedOut)return;const id=historyClock.setInterval(()=>setLeft(v=>v-1),1000);return()=>historyClock.clearInterval(id);}, [secs,solved,paused,timedOut], false, "app/src/pages/PhonicsGamesPage.tsx:effect16");
+ useGameHistoryEffect(()=>{if(secs&&left<=0&&!solved&&!timedOut){setTimedOut(true);setHelp(true);setHintLevel(2);setErrors(n=>n+1);player.play('retry');setWrong(true);}}, [secs,left,solved,timedOut,player], false, "app/src/pages/PhonicsGamesPage.tsx:effect17");
  const cardPool=useMemo(()=>{const pictures=uniquePool.filter(pictureEligible);return pictures.length>=2?pictures:uniquePool;},[uniquePool]);
  const memoryEntries=useMemo(()=>shuffled(cardPool,seed+index).slice(0,3),[cardPool,seed,index]);
  const pairCards=useMemo(()=>{
@@ -480,8 +503,8 @@ function RoundActivity({game,visualGame,unit,en,index,seed,level='normal',autoSp
  },[unit,uniquePool,seed,index]);
  const pairClick=(i:number)=>{if(solved||matched.includes(i)||opened.includes(i))return;if(opened.length===2){setOpened([i]);return;}const next=[...opened,i];setOpened(next);if(next.length===2){if(pairCards[next[0]].id===pairCards[i].id&&pairCards[next[0]].kind!==pairCards[i].kind){const ids=[...matched,...next];setMatched(ids);setOpened([]);if(ids.length===pairCards.length)good(true);}else{player.play('retry');setErrors(n=>n+1);setWrong(true);}}};
  const partialWork=tiles.length+matched.length+selected.length+covered.length+connected.length;
- const previousWork=useRef(0);
- useEffect(()=>{if(partialWork>previousWork.current&&!solved)player.play('place');previousWork.current=partialWork;},[partialWork,solved,player]);
+ const previousWork=useGameHistoryRef("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:previousWork",0);
+ useGameHistoryEffect(()=>{if(partialWork>previousWork.current&&!solved)player.play('place');previousWork.current=partialWork;}, [partialWork,solved,player], false, "app/src/pages/PhonicsGamesPage.tsx:effect18");
  const storybook=visualGame?.id==='our-storybook';
  const hintWord=game.mechanic==='missing'?shuffled(uniquePool,seed+index).slice(0,4)[index%Math.min(4,uniquePool.length)].word:speakTarget;
  const hintText=game.mechanic==='odd'?oddOptions.map(e=>`${e.word}: ${patternLabel(unit,e)}`).join(' / '):game.mechanic==='pairs'?l(en,'같은 글자의 대문자와 소문자를 연결하세요.','Match the two cases of the same letter.'):game.mechanic==='bingo'&&bingoTarget!==undefined?bingoEntries[bingoTarget].word:hintWord;
@@ -513,15 +536,15 @@ function RoundActivity({game,visualGame,unit,en,index,seed,level='normal',autoSp
   const found=contentRef.current?.querySelector('p:not(.pg-note):not(.pg-display)')?.textContent?.trim();
   speakText(found||RULE_FALLBACK[game.mechanic]?.[en?1:0]||l(en,'문제를 풀어 봐요.','Give it a try.'),en?'en-US':'ko-KR');
  };
- const autoSpoken=useRef(false);
- useEffect(()=>{
+ const autoSpoken=useGameHistoryRef("app/src/pages/PhonicsGamesPage.tsx:RoundActivity:autoSpoken",false);
+ useGameHistoryEffect(()=>{
   if(!autoSpeak||paused||autoSpoken.current)return;
-  const id=window.setTimeout(()=>{
+  const id=historyClock.setTimeout(()=>{
    autoSpoken.current=true;
    speakRule();
   },450);
-  return()=>window.clearTimeout(id);
- },[autoSpeak,paused]);// eslint-disable-line react-hooks/exhaustive-deps -- speakRule reads the mounted round's instructions.
+  return()=>historyClock.clearTimeout(id);
+ }, [autoSpeak,paused], false, "app/src/pages/PhonicsGamesPage.tsx:effect19");// eslint-disable-line react-hooks/exhaustive-deps -- speakRule reads the mounted round's instructions.
  let content;
  if(game.mechanic==='pairs'||game.mechanic==='memory')content=<><p>{l(en,game.mechanic==='pairs'?'대문자와 소문자를 연결하세요.':'카드 두 장을 열어 그림과 단어를 연결하세요.',game.mechanic==='pairs'?'Match uppercase and lowercase letters.':'Turn two cards to pair a picture and a word.')}</p><div className="pg-memory-grid">{pairCards.map((c,i)=>{const revealed=game.mechanic==='pairs'||opened.includes(i)||matched.includes(i)||hintLevel>=2;return <button type="button" className={'pg-memory-card '+(matched.includes(i)?'pg-matched':'')} key={i} disabled={solved||matched.includes(i)} aria-label={revealed?c.text:l(en,`${i+1}번 카드`, `Card ${i+1}`)} aria-pressed={opened.includes(i)} onClick={()=>pairClick(i)}>{revealed?game.mechanic==='memory'&&c.kind===0?<WordPicture entry={memoryEntries[c.id]} en={en}/>:<span lang="en">{c.text}</span>:'?'}</button>;})}</div></>;
  else if(game.mechanic==='sort'){

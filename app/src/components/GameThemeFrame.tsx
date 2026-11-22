@@ -17,6 +17,9 @@ import { useGameEmbed } from '../context/GameEmbedContext';
 import AccessibleDialog from './AccessibleDialog';
 import TeamOrderPanel from './TeamOrderPanel';
 import { PictureWordTurnProvider } from './PictureWordTurn';
+import GameHistoryRegion from './GameHistoryRegion';
+import GameHistoryButtons from './GameHistoryButtons';
+import {GameHistoryBoundary,useGameHistory} from '../context/GameHistoryContext';
 import { pictureWordModeKind } from '../lib/pictureWordQuestions';
 import { useGameViewportFit } from '../lib/gameViewportFit';
 import '../gameSkins.css';
@@ -110,8 +113,9 @@ export function GameManagement({ children }: { children: ReactNode }) {
  * 34개 게임 페이지가 전부 이 컴포넌트로 플레이 영역을 감싸고 있어서, 여기 한 번만 손보면
  * 모든 게임에 동시 적용된다.
  */
-export default function GameThemeFrame(props: Props) { return <GameTurnProvider><GameThemeFrameContent {...props} /></GameTurnProvider>; }
-function GameThemeFrameContent({ gameType, bg, className, children, onRestart, onUndo, roster: suppliedRoster, lessonTurnScope, template: suppliedTemplate, autoStartForSelection }: Props) {
+export default function GameThemeFrame(props: Props) { return <GameHistoryBoundary><GameTurnProvider><GameThemeFrameContent {...props} /></GameTurnProvider></GameHistoryBoundary>; }
+function GameThemeFrameContent({ gameType, bg, className, children, onRestart, roster: suppliedRoster, lessonTurnScope, template: suppliedTemplate, autoStartForSelection }: Props) {
+  const history=useGameHistory();
   const nativeTurn = useContext(GameTurnContext)?.turn;
   const started = useRef<string | null>(null);
 
@@ -313,6 +317,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
 
   const toolbar = (
 <div className="game-play-toolbar relative z-10 mb-4 flex shrink-0 flex-wrap justify-end gap-2 p-2">
+          <GameHistoryButtons/>
           <button
             type="button"
             onClick={() => setItemsHidden((v) => !v)}
@@ -369,17 +374,6 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
           >
             {soundOn ? t('gamePlay.soundLabelOn') : t('gamePlay.soundLabelOff')}
           </button>
-          {onUndo && (
-            <button
-              type="button"
-              onClick={onUndo}
-              title={t('gamePlay.undo')}
-              aria-label={t('gamePlay.undo')}
-              className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold bg-surface-container-lowest/90 text-on-surface-variant shadow-sm backdrop-blur transition-colors hover:bg-surface-container hover:text-primary"
-            >
-              {t('gamePlay.undo')}
-            </button>
-          )}
           {onRestart && (
             <button
               type="button"
@@ -510,7 +504,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
         <div ref={stageRef} data-game-stage data-game-fit="contain" inert={!!workspace && (!workspace.running || !!workspace.panel)} className="game-fs-stage game-fit-stage" style={{position: 'relative', zIndex: 1}}>
           <div className="game-viewport-box">
             <div ref={scaleRef} data-game-canvas className="game-fs-scale game-fit-canvas">
-              <PictureWordTurnProvider key={pictureModeTemplate?.id ?? 'standard'} config={pictureModeTemplate?.config}>{children}</PictureWordTurnProvider>
+              <GameHistoryRegion containerRef={scaleRef} identity={`${frameGame}:${template?.id??''}:${JSON.stringify(template?.config)}:${JSON.stringify(template?.items)}`}><PictureWordTurnProvider key={pictureModeTemplate?.id ?? 'standard'} config={pictureModeTemplate?.config}>{children}</PictureWordTurnProvider></GameHistoryRegion>
             </div>
           </div>
         </div>
@@ -522,13 +516,13 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, o
               <p className="mt-3 text-on-surface-variant">{t('classroomUx.restartHint')}</p>
               <div className="mt-6 flex flex-wrap justify-end gap-3">
                 <button autoFocus type="button" className="min-h-11 rounded-xl border border-outline-variant px-5" onClick={() => setRestartOpen(false)}>{t('classroomUx.keepPlaying')}</button>
-                <button type="button" className="min-h-11 rounded-xl bg-primary px-5 text-on-primary" onClick={() => { setRestartOpen(false); onRestart?.(); playSfx(COMMON_SFX.start); }}>{t('gamePlay.restart')}</button>
+                <button type="button" className="min-h-11 rounded-xl bg-primary px-5 text-on-primary" onClick={() => { setRestartOpen(false); history?.clear(); onRestart?.(); playSfx(COMMON_SFX.start); }}>{t('gamePlay.restart')}</button>
               </div>
             </div>
           </AccessibleDialog>
         )}
       {teamOrderOpen && roster && (
-        <TeamOrderPanel roster={roster} scope={turnScope} onApply={lessonClassTurns ? () => setShowOrderOn(true) : undefined} onClose={() => setTeamOrderOpen(false)} />
+        <TeamOrderPanel roster={roster} scope={turnScope} onApply={lessonClassTurns ? () => setShowOrderOn(true) : undefined} onClose={() => {setTeamOrderOpen(false);history?.clear();}} />
       )}
       </div>
     </GamePlayContext.Provider>

@@ -1,10 +1,11 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
 import BombRangePicker from './BombRangePicker';
 import {useGameSoundOn} from '../lib/gameSfx';
 import {useGameWorkspace} from '../context/GameWorkspaceContext';
 import {useNativeGameTurn} from '../context/GameTurnContext';
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useRef, useState } from 'react';
+
+import {} from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import { useGamePlay } from './GameThemeFrame';
@@ -73,6 +74,10 @@ export default function TimeBomb({
   startFromCaught = true,
   timerWords = 'none',
 }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/TimeBomb.tsx:TimeBomb',()=>({state:{localMode,phase,holderIndex,caughtHolder,tally,currentWord},refs:{nextStart:captureGameRef(nextStart.current),holderRef:captureGameRef(holderRef.current),lastPass:captureGameRef(lastPass.current),timerRef:captureGameRef(timerRef.current),stopMusicRef:captureGameRef(stopMusicRef.current),wordSeq:captureGameRef(wordSeq.current)}}),(snapshot,elapsed)=>{setMode(()=>snapshot.state.localMode);setPhase(()=>snapshot.state.phase);setHolderIndex(()=>snapshot.state.holderIndex);setCaughtHolder(()=>snapshot.state.caughtHolder);setTally(()=>snapshot.state.tally);setCurrentWord(()=>snapshot.state.currentWord);restoreGameRef(nextStart,snapshot.refs.nextStart,elapsed,false);restoreGameRef(holderRef,snapshot.refs.holderRef,elapsed,false);restoreGameRef(lastPass,snapshot.refs.lastPass,elapsed,false);restoreGameRef(timerRef,snapshot.refs.timerRef,elapsed,false);stopMusicRef.current();restoreGameRef(stopMusicRef,snapshot.refs.stopMusicRef,elapsed,false);restoreGameRef(wordSeq,snapshot.refs.wordSeq,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t, i18n } = useTranslation();
   const { itemsHidden } = useGamePlay();
@@ -80,37 +85,37 @@ export default function TimeBomb({
   const soundOn=useGameSoundOn();
   const sharedTurn=workspace?.turn;
   const n = sharedTurn?.total ?? participants.length;
-  const [localMode, setMode] = useState<Mode>('pass');
+  const [localMode, setMode] = useGameHistoryState<Mode>("app/src/components/TimeBomb.tsx:TimeBomb:localMode",'pass');
   const mode: Mode = modeProp ?? localMode;
-  const [phase, setPhase] = useState<Phase>('idle');
-  const [holderIndex, setHolderIndex] = useState(0);
-  const [caughtHolder,setCaughtHolder]=useState('');
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/TimeBomb.tsx:TimeBomb:phase",'idle');
+  const [holderIndex, setHolderIndex] = useGameHistoryState("app/src/components/TimeBomb.tsx:TimeBomb:holderIndex",0);
+  const [caughtHolder,setCaughtHolder]=useGameHistoryState("app/src/components/TimeBomb.tsx:TimeBomb:caughtHolder",'');
   // 오늘 걸린 친구 기록: 다시하기·새로고침을 해도 이 탭에서는 남는다
   const tallyKey = sharedTurn ? `classbank.bombTally.shared.${sharedTurn.total}` : `classbank.bombTally.${participants.map((p) => p.label).join('|')}`;
   const readTally = (): Record<string, number> => { try { return JSON.parse(sessionStorage.getItem(tallyKey) || '{}'); } catch { return {}; } };
-  const [tally, setTally] = useState<Record<string, number>>(readTally);
-  useEffect(() => { setTally(readTally()); }, [tallyKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [tally, setTally] = useGameHistoryState<Record<string, number>>("app/src/components/TimeBomb.tsx:TimeBomb:tally",readTally);
+  useGameHistoryEffect(() => { setTally(readTally()); }, [tallyKey], false, "app/src/components/TimeBomb.tsx:effect1"); // eslint-disable-line react-hooks/exhaustive-deps
   const writeTally = (next: Record<string, number>) => { setTally(next); try { sessionStorage.setItem(tallyKey, JSON.stringify(next)); } catch { /* 이 화면에서만 유지 */ } };
-  const nextStart = useRef(0);
+  const nextStart = useGameHistoryRef("app/src/components/TimeBomb.tsx:TimeBomb:nextStart",0);
   const currentHolder=sharedTurn?.current ?? participants[holderIndex % Math.max(1,n)]?.label ?? '';
   const nextHolder=sharedTurn?.next ?? participants[(holderIndex+1)%Math.max(1,n)]?.label ?? '';
-  const holderRef=useRef(currentHolder);holderRef.current=currentHolder;
-  const lastPass=useRef(0);
-  const [currentWord, setCurrentWord] = useState<GameItem | null>(null);
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [wordDrafts, setWordDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
-  const timerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
-  const stopMusicRef = useRef<() => void>(() => {});
+  const holderRef=useGameHistoryRef("app/src/components/TimeBomb.tsx:TimeBomb:holderRef",currentHolder);holderRef.current=currentHolder;
+  const lastPass=useGameHistoryRef("app/src/components/TimeBomb.tsx:TimeBomb:lastPass",0);
+  const [currentWord, setCurrentWord] = useGameHistoryState<GameItem | null>("app/src/components/TimeBomb.tsx:TimeBomb:currentWord",null);
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/TimeBomb.tsx:TimeBomb:itemDrafts",{});
+  const [wordDrafts, setWordDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/TimeBomb.tsx:TimeBomb:wordDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/TimeBomb.tsx:TimeBomb:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/TimeBomb.tsx:TimeBomb:templateNameDraft",'');
+  const timerRef = useGameHistoryRef<ReturnType<typeof historyClock.setTimeout> | null>("app/src/components/TimeBomb.tsx:TimeBomb:timerRef",null);
+  const stopMusicRef = useGameHistoryRef<() => void>("app/src/components/TimeBomb.tsx:TimeBomb:stopMusicRef",() => {});
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(participants.map((i) => [i.id, i.label])));
-  }, [participants]);
+  }, [participants], false, "app/src/components/TimeBomb.tsx:effect2");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setWordDrafts(Object.fromEntries(words.map((w) => [w.id, w.label])));
-  }, [words]);
+  }, [words], false, "app/src/components/TimeBomb.tsx:effect3");
 
 
   function handleItemDraftChange(id: string, value: string) {
@@ -143,7 +148,7 @@ export default function TimeBomb({
     if (trimmed && trimmed !== templateName) onRenameTemplate?.(trimmed);
   }
 
-  const wordSeq = useRef(0);
+  const wordSeq = useGameHistoryRef("app/src/components/TimeBomb.tsx:TimeBomb:wordSeq",0);
   function pickWord() {
     if (mode === 'timer') {
       if (timerWords === 'none' || words.length === 0) { setCurrentWord(null); return; }
@@ -157,23 +162,23 @@ export default function TimeBomb({
     setCurrentWord(words[Math.floor(Math.random() * words.length)]);
   }
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     return () => {
-      if (timerRef.current) gameClock.clearTimeout(timerRef.current);
+      if (timerRef.current) historyClock.clearTimeout(timerRef.current);
       stopMusicRef.current();
     };
-  }, []);
+  }, [], false, "app/src/components/TimeBomb.tsx:effect4");
 
-  useEffect(()=>{
+  useGameHistoryEffect(()=>{
     if(phase!=='active'||!soundOn)return;
     const stop=playMusic(music,{loop:true,pauseWithGame:true});stopMusicRef.current=stop;
     return stop;
-  },[phase,music,soundOn]);
+  }, [phase,music,soundOn], false, "app/src/components/TimeBomb.tsx:effect5");
 
   function start() {
     if (phase === 'active') return;
     if (mode === 'pass' && n < 2) return;
-    if (timerRef.current) gameClock.clearTimeout(timerRef.current);
+    if (timerRef.current) historyClock.clearTimeout(timerRef.current);
     stopMusicRef.current();
 
     if (sharedTurn) { if (!startFromCaught && mode === 'pass') sharedTurn.goto?.(0); setHolderIndex(0); } else setHolderIndex(mode === 'pass' ? nextStart.current % Math.max(1, n) : 0);
@@ -185,7 +190,7 @@ export default function TimeBomb({
 
     const span = Math.max(maxSec - minSec, 0);
     const delaySec = minSec + Math.random() * span;
-    timerRef.current = gameClock.setTimeout(() => {
+    timerRef.current = historyClock.setTimeout(() => {
       const who = holderRef.current;
       setCaughtHolder(who);
       if (mode === 'pass' && who) {
@@ -206,14 +211,14 @@ export default function TimeBomb({
 
   function passBomb() {
     if (phase !== 'active' || n === 0) return;
-    const now=Date.now();if(now-lastPass.current<250)return;
+    const now=historyClock.dateNow();if(now-lastPass.current<250)return;
     if(sharedTurn){if(!sharedTurn.advance())return;}else setHolderIndex((prev)=>(prev+1)%n);
     lastPass.current=now;
     pickWord();
   }
 
   function reset() {
-    if (timerRef.current) gameClock.clearTimeout(timerRef.current);
+    if (timerRef.current) historyClock.clearTimeout(timerRef.current);
     stopMusicRef.current();
     setPhase('idle');
     setCurrentWord(null);

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import {useGameHistorySnapshot, useGameHistoryEffect, useGameHistoryState} from '../context/GameHistoryContext';
+import {useMemo} from 'react';
 import { useTranslation } from 'react-i18next';
 import { grammarPoint } from '../lib/grammar';
 import {
@@ -137,7 +138,7 @@ export function Finish({ scores, onAgain, onExit, unit }: { scores: number[]; on
   const text = useText();
   const play = useGrammarPlay();
   const label = useTeamLabel();
-  useEffect(() => { playSfx(GAME_SFX.grammarlab.done); }, []);
+  useGameHistoryEffect(() => { playSfx(GAME_SFX.grammarlab.done); }, [], false, "app/src/components/GrammarGames.tsx:effect1");
   const top = Math.max(...scores);
   return (
     <section className="gg-finish" role="status">
@@ -177,15 +178,18 @@ export function Empty({ grammarId, title }: { grammarId: string; title: string }
 
 /* ---------------- 문장 변신 연구소 ---------------- */
 function Lab({ grammarId, seed = 1, onExit }: CommonProps) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/GrammarGames.tsx:Lab',()=>({state:{run,teams,scores,i,picked,result},refs:{}}),(snapshot,elapsed)=>{setRun(()=>snapshot.state.run);setTeams(()=>snapshot.state.teams);setScores(()=>snapshot.state.scores);setI(()=>snapshot.state.i);setPicked(()=>snapshot.state.picked);setResult(()=>snapshot.state.result);void elapsed;});
+
   const { t } = useTranslation();
   const text = useText();
-  const [run, setRun] = useState(seed);
+  const [run, setRun] = useGameHistoryState("app/src/components/GrammarGames.tsx:Lab:run",seed);
   const rounds = useMemo(() => labRounds(grammarId, run), [grammarId, run]);
-  const [teams, setTeams] = useState(initialTeams);
-  const [scores, setScores] = useState<number[]>(() => Array(initialTeams()).fill(0));
-  const [i, setI] = useState(0);
-  const [picked, setPicked] = useState<number[]>([]);
-  const [result, setResult] = useState<'ok' | 'bad' | null>(null);
+  const [teams, setTeams] = useGameHistoryState("app/src/components/GrammarGames.tsx:Lab:teams",initialTeams);
+  const [scores, setScores] = useGameHistoryState<number[]>("app/src/components/GrammarGames.tsx:Lab:scores",() => Array(initialTeams()).fill(0));
+  const [i, setI] = useGameHistoryState("app/src/components/GrammarGames.tsx:Lab:i",0);
+  const [picked, setPicked] = useGameHistoryState<number[]>("app/src/components/GrammarGames.tsx:Lab:picked",[]);
+  const [result, setResult] = useGameHistoryState<'ok' | 'bad' | null>("app/src/components/GrammarGames.tsx:Lab:result",null);
   const turn = i % teams;
   const round = rounds[i];
   const title = text('문장 변신 연구소', 'Sentence Lab');
@@ -244,13 +248,16 @@ function Lab({ grammarId, seed = 1, onExit }: CommonProps) {
 
 /* ---------------- 주어·동사 짝꿍 ---------------- */
 function Verb({ grammarId, seed = 1, onExit }: CommonProps) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/GrammarGames.tsx:Verb',()=>({state:{run,teams,scores,i,chosen},refs:{}}),(snapshot,elapsed)=>{setRun(()=>snapshot.state.run);setTeams(()=>snapshot.state.teams);setScores(()=>snapshot.state.scores);setI(()=>snapshot.state.i);setChosen(()=>snapshot.state.chosen);void elapsed;});
+
   const text = useText();
-  const [run, setRun] = useState(seed);
+  const [run, setRun] = useGameHistoryState("app/src/components/GrammarGames.tsx:Verb:run",seed);
   const rounds = useMemo(() => verbRounds(grammarId, run), [grammarId, run]);
-  const [teams, setTeams] = useState(initialTeams);
-  const [scores, setScores] = useState<number[]>(() => Array(initialTeams()).fill(0));
-  const [i, setI] = useState(0);
-  const [chosen, setChosen] = useState<string | null>(null);
+  const [teams, setTeams] = useGameHistoryState("app/src/components/GrammarGames.tsx:Verb:teams",initialTeams);
+  const [scores, setScores] = useGameHistoryState<number[]>("app/src/components/GrammarGames.tsx:Verb:scores",() => Array(initialTeams()).fill(0));
+  const [i, setI] = useGameHistoryState("app/src/components/GrammarGames.tsx:Verb:i",0);
+  const [chosen, setChosen] = useGameHistoryState<string | null>("app/src/components/GrammarGames.tsx:Verb:chosen",null);
   const turn = i % teams;
   const round = rounds[i];
   const title = text('주어·동사 짝꿍', 'Subject-Verb Match');
@@ -290,17 +297,20 @@ function Verb({ grammarId, seed = 1, onExit }: CommonProps) {
 /* ---------------- 문법 경매 ---------------- */
 const START_COINS = 100;
 function Auction({ grammarId, seed = 1, onExit }: CommonProps) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/GrammarGames.tsx:Auction',()=>({state:{run,teams,coins,bids,i,reveal,fixed},refs:{}}),(snapshot,elapsed)=>{setRun(()=>snapshot.state.run);setTeams(()=>snapshot.state.teams);setCoins(()=>snapshot.state.coins);setBids(()=>snapshot.state.bids);setI(()=>snapshot.state.i);setReveal(()=>snapshot.state.reveal);setFixed(()=>snapshot.state.fixed);void elapsed;});
+
   const text = useText();
   const label = useTeamLabel();
   const solo = useSolo();
-  const [run, setRun] = useState(seed);
+  const [run, setRun] = useGameHistoryState("app/src/components/GrammarGames.tsx:Auction:run",seed);
   const lots = useMemo<Lot[]>(() => auctionLots(grammarId, run), [grammarId, run]);
-  const [teams, setTeams] = useState(initialTeams);
-  const [coins, setCoins] = useState<number[]>(() => Array(initialTeams()).fill(START_COINS));
-  const [bids, setBids] = useState<number[]>(() => Array(initialTeams()).fill(0));
-  const [i, setI] = useState(0);
-  const [reveal, setReveal] = useState<null | { winner: number | null; bid: number }>(null);
-  const [fixed, setFixed] = useState(false);
+  const [teams, setTeams] = useGameHistoryState("app/src/components/GrammarGames.tsx:Auction:teams",initialTeams);
+  const [coins, setCoins] = useGameHistoryState<number[]>("app/src/components/GrammarGames.tsx:Auction:coins",() => Array(initialTeams()).fill(START_COINS));
+  const [bids, setBids] = useGameHistoryState<number[]>("app/src/components/GrammarGames.tsx:Auction:bids",() => Array(initialTeams()).fill(0));
+  const [i, setI] = useGameHistoryState("app/src/components/GrammarGames.tsx:Auction:i",0);
+  const [reveal, setReveal] = useGameHistoryState<null | { winner: number | null; bid: number }>("app/src/components/GrammarGames.tsx:Auction:reveal",null);
+  const [fixed, setFixed] = useGameHistoryState("app/src/components/GrammarGames.tsx:Auction:fixed",false);
   const lot = lots[i];
   const title = text('문법 경매', 'Grammar Auction');
   const rv = reveal ?? { winner: null as number | null, bid: 0 };
@@ -366,16 +376,19 @@ function Auction({ grammarId, seed = 1, onExit }: CommonProps) {
 
 /* ---------------- 조건 영작 대결 ---------------- */
 function Write({ grammarId, seed = 1, onExit }: CommonProps) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/GrammarGames.tsx:Write',()=>({state:{run,teams,scores,i,shown,given},refs:{}}),(snapshot,elapsed)=>{setRun(()=>snapshot.state.run);setTeams(()=>snapshot.state.teams);setScores(()=>snapshot.state.scores);setI(()=>snapshot.state.i);setShown(()=>snapshot.state.shown);setGiven(()=>snapshot.state.given);void elapsed;});
+
   const text = useText();
   const label = useTeamLabel();
   const solo = useSolo();
-  const [run, setRun] = useState(seed);
+  const [run, setRun] = useGameHistoryState("app/src/components/GrammarGames.tsx:Write:run",seed);
   const rounds = useMemo(() => writeRounds(grammarId, run), [grammarId, run]);
-  const [teams, setTeams] = useState(initialTeams);
-  const [scores, setScores] = useState<number[]>(() => Array(initialTeams()).fill(0));
-  const [i, setI] = useState(0);
-  const [shown, setShown] = useState(false);
-  const [given, setGiven] = useState<boolean[]>(() => Array(initialTeams()).fill(false));
+  const [teams, setTeams] = useGameHistoryState("app/src/components/GrammarGames.tsx:Write:teams",initialTeams);
+  const [scores, setScores] = useGameHistoryState<number[]>("app/src/components/GrammarGames.tsx:Write:scores",() => Array(initialTeams()).fill(0));
+  const [i, setI] = useGameHistoryState("app/src/components/GrammarGames.tsx:Write:i",0);
+  const [shown, setShown] = useGameHistoryState("app/src/components/GrammarGames.tsx:Write:shown",false);
+  const [given, setGiven] = useGameHistoryState<boolean[]>("app/src/components/GrammarGames.tsx:Write:given",() => Array(initialTeams()).fill(false));
   const round = rounds[i];
   const title = text('조건 영작 대결', 'Write-off');
   const reset = (n: number) => { setTeams(n); setScores(Array(n).fill(0)); setGiven(Array(n).fill(false)); setI(0); setShown(false); };

@@ -1,6 +1,7 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
-import { gameClock } from '../lib/gameClock';
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+
+import {forwardRef, useImperativeHandle} from 'react';
 import { useTranslation } from 'react-i18next';
 import './matchup-clay.css';
 import type { MatchPair, UndoHandle } from '../lib/types';
@@ -25,23 +26,27 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardStyle = 'trays', onComplete }, ref) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/Matchup.tsx:Matchup',()=>({state:{leftOrder,rightOrder,matchedIds,selectedLeft,selectedRight,wrongPair,wrongCount,locked,prevSnapshot,round},refs:{flashTimer:captureGameRef(flashTimer.current),doneRef:captureGameRef(doneRef.current)}}),(snapshot,elapsed)=>{setLeftOrder(()=>snapshot.state.leftOrder);setRightOrder(()=>snapshot.state.rightOrder);setMatchedIds(()=>snapshot.state.matchedIds);setSelectedLeft(()=>snapshot.state.selectedLeft);setSelectedRight(()=>snapshot.state.selectedRight);setWrongPair(()=>snapshot.state.wrongPair);setWrongCount(()=>snapshot.state.wrongCount);setLocked(()=>snapshot.state.locked);setPrevSnapshot(()=>snapshot.state.prevSnapshot);setRound(()=>snapshot.state.round);restoreGameRef(flashTimer,snapshot.refs.flashTimer,elapsed,false);restoreGameRef(doneRef,snapshot.refs.doneRef,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
-  const [leftOrder, setLeftOrder] = useState<MatchPair[]>(() => shuffle(pairs));
-  const [rightOrder, setRightOrder] = useState<MatchPair[]>(() => shuffle(pairs));
-  const [matchedIds, setMatchedIds] = useState<Set<string>>(new Set());
-  const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
-  const [selectedRight, setSelectedRight] = useState<string | null>(null);
-  const [wrongPair, setWrongPair] = useState<{ left: string; right: string } | null>(null);
-  const [wrongCount, setWrongCount] = useState(0);
-  const [locked, setLocked] = useState(false);
-  const [prevSnapshot, setPrevSnapshot] = useState<{ matchedIds: Set<string>; wrongCount: number } | null>(null);
-  const [round, setRound] = useState(0);
+  const [leftOrder, setLeftOrder] = useGameHistoryState<MatchPair[]>("app/src/components/Matchup.tsx:Matchup:leftOrder",() => shuffle(pairs));
+  const [rightOrder, setRightOrder] = useGameHistoryState<MatchPair[]>("app/src/components/Matchup.tsx:Matchup:rightOrder",() => shuffle(pairs));
+  const [matchedIds, setMatchedIds] = useGameHistoryState<Set<string>>("app/src/components/Matchup.tsx:Matchup:matchedIds",new Set());
+  const [selectedLeft, setSelectedLeft] = useGameHistoryState<string | null>("app/src/components/Matchup.tsx:Matchup:selectedLeft",null);
+  const [selectedRight, setSelectedRight] = useGameHistoryState<string | null>("app/src/components/Matchup.tsx:Matchup:selectedRight",null);
+  const [wrongPair, setWrongPair] = useGameHistoryState<{ left: string; right: string } | null>("app/src/components/Matchup.tsx:Matchup:wrongPair",null);
+  const [wrongCount, setWrongCount] = useGameHistoryState("app/src/components/Matchup.tsx:Matchup:wrongCount",0);
+  const [locked, setLocked] = useGameHistoryState("app/src/components/Matchup.tsx:Matchup:locked",false);
+  const [prevSnapshot, setPrevSnapshot] = useGameHistoryState<{ matchedIds: Set<string>; wrongCount: number } | null>("app/src/components/Matchup.tsx:Matchup:prevSnapshot",null);
+  const [round, setRound] = useGameHistoryState("app/src/components/Matchup.tsx:Matchup:round",0);
   const pairKey = JSON.stringify(pairs);
-  const flashTimer = useRef<number | null>(null);
+  const flashTimer = useGameHistoryRef<number | null>("app/src/components/Matchup.tsx:Matchup:flashTimer",null);
 
-  useEffect(() => {
-    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
+  useGameHistoryEffect(() => {
+    if (flashTimer.current !== null) historyClock.clearTimeout(flashTimer.current);
     setRound(0);
     setLeftOrder(shuffle(pairs));
     setRightOrder(shuffle(pairs));
@@ -52,18 +57,18 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
     setWrongCount(0);
     setLocked(false);
     setPrevSnapshot(null);
-  }, [pairKey]);
+  }, [pairKey], false, "app/src/components/Matchup.tsx:effect1");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     return () => {
-      if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
+      if (flashTimer.current !== null) historyClock.clearTimeout(flashTimer.current);
     };
-  }, []);
+  }, [], false, "app/src/components/Matchup.tsx:effect2");
 
   useImperativeHandle(ref, () => ({
     undo() {
       if (!prevSnapshot) return;
-      if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
+      if (flashTimer.current !== null) historyClock.clearTimeout(flashTimer.current);
       setMatchedIds(prevSnapshot.matchedIds);
       setWrongCount(prevSnapshot.wrongCount);
       setSelectedLeft(null);
@@ -74,8 +79,8 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
     },
   }));
 
-  const doneRef = useRef(false);
-  useEffect(() => {
+  const doneRef = useGameHistoryRef("app/src/components/Matchup.tsx:Matchup:doneRef",false);
+  useGameHistoryEffect(() => {
     if (!onComplete) return;
     if (pairs.length >= 2 && matchedIds.size === pairs.length && !doneRef.current) {
       doneRef.current = true;
@@ -83,7 +88,7 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
     }
     if (matchedIds.size === 0) doneRef.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [matchedIds, pairs.length]);
+  }, [matchedIds, pairs.length], false, "app/src/components/Matchup.tsx:effect3");
 
   const sfx = useGameSfx('matchup');
   useStepSounds(0, pairs.length >= 2 && matchedIds.size === pairs.length, undefined, sfx.finish);
@@ -114,7 +119,7 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
   }
 
   function restart() {
-    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
+    if (flashTimer.current !== null) historyClock.clearTimeout(flashTimer.current);
     setRound(0);
     setLeftOrder(shuffle(pairs));
     setRightOrder(shuffle(pairs));
@@ -139,8 +144,8 @@ const Matchup = forwardRef<UndoHandle, Props>(function Matchup({ pairs, boardSty
     setWrongCount((c) => c + 1);
     setWrongPair({ left: leftId, right: rightId });
     setLocked(true);
-    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
-    flashTimer.current = gameClock.setTimeout(() => {
+    if (flashTimer.current !== null) historyClock.clearTimeout(flashTimer.current);
+    flashTimer.current = historyClock.setTimeout(() => {
       setWrongPair(null);
       setSelectedLeft(null);
       setSelectedRight(null);

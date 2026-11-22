@@ -1,5 +1,6 @@
+import {useGameHistorySnapshot, useGameHistoryEffect, useGameHistoryState} from '../context/GameHistoryContext';
 import { usePictureWordDeck } from './PictureWordTurn';
-import { useEffect, useMemo, useState } from 'react';
+import {useMemo} from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TypeAnswerEntry } from '../lib/types';
 import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
@@ -31,25 +32,28 @@ function normalize(s: string): string {
 }
 
 export default function TypeAnswer({ entries: textEntries, mode, boardStyle = 'notebook', onContinue }: Props) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/TypeAnswer.tsx:TypeAnswer',()=>({state:{order,pos,inputValue,status,score},refs:{}}),(snapshot,elapsed)=>{setOrder(()=>snapshot.state.order);setPos(()=>snapshot.state.pos);setInputValue(()=>snapshot.state.inputValue);setStatus(()=>snapshot.state.status);setScore(()=>snapshot.state.score);void elapsed;});
+
   const { t } = useTranslation();
   const deck = usePictureWordDeck();
   const entries = useMemo(() => deck.length ? deck.map(row => ({ id: row.id, prompt: '', answer: row.choices[row.correctIndex] })) : textEntries, [deck, textEntries]);
   const bubble = boardStyle === 'bubble';
-  const [order, setOrder] = useState<number[]>(() => shuffle(entries.map((_, i) => i)));
-  const [pos, setPos] = useState(0);
-  const [inputValue, setInputValue] = useState('');
-  const [status, setStatus] = useState<'playing' | 'correct' | 'wrong'>('playing');
-  const [score, setScore] = useState(0);
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/TypeAnswer.tsx:TypeAnswer:order",() => shuffle(entries.map((_, i) => i)));
+  const [pos, setPos] = useGameHistoryState("app/src/components/TypeAnswer.tsx:TypeAnswer:pos",0);
+  const [inputValue, setInputValue] = useGameHistoryState("app/src/components/TypeAnswer.tsx:TypeAnswer:inputValue",'');
+  const [status, setStatus] = useGameHistoryState<'playing' | 'correct' | 'wrong'>("app/src/components/TypeAnswer.tsx:TypeAnswer:status",'playing');
+  const [score, setScore] = useGameHistoryState("app/src/components/TypeAnswer.tsx:TypeAnswer:score",0);
   const entryKey = `${mode}:${entries.map((e) => e.id).join(',')}`;
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     const nextOrder = shuffle(entries.map((_, i) => i));
     setOrder(nextOrder);
     setPos(0);
     setInputValue('');
     setStatus('playing');
     setScore(0);
-  }, [entryKey]);
+  }, [entryKey], false, "app/src/components/TypeAnswer.tsx:effect1");
 
   const sfx = useGameSfx('typeanswer');
   useStepSounds(pos, entries.length > 0 && order.length > 0 && pos >= order.length, undefined, sfx.finish);

@@ -1,4 +1,5 @@
-import { useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
+import {useGameHistorySnapshot, useGameHistoryEffect, captureGameRef, restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../../context/GameHistoryContext';
+import {useId, useRef, type CSSProperties, type PointerEvent} from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useGameWorkspace } from '../../context/GameWorkspaceContext';
@@ -10,6 +11,9 @@ import './storybook.css';
 import './storybook-art.css';
 
 export default function StoryGame({ type, config, onRestart, pictureMode }: { type: StoryType; config: StorybookConfig; onRestart: () => void; pictureMode?: boolean }) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/storybook/StoryGame.tsx:StoryGame',()=>({state:{selected,hover,drag},refs:{origin:captureGameRef(origin.current)}}),(snapshot,elapsed)=>{setSelected(()=>snapshot.state.selected);setHover(()=>snapshot.state.hover);setDrag(()=>snapshot.state.drag);restoreGameRef(origin,snapshot.refs.origin,elapsed,false);});
+
   const { t } = useTranslation();
   const workspace = useGameWorkspace();
   const { fullscreenControl } = useGamePlay();
@@ -19,16 +23,16 @@ export default function StoryGame({ type, config, onRestart, pictureMode }: { ty
   const { phase, start } = r;
   const root = useRef<HTMLDivElement>(null);
   const drop = useRef<HTMLButtonElement>(null);
-  const [selected, setSelected] = useState('');
-  const [hover, setHover] = useState(false);
-  const [drag, setDrag] = useState<{word: string; x: number; y: number} | null>(null);
-  const origin = useRef<{x: number; y: number; word: string; moved: boolean} | null>(null);
-  const [full, setFull] = useState(false);
-  const [pseudoFull, setPseudoFull] = useState(false);
+  const [selected, setSelected] = useGameHistoryState("app/src/components/storybook/StoryGame.tsx:StoryGame:selected",'');
+  const [hover, setHover] = useGameHistoryState("app/src/components/storybook/StoryGame.tsx:StoryGame:hover",false);
+  const [drag, setDrag] = useGameHistoryState<{word: string; x: number; y: number} | null>("app/src/components/storybook/StoryGame.tsx:StoryGame:drag",null);
+  const origin = useGameHistoryRef<{x: number; y: number; word: string; moved: boolean} | null>("app/src/components/storybook/StoryGame.tsx:StoryGame:origin",null);
+  const [full, setFull] = useGameHistoryState("app/src/components/storybook/StoryGame.tsx:StoryGame:full",false);
+  const [pseudoFull, setPseudoFull] = useGameHistoryState("app/src/components/storybook/StoryGame.tsx:StoryGame:pseudoFull",false);
   const errors = pictureMode ? (config.questions.length ? [] : [t('gameWordHoops.pictureNeedsList')]) : storyErrors(type, config);
-  useEffect(() => { const change = () => setFull(document.fullscreenElement === root.current); document.addEventListener('fullscreenchange', change); return () => document.removeEventListener('fullscreenchange', change); }, []);
-  useEffect(() => { if (workspace?.running && phase === 'ready' && !errors.length) start(); }, [workspace?.running, phase, start, errors.length]);
-  useEffect(() => { if (!pseudoFull) return; const old = document.body.style.overflow; document.body.style.overflow = 'hidden'; const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setPseudoFull(false); }; window.addEventListener('keydown', esc); return () => { document.body.style.overflow = old; window.removeEventListener('keydown', esc); }; }, [pseudoFull]);
+  useGameHistoryEffect(() => { const change = () => setFull(document.fullscreenElement === root.current); document.addEventListener('fullscreenchange', change); return () => document.removeEventListener('fullscreenchange', change); }, [], true, "app/src/components/storybook/StoryGame.tsx:effect1");
+  useGameHistoryEffect(() => { if (workspace?.running && phase === 'ready' && !errors.length) start(); }, [workspace?.running, phase, start, errors.length], false, "app/src/components/storybook/StoryGame.tsx:effect2");
+  useGameHistoryEffect(() => { if (!pseudoFull) return; const old = document.body.style.overflow; document.body.style.overflow = 'hidden'; const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setPseudoFull(false); }; window.addEventListener('keydown', esc); return () => { document.body.style.overflow = old; window.removeEventListener('keydown', esc); }; }, [pseudoFull], true, "app/src/components/storybook/StoryGame.tsx:effect3");
   const previous = type === 'sentencetower' ? r.index === 0 ? config.start : config.steps[r.index - 1]?.sentence || config.start : '';
   const step = config.steps[r.index];
   const prefix = step ? normalizeStory(previous.slice(0,step.position)) : '';

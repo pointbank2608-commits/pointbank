@@ -1,7 +1,8 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordDeck } from './PictureWordTurn';
 import { gameKeyboardAllowed } from '../lib/gameKeyboard';
-import { gameClock } from '../lib/gameClock';
-import { useMemo, useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
+
+import {useMemo, useId, type CSSProperties, type PointerEvent} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGamePlay } from './GameThemeFrame';
 import { colorFor } from '../lib/wheel';
@@ -243,6 +244,10 @@ export default function Airplane({
   onAddItem,
   onRemoveItem,
 }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/Airplane.tsx:Airplane',()=>({state:{order,pos,score,lives,crashed,wrongFlash},refs:{playerYRef:captureGameRef(playerYRef.current),keysRef:captureGameRef(keysRef.current),flyersRef:captureGameRef(flyersRef.current),missilesRef:captureGameRef(missilesRef.current),burstsRef:captureGameRef(burstsRef.current),cooldownRef:captureGameRef(cooldownRef.current),iframeRef:captureGameRef(iframeRef.current),livesRef:captureGameRef(livesRef.current),elapsedRef:captureGameRef(elapsedRef.current),roundOverRef:captureGameRef(roundOverRef.current),flashTimers:captureGameRef(flashTimers.current)}}),(snapshot,elapsed)=>{setOrder(()=>snapshot.state.order);setPos(()=>snapshot.state.pos);setScore(()=>snapshot.state.score);setLives(()=>snapshot.state.lives);setCrashed(()=>snapshot.state.crashed);setWrongFlash(()=>snapshot.state.wrongFlash);restoreGameRef(playerYRef,snapshot.refs.playerYRef,elapsed,false);restoreGameRef(keysRef,snapshot.refs.keysRef,elapsed,false);restoreGameRef(flyersRef,snapshot.refs.flyersRef,elapsed,false);restoreGameRef(missilesRef,snapshot.refs.missilesRef,elapsed,false);restoreGameRef(burstsRef,snapshot.refs.burstsRef,elapsed,false);restoreGameRef(cooldownRef,snapshot.refs.cooldownRef,elapsed,false);restoreGameRef(iframeRef,snapshot.refs.iframeRef,elapsed,false);restoreGameRef(livesRef,snapshot.refs.livesRef,elapsed,false);restoreGameRef(elapsedRef,snapshot.refs.elapsedRef,elapsed,false);restoreGameRef(roundOverRef,snapshot.refs.roundOverRef,elapsed,false);restoreGameRef(flashTimers,snapshot.refs.flashTimers,elapsed,false);});
+
   const { t } = useTranslation();
   const deck = usePictureWordDeck();
   const items = useMemo(() => deck.length ? deck.map(row => ({ id: row.id, label: row.choices[row.correctIndex] })) : sourceItems, [deck, sourceItems]);
@@ -250,23 +255,23 @@ export default function Airplane({
   const enoughItems = items.length >= (deck.length ? 1 : 2);
   const { itemsHidden } = useGamePlay();
   const clay = boardStyle === 'clay';
-  const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
-  const [pos, setPos] = useState(0);
-  const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(MAX_LIVES);
-  const [crashed, setCrashed] = useState(false);
-  const [, setTick] = useState(0);
-  const [wrongFlash, setWrongFlash] = useState(false);
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/Airplane.tsx:Airplane:order",() => shuffle(items.map((_, i) => i)));
+  const [pos, setPos] = useGameHistoryState("app/src/components/Airplane.tsx:Airplane:pos",0);
+  const [score, setScore] = useGameHistoryState("app/src/components/Airplane.tsx:Airplane:score",0);
+  const [lives, setLives] = useGameHistoryState("app/src/components/Airplane.tsx:Airplane:lives",MAX_LIVES);
+  const [crashed, setCrashed] = useGameHistoryState("app/src/components/Airplane.tsx:Airplane:crashed",false);
+  const [, setTick] = useGameHistoryState("app/src/components/Airplane.tsx:Airplane:undefined",0);
+  const [wrongFlash, setWrongFlash] = useGameHistoryState("app/src/components/Airplane.tsx:Airplane:wrongFlash",false);
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/Airplane.tsx:Airplane:itemDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/Airplane.tsx:Airplane:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/Airplane.tsx:Airplane:templateNameDraft",'');
   const itemKey = items.map((it) => it.id).join(',');
 
   // 오른쪽 목록 입력창의 초안 텍스트를 실제 항목과 맞춰둔다 — 타이핑 중엔 이 draft를
   // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
-  }, [items]);
+  }, [items], false, "app/src/components/Airplane.tsx:effect1");
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -288,20 +293,20 @@ export default function Airplane({
     if (trimmed && trimmed !== templateName) onRenameTemplate?.(trimmed);
   }
 
-  const playerYRef = useRef(50);
-  const keysRef = useRef({ up: false, down: false, fire: false });
-  const flyersRef = useRef<Flyer[]>([]);
-  const missilesRef = useRef<Missile[]>([]);
-  const burstsRef = useRef<Burst[]>([]);
-  const cooldownRef = useRef(0);
-  const iframeRef = useRef(0);
-  const livesRef = useRef(MAX_LIVES);
-  const elapsedRef = useRef(0);
-  const roundOverRef = useRef(false);
-  const flashTimers = useRef<number[]>([]);
+  const playerYRef = useGameHistoryRef("app/src/components/Airplane.tsx:Airplane:playerYRef",50);
+  const keysRef = useGameHistoryRef("app/src/components/Airplane.tsx:Airplane:keysRef",{ up: false, down: false, fire: false });
+  const flyersRef = useGameHistoryRef<Flyer[]>("app/src/components/Airplane.tsx:Airplane:flyersRef",[]);
+  const missilesRef = useGameHistoryRef<Missile[]>("app/src/components/Airplane.tsx:Airplane:missilesRef",[]);
+  const burstsRef = useGameHistoryRef<Burst[]>("app/src/components/Airplane.tsx:Airplane:burstsRef",[]);
+  const cooldownRef = useGameHistoryRef("app/src/components/Airplane.tsx:Airplane:cooldownRef",0);
+  const iframeRef = useGameHistoryRef("app/src/components/Airplane.tsx:Airplane:iframeRef",0);
+  const livesRef = useGameHistoryRef("app/src/components/Airplane.tsx:Airplane:livesRef",MAX_LIVES);
+  const elapsedRef = useGameHistoryRef("app/src/components/Airplane.tsx:Airplane:elapsedRef",0);
+  const roundOverRef = useGameHistoryRef("app/src/components/Airplane.tsx:Airplane:roundOverRef",false);
+  const flashTimers = useGameHistoryRef<number[]>("app/src/components/Airplane.tsx:Airplane:flashTimers",[]);
 
   function clearFlashes() {
-    flashTimers.current.forEach((id) => gameClock.clearTimeout(id));
+    flashTimers.current.forEach((id) => historyClock.clearTimeout(id));
     flashTimers.current = [];
     setWrongFlash(false);
   }
@@ -333,7 +338,7 @@ export default function Airplane({
     resetRound(0, nextOrder);
   }
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     clearFlashes();
     const nextOrder = shuffle(items.map((_, i) => i));
     setOrder(nextOrder);
@@ -342,15 +347,15 @@ export default function Airplane({
     beginGame(nextOrder);
     return clearFlashes;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemKey]);
+  }, [itemKey], false, "app/src/components/Airplane.tsx:effect2");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (pos >= order.length) return;
     resetRound(pos, order);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pos, order]);
+  }, [pos, order], false, "app/src/components/Airplane.tsx:effect3");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (!gameKeyboardAllowed(e)) return;
       if (isEditorTarget(e.target)) return;
@@ -388,15 +393,15 @@ export default function Airplane({
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', clearKeys);
     };
-  }, []);
+  }, [], true, "app/src/components/Airplane.tsx:effect4");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (!enoughItems) return;
     let raf = 0;
-    let lastTime = gameClock.now();
+    let lastTime = historyClock.now();
 
     function loop(now: number) {
-      const dt = Math.min(0.05, (now - lastTime) / 1000);
+      const dt = Math.max(0, Math.min(0.05, (now - lastTime) / 1000));
       lastTime = now;
       cooldownRef.current = Math.max(0, cooldownRef.current - dt);
       iframeRef.current = Math.max(0, iframeRef.current - dt);
@@ -458,13 +463,13 @@ export default function Airplane({
             setScore((s) => s + 1);
             flyersRef.current = flyersRef.current.filter((other) => other.id !== f.id);
             burstsRef.current.push({ id: `g-${f.id}-${now}`, x: f.x, y: f.y, age: 0 });
-            flashTimers.current.push(gameClock.setTimeout(() => setPos((p) => p + 1), 420));
+            flashTimers.current.push(historyClock.setTimeout(() => setPos((p) => p + 1), 420));
           } else {
             burstsRef.current.push({ id: `h-${f.id}-${now}`, x: f.x, y: f.y, age: 0 });
             f.x = rand(140, 196);
             f.y = rand(16, 84);
             setWrongFlash(true);
-            flashTimers.current.push(gameClock.setTimeout(() => setWrongFlash(false), 250));
+            flashTimers.current.push(historyClock.setTimeout(() => setWrongFlash(false), 250));
             if (iframeRef.current <= 0) {
               livesRef.current = Math.max(0, livesRef.current - 1);
               setLives(livesRef.current);
@@ -473,7 +478,7 @@ export default function Airplane({
                 roundOverRef.current = true;
                 setCrashed(true);
                 playSfx(GAME_SFX.airplane.crash);
-                gameClock.setTimeout(() => playSfx(COMMON_SFX.tryAgain), 900);
+                historyClock.setTimeout(() => playSfx(COMMON_SFX.tryAgain), 900);
               } else playSfx(GAME_SFX.airplane.wrongHit);
             }
           }
@@ -487,12 +492,12 @@ export default function Airplane({
       });
 
       setTick((n) => n + 1);
-      raf = gameClock.requestAnimationFrame(loop);
+      raf = historyClock.requestAnimationFrame(loop);
     }
 
-    raf = gameClock.requestAnimationFrame(loop);
-    return () => gameClock.cancelAnimationFrame(raf);
-  }, [enoughItems]);
+    raf = historyClock.requestAnimationFrame(loop);
+    return () => historyClock.cancelAnimationFrame(raf);
+  }, [enoughItems], false, "app/src/components/Airplane.tsx:effect5");
 
   useStepSounds(0, enoughItems && order.length > 0 && pos >= order.length, undefined, GAME_SFX.airplane.finish);
 

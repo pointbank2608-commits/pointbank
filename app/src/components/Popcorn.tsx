@@ -1,8 +1,9 @@
+import {useGameHistorySnapshot, useGameHistoryEffect, useGameHistoryClock, useGameHistoryState} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
 import {popcornDeck as buildDeck} from '../lib/popcorn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import {useGameWorkspace} from '../context/GameWorkspaceContext';
-import { useEffect, useState, type CSSProperties } from 'react';
+import {type CSSProperties} from 'react';
 import { TEAM_ORDER_EVENT, isShowOrderOn } from '../lib/teamOrder';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
@@ -11,7 +12,7 @@ import AccessibleDialog from './AccessibleDialog';
 import { useGamePlay } from './GameThemeFrame';
 import type { GameItem } from '../lib/types';
 import { GAME_SFX, playSfx } from '../lib/gameSfx';
-import { gameClock } from '../lib/gameClock';
+
 
 interface Props {
   items: GameItem[];
@@ -48,47 +49,51 @@ export default function Popcorn({
   onAddItem,
   onRemoveItem,
 }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/Popcorn.tsx:Popcorn',()=>({state:{deck,deckIndex,round,resultsDismissed,turn,lastScored,playerScores,teamsOn,scores,lastCard,poppedTeam,poppedName,hop},refs:{}}),(snapshot,elapsed)=>{setDeck(()=>snapshot.state.deck);setDeckIndex(()=>snapshot.state.deckIndex);setRound(()=>snapshot.state.round);setResultsDismissed(()=>snapshot.state.resultsDismissed);setTurn(()=>snapshot.state.turn);setLastScored(()=>snapshot.state.lastScored);setPlayerScores(()=>snapshot.state.playerScores);setTeamsOn(()=>snapshot.state.teamsOn);setScores(()=>snapshot.state.scores);setLastCard(()=>snapshot.state.lastCard);setPoppedTeam(()=>snapshot.state.poppedTeam);setPoppedName(()=>snapshot.state.poppedName);setHop(()=>snapshot.state.hop);void elapsed;});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
-  const [deck, setDeck] = useState<Card[]>(() => buildDeck(items,popCount,roundCards));
-  const [deckIndex, setDeckIndex] = useState(0);
-  const [round, setRound] = useState(1);
-  const [resultsDismissed, setResultsDismissed] = useState(false);
+  const [deck, setDeck] = useGameHistoryState<Card[]>("app/src/components/Popcorn.tsx:Popcorn:deck",() => buildDeck(items,popCount,roundCards));
+  const [deckIndex, setDeckIndex] = useGameHistoryState("app/src/components/Popcorn.tsx:Popcorn:deckIndex",0);
+  const [round, setRound] = useGameHistoryState("app/src/components/Popcorn.tsx:Popcorn:round",1);
+  const [resultsDismissed, setResultsDismissed] = useGameHistoryState("app/src/components/Popcorn.tsx:Popcorn:resultsDismissed",false);
   const roundComplete = deckIndex >= deck.length;
-  const [turn, setTurn] = useState<Team>('blue');
+  const [turn, setTurn] = useGameHistoryState<Team>("app/src/components/Popcorn.tsx:Popcorn:turn",'blue');
   const sharedTurn = useGameWorkspace()?.turn ?? null;
   const players = sharedTurn?.all?.length ? sharedTurn.all : null;
-  const [lastScored, setLastScored] = useState<number | null>(null);
-  const [playerScores, setPlayerScores] = useState<Record<number, number>>({});
+  const [lastScored, setLastScored] = useGameHistoryState<number | null>("app/src/components/Popcorn.tsx:Popcorn:lastScored",null);
+  const [playerScores, setPlayerScores] = useGameHistoryState<Record<number, number>>("app/src/components/Popcorn.tsx:Popcorn:playerScores",{});
   const playersKey = players ? players.join('|') : '';
-  useEffect(() => { setPlayerScores({}); setLastScored(null); }, [playersKey]);
-  const [teamsOn, setTeamsOn] = useState(isShowOrderOn);
-  useEffect(() => {
+  useGameHistoryEffect(() => { setPlayerScores({}); setLastScored(null); }, [playersKey], false, "app/src/components/Popcorn.tsx:effect1");
+  const [teamsOn, setTeamsOn] = useGameHistoryState("app/src/components/Popcorn.tsx:Popcorn:teamsOn",isShowOrderOn);
+  useGameHistoryEffect(() => {
     const read = () => setTeamsOn(isShowOrderOn());
     window.addEventListener(TEAM_ORDER_EVENT, read);
     return () => window.removeEventListener(TEAM_ORDER_EVENT, read);
-  }, []);
+  }, [], true, "app/src/components/Popcorn.tsx:effect2");
   useNativeGameTurn(players && sharedTurn ? {current:sharedTurn.current,next:sharedTurn.next,index:sharedTurn.index,total:sharedTurn.total,enabled:items.length>0&&teamsOn} : {current:t('gamePopcorn.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gamePopcorn.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:items.length>0&&teamsOn});
-  const [scores, setScores] = useState<Record<Team, number>>({ blue: 0, red: 0 });
-  const [lastCard, setLastCard] = useState<Card | null>(null);
-  useEffect(() => {
+  const [scores, setScores] = useGameHistoryState<Record<Team, number>>("app/src/components/Popcorn.tsx:Popcorn:scores",{ blue: 0, red: 0 });
+  const [lastCard, setLastCard] = useGameHistoryState<Card | null>("app/src/components/Popcorn.tsx:Popcorn:lastCard",null);
+  useGameHistoryEffect(() => {
     if (!roundComplete || lastCard !== 'pop') return;
-    const timer = gameClock.setTimeout(() => setLastCard(null), 1500);
-    return () => gameClock.clearTimeout(timer);
-  }, [roundComplete, lastCard]);
-  const [poppedTeam, setPoppedTeam] = useState<Team | null>(null);
-  const [poppedName, setPoppedName] = useState<string | null>(null);
-  const [hop, setHop] = useState(0);
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
+    const timer = historyClock.setTimeout(() => setLastCard(null), 1500);
+    return () => historyClock.clearTimeout(timer);
+  }, [roundComplete, lastCard], false, "app/src/components/Popcorn.tsx:effect3");
+  const [poppedTeam, setPoppedTeam] = useGameHistoryState<Team | null>("app/src/components/Popcorn.tsx:Popcorn:poppedTeam",null);
+  const [poppedName, setPoppedName] = useGameHistoryState<string | null>("app/src/components/Popcorn.tsx:Popcorn:poppedName",null);
+  const [hop, setHop] = useGameHistoryState("app/src/components/Popcorn.tsx:Popcorn:hop",0);
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/Popcorn.tsx:Popcorn:itemDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/Popcorn.tsx:Popcorn:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/Popcorn.tsx:Popcorn:templateNameDraft",'');
 
   // 오른쪽 목록 입력창의 초안 텍스트를 실제 항목과 맞춰둔다 — 타이핑 중엔 이 draft를
   // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
-  }, [items]);
+  }, [items], false, "app/src/components/Popcorn.tsx:effect4");
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -372,7 +377,7 @@ export default function Popcorn({
       </div>
 
       {roundComplete && lastCard !== 'pop' && !resultsDismissed && (
-        <AccessibleDialog label={t('gamePopcorn.roundResults', { round })} onClose={() => setResultsDismissed(true)}>
+        <AccessibleDialog historyActions label={t('gamePopcorn.roundResults', { round })} onClose={() => setResultsDismissed(true)}>
           <div className="flex max-h-[85dvh] flex-col gap-4 p-5 text-deep-navy sm:p-8">
             <header className="text-center">
               <h2 className="text-2xl font-black sm:text-3xl">{t('gamePopcorn.roundResults', { round })}</h2>

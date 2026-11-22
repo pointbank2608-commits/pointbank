@@ -1,6 +1,7 @@
+import {useGameHistorySnapshot, useGameHistoryEffect, useGameHistoryState} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import {forwardRef, useImperativeHandle} from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import { useGamePlay } from './GameThemeFrame';
@@ -79,23 +80,26 @@ const TicTacToe = forwardRef<UndoHandle, Props>(function TicTacToe(
   { items, editable, onEditItem, templateName, onRenameTemplate, onAddItem, onRemoveItem, placeSound },
   ref,
 ) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/TicTacToe.tsx:TicTacToe',()=>({state:{board,marks,turn,prevSnapshot},refs:{}}),(snapshot,elapsed)=>{setBoard(()=>snapshot.state.board);setMarks(()=>snapshot.state.marks);setTurn(()=>snapshot.state.turn);setPrevSnapshot(()=>snapshot.state.prevSnapshot);void elapsed;});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
-  const [board, setBoard] = useState<GameItem[]>(() => pickBoardItems(items));
-  const [marks, setMarks] = useState<Mark[]>(() => Array(9).fill(null));
-  const [turn, setTurn] = useState<Team>('blue');
-  const [prevSnapshot, setPrevSnapshot] = useState<{ marks: Mark[]; turn: Team } | null>(null);
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
+  const [board, setBoard] = useGameHistoryState<GameItem[]>("app/src/components/TicTacToe.tsx:TicTacToe:board",() => pickBoardItems(items));
+  const [marks, setMarks] = useGameHistoryState<Mark[]>("app/src/components/TicTacToe.tsx:TicTacToe:marks",() => Array(9).fill(null));
+  const [turn, setTurn] = useGameHistoryState<Team>("app/src/components/TicTacToe.tsx:TicTacToe:turn",'blue');
+  const [prevSnapshot, setPrevSnapshot] = useGameHistoryState<{ marks: Mark[]; turn: Team } | null>("app/src/components/TicTacToe.tsx:TicTacToe:prevSnapshot",null);
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/TicTacToe.tsx:TicTacToe:itemDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/TicTacToe.tsx:TicTacToe:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/TicTacToe.tsx:TicTacToe:templateNameDraft",'');
   const winner = checkWinner(marks);
   const isDraw = !winner && marks.every((m) => m !== null);
   useNativeGameTurn({current:t('gameTicTacToe.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gameTicTacToe.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:items.length>0&&!winner&&!isDraw});
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
-  }, [items]);
+  }, [items], false, "app/src/components/TicTacToe.tsx:effect1");
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));

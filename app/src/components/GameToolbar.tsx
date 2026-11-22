@@ -35,6 +35,8 @@ import GameClassSettingsContent from './GameClassSettingsContent';
 import GameContentEditor from './GameContentEditor';
 import SavedGameMaterialList from './SavedGameMaterialList';
 import GameNativeOptions from './GameNativeOptions';
+import GameHistoryButtons from './GameHistoryButtons';
+import {useGameHistory} from '../context/GameHistoryContext';
 import { gameEditContent, gameEditDraft, materialForGame, usesUnifiedGameSettings, type GameEditDraft } from '../lib/unifiedGameSettings';
 import { guideProblem } from '../lib/gameGuide';
 import type { GameTemplateConfig } from '../lib/types';
@@ -281,10 +283,14 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const roster = useMemo(() => fullRoster.filter((row) => !absentIds.includes(row.id)), [fullRoster, absentIds]);
   const turnScope = `${session?.user.id}:${academy?.id}`;
   const turnState = useMemo(() => { void orderRev; return roster.length > 0 ? loadTeamOrder(roster, turnScope) : null; }, [roster, turnScope, orderRev]);
-  const moveTurn = (to: number) => {
+  const history=useGameHistory();
+  const moveTurn = (to: number, record=false) => {
+    if(history?.restoring)return;
     if (!turnState || turnState.order.length === 0) return;
+    if(record)history?.begin();
     const n = turnState.order.length;
     saveTeamOrder(roster, { ...turnState, turn: ((to % n) + n) % n }, turnScope);
+    if(record)requestAnimationFrame(()=>history?.changed());
   };
   // 한 판이 끝났다는 신호가 오면(돌림판에서 하나를 뽑았다 등) 다음 차례로 넘긴다
   const moveTurnRef = useRef(moveTurn);
@@ -786,6 +792,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           <button className={tab(open === 'saves')} aria-expanded={open === 'saves'} onClick={event => toggle('saves',event.currentTarget)}>{text('저장/불러오기', 'Save / Load')}</button>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-1.5">
+          <GameHistoryButtons/>
           {workspace.playing && <button type="button" className={`${util} ${workspace.running ? '' : 'bg-primary! text-white!'}`} disabled={workspace.pauseLocked || (!workspace.running && !workspace.canStart)} title={workspace.pauseLocked ? t('teacherGame.livePauseHint') : undefined} onClick={workspace.running ? workspace.pause : workspace.start}>
             {t(workspace.running ? 'teacherGame.pause' : 'flow.resume')}
           </button>}
@@ -806,7 +813,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         const members = turnMembers(now);
         return (
           <div className="mt-2 flex w-full items-center gap-3 rounded-xl bg-gradient-to-r from-warm-yellow/40 via-primary-fixed to-white px-3 py-2" data-turn-bar role="status" aria-live="polite">
-            <button type="button" disabled={workspace.playing && !workspace.running} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-deep-navy shadow-sm hover:bg-surface-container-low disabled:opacity-40" aria-label={text('이전 차례', 'Previous turn')} onClick={() => moveTurn(turnState.turn - 1)}>◀</button>
+            <button type="button" disabled={workspace.playing && !workspace.running} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-deep-navy shadow-sm hover:bg-surface-container-low disabled:opacity-40" aria-label={text('이전 차례', 'Previous turn')} onClick={() => moveTurn(turnState.turn - 1,true)}>◀</button>
             <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-1">
               <p className="flex min-w-0 items-center gap-2 text-2xl font-extrabold text-deep-navy">
                 <span className="shrink-0 rounded-full bg-deep-navy px-3 py-0.5 text-xs font-bold text-white">{text('지금 차례', 'Now')}</span>
@@ -821,7 +828,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
               )}
             </div>
             <span className="shrink-0 rounded-full bg-white px-3 py-1 text-sm font-bold tabular-nums text-on-surface-variant">{turnState.turn + 1} / {n}</span>
-            <button type="button" disabled={workspace.playing && !workspace.running} className={primaryBtn} onClick={() => moveTurn(turnState.turn + 1)}>{text('다음 차례', 'Next turn')}</button>
+            <button type="button" disabled={workspace.playing && !workspace.running} className={primaryBtn} onClick={() => moveTurn(turnState.turn + 1,true)}>{text('다음 차례', 'Next turn')}</button>
           </div>
         );
       })()}
@@ -1266,7 +1273,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         </div>
       </>)}
       {orderOpen && pEff.length > 0 && (
-        <TeamOrderPanel key={`${turnScope}:${pMode}:${pTeams}:${pEff.map((row) => row.id).join(',')}`} scope={turnScope} roster={pEff} fixedMode={pMode === 'team' ? 'team' : 'individual'} fixedTeams={pMode === 'team' ? pTeams : undefined} onClose={() => setOrderOpen(false)} />
+        <TeamOrderPanel key={`${turnScope}:${pMode}:${pTeams}:${pEff.map((row) => row.id).join(',')}`} scope={turnScope} roster={pEff} fixedMode={pMode === 'team' ? 'team' : 'individual'} fixedTeams={pMode === 'team' ? pTeams : undefined} onClose={() => {setOrderOpen(false);history?.clear();}} />
       )}
     </div>
   );

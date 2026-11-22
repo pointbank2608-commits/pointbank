@@ -1,13 +1,7 @@
-import {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-} from "react";
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
+import {useLayoutEffect, useMemo, useRef, type CSSProperties} from "react";
 import { useTranslation } from "react-i18next";
-import { gameClock } from "../lib/gameClock";
+
 import { playSfx, useGameSfx } from "../lib/gameSfx";
 import {
   canClaimBrick,
@@ -58,6 +52,10 @@ export default function SentenceSplash({
   seconds?: number;
   onExit?: () => void;
 }) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/SentenceSplash.tsx:SentenceSplash',()=>({state:{round,bricks,width,shellSize},refs:{roundRef:captureGameRef(roundRef.current),soundPrev:captureGameRef(soundPrev.current)}}),(snapshot,elapsed)=>{setRound(()=>snapshot.state.round);setBricks(()=>snapshot.state.bricks);setWidth(()=>snapshot.state.width);setShellSize(()=>snapshot.state.shellSize);restoreGameRef(roundRef,snapshot.refs.roundRef,elapsed,false);restoreGameRef(soundPrev,snapshot.refs.soundPrev,elapsed,false);});
+
   const { i18n } = useTranslation();
   const en = i18n.language.startsWith("en");
   const text = (ko: string, english: string) => (en ? english : ko);
@@ -66,16 +64,16 @@ export default function SentenceSplash({
     [items],
   );
   const duration = splashSeconds(seconds);
-  const [round, setRound] = useState<Round>(initialRound);
-  const roundRef = useRef(round);
+  const [round, setRound] = useGameHistoryState<Round>("app/src/components/SentenceSplash.tsx:SentenceSplash:round",initialRound);
+  const roundRef = useGameHistoryRef("app/src/components/SentenceSplash.tsx:SentenceSplash:roundRef",round);
   roundRef.current = round;
-  const [bricks, setBricks] = useState(() =>
+  const [bricks, setBricks] = useGameHistoryState("app/src/components/SentenceSplash.tsx:SentenceSplash:bricks",() =>
     makeSplashBricks(playable[0] || { id: "", label: "" }),
   );
   const sfx = useGameSfx("sentencesplash");
   // 소리는 상태 변화를 따라 낸다(claim·begin 로직은 건드리지 않는다).
-  const soundPrev = useRef({ phase: round.phase, picked: round.picked.length, wrong: round.wrong });
-  useEffect(() => {
+  const soundPrev = useGameHistoryRef("app/src/components/SentenceSplash.tsx:SentenceSplash:soundPrev",{ phase: round.phase, picked: round.picked.length, wrong: round.wrong });
+  useGameHistoryEffect(() => {
     const prev = soundPrev.current;
     if (round.phase === "playing" && prev.phase !== "playing") playSfx(sfx.start);
     else if (round.phase === "playing" && round.picked.length > prev.picked) playSfx(sfx.pick);
@@ -87,11 +85,11 @@ export default function SentenceSplash({
       else if (round.phase === "failed") playSfx(sfx.splash);
     }
     soundPrev.current = { phase: round.phase, picked: round.picked.length, wrong: round.wrong };
-  }, [round.phase, round.picked.length, round.wrong, sfx]);
-  const [width, setWidth] = useState(640);
+  }, [round.phase, round.picked.length, round.wrong, sfx], false, "app/src/components/SentenceSplash.tsx:effect1");
+  const [width, setWidth] = useGameHistoryState("app/src/components/SentenceSplash.tsx:SentenceSplash:width",640);
   // The shared frame fits the whole surface; avoid a second width-only zoom.
   const shell = useRef<HTMLDivElement>(null);
-  const [shellSize, setShellSize] = useState({ w: 1000, h: 800 });
+  const [shellSize, setShellSize] = useGameHistoryState("app/src/components/SentenceSplash.tsx:SentenceSplash:shellSize",{ w: 1000, h: 800 });
   const stage = useRef<HTMLDivElement>(null);
   const action = useRef<HTMLButtonElement>(null);
   const words = sentenceWords(playable[round.index]?.label || "");
@@ -107,15 +105,15 @@ export default function SentenceSplash({
     );
   }, [bricks, width, shellSize]);
   const key = JSON.stringify([items, duration]);
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     const next = initialRound();
     roundRef.current = next;
     setRound(next);
     setBricks(makeSplashBricks(playable[0] || { id: "", label: "" }));
     // Content/config edits restart the game; resizing never does.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
-  useEffect(() => {
+  }, [key], false, "app/src/components/SentenceSplash.tsx:effect2");
+  useGameHistoryEffect(() => {
     const el = shell.current;
     if (!el) return;
     const read = () => setShellSize({ w: el.clientWidth, h: window.innerHeight });
@@ -127,16 +125,16 @@ export default function SentenceSplash({
       observer.disconnect();
       window.removeEventListener("resize", read);
     };
-  }, []);
-  useEffect(() => {
+  }, [], true, "app/src/components/SentenceSplash.tsx:effect3");
+  useGameHistoryEffect(() => {
     if (!stage.current) return;
     const observer = new ResizeObserver((entries) =>
       setWidth(entries[0].contentRect.width),
     );
     observer.observe(stage.current);
     return () => observer.disconnect();
-  }, []);
-  useEffect(() => {
+  }, [], false, "app/src/components/SentenceSplash.tsx:effect4");
+  useGameHistoryEffect(() => {
     if (round.phase !== "playing") return;
     let frame: number;
     const tick = () => {
@@ -144,7 +142,7 @@ export default function SentenceSplash({
       if (current.phase !== "playing") return;
       const progress = splashProgress(
         current.started,
-        gameClock.now(),
+        historyClock.now(),
         duration,
       );
       const next: Round = {
@@ -155,15 +153,15 @@ export default function SentenceSplash({
       roundRef.current = next;
       setRound(next);
       if (next.phase === "playing")
-        frame = gameClock.requestAnimationFrame(tick);
+        frame = historyClock.requestAnimationFrame(tick);
     };
-    frame = gameClock.requestAnimationFrame(tick);
-    return () => gameClock.cancelAnimationFrame(frame);
-  }, [round.phase, duration]);
-  useEffect(() => {
+    frame = historyClock.requestAnimationFrame(tick);
+    return () => historyClock.cancelAnimationFrame(frame);
+  }, [round.phase, duration], false, "app/src/components/SentenceSplash.tsx:effect5");
+  useGameHistoryEffect(() => {
     if (round.phase !== "playing")
       action.current?.focus({ preventScroll: true });
-  }, [round.phase]);
+  }, [round.phase], false, "app/src/components/SentenceSplash.tsx:effect6");
   useLayoutEffect(() => {
     const focused = document.activeElement as HTMLElement | null;
     if (
@@ -185,7 +183,7 @@ export default function SentenceSplash({
       phase: "playing",
       index,
       picked: [],
-      started: gameClock.now(),
+      started: historyClock.now(),
       progress: 0,
       wrong: null,
       successes,
@@ -196,7 +194,7 @@ export default function SentenceSplash({
   function claim(id: string) {
     const current = roundRef.current;
     if (current.phase !== "playing") return;
-    const progress = splashProgress(current.started, gameClock.now(), duration);
+    const progress = splashProgress(current.started, historyClock.now(), duration);
     const brick = bricks.find((b) => b.id === id);
     if (!brick || current.picked.includes(id)) return;
     // Re-check elapsed time on input as well as animation frames (background tabs / slow devices).

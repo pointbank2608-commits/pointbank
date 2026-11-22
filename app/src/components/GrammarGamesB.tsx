@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import {useGameHistorySnapshot, useGameHistoryState} from '../context/GameHistoryContext';
+import {useMemo} from 'react';
 import {
   compareRounds, frameRounds, habitRounds, linkRounds, linkSentence, posRounds,
   type CompareRound, type FramePart, type HabitRound, type LinkRound, type PosCat, type PosRound,
@@ -14,11 +15,14 @@ type BGameType = Extract<GrammarGameType, 'grammarpos' | 'grammarframe' | 'gramm
 
 /** 팀 점수·차례·다음 버튼·결과 화면을 한곳에 모은 진행 틀 */
 export function useRun<T extends { id: string }>(make: (seed: number) => T[], seed: number, min: number) {
-  const [run, setRun] = useState(seed);
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/GrammarGamesB.tsx:useRun',()=>({state:{run,teams,scores,i},refs:{}}),(snapshot,elapsed)=>{setRun(()=>snapshot.state.run);setTeams(()=>snapshot.state.teams);setScores(()=>snapshot.state.scores);setI(()=>snapshot.state.i);void elapsed;});
+
+  const [run, setRun] = useGameHistoryState("app/src/components/GrammarGamesB.tsx:useRun:run",seed);
   const rounds = useMemo(() => make(run), [make, run]);
-  const [teams, setTeams] = useState(initialTeams);
-  const [scores, setScores] = useState<number[]>(() => Array(initialTeams()).fill(0));
-  const [i, setI] = useState(0);
+  const [teams, setTeams] = useGameHistoryState("app/src/components/GrammarGamesB.tsx:useRun:teams",initialTeams);
+  const [scores, setScores] = useGameHistoryState<number[]>("app/src/components/GrammarGamesB.tsx:useRun:scores",() => Array(initialTeams()).fill(0));
+  const [i, setI] = useGameHistoryState("app/src/components/GrammarGamesB.tsx:useRun:i",0);
   const turn = i % teams;
   const award = (ok: boolean) => { if (ok) setScores((s) => s.map((v, k) => (k === turn ? v + 1 : v))); };
   const next = () => setI((x) => x + 1);
@@ -42,9 +46,12 @@ const POS_HINT: Record<PosCat, [string, string]> = {
   conjunction: ['말을 이어 줘요 (and, but, because)', 'joins words or sentences (and, but, because)'],
 };
 function Pos({ grammarId, seed = 1, onExit }: CommonProps) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/GrammarGamesB.tsx:Pos',()=>({state:{chosen},refs:{}}),(snapshot,elapsed)=>{setChosen(()=>snapshot.state.chosen);void elapsed;});
+
   const text = useText();
   const r = useRun<PosRound>((s) => posRounds(grammarId, s), seed, 4);
-  const [chosen, setChosen] = useState<number | null>(null);
+  const [chosen, setChosen] = useGameHistoryState<number | null>("app/src/components/GrammarGamesB.tsx:Pos:chosen",null);
   const title = text('문장 속 품사 탐험', 'Parts of Speech Quest');
   const next = () => { r.next(); setChosen(null); };
   const pick = (k: number) => {
@@ -88,11 +95,14 @@ const SLOT_NAME: Record<FramePart, [string, string, string]> = {
 };
 const SLOTS: FramePart[] = ['subject', 'verb', 'rest'];
 function FramePlay({ grammarId, seed = 1, onExit }: CommonProps) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/GrammarGamesB.tsx:FramePlay',()=>({state:{held,placed,done},refs:{}}),(snapshot,elapsed)=>{setHeld(()=>snapshot.state.held);setPlaced(()=>snapshot.state.placed);setDone(()=>snapshot.state.done);void elapsed;});
+
   const text = useText();
   const r = useRun<ReturnType<typeof frameRounds>[number]>((s) => frameRounds(grammarId, s), seed, 4);
-  const [held, setHeld] = useState<FramePart | null>(null);
-  const [placed, setPlaced] = useState<Record<FramePart, FramePart | null>>({ subject: null, verb: null, rest: null });
-  const [done, setDone] = useState(false);
+  const [held, setHeld] = useGameHistoryState<FramePart | null>("app/src/components/GrammarGamesB.tsx:FramePlay:held",null);
+  const [placed, setPlaced] = useGameHistoryState<Record<FramePart, FramePart | null>>("app/src/components/GrammarGamesB.tsx:FramePlay:placed",{ subject: null, verb: null, rest: null });
+  const [done, setDone] = useGameHistoryState("app/src/components/GrammarGamesB.tsx:FramePlay:done",false);
   const title = text('문장 뼈대 조립소', 'Sentence Frame');
   const reset = () => { setHeld(null); setPlaced({ subject: null, verb: null, rest: null }); setDone(false); };
   const next = () => { r.next(); reset(); };
@@ -148,9 +158,12 @@ export function Choice<T extends { id: string; options: string[]; answer: string
   grammarId: string; seed: number; onExit?: () => void; title: string; game: GrammarGameType; make: (seed: number) => T[];
   stem: (round: T, chosen: string | null) => React.ReactNode; explain?: (round: T) => string; label?: (opt: string) => string;
 }) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/GrammarGamesB.tsx:Choice',()=>({state:{chosen},refs:{}}),(snapshot,elapsed)=>{setChosen(()=>snapshot.state.chosen);void elapsed;});
+
   const text = useText();
   const r = useRun<T>(props.make, props.seed, 4);
-  const [chosen, setChosen] = useState<string | null>(null);
+  const [chosen, setChosen] = useGameHistoryState<string | null>("app/src/components/GrammarGamesB.tsx:Choice:chosen",null);
   const next = () => { r.next(); setChosen(null); };
   const pick = (o: string) => {
     if (!r.round || chosen) return;

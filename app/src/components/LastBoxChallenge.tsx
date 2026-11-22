@@ -1,7 +1,8 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
-import { gameClock } from '../lib/gameClock';
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+
+import {forwardRef, useImperativeHandle, useMemo} from 'react';
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
@@ -74,6 +75,10 @@ const STYLE = `
 `;
 
 const LastBoxChallenge = forwardRef<UndoHandle, Props>(function LastBoxChallenge({ items, boxes, teams }, ref) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/LastBoxChallenge.tsx:LastBoxChallenge',()=>({state:{words,cursor,readNow,turn,round,scores,phase,lastTaken,pulse,snapshot,angle,spin,slice,challenge,showAnswer,resolved,needChoose},refs:{angleRef:captureGameRef(angleRef.current),raf:captureGameRef(raf.current),timers:captureGameRef(timers.current)}}),(snapshot,elapsed)=>{setWords(()=>snapshot.state.words);setCursor(()=>snapshot.state.cursor);setReadNow(()=>snapshot.state.readNow);setTurn(()=>snapshot.state.turn);setRound(()=>snapshot.state.round);setScores(()=>snapshot.state.scores);setPhase(()=>snapshot.state.phase);setLastTaken(()=>snapshot.state.lastTaken);setPulse(()=>snapshot.state.pulse);setSnapshot(()=>snapshot.state.snapshot);setAngle(()=>snapshot.state.angle);setSpin(()=>snapshot.state.spin);setSlice(()=>snapshot.state.slice);setChallenge(()=>snapshot.state.challenge);setShowAnswer(()=>snapshot.state.showAnswer);setResolved(()=>snapshot.state.resolved);setNeedChoose(()=>snapshot.state.needChoose);restoreGameRef(angleRef,snapshot.refs.angleRef,elapsed,false);restoreGameRef(raf,snapshot.refs.raf,elapsed,false);restoreGameRef(timers,snapshot.refs.timers,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const teamCount = Math.min(8, Math.max(2, teams));
@@ -90,43 +95,43 @@ const LastBoxChallenge = forwardRef<UndoHandle, Props>(function LastBoxChallenge
     return out.slice(0, boxCount);
   };
 
-  const [words, setWords] = useState<string[]>(makeWords);
-  const [cursor, setCursor] = useState(0);
-  const [readNow, setReadNow] = useState(0);
-  const [turn, setTurn] = useState(0);
-  const [round, setRound] = useState(1);
-  const [scores, setScores] = useState<number[]>(() => Array(teamCount).fill(0));
-  const [phase, setPhase] = useState<Phase>('board');
-  const [lastTaken, setLastTaken] = useState<number | null>(null);
-  const [pulse, setPulse] = useState<number | null>(null);
-  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+  const [words, setWords] = useGameHistoryState<string[]>("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:words",makeWords);
+  const [cursor, setCursor] = useGameHistoryState("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:cursor",0);
+  const [readNow, setReadNow] = useGameHistoryState("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:readNow",0);
+  const [turn, setTurn] = useGameHistoryState("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:turn",0);
+  const [round, setRound] = useGameHistoryState("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:round",1);
+  const [scores, setScores] = useGameHistoryState<number[]>("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:scores",() => Array(teamCount).fill(0));
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:phase",'board');
+  const [lastTaken, setLastTaken] = useGameHistoryState<number | null>("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:lastTaken",null);
+  const [pulse, setPulse] = useGameHistoryState<number | null>("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:pulse",null);
+  const [snapshot, setSnapshot] = useGameHistoryState<Snapshot | null>("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:snapshot",null);
 
   // 돌림판
-  const [angle, setAngle] = useState(0);
-  const [spin, setSpin] = useState<'idle' | 'fast' | 'stopping' | 'done'>('idle');
-  const [slice, setSlice] = useState<number | null>(null);
-  const angleRef = useRef(0);
-  const raf = useRef<number | null>(null);
+  const [angle, setAngle] = useGameHistoryState("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:angle",0);
+  const [spin, setSpin] = useGameHistoryState<'idle' | 'fast' | 'stopping' | 'done'>("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:spin",'idle');
+  const [slice, setSlice] = useGameHistoryState<number | null>("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:slice",null);
+  const angleRef = useGameHistoryRef("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:angleRef",0);
+  const raf = useGameHistoryRef<number | null>("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:raf",null);
 
   // 도전
-  const [challenge, setChallenge] = useState<Challenge | null>(null);
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [hidden, setHidden] = useState(true);
-  const [resolved, setResolved] = useState<'win' | 'lose' | 'skip' | null>(null);
-  const [needChoose, setNeedChoose] = useState(false);
-  const timers = useRef<number[]>([]);
+  const [challenge, setChallenge] = useGameHistoryState<Challenge | null>("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:challenge",null);
+  const [showAnswer, setShowAnswer] = useGameHistoryState("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:showAnswer",false);
+  const [hidden, setHidden] = useGameHistoryState("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:hidden",true);
+  const [resolved, setResolved] = useGameHistoryState<'win' | 'lose' | 'skip' | null>("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:resolved",null);
+  const [needChoose, setNeedChoose] = useGameHistoryState("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:needChoose",false);
+  const timers = useGameHistoryRef<number[]>("app/src/components/LastBoxChallenge.tsx:LastBoxChallenge:timers",[]);
   const later = (fn: () => void, ms: number) => {
-    timers.current.push(gameClock.setTimeout(fn, ms));
+    timers.current.push(historyClock.setTimeout(fn, ms));
   };
   const clearAll = () => {
-    timers.current.forEach((id) => gameClock.clearTimeout(id));
+    timers.current.forEach((id) => historyClock.clearTimeout(id));
     timers.current = [];
-    if (raf.current) gameClock.cancelAnimationFrame(raf.current);
+    if (raf.current) historyClock.cancelAnimationFrame(raf.current);
     raf.current = null;
   };
-  useEffect(() => clearAll, []);
+  useGameHistoryEffect(() => clearAll, [], false, "app/src/components/LastBoxChallenge.tsx:effect1");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     clearAll();
     setWords(makeWords());
     setCursor(0);
@@ -141,7 +146,7 @@ const LastBoxChallenge = forwardRef<UndoHandle, Props>(function LastBoxChallenge
     setSlice(null);
     setResolved(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamCount, boxCount, itemKey]);
+  }, [teamCount, boxCount, itemKey], false, "app/src/components/LastBoxChallenge.tsx:effect2");
 
   const teamNo = (i: number) => i + 1;
   useNativeGameTurn({current:t('teamOrder.teamLabel',{n:turn+1}),next:t('teamOrder.teamLabel',{n:(turn+1)%teamCount+1}),index:turn,total:teamCount,enabled:items.length>0});
@@ -186,7 +191,7 @@ const LastBoxChallenge = forwardRef<UndoHandle, Props>(function LastBoxChallenge
   function tickFast() {
     angleRef.current = (angleRef.current + 11) % 360;
     setAngle(angleRef.current);
-    raf.current = gameClock.requestAnimationFrame(tickFast);
+    raf.current = historyClock.requestAnimationFrame(tickFast);
   }
 
   function clickWheel() {
@@ -194,11 +199,11 @@ const LastBoxChallenge = forwardRef<UndoHandle, Props>(function LastBoxChallenge
     if (spin === 'idle') {
       setSpin('fast');
       playSfx(GAME_SFX.lastbox.spin);
-      raf.current = gameClock.requestAnimationFrame(tickFast);
+      raf.current = historyClock.requestAnimationFrame(tickFast);
       return;
     }
     if (spin === 'fast') {
-      if (raf.current) gameClock.cancelAnimationFrame(raf.current);
+      if (raf.current) historyClock.cancelAnimationFrame(raf.current);
       setSpin('stopping');
       const target = Math.floor(Math.random() * SLICES.length);
       const centerDeg = target * 45 + 22.5 + (Math.random() * 20 - 10);
@@ -206,13 +211,13 @@ const LastBoxChallenge = forwardRef<UndoHandle, Props>(function LastBoxChallenge
       const want = (((-centerDeg - start) % 360) + 360) % 360;
       const total = want + 360 * 3;
       const dur = 3200;
-      const t0 = gameClock.now();
+      const t0 = historyClock.now();
       const step = (now: number) => {
         const p = Math.min(1, (now - t0) / dur);
         const e = 1 - Math.pow(1 - p, 3);
         angleRef.current = (start + total * e) % 360;
         setAngle(angleRef.current);
-        if (p < 1) raf.current = gameClock.requestAnimationFrame(step);
+        if (p < 1) raf.current = historyClock.requestAnimationFrame(step);
         else {
           setSpin('done');
           setSlice(target);
@@ -220,7 +225,7 @@ const LastBoxChallenge = forwardRef<UndoHandle, Props>(function LastBoxChallenge
           later(() => handleSlice(target), 900);
         }
       };
-      raf.current = gameClock.requestAnimationFrame(step);
+      raf.current = historyClock.requestAnimationFrame(step);
     }
   }
 

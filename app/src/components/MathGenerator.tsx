@@ -1,5 +1,6 @@
+import {useGameHistorySnapshot, useGameHistoryEffect, captureGameRef, restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { gameKeyboardAllowed } from '../lib/gameKeyboard';
-import { useEffect, useRef, useState } from 'react';
+import {} from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MathOperation } from '../lib/types';
 import { GAME_SFX, playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
@@ -69,20 +70,23 @@ export default function MathGenerator({
   questionCount,
   boardStyle = 'slate',
 }: Props) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/MathGenerator.tsx:MathGenerator',()=>({state:{round,problem,inputValue,status,score},refs:{playRef:captureGameRef(playRef.current)}}),(snapshot,elapsed)=>{setRound(()=>snapshot.state.round);setProblem(()=>snapshot.state.problem);setInputValue(()=>snapshot.state.inputValue);setStatus(()=>snapshot.state.status);setScore(()=>snapshot.state.score);restoreGameRef(playRef,snapshot.refs.playRef,elapsed,false);});
+
   const { t } = useTranslation();
   const blocks = boardStyle === 'blocks';
-  const [round, setRound] = useState(0);
-  const [problem, setProblem] = useState<Problem>(() =>
+  const [round, setRound] = useGameHistoryState("app/src/components/MathGenerator.tsx:MathGenerator:round",0);
+  const [problem, setProblem] = useGameHistoryState<Problem>("app/src/components/MathGenerator.tsx:MathGenerator:problem",() =>
     operations.length > 0 ? generateProblem(operations, min, max) : { question: '', answer: 0 },
   );
-  const [inputValue, setInputValue] = useState('');
-  const [status, setStatus] = useState<'playing' | 'correct' | 'wrong'>('playing');
-  const [score, setScore] = useState(0);
+  const [inputValue, setInputValue] = useGameHistoryState("app/src/components/MathGenerator.tsx:MathGenerator:inputValue",'');
+  const [status, setStatus] = useGameHistoryState<'playing' | 'correct' | 'wrong'>("app/src/components/MathGenerator.tsx:MathGenerator:status",'playing');
+  const [score, setScore] = useGameHistoryState("app/src/components/MathGenerator.tsx:MathGenerator:score",0);
   const settingsKey = `${operations.join('|')}|${min}|${max}|${questionCount}`;
-  const playRef = useRef({ status, inputValue, answer: problem.answer });
+  const playRef = useGameHistoryRef("app/src/components/MathGenerator.tsx:MathGenerator:playRef",{ status, inputValue, answer: problem.answer });
   playRef.current = { status, inputValue, answer: problem.answer };
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (operations.length === 0) return;
     setRound(0);
     setProblem(generateProblem(operations, min, max));
@@ -90,7 +94,7 @@ export default function MathGenerator({
     setStatus('playing');
     setScore(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settingsKey]);
+  }, [settingsKey], false, "app/src/components/MathGenerator.tsx:effect1");
 
   function typeDigit(d: string) {
     if (playRef.current.status !== 'playing') return;
@@ -112,7 +116,7 @@ export default function MathGenerator({
     if (ok) setScore((s) => s + 1);
   }
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (!gameKeyboardAllowed(e)) return;
       if (isEditorTarget(e.target)) return;
@@ -133,7 +137,7 @@ export default function MathGenerator({
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [], true, "app/src/components/MathGenerator.tsx:effect2");
 
   const sfx = useGameSfx('mathgen');
   useStepSounds(round, operations.length > 0 && round >= questionCount, sfx.question, sfx.finish);

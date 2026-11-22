@@ -1,7 +1,8 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordDeck } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
-import { gameClock } from '../lib/gameClock';
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+
+import {forwardRef, useImperativeHandle, useMemo} from 'react';
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
@@ -65,6 +66,10 @@ const STYLE = `
 `;
 
 const MysteryBox = forwardRef<UndoHandle, Props>(function MysteryBox({ items: sourceItems, teams, blocks }, ref) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/MysteryBox.tsx:MysteryBox',()=>({state:{deck,opened,scores,turn,phase,sel,recv,order,cardPos,showSub,lastReward,shake,pulse,snapshot},refs:{timers:captureGameRef(timers.current)}}),(snapshot,elapsed)=>{setDeck(()=>snapshot.state.deck);setOpened(()=>snapshot.state.opened);setScores(()=>snapshot.state.scores);setTurn(()=>snapshot.state.turn);setPhase(()=>snapshot.state.phase);setSel(()=>snapshot.state.sel);setRecv(()=>snapshot.state.recv);setOrder(()=>snapshot.state.order);setCardPos(()=>snapshot.state.cardPos);setShowSub(()=>snapshot.state.showSub);setLastReward(()=>snapshot.state.lastReward);setShake(()=>snapshot.state.shake);setPulse(()=>snapshot.state.pulse);setSnapshot(()=>snapshot.state.snapshot);restoreGameRef(timers,snapshot.refs.timers,elapsed,false);});
+
   const pictures = usePictureWordDeck();
   const items = useMemo(() => pictures.length ? pictures.map(row => ({ id: row.id, label: row.choices[row.correctIndex] })) : sourceItems, [pictures, sourceItems]);
   const { t } = useTranslation();
@@ -74,31 +79,31 @@ const MysteryBox = forwardRef<UndoHandle, Props>(function MysteryBox({ items: so
   const rows = blockCount / cols;
   const itemKey = items.map((i) => i.id + i.label).join('|');
 
-  const [deck, setDeck] = useState<Reward[]>(() => shuffle(rewardDeck()).slice(0, blockCount));
-  const [opened, setOpened] = useState<number[]>([]);
-  const [scores, setScores] = useState<number[]>(() => Array(teamCount).fill(0));
-  const [turn, setTurn] = useState(0);
-  const [phase, setPhase] = useState<Phase>('board');
-  const [sel, setSel] = useState<number | null>(null);
-  const [recv, setRecv] = useState(0);
-  const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
-  const [cardPos, setCardPos] = useState(0);
-  const [showSub, setShowSub] = useState(false);
-  const [lastReward, setLastReward] = useState<Reward | null>(null);
-  const [shake, setShake] = useState<number | null>(null);
-  const [pulse, setPulse] = useState<number | null>(null);
-  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
-  const timers = useRef<number[]>([]);
+  const [deck, setDeck] = useGameHistoryState<Reward[]>("app/src/components/MysteryBox.tsx:MysteryBox:deck",() => shuffle(rewardDeck()).slice(0, blockCount));
+  const [opened, setOpened] = useGameHistoryState<number[]>("app/src/components/MysteryBox.tsx:MysteryBox:opened",[]);
+  const [scores, setScores] = useGameHistoryState<number[]>("app/src/components/MysteryBox.tsx:MysteryBox:scores",() => Array(teamCount).fill(0));
+  const [turn, setTurn] = useGameHistoryState("app/src/components/MysteryBox.tsx:MysteryBox:turn",0);
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/MysteryBox.tsx:MysteryBox:phase",'board');
+  const [sel, setSel] = useGameHistoryState<number | null>("app/src/components/MysteryBox.tsx:MysteryBox:sel",null);
+  const [recv, setRecv] = useGameHistoryState("app/src/components/MysteryBox.tsx:MysteryBox:recv",0);
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/MysteryBox.tsx:MysteryBox:order",() => shuffle(items.map((_, i) => i)));
+  const [cardPos, setCardPos] = useGameHistoryState("app/src/components/MysteryBox.tsx:MysteryBox:cardPos",0);
+  const [showSub, setShowSub] = useGameHistoryState("app/src/components/MysteryBox.tsx:MysteryBox:showSub",false);
+  const [lastReward, setLastReward] = useGameHistoryState<Reward | null>("app/src/components/MysteryBox.tsx:MysteryBox:lastReward",null);
+  const [shake, setShake] = useGameHistoryState<number | null>("app/src/components/MysteryBox.tsx:MysteryBox:shake",null);
+  const [pulse, setPulse] = useGameHistoryState<number | null>("app/src/components/MysteryBox.tsx:MysteryBox:pulse",null);
+  const [snapshot, setSnapshot] = useGameHistoryState<Snapshot | null>("app/src/components/MysteryBox.tsx:MysteryBox:snapshot",null);
+  const timers = useGameHistoryRef<number[]>("app/src/components/MysteryBox.tsx:MysteryBox:timers",[]);
   const later = (fn: () => void, ms: number) => {
-    timers.current.push(gameClock.setTimeout(fn, ms));
+    timers.current.push(historyClock.setTimeout(fn, ms));
   };
   const clearTimers = () => {
-    timers.current.forEach((id) => gameClock.clearTimeout(id));
+    timers.current.forEach((id) => historyClock.clearTimeout(id));
     timers.current = [];
   };
-  useEffect(() => clearTimers, []);
+  useGameHistoryEffect(() => clearTimers, [], false, "app/src/components/MysteryBox.tsx:effect1");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     clearTimers();
     setDeck(shuffle(rewardDeck()).slice(0, blockCount));
     setOpened([]);
@@ -111,14 +116,14 @@ const MysteryBox = forwardRef<UndoHandle, Props>(function MysteryBox({ items: so
     setSnapshot(null);
     setLastReward(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamCount, blockCount, itemKey]);
+  }, [teamCount, blockCount, itemKey], false, "app/src/components/MysteryBox.tsx:effect2");
 
   const card = useMemo(() => {
     if (items.length === 0 || order.length === 0) return { text: '', sub: '' };
     return parseItem(items[order[cardPos % order.length]]?.label ?? '');
   }, [items, order, cardPos]);
   const picture = order.length ? pictures[order[cardPos % order.length]] : undefined;
-  useEffect(() => setShowSub(false), [cardPos, sel]);
+  useGameHistoryEffect(() => setShowSub(false), [cardPos, sel], false, "app/src/components/MysteryBox.tsx:effect3");
 
   const teamName = (i: number) => t('gameMysteryBox.teamName', { name: TEAM_NAMES[i] });
   useNativeGameTurn({current:teamName(turn),next:teamName((turn+1)%teamCount),index:turn,total:teamCount,enabled:items.length>0&&phase!=='final'});

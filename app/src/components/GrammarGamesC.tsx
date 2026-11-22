@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import {useGameHistorySnapshot, useGameHistoryState} from '../context/GameHistoryContext';
+import {useMemo} from 'react';
 import {
   askRounds, condRounds, passiveRounds, relativeRounds, shopRounds,
   type CondRound, type PassiveRound, type RelRound, type ShopRound,
@@ -103,19 +104,22 @@ function Shop({ grammarId, seed = 1, onExit }: CommonProps) {
 
 /* ---------------- 질문으로 친구 찾기 ---------------- */
 function Ask({ grammarId, seed = 1, onExit }: CommonProps) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/GrammarGamesC.tsx:Ask',()=>({state:{run,teams,scores,r,turn,asked,wrong,guessing,found},refs:{}}),(snapshot,elapsed)=>{setRun(()=>snapshot.state.run);setTeams(()=>snapshot.state.teams);setScores(()=>snapshot.state.scores);setR(()=>snapshot.state.r);setTurn(()=>snapshot.state.turn);setAsked(()=>snapshot.state.asked);setWrong(()=>snapshot.state.wrong);setGuessing(()=>snapshot.state.guessing);setFound(()=>snapshot.state.found);void elapsed;});
+
   const text = useText();
   const label = useTeamLabel();
   const solo = useSolo();
-  const [run, setRun] = useState(seed);
+  const [run, setRun] = useGameHistoryState("app/src/components/GrammarGamesC.tsx:Ask:run",seed);
   const rounds = useMemo(() => askRounds(grammarId, run), [grammarId, run]);
-  const [teams, setTeams] = useState(initialTeams);
-  const [scores, setScores] = useState<number[]>(() => Array(initialTeams()).fill(0));
-  const [r, setR] = useState(0);
-  const [turn, setTurn] = useState(0);
-  const [asked, setAsked] = useState<{ q: number; yes: boolean }[]>([]);
-  const [wrong, setWrong] = useState<number[]>([]);
-  const [guessing, setGuessing] = useState(false);
-  const [found, setFound] = useState<number | null>(null);
+  const [teams, setTeams] = useGameHistoryState("app/src/components/GrammarGamesC.tsx:Ask:teams",initialTeams);
+  const [scores, setScores] = useGameHistoryState<number[]>("app/src/components/GrammarGamesC.tsx:Ask:scores",() => Array(initialTeams()).fill(0));
+  const [r, setR] = useGameHistoryState("app/src/components/GrammarGamesC.tsx:Ask:r",0);
+  const [turn, setTurn] = useGameHistoryState("app/src/components/GrammarGamesC.tsx:Ask:turn",0);
+  const [asked, setAsked] = useGameHistoryState<{ q: number; yes: boolean }[]>("app/src/components/GrammarGamesC.tsx:Ask:asked",[]);
+  const [wrong, setWrong] = useGameHistoryState<number[]>("app/src/components/GrammarGamesC.tsx:Ask:wrong",[]);
+  const [guessing, setGuessing] = useGameHistoryState("app/src/components/GrammarGamesC.tsx:Ask:guessing",false);
+  const [found, setFound] = useGameHistoryState<number | null>("app/src/components/GrammarGamesC.tsx:Ask:found",null);
   const round = rounds[r];
   const title = text('질문으로 친구 찾기', 'Find the Friend');
   const reset = (n: number) => { setTeams(n); setScores(Array(n).fill(0)); setR(0); setTurn(0); setAsked([]); setWrong([]); setGuessing(false); setFound(null); };

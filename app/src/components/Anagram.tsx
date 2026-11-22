@@ -1,5 +1,6 @@
+import {useGameHistorySnapshot, useGameHistoryEffect, captureGameRef, restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
-import { useEffect, useRef, useState } from 'react';
+import {} from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import { useGamePlay } from './GameThemeFrame';
@@ -75,28 +76,31 @@ export default function Anagram({
   onRemoveItem,
   onComplete,
 }: Props) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/Anagram.tsx:Anagram',()=>({state:{order,pos,pool,placed,status,score},refs:{doneRef:captureGameRef(doneRef.current)}}),(snapshot,elapsed)=>{setOrder(()=>snapshot.state.order);setPos(()=>snapshot.state.pos);setPool(()=>snapshot.state.pool);setPlaced(()=>snapshot.state.placed);setStatus(()=>snapshot.state.status);setScore(()=>snapshot.state.score);restoreGameRef(doneRef,snapshot.refs.doneRef,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const hang = boardStyle === 'tags';
-  const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
-  const [pos, setPos] = useState(0);
-  const [pool, setPool] = useState<Tile[]>(() =>
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/Anagram.tsx:Anagram:order",() => shuffle(items.map((_, i) => i)));
+  const [pos, setPos] = useGameHistoryState("app/src/components/Anagram.tsx:Anagram:pos",0);
+  const [pool, setPool] = useGameHistoryState<Tile[]>("app/src/components/Anagram.tsx:Anagram:pool",() =>
     items.length && order.length ? shuffleWord(items[order[0]].label) : [],
   );
-  const [placed, setPlaced] = useState<Tile[]>([]);
-  const [status, setStatus] = useState<Status>('playing');
-  const [score, setScore] = useState(0);
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
+  const [placed, setPlaced] = useGameHistoryState<Tile[]>("app/src/components/Anagram.tsx:Anagram:placed",[]);
+  const [status, setStatus] = useGameHistoryState<Status>("app/src/components/Anagram.tsx:Anagram:status",'playing');
+  const [score, setScore] = useGameHistoryState("app/src/components/Anagram.tsx:Anagram:score",0);
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/Anagram.tsx:Anagram:itemDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/Anagram.tsx:Anagram:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/Anagram.tsx:Anagram:templateNameDraft",'');
   const itemKey = items.map((it) => it.id).join(',');
 
   // 오른쪽 목록 입력창의 초안 텍스트를 실제 항목과 맞춰둔다 — 타이핑 중엔 이 draft를
   // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
-  }, [items]);
+  }, [items], false, "app/src/components/Anagram.tsx:effect1");
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -118,7 +122,7 @@ export default function Anagram({
     if (trimmed && trimmed !== templateName) onRenameTemplate?.(trimmed);
   }
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     const nextOrder = shuffle(items.map((_, i) => i));
     setOrder(nextOrder);
     setPos(0);
@@ -131,10 +135,10 @@ export default function Anagram({
       setPool([]);
       setPlaced([]);
     }
-  }, [itemKey]);
+  }, [itemKey], false, "app/src/components/Anagram.tsx:effect2");
 
-  const doneRef = useRef(false);
-  useEffect(() => {
+  const doneRef = useGameHistoryRef("app/src/components/Anagram.tsx:Anagram:doneRef",false);
+  useGameHistoryEffect(() => {
     if (!onComplete) return;
     if (items.length > 0 && order.length > 0 && pos >= order.length) {
       if (!doneRef.current) {
@@ -145,7 +149,7 @@ export default function Anagram({
       doneRef.current = false;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pos, order.length, items.length]);
+  }, [pos, order.length, items.length], false, "app/src/components/Anagram.tsx:effect3");
 
   const sfx = useGameSfx('anagram');
   useStepSounds(pos, items.length > 0 && order.length > 0 && pos >= order.length, undefined, sfx.finish);

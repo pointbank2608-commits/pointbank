@@ -1,8 +1,9 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import type { TimerPlayMode } from './TimerPlaySettings';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import {useGameWorkspace} from '../context/GameWorkspaceContext';
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useRef, useState } from 'react';
+
+import {} from 'react';
 import { TEAM_ORDER_EVENT, isShowOrderOn } from '../lib/teamOrder';
 import { useTranslation } from 'react-i18next';
 import { playMusic } from '../lib/gameMusic';
@@ -99,46 +100,50 @@ export default function TimerMatch({
   onAddItem,
   onRemoveItem,
 }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/TimerMatch.tsx:TimerMatch',()=>({state:{orderOn,showTimer,phase,elapsedMs,turnIndex,attempts},refs:{sharedRef:captureGameRef(sharedRef.current),startTimeRef:captureGameRef(startTimeRef.current),rafRef:captureGameRef(rafRef.current),stopMusicRef:captureGameRef(stopMusicRef.current)}}),(snapshot,elapsed)=>{setOrderOn(()=>snapshot.state.orderOn);setShowTimer(()=>snapshot.state.showTimer);setPhase(()=>snapshot.state.phase);setElapsedMs(()=>snapshot.state.elapsedMs);setTurnIndex(()=>snapshot.state.turnIndex);setAttempts(()=>snapshot.state.attempts);restoreGameRef(sharedRef,snapshot.refs.sharedRef,elapsed,false);restoreGameRef(startTimeRef,snapshot.refs.startTimeRef,elapsed,false);restoreGameRef(rafRef,snapshot.refs.rafRef,elapsed,false);stopMusicRef.current();restoreGameRef(stopMusicRef,snapshot.refs.stopMusicRef,elapsed,false);});
+
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const workspace = useGameWorkspace();
   const sharedTurn = workspace?.turn;
   const hasClass = !workspace || !!workspace.info?.classId;
-  const sharedRef = useRef(sharedTurn);
+  const sharedRef = useGameHistoryRef("app/src/components/TimerMatch.tsx:TimerMatch:sharedRef",sharedTurn);
   sharedRef.current = sharedTurn;
   const n = sharedTurn?.total ?? participants.length;
   // 참가자가 있으면 항상 한 명씩 차례로 도전하고 기록이 쌓인다. 참가자가 없을 때만 자유 연습.
-  const [orderOn, setOrderOn] = useState(isShowOrderOn);
-  useEffect(() => {
+  const [orderOn, setOrderOn] = useGameHistoryState("app/src/components/TimerMatch.tsx:TimerMatch:orderOn",isShowOrderOn);
+  useGameHistoryEffect(() => {
     const read = () => setOrderOn(isShowOrderOn());
     window.addEventListener(TEAM_ORDER_EVENT, read);
     return () => window.removeEventListener(TEAM_ORDER_EVENT, read);
-  }, []);
+  }, [], true, "app/src/components/TimerMatch.tsx:effect1");
   const mode: Mode = n > 0 && orderOn && hasClass ? 'ranked' : 'practice';
-  const [showTimer, setShowTimer] = useState(false);
-  const [phase, setPhase] = useState<Phase>('idle');
-  const [elapsedMs, setElapsedMs] = useState(0);
-  const [turnIndex, setTurnIndex] = useState(0);
-  const [attempts, setAttempts] = useState<Attempt[]>([]);
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
-  const startTimeRef = useRef(0);
-  const rafRef = useRef<number | null>(null);
-  const stopMusicRef = useRef<() => void>(() => {});
+  const [showTimer, setShowTimer] = useGameHistoryState("app/src/components/TimerMatch.tsx:TimerMatch:showTimer",false);
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/TimerMatch.tsx:TimerMatch:phase",'idle');
+  const [elapsedMs, setElapsedMs] = useGameHistoryState("app/src/components/TimerMatch.tsx:TimerMatch:elapsedMs",0);
+  const [turnIndex, setTurnIndex] = useGameHistoryState("app/src/components/TimerMatch.tsx:TimerMatch:turnIndex",0);
+  const [attempts, setAttempts] = useGameHistoryState<Attempt[]>("app/src/components/TimerMatch.tsx:TimerMatch:attempts",[]);
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/TimerMatch.tsx:TimerMatch:itemDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/TimerMatch.tsx:TimerMatch:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/TimerMatch.tsx:TimerMatch:templateNameDraft",'');
+  const startTimeRef = useGameHistoryRef("app/src/components/TimerMatch.tsx:TimerMatch:startTimeRef",0);
+  const rafRef = useGameHistoryRef<number | null>("app/src/components/TimerMatch.tsx:TimerMatch:rafRef",null);
+  const stopMusicRef = useGameHistoryRef<() => void>("app/src/components/TimerMatch.tsx:TimerMatch:stopMusicRef",() => {});
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     return () => {
-      if (rafRef.current) gameClock.cancelAnimationFrame(rafRef.current);
+      if (rafRef.current) historyClock.cancelAnimationFrame(rafRef.current);
       stopMusicRef.current();
     };
-  }, []);
+  }, [], false, "app/src/components/TimerMatch.tsx:effect2");
 
   // 오른쪽 목록 입력창의 초안 텍스트를 실제 참가자와 맞춰둔다 — 타이핑 중엔 이 draft를
   // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(participants.map((p) => [p.id, p.label])));
-  }, [participants]);
+  }, [participants], false, "app/src/components/TimerMatch.tsx:effect3");
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -165,20 +170,20 @@ export default function TimerMatch({
     stopMusicRef.current();
     setPhase('running');
     setElapsedMs(0);
-    startTimeRef.current = gameClock.now();
+    startTimeRef.current = historyClock.now();
     stopMusicRef.current = playMusic(music, { loop: true, pauseWithGame: true });
 
     const tick = () => {
-      setElapsedMs(gameClock.now() - startTimeRef.current);
-      rafRef.current = gameClock.requestAnimationFrame(tick);
+      setElapsedMs(historyClock.now() - startTimeRef.current);
+      rafRef.current = historyClock.requestAnimationFrame(tick);
     };
-    rafRef.current = gameClock.requestAnimationFrame(tick);
+    rafRef.current = historyClock.requestAnimationFrame(tick);
   }
 
   function stop() {
     if (phase !== 'running') return;
-    if (rafRef.current) gameClock.cancelAnimationFrame(rafRef.current);
-    const finalElapsed = gameClock.now() - startTimeRef.current;
+    if (rafRef.current) historyClock.cancelAnimationFrame(rafRef.current);
+    const finalElapsed = historyClock.now() - startTimeRef.current;
     setElapsedMs(finalElapsed);
     setPhase('stopped');
     stopMusicRef.current();
@@ -204,7 +209,7 @@ export default function TimerMatch({
   }
 
   function restartAll() {
-    if (rafRef.current) gameClock.cancelAnimationFrame(rafRef.current);
+    if (rafRef.current) historyClock.cancelAnimationFrame(rafRef.current);
     stopMusicRef.current();
     setTurnIndex(0);
     sharedRef.current?.goto?.(0);
@@ -213,10 +218,10 @@ export default function TimerMatch({
     setElapsedMs(0);
   }
 
-  useEffect(() => { if (showClock !== undefined) setShowTimer(showClock); }, [showClock]);
+  useGameHistoryEffect(() => { if (showClock !== undefined) setShowTimer(showClock); }, [showClock], false, "app/src/components/TimerMatch.tsx:effect4");
   // 참가자 명단이 바뀌면 처음부터
   const rosterKey = participants.map((p) => p.id).join('|');
-  useEffect(() => { restartAll(); }, [rosterKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useGameHistoryEffect(() => { restartAll(); }, [rosterKey], false, "app/src/components/TimerMatch.tsx:effect5"); // eslint-disable-line react-hooks/exhaustive-deps
 
   const curLabel = sharedTurn ? sharedTurn.current : participants[turnIndex]?.label || '';
   const nextLabel = turnIndex + 1 >= n ? '' : sharedTurn ? sharedTurn.next : participants[turnIndex + 1]?.label || '';

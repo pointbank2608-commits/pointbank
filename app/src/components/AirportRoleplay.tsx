@@ -1,5 +1,6 @@
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
+
+import {useMemo} from 'react';
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak, speakSequence } from '../lib/speech';
@@ -73,6 +74,10 @@ function parseWords(items: GameItem[]): AirportWord[] {
 }
 
 export default function AirportRoleplay({ items, places, showKo: showKoProp }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/AirportRoleplay.tsx:AirportRoleplay',()=>({state:{step,showKo,wordOpen,routeN,practiceId,hideWords,angle,spinning,turnPlace,roleOrder,boxOpen,acting,turnHide,asked,answered},refs:{timers:captureGameRef(timers.current),angleRef:captureGameRef(angleRef.current)}}),(snapshot,elapsed)=>{setStep(()=>snapshot.state.step);setShowKo(()=>snapshot.state.showKo);setWordOpen(()=>snapshot.state.wordOpen);setRouteN(()=>snapshot.state.routeN);setPracticeId(()=>snapshot.state.practiceId);setHideWords(()=>snapshot.state.hideWords);setAngle(()=>snapshot.state.angle);setSpinning(()=>snapshot.state.spinning);setTurnPlace(()=>snapshot.state.turnPlace);setRoleOrder(()=>snapshot.state.roleOrder);setBoxOpen(()=>snapshot.state.boxOpen);setActing(()=>snapshot.state.acting);setTurnHide(()=>snapshot.state.turnHide);setAsked(()=>snapshot.state.asked);setAnswered(()=>snapshot.state.answered);restoreGameRef(timers,snapshot.refs.timers,elapsed,false);restoreGameRef(angleRef,snapshot.refs.angleRef,elapsed,false);});
+
   const { t } = useTranslation();
   const placeList = useMemo(() => {
     const ids = places.length > 0 ? places : (['checkin', 'security', 'gate'] as AirportPlaceId[]);
@@ -83,22 +88,22 @@ export default function AirportRoleplay({ items, places, showKo: showKoProp }: P
     return own.length > 0 ? own : DEFAULT_AIRPORT_WORDS;
   }, [items]);
 
-  const [step, setStep] = useState<Step>('words');
-  const [showKo, setShowKo] = useState(showKoProp);
-  const timers = useRef<number[]>([]);
+  const [step, setStep] = useGameHistoryState<Step>("app/src/components/AirportRoleplay.tsx:AirportRoleplay:step",'words');
+  const [showKo, setShowKo] = useGameHistoryState("app/src/components/AirportRoleplay.tsx:AirportRoleplay:showKo",showKoProp);
+  const timers = useGameHistoryRef<number[]>("app/src/components/AirportRoleplay.tsx:AirportRoleplay:timers",[]);
   const later = (fn: () => void, ms: number) => {
-    const id = gameClock.setTimeout(fn, ms);
+    const id = historyClock.setTimeout(fn, ms);
     timers.current.push(id);
   };
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     const list = timers.current;
-    return () => list.forEach((id) => gameClock.clearTimeout(id));
-  }, []);
+    return () => list.forEach((id) => historyClock.clearTimeout(id));
+  }, [], false, "app/src/components/AirportRoleplay.tsx:effect1");
 
   /* ---------- 1 낱말 ---------- */
-  const [wordOpen, setWordOpen] = useState<Set<number>>(new Set());
+  const [wordOpen, setWordOpen] = useGameHistoryState<Set<number>>("app/src/components/AirportRoleplay.tsx:AirportRoleplay:wordOpen",new Set());
   const wordKey = words.map((w) => w.word).join('|');
-  useEffect(() => setWordOpen(new Set()), [wordKey]);
+  useGameHistoryEffect(() => setWordOpen(new Set()), [wordKey], false, "app/src/components/AirportRoleplay.tsx:effect2");
   function openWord(i: number) {
     setWordOpen((s) => {
       if (s.has(i)) return s;
@@ -111,7 +116,7 @@ export default function AirportRoleplay({ items, places, showKo: showKoProp }: P
   }
 
   /* ---------- 2 가는 순서 ---------- */
-  const [routeN, setRouteN] = useState(0);
+  const [routeN, setRouteN] = useGameHistoryState("app/src/components/AirportRoleplay.tsx:AirportRoleplay:routeN",0);
   function revealRoute() {
     if (routeN >= AIRPORT_ROUTE.length) return;
     playSfx(GAME_SFX.airport.reveal);
@@ -120,22 +125,22 @@ export default function AirportRoleplay({ items, places, showKo: showKoProp }: P
   }
 
   /* ---------- 3 대화 연습 ---------- */
-  const [practiceId, setPracticeId] = useState<AirportPlaceId>(placeList[0].id);
-  const [hideWords, setHideWords] = useState(false);
-  useEffect(() => {
+  const [practiceId, setPracticeId] = useGameHistoryState<AirportPlaceId>("app/src/components/AirportRoleplay.tsx:AirportRoleplay:practiceId",placeList[0].id);
+  const [hideWords, setHideWords] = useGameHistoryState("app/src/components/AirportRoleplay.tsx:AirportRoleplay:hideWords",false);
+  useGameHistoryEffect(() => {
     if (!placeList.some((p) => p.id === practiceId)) setPracticeId(placeList[0].id);
-  }, [placeList, practiceId]);
+  }, [placeList, practiceId], false, "app/src/components/AirportRoleplay.tsx:effect3");
   const practicePlace = placeList.find((p) => p.id === practiceId) ?? placeList[0];
 
   /* ---------- 4 내 차례 ---------- */
-  const [angle, setAngle] = useState(0);
-  const [spinning, setSpinning] = useState(false);
-  const [turnPlace, setTurnPlace] = useState<AirportPlace | null>(null);
-  const [roleOrder, setRoleOrder] = useState<('staff' | 'customer')[]>(() => shuffle(['staff', 'customer']));
-  const [boxOpen, setBoxOpen] = useState<[boolean, boolean]>([false, false]);
-  const [acting, setActing] = useState(false);
-  const [turnHide, setTurnHide] = useState(false);
-  const angleRef = useRef(0);
+  const [angle, setAngle] = useGameHistoryState("app/src/components/AirportRoleplay.tsx:AirportRoleplay:angle",0);
+  const [spinning, setSpinning] = useGameHistoryState("app/src/components/AirportRoleplay.tsx:AirportRoleplay:spinning",false);
+  const [turnPlace, setTurnPlace] = useGameHistoryState<AirportPlace | null>("app/src/components/AirportRoleplay.tsx:AirportRoleplay:turnPlace",null);
+  const [roleOrder, setRoleOrder] = useGameHistoryState<('staff' | 'customer')[]>("app/src/components/AirportRoleplay.tsx:AirportRoleplay:roleOrder",() => shuffle(['staff', 'customer']));
+  const [boxOpen, setBoxOpen] = useGameHistoryState<[boolean, boolean]>("app/src/components/AirportRoleplay.tsx:AirportRoleplay:boxOpen",[false, false]);
+  const [acting, setActing] = useGameHistoryState("app/src/components/AirportRoleplay.tsx:AirportRoleplay:acting",false);
+  const [turnHide, setTurnHide] = useGameHistoryState("app/src/components/AirportRoleplay.tsx:AirportRoleplay:turnHide",false);
+  const angleRef = useGameHistoryRef("app/src/components/AirportRoleplay.tsx:AirportRoleplay:angleRef",0);
 
   function spin() {
     if (spinning || placeList.length === 0) return;
@@ -183,8 +188,8 @@ export default function AirportRoleplay({ items, places, showKo: showKoProp }: P
   }
 
   /* ---------- 5 전광판 ---------- */
-  const [asked, setAsked] = useState<number | null>(null);
-  const [answered, setAnswered] = useState<Set<number>>(new Set());
+  const [asked, setAsked] = useGameHistoryState<number | null>("app/src/components/AirportRoleplay.tsx:AirportRoleplay:asked",null);
+  const [answered, setAnswered] = useGameHistoryState<Set<number>>("app/src/components/AirportRoleplay.tsx:AirportRoleplay:answered",new Set());
   function askQuestion(i: number) {
     setAsked(i);
     speak(BOARD_QUESTIONS[i].q);
@@ -662,9 +667,13 @@ interface DialogProps {
 }
 
 function Dialog({ place, hide, showKo, owners, top, bottom }: DialogProps) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/AirportRoleplay.tsx:Dialog',()=>({state:{shown,playing},refs:{}}),(snapshot,elapsed)=>{setShown(()=>snapshot.state.shown);setPlaying(()=>snapshot.state.playing);void elapsed;});
+
   const { t } = useTranslation();
-  const [shown, setShown] = useState<Set<string>>(new Set());
-  const [playing, setPlaying] = useState<number | null>(null);
+  const [shown, setShown] = useGameHistoryState<Set<string>>("app/src/components/AirportRoleplay.tsx:Dialog:shown",new Set());
+  const [playing, setPlaying] = useGameHistoryState<number | null>("app/src/components/AirportRoleplay.tsx:Dialog:playing",null);
   const hasBlanks = place.lines.some((l) => l.blank && l.blank.length > 0);
 
   function reveal(key: string) {
@@ -712,7 +721,7 @@ function Dialog({ place, hide, showKo, owners, top, bottom }: DialogProps) {
                   onClick={() => {
                     setPlaying(li);
                     speak(line.text);
-                    gameClock.setTimeout(() => setPlaying((p) => (p === li ? null : p)), 900);
+                    historyClock.setTimeout(() => setPlaying((p) => (p === li ? null : p)), 900);
                   }}
                   className="block text-left"
                 >

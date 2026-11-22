@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
+import {} from 'react';
 import { useTranslation } from 'react-i18next';
-import { gameClock } from '../lib/gameClock';
+
 import { gameKeyboardAllowed } from '../lib/gameKeyboard';
 import { GAME_SFX, playSfx } from '../lib/gameSfx';
 import { useRemoteActions } from '../lib/remote';
@@ -42,6 +43,10 @@ const STYLE = `
 `;
 
 export default function Telepathy({ items, teams, choices: wantChoices, rounds, seconds, mode='team', players:givenPlayers }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/Telepathy.tsx:Telepathy',()=>({state:{phase,round,rd,scores,won,left},refs:{deck:captureGameRef(deck.current),timers:captureGameRef(timers.current),ticker:captureGameRef(ticker.current)}}),(snapshot,elapsed)=>{setPhase(()=>snapshot.state.phase);setRound(()=>snapshot.state.round);setRd(()=>snapshot.state.rd);setScores(()=>snapshot.state.scores);setWon(()=>snapshot.state.won);setLeft(()=>snapshot.state.left);restoreGameRef(deck,snapshot.refs.deck,elapsed,false);restoreGameRef(timers,snapshot.refs.timers,elapsed,false);restoreGameRef(ticker,snapshot.refs.ticker,elapsed,false);});
+
   const { t } = useTranslation();
   const players=givenPlayers??(mode==='none'?[]:mode==='solo'?[{id:'solo',label:t('gameTelepathy.me')}]:Array.from({length:teams},(_,i)=>({id:`team-${i}`,label:t('gameTelepathy.teamLabel',{n:i+1})})));
   const playerKey=players.map(player=>player.id).join(',');
@@ -49,28 +54,28 @@ export default function Telepathy({ items, teams, choices: wantChoices, rounds, 
   const whoRight=t(mode==='solo'?'gameTelepathy.whoRightSolo':'gameTelepathy.whoRight');
   const choices = usableChoices(items.length, wantChoices);
   const itemKey = items.map((i) => i.id).join(',');
-  const [phase, setPhase] = useState<Phase>('ready');
-  const [round, setRound] = useState(0);
-  const [rd, setRd] = useState<TelepathyRound | null>(null);
-  const [scores, setScores] = useState<number[]>(() => Array(players.length).fill(0));
-  const [won, setWon] = useState<boolean[]>(() => Array(players.length).fill(false));
-  const [left, setLeft] = useState(seconds);
-  const deck = useRef<number[]>([]);
-  const timers = useRef<number[]>([]);
-  const ticker = useRef<number | null>(null);
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/Telepathy.tsx:Telepathy:phase",'ready');
+  const [round, setRound] = useGameHistoryState("app/src/components/Telepathy.tsx:Telepathy:round",0);
+  const [rd, setRd] = useGameHistoryState<TelepathyRound | null>("app/src/components/Telepathy.tsx:Telepathy:rd",null);
+  const [scores, setScores] = useGameHistoryState<number[]>("app/src/components/Telepathy.tsx:Telepathy:scores",() => Array(players.length).fill(0));
+  const [won, setWon] = useGameHistoryState<boolean[]>("app/src/components/Telepathy.tsx:Telepathy:won",() => Array(players.length).fill(false));
+  const [left, setLeft] = useGameHistoryState("app/src/components/Telepathy.tsx:Telepathy:left",seconds);
+  const deck = useGameHistoryRef<number[]>("app/src/components/Telepathy.tsx:Telepathy:deck",[]);
+  const timers = useGameHistoryRef<number[]>("app/src/components/Telepathy.tsx:Telepathy:timers",[]);
+  const ticker = useGameHistoryRef<number | null>("app/src/components/Telepathy.tsx:Telepathy:ticker",null);
   const later = (fn: () => void, ms: number) => {
-    timers.current.push(gameClock.setTimeout(fn, ms));
+    timers.current.push(historyClock.setTimeout(fn, ms));
   };
   const stopTicker = () => {
-    if (ticker.current !== null) gameClock.clearInterval(ticker.current);
+    if (ticker.current !== null) historyClock.clearInterval(ticker.current);
     ticker.current = null;
   };
   const clearTimers = () => {
-    timers.current.forEach((id) => gameClock.clearTimeout(id));
+    timers.current.forEach((id) => historyClock.clearTimeout(id));
     timers.current = [];
     stopTicker();
   };
-  useEffect(() => clearTimers, []);
+  useGameHistoryEffect(() => clearTimers, [], false, "app/src/components/Telepathy.tsx:effect1");
 
   function resetAll() {
     clearTimers();
@@ -82,10 +87,10 @@ export default function Telepathy({ items, teams, choices: wantChoices, rounds, 
     setWon(Array(players.length).fill(false));
     setLeft(seconds);
   }
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     resetAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemKey, choices, playerKey, mode, rounds, seconds]);
+  }, [itemKey, choices, playerKey, mode, rounds, seconds], false, "app/src/components/Telepathy.tsx:effect2");
 
   function startRound() {
     if (items.length === 0) return;
@@ -108,9 +113,9 @@ export default function Telepathy({ items, teams, choices: wantChoices, rounds, 
     setLeft(seconds);
     playSfx(GAME_SFX.telepathy.show);
     if (seconds > 0) {
-      const t0 = gameClock.now();
-      ticker.current = gameClock.setInterval(() => {
-        const remain = Math.max(0, seconds - (gameClock.now() - t0) / 1000);
+      const t0 = historyClock.now();
+      ticker.current = historyClock.setInterval(() => {
+        const remain = Math.max(0, seconds - (historyClock.now() - t0) / 1000);
         setLeft(Math.ceil(remain));
         if (remain <= 0) {
           stopTicker();
@@ -142,7 +147,7 @@ export default function Telepathy({ items, teams, choices: wantChoices, rounds, 
     else if (phase === 'predict') reveal();
   };
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (!gameKeyboardAllowed(e)) return;
       if (e.key !== ' ' && e.key !== 'Enter') return;
@@ -153,7 +158,7 @@ export default function Telepathy({ items, teams, choices: wantChoices, rounds, 
     }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  });
+  }, undefined, true, "app/src/components/Telepathy.tsx:effect3");
 
   useRemoteActions(
     phase === 'ready'

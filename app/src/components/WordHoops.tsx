@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef,useGameHistoryMemo} from '../context/GameHistoryContext';
+
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import { gameClock } from '../lib/gameClock';
+
 import { gameKeyboardAllowed } from '../lib/gameKeyboard';
 import { COMMON_SFX, playSfx, useGameSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
@@ -215,6 +216,10 @@ function HoopFront({ hit, k }: { hit: 'good' | 'miss' | null; k: number }) {
 }
 
 export default function WordHoops({ pairs, pictureQuestions, teams, shots, mode, rule, seconds, onContinue, onSubmit }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/WordHoops.tsx:WordHoops',()=>({state:{seed,phase,ts,ms},refs:{tsRef:captureGameRef(tsRef.current),phaseRef:captureGameRef(phaseRef.current),startAt:captureGameRef(startAt.current),ticker:captureGameRef(ticker.current),timers:captureGameRef(timers.current),keyRef:captureGameRef(keyRef.current)}}),(snapshot,elapsed)=>{setSeed(()=>snapshot.state.seed);setPhase(()=>snapshot.state.phase);setTs(()=>snapshot.state.ts);setMs(()=>snapshot.state.ms);restoreGameRef(tsRef,snapshot.refs.tsRef,elapsed,false);restoreGameRef(phaseRef,snapshot.refs.phaseRef,elapsed,false);restoreGameRef(startAt,snapshot.refs.startAt,elapsed,false);restoreGameRef(ticker,snapshot.refs.ticker,elapsed,false);restoreGameRef(timers,snapshot.refs.timers,elapsed,false);restoreGameRef(keyRef,snapshot.refs.keyRef,elapsed,false);});
+
   const lessonSolo = teams === 1 && !!onContinue;
   const courtWidth = lessonSolo ? 96 : COURT_W;
   const courtHeight = lessonSolo ? '108cqw' : '56.25cqw';
@@ -222,33 +227,33 @@ export default function WordHoops({ pairs, pictureQuestions, teams, shots, mode,
   const limitMs = seconds * 1000;
   const { t } = useTranslation();
   const sfx = useGameSfx('wordhoops');
-  const [seed, setSeed] = useState(0);
+  const [seed, setSeed] = useGameHistoryState("app/src/components/WordHoops.tsx:WordHoops:seed",0);
   const pairsKey = mode === 'picture' ? JSON.stringify(pictureQuestions) : pairs.map((p) => `${p.id}:${p.left}:${p.right}`).join('|');
   const count = timed ? HOOPS_TIMED_POOL : shots;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const questions = useMemo(() => mode === 'picture' ? buildHoopsPictureQuestions(pictureQuestions ?? [], count) : buildHoopsQuestions(pairs, count, mode), [pairsKey, count, mode, seed]);
+  const questions = useGameHistoryMemo("WordHoops:questions",() => mode === 'picture' ? buildHoopsPictureQuestions(pictureQuestions ?? [], count) : buildHoopsQuestions(pairs, count, mode), [pairsKey, count, mode, seed]);
   const total = questions.length;
 
-  const [phase, setPhase] = useState<Phase>('ready');
-  const [ts, setTs] = useState<TeamState[]>(() => Array.from({ length: teams }, blank));
-  const [ms, setMs] = useState(0);
-  const tsRef = useRef(ts);
-  const phaseRef = useRef<Phase>('ready');
-  const startAt = useRef(0);
-  const ticker = useRef<number | null>(null);
-  const timers = useRef<number[]>([]);
-  const keyRef = useRef(0);
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/WordHoops.tsx:WordHoops:phase",'ready');
+  const [ts, setTs] = useGameHistoryState<TeamState[]>("app/src/components/WordHoops.tsx:WordHoops:ts",() => Array.from({ length: teams }, blank));
+  const [ms, setMs] = useGameHistoryState("app/src/components/WordHoops.tsx:WordHoops:ms",0);
+  const tsRef = useGameHistoryRef("app/src/components/WordHoops.tsx:WordHoops:tsRef",ts);
+  const phaseRef = useGameHistoryRef<Phase>("app/src/components/WordHoops.tsx:WordHoops:phaseRef",'ready');
+  const startAt = useGameHistoryRef("app/src/components/WordHoops.tsx:WordHoops:startAt",0);
+  const ticker = useGameHistoryRef<number | null>("app/src/components/WordHoops.tsx:WordHoops:ticker",null);
+  const timers = useGameHistoryRef<number[]>("app/src/components/WordHoops.tsx:WordHoops:timers",[]);
+  const keyRef = useGameHistoryRef("app/src/components/WordHoops.tsx:WordHoops:keyRef",0);
 
   const later = (fn: () => void, wait: number) => {
-    timers.current.push(gameClock.setTimeout(fn, wait));
+    timers.current.push(historyClock.setTimeout(fn, wait));
   };
   const clearAll = () => {
-    timers.current.forEach((id) => gameClock.clearTimeout(id));
+    timers.current.forEach((id) => historyClock.clearTimeout(id));
     timers.current = [];
-    if (ticker.current !== null) gameClock.clearInterval(ticker.current);
+    if (ticker.current !== null) historyClock.clearInterval(ticker.current);
     ticker.current = null;
   };
-  useEffect(() => clearAll, []);
+  useGameHistoryEffect(() => clearAll, [], false, "app/src/components/WordHoops.tsx:effect1");
 
   function commit(next: TeamState[]) {
     tsRef.current = next;
@@ -270,22 +275,22 @@ export default function WordHoops({ pairs, pictureQuestions, teams, shots, mode,
     setPhaseBoth('ready');
   }
   // 낱말·설정이 바뀌면 처음부터 다시 준비한다
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pairsKey, teams, shots, mode, rule, seconds]);
+  }, [pairsKey, teams, shots, mode, rule, seconds], false, "app/src/components/WordHoops.tsx:effect2");
 
   function start() {
     if (phaseRef.current !== 'ready' || total === 0) return;
     playSfx(COMMON_SFX.start);
-    startAt.current = gameClock.now();
+    startAt.current = historyClock.now();
     setMs(0);
     setPhaseBoth('playing');
-    ticker.current = gameClock.setInterval(() => {
-      const elapsed = Math.round(gameClock.now() - startAt.current);
+    ticker.current = historyClock.setInterval(() => {
+      const elapsed = Math.round(historyClock.now() - startAt.current);
       if (timed && elapsed >= limitMs) {
         // 제한 시간이 끝나면 모든 팀이 한꺼번에 멈춘다(이미 들어간 슛은 점수에 남는다)
-        if (ticker.current !== null) gameClock.clearInterval(ticker.current);
+        if (ticker.current !== null) historyClock.clearInterval(ticker.current);
         ticker.current = null;
         setMs(limitMs);
         commit(tsRef.current.map((x) => (x.doneMs === null ? { ...x, doneMs: limitMs, busy: true } : x)));
@@ -299,7 +304,7 @@ export default function WordHoops({ pairs, pictureQuestions, teams, shots, mode,
     const st = tsRef.current[team];
     const nextIdx = st.idx + 1;
     if (nextIdx >= total) {
-      patch(team, { idx: nextIdx, busy: true, flash: null, shot: null, removed: [], misses: 0, doneMs: Math.round(gameClock.now() - startAt.current) });
+      patch(team, { idx: nextIdx, busy: true, flash: null, shot: null, removed: [], misses: 0, doneMs: Math.round(historyClock.now() - startAt.current) });
     } else {
       patch(team, { idx: nextIdx, busy: false, flash: null, shot: null, removed: [], misses: 0 });
     }
@@ -353,10 +358,10 @@ export default function WordHoops({ pairs, pictureQuestions, teams, shots, mode,
   }
 
   // 모든 팀이 끝나면 결과를 보여 준다
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (phase !== 'playing' || total === 0) return;
     if (ts.length > 0 && ts.every((s) => s.doneMs !== null)) {
-      if (ticker.current !== null) gameClock.clearInterval(ticker.current);
+      if (ticker.current !== null) historyClock.clearInterval(ticker.current);
       ticker.current = null;
       later(() => {
         playSfx(sfx.finish);
@@ -364,10 +369,10 @@ export default function WordHoops({ pairs, pictureQuestions, teams, shots, mode,
       }, 900);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ts, phase, total]);
+  }, [ts, phase, total], false, "app/src/components/WordHoops.tsx:effect3");
 
   // 키보드: 빨강 팀 1·2·3, 파랑 팀 8·9·0, 시작은 Space/Enter
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!gameKeyboardAllowed(e) || e.repeat) return;
       if (phaseRef.current === 'ready' && (e.key === ' ' || e.key === 'Enter')) {
@@ -383,7 +388,7 @@ export default function WordHoops({ pairs, pictureQuestions, teams, shots, mode,
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [questions, teams, total]);
+  }, [questions, teams, total], true, "app/src/components/WordHoops.tsx:effect4");
 
   const teamName = (i: number) => (teams === 1 ? t('gameWordHoops.solo') : i === 0 ? t('gameWordHoops.teamRed') : t('gameWordHoops.teamBlue'));
 

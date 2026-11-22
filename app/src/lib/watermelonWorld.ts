@@ -130,6 +130,19 @@ export function snapshotFruits(world: WatermelonWorld): FruitSnapshot[] {
     }));
 }
 
+/** Physics state belongs to the play snapshot; DOM/canvas and the engine itself do not. */
+export function captureWatermelonWorld(world:WatermelonWorld|null) {
+  return world?world.engine.world.bodies.filter((b):b is FruitBody=>!!(b as FruitBody).fruitData).map(b=>({
+    data:b.fruitData,x:b.position.x,y:b.position.y,angle:b.angle,velocity:{...b.velocity},angularVelocity:b.angularVelocity,static:b.isStatic,
+  })):[];
+}
+export function restoreWatermelonWorld(world:WatermelonWorld|null,snapshot:ReturnType<typeof captureWatermelonWorld>) {
+  if(!world)return;
+  for(const body of [...world.engine.world.bodies])if((body as FruitBody).fruitData)Composite.remove(world.engine.world,body);
+  world.mergeQueue=[];Engine.clear(world.engine);
+  for(const row of snapshot){const body=dropFruit(world,row.data,row.x,row.y);Body.setAngle(body,row.angle);Body.setVelocity(body,row.velocity);Body.setAngularVelocity(body,row.angularVelocity);if(row.static)Body.setStatic(body,true);}
+}
+
 export function overflowBodies(world: WatermelonWorld): FruitBody[] {
   return world.engine.world.bodies.filter((b): b is FruitBody => {
     if (!((b as FruitBody).fruitData) || b.isStatic) return false;

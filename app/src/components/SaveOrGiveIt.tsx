@@ -1,7 +1,8 @@
+import {useGameHistorySnapshot, useGameHistoryEffect, useGameHistoryClock, useGameHistoryState} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+
+import {type CSSProperties, type ReactNode} from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import { useGamePlay } from './GameThemeFrame';
@@ -219,41 +220,45 @@ export default function SaveOrGiveIt({
   onAddItem,
   onRemoveItem,
 }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/SaveOrGiveIt.tsx:SaveOrGiveIt',()=>({state:{phase,turnIndex,scores,usedIds,currentItemId,answeredCorrect,lastReward,appliedPlayerId,pendingReward},refs:{}}),(snapshot,elapsed)=>{setPhase(()=>snapshot.state.phase);setTurnIndex(()=>snapshot.state.turnIndex);setScores(()=>snapshot.state.scores);setUsedIds(()=>snapshot.state.usedIds);setCurrentItemId(()=>snapshot.state.currentItemId);setAnsweredCorrect(()=>snapshot.state.answeredCorrect);setLastReward(()=>snapshot.state.lastReward);setAppliedPlayerId(()=>snapshot.state.appliedPlayerId);setPendingReward(()=>snapshot.state.pendingReward);void elapsed;});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
-  const [phase, setPhase] = useState<Phase>('grid');
-  const [turnIndex, setTurnIndex] = useState(0);
-  const [scores, setScores] = useState<Record<string, number>>({});
-  const [usedIds, setUsedIds] = useState<Set<string>>(new Set());
-  const [currentItemId, setCurrentItemId] = useState<string | null>(null);
-  const [answeredCorrect, setAnsweredCorrect] = useState(false);
-  const [lastReward, setLastReward] = useState<SaveOrGiveReward | null>(null);
-  const [appliedPlayerId, setAppliedPlayerId] = useState<string | null>(null);
-  const [pendingReward, setPendingReward] = useState<SaveOrGiveReward | null>(null);
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/SaveOrGiveIt.tsx:SaveOrGiveIt:phase",'grid');
+  const [turnIndex, setTurnIndex] = useGameHistoryState("app/src/components/SaveOrGiveIt.tsx:SaveOrGiveIt:turnIndex",0);
+  const [scores, setScores] = useGameHistoryState<Record<string, number>>("app/src/components/SaveOrGiveIt.tsx:SaveOrGiveIt:scores",{});
+  const [usedIds, setUsedIds] = useGameHistoryState<Set<string>>("app/src/components/SaveOrGiveIt.tsx:SaveOrGiveIt:usedIds",new Set());
+  const [currentItemId, setCurrentItemId] = useGameHistoryState<string | null>("app/src/components/SaveOrGiveIt.tsx:SaveOrGiveIt:currentItemId",null);
+  const [answeredCorrect, setAnsweredCorrect] = useGameHistoryState("app/src/components/SaveOrGiveIt.tsx:SaveOrGiveIt:answeredCorrect",false);
+  const [lastReward, setLastReward] = useGameHistoryState<SaveOrGiveReward | null>("app/src/components/SaveOrGiveIt.tsx:SaveOrGiveIt:lastReward",null);
+  const [appliedPlayerId, setAppliedPlayerId] = useGameHistoryState<string | null>("app/src/components/SaveOrGiveIt.tsx:SaveOrGiveIt:appliedPlayerId",null);
+  const [pendingReward, setPendingReward] = useGameHistoryState<SaveOrGiveReward | null>("app/src/components/SaveOrGiveIt.tsx:SaveOrGiveIt:pendingReward",null);
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/SaveOrGiveIt.tsx:SaveOrGiveIt:itemDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/SaveOrGiveIt.tsx:SaveOrGiveIt:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/SaveOrGiveIt.tsx:SaveOrGiveIt:templateNameDraft",'');
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
-  }, [items]);
+  }, [items], false, "app/src/components/SaveOrGiveIt.tsx:effect1");
 
   // 공을 실제로 클릭하는 시점에 처음 불러오면 그 첫 재생만 다운로드·디코딩 때문에 살짝
   // 늦게 시작될 수 있어, 화면이 뜨는 시점에 미리 캐시해둔다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     preloadBallCrack();
-  }, []);
+  }, [], false, "app/src/components/SaveOrGiveIt.tsx:effect2");
 
   // players 는 부모가 개인전/팀전 설정에서 매 렌더마다 새로 만들어 내려줄 수 있어 참조가
   // 자주 바뀐다. id 구성이 실제로 바뀌었을 때만(모드 전환, 팀 수 변경, 참가자 추가/삭제)
   // 점수판을 초기화한다 — 매 렌더마다 초기화하면 점수가 계속 0으로 리셋되는 버그가 생긴다.
   const playerKey = players.map((p) => p.id).join('|');
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setScores(Object.fromEntries(players.map((p) => [p.id, 0])));
     setTurnIndex(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playerKey]);
+  }, [playerKey], false, "app/src/components/SaveOrGiveIt.tsx:effect3");
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -300,11 +305,11 @@ export default function SaveOrGiveIt({
     }
   }
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (phase !== 'cracking') return;
-    const timer = gameClock.setTimeout(() => setPhase('open'), BALL_CRACK_MS);
-    return () => gameClock.clearTimeout(timer);
-  }, [phase]);
+    const timer = historyClock.setTimeout(() => setPhase('open'), BALL_CRACK_MS);
+    return () => historyClock.clearTimeout(timer);
+  }, [phase], false, "app/src/components/SaveOrGiveIt.tsx:effect4");
 
   function markCorrect() {
     if (phase !== 'open') return;

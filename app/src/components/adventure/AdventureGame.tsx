@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../../context/GameHistoryContext';
+import {type CSSProperties} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGameWorkspace } from '../../context/GameWorkspaceContext';
-import { gameClock } from '../../lib/gameClock';
+
 import { shuffled } from '../../lib/storybook';
 import { ADVENTURE_NAMES, adventureErrors, correctionAccepted, detectiveGaps, detectiveSentence, sentenceOrderCorrect, targetKey, targetPoint, wordKey, type AdventureConfig, type AdventureRound, type AdventureType } from '../../lib/adventureGames';
 import { useAdventureEngine, type AdventureEngine } from '../../lib/useAdventureEngine';
@@ -29,7 +30,7 @@ export default function AdventureGame({type,config:c,onRestart,onContinue,prepar
   const e=useAdventureEngine(type,c,!!workspace&&(!workspace.running||!!workspace.panel),preparedRounds);
   const errors=preparedRounds ? (preparedRounds.length ? [] : ['그림 문제를 준비해 주세요.']) : adventureErrors(type,c);
   const {phase,start}=e;
-  useEffect(()=>{if((workspace?.running||autoStart)&&phase==='ready'&&!errors.length)start();},[workspace?.running,autoStart,phase,start,errors.length]);
+  useGameHistoryEffect(()=>{if((workspace?.running||autoStart)&&phase==='ready'&&!errors.length)start();}, [workspace?.running,autoStart,phase,start,errors.length], false, "app/src/components/adventure/AdventureGame.tsx:effect1");
   return <section className={`ad-game ad-${type} ${onContinue ? 'ad-in-lesson' : ''} ${e.paused?'ad-paused':''} ad-phase-${e.phase}`} aria-label={ADVENTURE_NAMES[type][0]}>
     <span className="ad-ambient ad-ambient-one" aria-hidden="true">✦</span><span className="ad-ambient ad-ambient-two" aria-hidden="true">✧</span>
     {(type==='balloonpop'||type==='wordclaw')&&<img className={`ad-buddy ${e.reaction}`} src={`/skins/adventure/${type==='balloonpop'?'bunny':'kitten'}.webp`} alt=""/>}
@@ -57,14 +58,18 @@ function Round({type,c,e,round:r}:{type:AdventureType;c:AdventureConfig;e:Advent
   return <ClawMachine c={c} e={e} r={r}/>;
 }
 function Vocabulary({type,c,e,r}:{type:AdventureType;c:AdventureConfig;e:AdventureEngine;r:Extract<AdventureRound,{kind:'vocab'}>}){
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/adventure/AdventureGame.tsx:Vocabulary',()=>({state:{picked,cast,fallback},refs:{}}),(snapshot,elapsed)=>{setPicked(()=>snapshot.state.picked);setCast(()=>snapshot.state.cast);setFallback(()=>snapshot.state.fallback);void elapsed;});
+
   const {t}=useTranslation();
   const fishing=type==='wordfishing';
   const streak=e.records.length>=2&&e.records.slice(-2).every(row=>row.mistakes===0)&&e.mistakes===e.records.reduce((sum,row)=>sum+row.mistakes,0);
-  const [picked,setPicked]=useState('');
-  const [cast,setCast]=useState<FishingCast | null>(null);
-  const [fallback,setFallback]=useState(false);
+  const [picked,setPicked]=useGameHistoryState("app/src/components/adventure/AdventureGame.tsx:Vocabulary:picked",'');
+  const [cast,setCast]=useGameHistoryState<FishingCast | null>("app/src/components/adventure/AdventureGame.tsx:Vocabulary:cast",null);
+  const [fallback,setFallback]=useGameHistoryState("app/src/components/adventure/AdventureGame.tsx:Vocabulary:fallback",false);
   const listening=fishing&&c.listening&&!fallback&&!r.imageUrl;
-  useEffect(()=>{if(!listening)return;const id=gameClock.setTimeout(()=>{englishSpeak(r.word.word,()=>setFallback(true));},300);return()=>{gameClock.clearTimeout(id);if('speechSynthesis' in window)speechSynthesis.cancel();};},[listening,r.word.word]);
+  useGameHistoryEffect(()=>{if(!listening)return;const id=historyClock.setTimeout(()=>{englishSpeak(r.word.word,()=>setFallback(true));},300);return()=>{historyClock.clearTimeout(id);if('speechSynthesis' in window)speechSynthesis.cancel();};}, [listening,r.word.word], false, "app/src/components/adventure/AdventureGame.tsx:effect2");
   function choose(id:string,node:HTMLButtonElement) {
     const word=r.choices.find(w=>w.id===id)!;
     const correct=r.accepted.includes(wordKey(word.word));
@@ -88,7 +93,10 @@ function Vocabulary({type,c,e,r}:{type:AdventureType;c:AdventureConfig;e:Adventu
     </div>{streak&&<span className="ad-gold">{fishing?<><img src="/skins/adventure/goldfish.webp" alt=""/> 황금 물고기 보너스!</>:'★ 연속 정답! 반짝반짝 별 보너스!'}</span>}<p className="ad-control-help">정답을 누르세요. Tab으로 선택하고 Enter로도 답할 수 있어요.</p></>;
 }
 function Sentence({type,e,r}:{type:AdventureType;e:AdventureEngine;r:Extract<AdventureRound,{kind:'sentence'}>}){
-  const [order,setOrder]=useState<string[]>([]);const train=type==='wordtrain';
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/adventure/AdventureGame.tsx:Sentence',()=>({state:{order},refs:{}}),(snapshot,elapsed)=>{setOrder(()=>snapshot.state.order);void elapsed;});
+
+  const [order,setOrder]=useGameHistoryState<string[]>("app/src/components/adventure/AdventureGame.tsx:Sentence:order",[]);const train=type==='wordtrain';
   const rocking = train && e.reaction === 'wrong';
   function checkSentence() {
     const correct = sentenceOrderCorrect(r.sentence, order);
@@ -99,12 +107,15 @@ function Sentence({type,e,r}:{type:AdventureType;e:AdventureEngine;r:Extract<Adv
     <button className="ad-primary" disabled={e.busy} onClick={checkSentence}>{train?'출발! 문장 확인':'연료 채우기 · 문장 확인'}</button></>;
 }
 function Detective({c,e,r}:{c:AdventureConfig;e:AdventureEngine;r:Extract<AdventureRound,{kind:'case'}>}){
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/adventure/AdventureGame.tsx:Detective',()=>({state:{selected,edits,typed},refs:{missedLocation:captureGameRef(missedLocation.current),missedRepair:captureGameRef(missedRepair.current)}}),(snapshot,elapsed)=>{setSelected(()=>snapshot.state.selected);setEdits(()=>snapshot.state.edits);setTyped(()=>snapshot.state.typed);restoreGameRef(missedLocation,snapshot.refs.missedLocation,elapsed,false);restoreGameRef(missedRepair,snapshot.refs.missedRepair,elapsed,false);});
+
   const item=r.item;
-  const [selected,setSelected]=useState<string|null>(null);
-  const [edits,setEdits]=useState<Record<string,string>>({});
-  const [typed,setTyped]=useState('');
-  const missedLocation=useRef(false);
-  const missedRepair=useRef(false);
+  const [selected,setSelected]=useGameHistoryState<string|null>("app/src/components/adventure/AdventureGame.tsx:Detective:selected",null);
+  const [edits,setEdits]=useGameHistoryState<Record<string,string>>("app/src/components/adventure/AdventureGame.tsx:Detective:edits",{});
+  const [typed,setTyped]=useGameHistoryState("app/src/components/adventure/AdventureGame.tsx:Detective:typed",'');
+  const missedLocation=useGameHistoryRef("app/src/components/adventure/AdventureGame.tsx:Detective:missedLocation",false);
+  const missedRepair=useGameHistoryRef("app/src/components/adventure/AdventureGame.tsx:Detective:missedRepair",false);
   const detectiveResult=()=>({foundOnFirstTry:!missedLocation.current,repairedOnFirstTry:!missedRepair.current});
   const ranges=[...item.errors].sort((a,b)=>a.start-b.start);
   const active=ranges.find(range=>range.id===selected);
@@ -177,9 +188,12 @@ function Detective({c,e,r}:{c:AdventureConfig;e:AdventureEngine;r:Extract<Advent
 }
 const icons={tree:'🌳',palm:'🌴',house:'🏠',river:'💧',rock:'🪨',chest:'🧰',cave:'⛰️',bridge:'🌉'};
 function Hunt({c,e,r}:{c:AdventureConfig;e:AdventureEngine;r:Extract<AdventureRound,{kind:'clue'}>}){
-  const [targets]=useState(()=>shuffled([r.clue.answer,...r.clue.wrong]));
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/adventure/AdventureGame.tsx:Hunt',()=>({state:{targets,location,opened},refs:{}}),(snapshot,elapsed)=>{historySetTargets(()=>snapshot.state.targets);setLocation(()=>snapshot.state.location);setOpened(()=>snapshot.state.opened);void elapsed;});
+
+  const [targets, historySetTargets]=useGameHistoryState("app/src/components/adventure/AdventureGame.tsx:Hunt:targets",()=>shuffled([r.clue.answer,...r.clue.wrong]));
   const previous=e.rounds.slice(0,e.index).flatMap(row=>row.kind==='clue'?[targetPoint(row.clue.answer,c.places)]:[]);
-  const [location,setLocation]=useState(previous.at(-1)||{x:8,y:88});const [opened,setOpened]=useState(false);
+  const [location,setLocation]=useGameHistoryState("app/src/components/adventure/AdventureGame.tsx:Hunt:location",previous.at(-1)||{x:8,y:88});const [opened,setOpened]=useGameHistoryState("app/src/components/adventure/AdventureGame.tsx:Hunt:opened",false);
   return <><div className="ad-prompt">{r.clue.text}<Voice text={r.clue.text}/></div><div className="ad-island" aria-label="보물 지도">
     <svg className="ad-route" viewBox="0 0 100 100" preserveAspectRatio="none"><path d={`M 8 88 ${[...previous,location].map(p=>`L ${p.x} ${p.y}`).join(' ')}`} fill="none" stroke="#d48355" strokeWidth=".7" strokeDasharray="2 2"/></svg>
     {c.places.map(p=><span className="ad-place" key={p.id} style={{left:`${p.x}%`,top:`${p.y}%`}}><b>{icons[p.icon]}</b><small>{p.name}</small></span>)}
@@ -188,7 +202,11 @@ function Hunt({c,e,r}:{c:AdventureConfig;e:AdventureEngine;r:Extract<AdventureRo
   </div><p className="ad-control-help">힌트를 읽고 장소의 앞·뒤·위·아래에 있는 빛나는 지점을 선택해요.</p></>;
 }
 function RocketFinale({finish,sound}:{finish:()=>void;sound:AdventureEngine['sound']}){
-  const [count,setCount]=useState(3);
-  useEffect(()=>{let value=3;sound('countdown');const id=gameClock.setInterval(()=>{value--;setCount(value);if(value>0)sound('countdown');else if(value===0)sound('launch');},1000),end=gameClock.setTimeout(finish,6500);return()=>{gameClock.clearInterval(id);gameClock.clearTimeout(end);};},[finish,sound]);
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/adventure/AdventureGame.tsx:RocketFinale',()=>({state:{count},refs:{value:captureGameRef(value.current)}}),(snapshot,elapsed)=>{setCount(()=>snapshot.state.count);restoreGameRef(value,snapshot.refs.value,elapsed);});
+
+  const [count,setCount]=useGameHistoryState("app/src/components/adventure/AdventureGame.tsx:RocketFinale:count",3);const value=useGameHistoryRef("app/src/components/adventure/AdventureGame.tsx:RocketFinale:value",3);
+  useGameHistoryEffect(()=>{value.current=3;sound('countdown');const id=historyClock.setInterval(()=>{value.current--;setCount(value.current);if(value.current>0)sound('countdown');else if(value.current===0)sound('launch');},1000),end=historyClock.setTimeout(finish,6500);return()=>{historyClock.clearInterval(id);historyClock.clearTimeout(end);};}, [finish,sound], false, "app/src/components/adventure/AdventureGame.tsx:effect3");
   return <div className={`ad-overlay ad-launch ${count<=0?'is-launching':''}`}><h2>{count>0?count:'새로운 행성으로 출발!'}</h2><span className="ad-launch-rocket"><img src="/skins/adventure/rocket-sprite.webp" alt="강아지 우주비행사 로켓"/><i className="ad-flame"/></span>{count<-2&&<p>🪐 영어 행성 도착!</p>}</div>;
 }

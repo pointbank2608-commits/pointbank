@@ -1,5 +1,6 @@
+import {useGameHistorySnapshot, useGameHistoryEffect, useGameHistoryState} from '../context/GameHistoryContext';
 import {useNativeGameTurn} from '../context/GameTurnContext';
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import {forwardRef, useImperativeHandle} from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { QuizQuestion, UndoHandle } from '../lib/types';
@@ -59,22 +60,25 @@ const WinLoseQuiz = forwardRef<UndoHandle, Props>(function WinLoseQuiz(
   { questions, startScore, betOptions, boardStyle = 'wood' },
   ref,
 ) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/WinLoseQuiz.tsx:WinLoseQuiz',()=>({state:{order,pos,turn,scores,phase,bet,selectedChoice,prevSnapshot},refs:{}}),(snapshot,elapsed)=>{setOrder(()=>snapshot.state.order);setPos(()=>snapshot.state.pos);setTurn(()=>snapshot.state.turn);setScores(()=>snapshot.state.scores);setPhase(()=>snapshot.state.phase);setBet(()=>snapshot.state.bet);setSelectedChoice(()=>snapshot.state.selectedChoice);setPrevSnapshot(()=>snapshot.state.prevSnapshot);void elapsed;});
+
   const { t } = useTranslation();
   const clay = boardStyle === 'clay';
-  const [order, setOrder] = useState<number[]>(() => shuffle(questions.map((_, i) => i)));
-  const [pos, setPos] = useState(0);
-  const [turn, setTurn] = useState<Team>('blue');
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/WinLoseQuiz.tsx:WinLoseQuiz:order",() => shuffle(questions.map((_, i) => i)));
+  const [pos, setPos] = useGameHistoryState("app/src/components/WinLoseQuiz.tsx:WinLoseQuiz:pos",0);
+  const [turn, setTurn] = useGameHistoryState<Team>("app/src/components/WinLoseQuiz.tsx:WinLoseQuiz:turn",'blue');
   useNativeGameTurn({current:t('gameWinLoseQuiz.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gameWinLoseQuiz.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:questions.length>0&&pos<questions.length});
-  const [scores, setScores] = useState<Record<Team, number>>({ blue: startScore, red: startScore });
-  const [phase, setPhase] = useState<Phase>('bet');
-  const [bet, setBet] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
-  const [prevSnapshot, setPrevSnapshot] = useState<Snapshot | null>(null);
+  const [scores, setScores] = useGameHistoryState<Record<Team, number>>("app/src/components/WinLoseQuiz.tsx:WinLoseQuiz:scores",{ blue: startScore, red: startScore });
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/WinLoseQuiz.tsx:WinLoseQuiz:phase",'bet');
+  const [bet, setBet] = useGameHistoryState("app/src/components/WinLoseQuiz.tsx:WinLoseQuiz:bet",0);
+  const [selectedChoice, setSelectedChoice] = useGameHistoryState<number | null>("app/src/components/WinLoseQuiz.tsx:WinLoseQuiz:selectedChoice",null);
+  const [prevSnapshot, setPrevSnapshot] = useGameHistoryState<Snapshot | null>("app/src/components/WinLoseQuiz.tsx:WinLoseQuiz:prevSnapshot",null);
 
   // 편집 중인 선생님 화면에서 질문을 추가/삭제하면 미리보기를 처음부터 다시 섞는다.
   // questions 배열은 매 렌더마다 새 참조로 넘어오므로, 내용(아이디 목록)이 실제로 바뀔 때만 반응한다.
   const questionIdsKey = questions.map((q) => q.id).join('|');
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setOrder(shuffle(questions.map((_, i) => i)));
     setPos(0);
     setTurn('blue');
@@ -84,7 +88,7 @@ const WinLoseQuiz = forwardRef<UndoHandle, Props>(function WinLoseQuiz(
     setSelectedChoice(null);
     setPrevSnapshot(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [questionIdsKey]);
+  }, [questionIdsKey], false, "app/src/components/WinLoseQuiz.tsx:effect1");
 
   useImperativeHandle(ref, () => ({
     undo() {

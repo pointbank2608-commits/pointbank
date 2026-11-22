@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
+import {useGameHistorySnapshot, useGameHistoryEffect, captureGameRef, restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
+import {createContext, useCallback, useContext, useId, useMemo, type ReactNode} from 'react';
 import { useTranslation } from 'react-i18next';
 import { pauseGameClock } from '../lib/gameClock';
 import { pictureQuizDeck } from '../lib/pictureWordQuestions';
@@ -19,16 +20,20 @@ export function usePictureWordTurn() {
 }
 
 export function PictureWordTurnProvider({ config, children }: { config?: GameTemplateConfig; children: ReactNode }) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/PictureWordTurn.tsx:PictureWordTurnProvider',()=>({state:{question,wrong,imageFailed},refs:{position:captureGameRef(position.current),pending:captureGameRef(pending.current,true)}}),(snapshot,elapsed)=>{setQuestion(()=>snapshot.state.question);setWrong(()=>snapshot.state.wrong);setImageFailed(()=>snapshot.state.imageFailed);restoreGameRef(position,snapshot.refs.position,elapsed,false);restoreGameRef(pending,snapshot.refs.pending,elapsed,false);});
+
   const { t } = useTranslation();
   const owner = useId();
   const deck = useMemo(() => pictureQuizDeck(config, []), [config]);
-  const position = useRef(0);
-  const pending = useRef<(() => void) | null>(null);
-  const [question, setQuestion] = useState<QuizQuestion | null>(null);
-  const [wrong, setWrong] = useState<string[]>([]);
-  const [imageFailed, setImageFailed] = useState(false);
+  const position = useGameHistoryRef("app/src/components/PictureWordTurn.tsx:PictureWordTurnProvider:position",0);
+  const pending = useGameHistoryRef<(() => void) | null>("app/src/components/PictureWordTurn.tsx:PictureWordTurnProvider:pending",null);
+  const [question, setQuestion] = useGameHistoryState<QuizQuestion | null>("app/src/components/PictureWordTurn.tsx:PictureWordTurnProvider:question",null);
+  const [wrong, setWrong] = useGameHistoryState<string[]>("app/src/components/PictureWordTurn.tsx:PictureWordTurnProvider:wrong",[]);
+  const [imageFailed, setImageFailed] = useGameHistoryState("app/src/components/PictureWordTurn.tsx:PictureWordTurnProvider:imageFailed",false);
+  useGameHistoryEffect(()=>{pauseGameClock(owner,!!question);return()=>pauseGameClock(owner,false);}, [owner,question], true, "app/src/components/PictureWordTurn.tsx:effect1");
 
-  useEffect(() => () => pauseGameClock(owner, false), [owner]);
+  useGameHistoryEffect(() => () => pauseGameClock(owner, false), [owner], false, "app/src/components/PictureWordTurn.tsx:effect2");
 
   const ask = useCallback<Turn>((action, word) => {
     if (!deck.length) { action(); return; }
@@ -52,7 +57,7 @@ export function PictureWordTurnProvider({ config, children }: { config?: GameTem
 
   return <PictureDeckContext.Provider value={deck}><PictureTurnContext.Provider value={deck.length ? ask : runImmediately}>
     {children}
-    {question && <AccessibleDialog label={t('picturePractice.title')} onClose={() => close()}>
+    {question && <AccessibleDialog historyActions label={t('picturePractice.title')} onClose={() => close()}>
       <section className="grid gap-4 p-5 text-center text-deep-navy sm:p-7" data-picture-turn>
         <h2 className="text-lg font-extrabold">{t('picturePractice.title')}</h2>
         {imageFailed

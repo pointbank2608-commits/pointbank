@@ -1,17 +1,21 @@
-import { useState, useRef, useEffect, type PointerEvent, type CSSProperties } from 'react';
+import {useGameHistorySnapshot, useGameHistoryEffect, captureGameRef, restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../../context/GameHistoryContext';
+import {type PointerEvent, type CSSProperties} from 'react';
 import { createPortal } from 'react-dom';
 import { sentencePieces, sentenceOrderCorrect, type AdventureSentence } from '../../lib/adventureGames';
 import { shuffled } from '../../lib/storybook';
 import type { MiniGameCue } from '../../lib/miniGameSfx';
 
 export default function ArrangePieces({sentence,disabled,train,onOrder,sound}:{sentence:AdventureSentence;disabled:boolean;train:boolean;onOrder:(ids:string[])=>void;sound?:(cue:MiniGameCue)=>void}){
-  const [pieces]=useState(()=>sentencePieces(sentence));
-  const [order,setOrder]=useState(()=>{const out=shuffled(pieces.map(p=>p.id));if(sentenceOrderCorrect(sentence,out))out.push(out.shift()!);return out;});
-  const [selected,setSelected]=useState<string|null>(null);
-  useEffect(()=>onOrder(order),[order,onOrder]);
-  const [ghost,setGhost]=useState<{text:string;x:number;y:number}|null>(null);
-  const origin=useRef<{id:string;x:number;y:number;moved:boolean}|null>(null);
-  const nodes=useRef(new Map<string,HTMLButtonElement>());
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/adventure/ArrangePieces.tsx:ArrangePieces',()=>({state:{pieces,order,selected,ghost},refs:{origin:captureGameRef(origin.current),nodes:captureGameRef(nodes.current)}}),(snapshot,elapsed)=>{historySetPieces(()=>snapshot.state.pieces);setOrder(()=>snapshot.state.order);setSelected(()=>snapshot.state.selected);setGhost(()=>snapshot.state.ghost);restoreGameRef(origin,snapshot.refs.origin,elapsed,false);restoreGameRef(nodes,snapshot.refs.nodes,elapsed,false);});
+
+  const [pieces, historySetPieces]=useGameHistoryState("app/src/components/adventure/ArrangePieces.tsx:ArrangePieces:pieces",()=>sentencePieces(sentence));
+  const [order,setOrder]=useGameHistoryState("app/src/components/adventure/ArrangePieces.tsx:ArrangePieces:order",()=>{const out=shuffled(pieces.map(p=>p.id));if(sentenceOrderCorrect(sentence,out))out.push(out.shift()!);return out;});
+  const [selected,setSelected]=useGameHistoryState<string|null>("app/src/components/adventure/ArrangePieces.tsx:ArrangePieces:selected",null);
+  useGameHistoryEffect(()=>onOrder(order), [order,onOrder], false, "app/src/components/adventure/ArrangePieces.tsx:effect1");
+  const [ghost,setGhost]=useGameHistoryState<{text:string;x:number;y:number}|null>("app/src/components/adventure/ArrangePieces.tsx:ArrangePieces:ghost",null);
+  const origin=useGameHistoryRef<{id:string;x:number;y:number;moved:boolean}|null>("app/src/components/adventure/ArrangePieces.tsx:ArrangePieces:origin",null);
+  const nodes=useGameHistoryRef("app/src/components/adventure/ArrangePieces.tsx:ArrangePieces:nodes",new Map<string,HTMLButtonElement>());
   function apply(next:string[],cue:MiniGameCue='place'){setOrder(next);setSelected(null);onOrder(next);sound?.(cue);}
   function move(id:string,to:number){const from=order.indexOf(id);if(from<0||to<0||to>=order.length)return;const next=[...order];next.splice(from,1);next.splice(to,0,id);apply(next);}
   function down(e:PointerEvent<HTMLButtonElement>,id:string){if(disabled||e.button!==0)return;e.currentTarget.setPointerCapture(e.pointerId);origin.current={id,x:e.clientX,y:e.clientY,moved:false};}

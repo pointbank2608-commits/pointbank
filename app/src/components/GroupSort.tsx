@@ -1,6 +1,7 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useRef, useState } from 'react';
+
+import {} from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { GroupSortGroup } from '../lib/types';
@@ -49,33 +50,37 @@ function emptyBuckets(groups: GroupSortGroup[]): Record<string, FlatItem[]> {
 }
 
 export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/GroupSort.tsx:GroupSort',()=>({state:{pool,placed,selectedId,wrongGroupId,wrongCount,locked},refs:{flashTimer:captureGameRef(flashTimer.current)}}),(snapshot,elapsed)=>{setPool(()=>snapshot.state.pool);setPlaced(()=>snapshot.state.placed);setSelectedId(()=>snapshot.state.selectedId);setWrongGroupId(()=>snapshot.state.wrongGroupId);setWrongCount(()=>snapshot.state.wrongCount);setLocked(()=>snapshot.state.locked);restoreGameRef(flashTimer,snapshot.refs.flashTimer,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const baskets = boardStyle === 'baskets';
-  const [pool, setPool] = useState<FlatItem[]>(() => shuffle(flatten(groups)));
-  const [placed, setPlaced] = useState<Record<string, FlatItem[]>>(() => emptyBuckets(groups));
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [wrongGroupId, setWrongGroupId] = useState<string | null>(null);
-  const [wrongCount, setWrongCount] = useState(0);
-  const [locked, setLocked] = useState(false);
-  const flashTimer = useRef<number | null>(null);
+  const [pool, setPool] = useGameHistoryState<FlatItem[]>("app/src/components/GroupSort.tsx:GroupSort:pool",() => shuffle(flatten(groups)));
+  const [placed, setPlaced] = useGameHistoryState<Record<string, FlatItem[]>>("app/src/components/GroupSort.tsx:GroupSort:placed",() => emptyBuckets(groups));
+  const [selectedId, setSelectedId] = useGameHistoryState<string | null>("app/src/components/GroupSort.tsx:GroupSort:selectedId",null);
+  const [wrongGroupId, setWrongGroupId] = useGameHistoryState<string | null>("app/src/components/GroupSort.tsx:GroupSort:wrongGroupId",null);
+  const [wrongCount, setWrongCount] = useGameHistoryState("app/src/components/GroupSort.tsx:GroupSort:wrongCount",0);
+  const [locked, setLocked] = useGameHistoryState("app/src/components/GroupSort.tsx:GroupSort:locked",false);
+  const flashTimer = useGameHistoryRef<number | null>("app/src/components/GroupSort.tsx:GroupSort:flashTimer",null);
   const groupKey = groups.map((g) => `${g.id}:${g.items.map((it) => it.id).join(',')}`).join('|');
 
-  useEffect(() => {
-    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
+  useGameHistoryEffect(() => {
+    if (flashTimer.current !== null) historyClock.clearTimeout(flashTimer.current);
     setPool(shuffle(flatten(groups)));
     setPlaced(emptyBuckets(groups));
     setSelectedId(null);
     setWrongGroupId(null);
     setWrongCount(0);
     setLocked(false);
-  }, [groupKey]);
+  }, [groupKey], false, "app/src/components/GroupSort.tsx:effect1");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     return () => {
-      if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
+      if (flashTimer.current !== null) historyClock.clearTimeout(flashTimer.current);
     };
-  }, []);
+  }, [], false, "app/src/components/GroupSort.tsx:effect2");
 
   const allItems = flatten(groups);
   const sfx = useGameSfx('groupsort');
@@ -96,7 +101,7 @@ export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
   const finished = pool.length === 0;
 
   function restart() {
-    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
+    if (flashTimer.current !== null) historyClock.clearTimeout(flashTimer.current);
     setPool(shuffle(flatten(groups)));
     setPlaced(emptyBuckets(groups));
     setSelectedId(null);
@@ -121,7 +126,7 @@ export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
   function placeItem(groupId: string, item: FlatItem) {
     if (item.groupId === groupId) {
       playSfx(sfx.drop, 0.7);
-      gameClock.setTimeout(() => playSfx(sfx.correct), 120);
+      historyClock.setTimeout(() => playSfx(sfx.correct), 120);
       setPool((prev) => prev.filter((it) => it.id !== selectedId));
       setPlaced((prev) => ({ ...prev, [groupId]: [...prev[groupId], item] }));
       setSelectedId(null);
@@ -131,8 +136,8 @@ export default function GroupSort({ groups, boardStyle = 'crates' }: Props) {
     setWrongCount((c) => c + 1);
     setWrongGroupId(groupId);
     setLocked(true);
-    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
-    flashTimer.current = gameClock.setTimeout(() => {
+    if (flashTimer.current !== null) historyClock.clearTimeout(flashTimer.current);
+    flashTimer.current = historyClock.setTimeout(() => {
       setWrongGroupId(null);
       setSelectedId(null);
       setLocked(false);
