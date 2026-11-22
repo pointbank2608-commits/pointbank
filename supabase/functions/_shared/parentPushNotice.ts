@@ -1,4 +1,7 @@
 const messages = {
+  inquiry: ['학부모 문의가 도착했어요.', 'A parent sent an inquiry.'],
+  answered: ['선생님이 문의에 답변했어요.', 'Your teacher answered your inquiry.'],
+  started: ['숙제를 시작했어요.', 'Homework was started.'],
   published: ['새 숙제가 발행됐어요.', 'New homework was assigned.'],
   completed: ['숙제를 완료했어요.', 'Homework was completed.'],
   overdue: ['마감까지 숙제 완료 기록이 없어요.', 'No homework completion was recorded by the deadline.'],

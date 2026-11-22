@@ -8,10 +8,14 @@ export type ParentHomework = {
   published_at: string;
   due_at: string | null;
   completed_at: string | null;
-  status: 'pending' | 'started' | 'review' | 'completed' | 'overdue' | 'closed' | 'untracked';
+  status: 'assigned' | 'pending' | 'started' | 'review' | 'completed' | 'overdue' | 'closed' | 'untracked';
   daily?: { day: string; started: boolean; completed_at: string | null };
 };
+export type ParentChannel = 'published' | 'started' | 'completed' | 'overdue' | 'attendance' | 'feedback' | 'inquiry';
+export type Inquiry = { id: string; name?: string; question: string; answer: string | null; created_at: string };
 export type ParentHome = {
+  settings?: Record<ParentChannel, boolean>;
+  threads?: Inquiry[];
   name: string;
   academy: string;
   homework: ParentHomework[];
@@ -22,7 +26,7 @@ export type ParentHome = {
   notices?: ParentNotice[];
   attendance?: ParentAttendance[];
 };
-export type ParentNoticeKind = 'published' | 'completed' | 'overdue' | 'attendance' | 'checkout' | 'attendance_changed' | 'feedback' | 'daily_completed' | 'homework_checked' | 'homework_missing';
+export type ParentNoticeKind = 'answered' | 'started' | 'published' | 'completed' | 'overdue' | 'attendance' | 'checkout' | 'attendance_changed' | 'feedback' | 'daily_completed' | 'homework_checked' | 'homework_missing';
 export type ParentNotice = {
   source: string; assignment_id: string; kind: ParentNoticeKind; happened_at: string;
   title: string | null; body: string | null; details: { day?: string };
@@ -52,12 +56,13 @@ export function storeParentSessions(sessions: ParentSession[]) {
 }
 
 export class ParentError extends Error {
-  readonly kind: 'expired' | 'invalid_invite' | 'unavailable' | 'failed' | 'bad_login' | 'locked';
+  readonly kind: 'expired' | 'invalid_invite' | 'unavailable' | 'failed' | 'bad_login' | 'locked' | 'feedbackDisabled';
   constructor(kind: ParentError['kind']) { super(kind); this.kind = kind; }
 }
 
 async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
   const { data, error } = await supabase.rpc(fn, args);
+  if (error?.message === 'feedback_disabled') throw new ParentError('feedbackDisabled');
   if (error) throw new ParentError(error.code === 'PGRST202' ? 'unavailable' : 'failed');
   if (data?.error) {
     const supported = ['expired', 'invalid_invite', 'bad_login', 'locked'] as const;
@@ -83,6 +88,8 @@ export const publishParentFeedback = (student: string, body: string, request: st
   rpc<string>('parent_publish_feedback', { p_student: student, p_body: body.trim(), p_request: request });
 export const loadParent = (token: string, endpoint?: string) =>
   rpc<ParentHome>('parent_home', { p_token: token, p_endpoint: endpoint ?? null });
+export const askTeacher = (token: string, request: string, question: string) =>
+  rpc<void>('parent_ask', { p_token: token, p_request: request, p_question: question });
 export const readParentNotices = (token: string, through: string) =>
   rpc<void>('parent_read', { p_token: token, p_through: through });
 export const logoutParent = (token: string) => rpc<void>('parent_logout', { p_token: token });

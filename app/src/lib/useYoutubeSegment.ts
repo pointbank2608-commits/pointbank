@@ -3,7 +3,7 @@ import { loadYoutubeIframeApi, type YoutubePlayer } from './youtube';
 
 /**
  * 유튜브 영상의 한 구간(시작~끝)만 틀고 멈추는 훅(2026-10-05) — 쉐도잉 칠판(ShadowBoard)의 재생 방식
- * (seekTo → playVideo → 80ms 마다 끝 시간 확인 → pauseVideo)을 학생 숙제에서도 쓰려고 뺐다.
+ * 원본의 시작·끝을 YouTube에도 전달하고, 별도 시간 확인으로 완료 상태를 갱신한다.
  * ShadowBoard 는 교실 발표에서 이미 쓰이고 있어 그대로 두었다.
  *
  * 영상을 못 불러오면(퍼가기 막힘·인터넷) `failed` 가 true — 부르는 쪽이 읽어 주기(TTS)로 대신한다.
@@ -13,7 +13,7 @@ export function useYoutubeSegment(videoId: string | null | undefined, initialSta
   const playerRef = useRef<YoutubePlayer | null>(null);
   const pollRef = useRef<number | null>(null);
   const doneRef = useRef<((completed: boolean) => void) | null>(null);
-  const segmentVideoId = useRef<string | null>(null);
+  const requestedRate = useRef(1);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [playing, setPlaying] = useState(false);
@@ -43,6 +43,10 @@ export function useYoutubeSegment(videoId: string | null | undefined, initialSta
               setFailed(false);
               setReady(true);
             },
+            onStateChange: (event: {data:number}) => {
+              // Loading a segment can reset the player's speed. Restore it after playback starts.
+              if(!cancelled&&event.data===1)playerRef.current?.setPlaybackRate(requestedRate.current);
+            },
             onError: () => {
               if (cancelled) return;
               window.clearTimeout(timeout);
@@ -51,7 +55,6 @@ export function useYoutubeSegment(videoId: string | null | undefined, initialSta
               setPlaying(false);
               doneRef.current?.(false);
               doneRef.current = null;
-              segmentVideoId.current = null;
             },
           },
         });
@@ -67,7 +70,6 @@ export function useYoutubeSegment(videoId: string | null | undefined, initialSta
       stopPoll();
       doneRef.current?.(false);
       doneRef.current = null;
-      segmentVideoId.current = null;
       playerRef.current?.destroy();
       playerRef.current = null;
       setReady(false);
@@ -90,13 +92,14 @@ export function useYoutubeSegment(videoId: string | null | undefined, initialSta
         stopPoll();
         doneRef.current?.(false);
         doneRef.current = resolve;
+        requestedRate.current=rate;
         p.setPlaybackRate(rate);
-        if (onTime && videoId && segmentVideoId.current !== videoId) {
-          // Loading with an explicit start prevents the first play from reverting to time zero.
-          p.loadVideoById({ videoId, startSeconds: start });
-          segmentVideoId.current = videoId;
+        if (videoId) {
+          // Native bounds also protect shadowing/hints while a background tab throttles JS polling.
+          // Reapply on every replay: seekTo alone clears endSeconds.
+          p.loadVideoById({ videoId, startSeconds: start, endSeconds: end });
         } else {
-          p.seekTo(Math.max(0, start - (onTime ? 0 : 0.05)), true);
+          p.seekTo(Math.max(0, start), true);
           p.playVideo();
         }
         setPlaying(true);
@@ -112,7 +115,8 @@ export function useYoutubeSegment(videoId: string | null | undefined, initialSta
           }
           const duration = p.getDuration?.();
           const atSourceEnd = p.getPlayerState?.() === 0 && !!duration && end >= duration - 0.15 && time >= duration - 0.3;
-          const complete = onTime ? reached && (time >= end || atSourceEnd) : time >= end - 0.05;
+          const atSegmentEnd = p.getPlayerState?.() === 0 && time >= end - 0.15;
+          const complete = onTime ? reached && (time >= end || atSourceEnd || atSegmentEnd) : time >= end - 0.05 || atSegmentEnd;
           if (onTime && reached) onTime(time);
           if (complete || (onTime && performance.now() - movedAt > 10000)) {
             p.pauseVideo();

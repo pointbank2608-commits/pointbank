@@ -271,7 +271,7 @@ export default function LessonSlideContent({
   }
 
   if (slide.kind === 'video') {
-    if (slide.animationSession || slide.timedQuestions?.length) return <div className={fill?'absolute inset-0 overflow-auto':''}><TimedVideoLesson key={slide.id} slide={slide} source={animationClip?.script} observation={!student&&runner?.steps[runner.stepIndex]?.slideId===slide.id?{lessonId:runner.lessonId,position:runner.stepIndex}:undefined}/></div>;
+    if (slide.animationSession || slide.timedQuestions?.length || slide.chapters?.length) return <div className={fill?'absolute inset-0 overflow-auto':''}><TimedVideoLesson key={slide.id} slide={slide} source={slide.source??animationClip?.script} observation={!student&&runner?.steps[runner.stepIndex]?.slideId===slide.id?{lessonId:runner.lessonId,position:runner.stepIndex}:undefined}/></div>;
     if (student) {
       // 학생 화면: 영상은 선생님 화면 공유로 보는 게 기본 — 혼자 다시 볼 수 있게 영상만 끼워 둔다.
       const vid = extractYoutubeId(slide.videoUrl);
@@ -292,7 +292,7 @@ export default function LessonSlideContent({
     if (fill) {
       return (
         <div className="absolute inset-0 p-2 md:p-3">
-          <YoutubeShadowingPlayer source={animationClip?.script} title={slide.title} rememberKey={`lesson:${slide.id}`} videoUrl={slide.videoUrl} fit start={slide.startSec} end={slide.endSec} />
+          <YoutubeShadowingPlayer source={slide.source??animationClip?.script} title={slide.title} rememberKey={`lesson:${slide.id}`} videoUrl={slide.videoUrl} fit start={slide.startSec} end={slide.endSec} />
           {animationClip&&<div className="absolute right-4 top-16 z-10 rounded-lg bg-white px-3 py-2 text-deep-navy"><AnimationRecordingHomework clip={animationClip} classId={attendance?.classId}/></div>}
         </div>
       );
@@ -300,7 +300,7 @@ export default function LessonSlideContent({
     return (
       <div className="space-y-4">
         <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">{lessonName}</h2>
-        <YoutubeShadowingPlayer source={animationClip?.script} title={slide.title} rememberKey={`lesson:${slide.id}`} videoUrl={slide.videoUrl} start={slide.startSec} end={slide.endSec} />
+        <YoutubeShadowingPlayer source={slide.source??animationClip?.script} title={slide.title} rememberKey={`lesson:${slide.id}`} videoUrl={slide.videoUrl} start={slide.startSec} end={slide.endSec} />
         {animationClip&&<AnimationRecordingHomework clip={animationClip} classId={attendance?.classId}/>}
       </div>
     );

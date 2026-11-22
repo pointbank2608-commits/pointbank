@@ -31,6 +31,7 @@ import SoloLessonEditor from './SoloLessonEditor';
 import SoloPreview from './SoloPreview';
 import WatchPanel from './WatchPanel';
 import SoloStarterLibrary from './SoloStarterLibrary';
+import { Link } from 'react-router-dom';
 import { CaillouFollowupTeacher } from './CaillouFollowup';
 import { isCaillouFirstLesson } from '../../lib/caillouFollowup';
 import { teacherTransferApi } from '../../lib/caillouFollowupApi';
@@ -78,11 +79,15 @@ function orderLessons(list: SoloLesson[]): SoloLesson[] {
 }
 
 export default function SoloLessonsPanel(props: { academyId: string; classId: string | null }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const details = useRef<HTMLDetailsElement>(null);
   const [revision, setRevision] = useState(0);
   return (
     <div className="space-y-8">
+      <Link to="/solo/animation" className="block rounded-2xl border border-primary/30 bg-sky-50 p-5 text-deep-navy hover:border-primary">
+        <h2 className="text-xl font-bold">{t('animationSolo.title')}</h2>
+        <p className="mt-1">{t('animationSolo.entry')}</p>
+      </Link>
       <SoloStarterLibrary key={props.classId} {...props} onSaved={() => {
         if (details.current) details.current.open = true;
         setRevision((current) => current + 1);

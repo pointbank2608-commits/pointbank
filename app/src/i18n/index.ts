@@ -8,14 +8,15 @@ import { textbookKo, textbookEn } from './textbookLocales';
 import { parentPortalKo, parentPortalEn } from './parentPortalLocales';
 import { aiMaterialsKo, aiMaterialsEn } from './aiMaterialsLocales';
 import { lessonPptKo, lessonPptEn } from './lessonPptLocales';
+import { animationSoloKo, animationSoloEn } from './animationSoloLocales';
 
 void i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
-      ko: { translation: { ...ko, lessonUx: lessonUxKo, textbook: textbookKo, aiMaterials: aiMaterialsKo, lessonPpt: lessonPptKo, parentPortal: parentPortalKo } },
-      en: { translation: { ...en, lessonUx: lessonUxEn, textbook: textbookEn, aiMaterials: aiMaterialsEn, lessonPpt: lessonPptEn, parentPortal: parentPortalEn } },
+      ko: { translation: { ...ko, animationSolo: animationSoloKo, lessonUx: lessonUxKo, textbook: textbookKo, aiMaterials: aiMaterialsKo, lessonPpt: lessonPptKo, parentPortal: parentPortalKo } },
+      en: { translation: { ...en, animationSolo: animationSoloEn, lessonUx: lessonUxEn, textbook: textbookEn, aiMaterials: aiMaterialsEn, lessonPpt: lessonPptEn, parentPortal: parentPortalEn } },
     },
     fallbackLng: 'ko',
     supportedLngs: ['ko', 'en'],

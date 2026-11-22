@@ -41,10 +41,13 @@ const wordMatch = (text: string) => new RegExp('\\b' + regexEscape(text) + '\\b'
 export function animationPrintActivities(clip: VideoClip, bank: WordBankEntry[], options: Options): {id:string;title:string;en:string;types:PrintActivity[]}[] {
   const teaching=sceneTeaching(clip);
   const vocabulary = (clip.pack.words ?? []).map((entry,index) => {
-    const matching = bank.filter(row => key(row.word) === key(entry.word) && key(row.meaning) === key(entry.meaning));
-    const images = [...new Set(matching.flatMap(row => row.image_url ? [row.image_url] : []))];
+    const matching = bank.filter(row => key(row.word) === key(entry.word) && row.image_url);
+    // Meanings and parts of speech rank pictures; they must not block a same-word fallback.
+    const sameMeaning = matching.filter(row => key(row.meaning) === key(entry.meaning));
+    const samePos = (row: WordBankEntry) => !!entry.pos && key(row.part_of_speech) === key(entry.pos);
+    const dictionary = sameMeaning.find(samePos) ?? sameMeaning[0] ?? matching.find(samePos) ?? matching[0];
     const reviewed = teaching.wordPictures?.[key(entry.word)+'|'+key(entry.meaning)];
-    return {...entry, id:String(index), label:entry.word, image:entry.imageUrl || (reviewed ?? (images.length === 1 ? images[0] : undefined))};
+    return {...entry, id:String(index), label:entry.word, image:entry.imageUrl || reviewed || dictionary?.image_url || undefined};
   });
   const script = parseShadowText(clip.script).map((line,index) => ({
     ...line, id:String(index), label:clean(line.en), text:clean(line.en),
@@ -83,7 +86,7 @@ export function animationPrintActivities(clip: VideoClip, bank: WordBankEntry[],
   return [
     {id:'words',title:'단어 연습',en:'Vocabulary',types:[
       {id:'study',label:'단어 학습표',title:'Words for the Scene',instruction:'Read the words and examples.',items:wordRows(entry=>entry.meaning&&(entry.example||teaching.definitions?.[entry.word])?{meaning:entry.meaning,definition:teaching.definitions?.[entry.word],exampleSentence:entry.example}:null)},
-      {id:'pictureMatch',label:'그림과 영어 단어 연결',title:'Picture Match',instruction:'Match each picture to its word.',items:wordRows(entry=>({image:entry.image,meaning:entry.meaning,answer:entry.word})),reason:'이 단어 목록에는 연결할 그림이 없어요.'},
+      {id:'pictureMatch',label:'그림과 영어 단어 연결',title:'Picture Match',instruction:'Match each word to its picture or Korean meaning.',items:wordRows(entry=>({image:entry.image,meaning:entry.meaning,answer:entry.word}))},
       {id:'meaningMatch',label:'영어 단어와 한국어 뜻 연결',title:'Meaning Match',instruction:'Match each word to its meaning.',items:wordRows(entry=>entry.meaning?{answer:entry.meaning}:null)},
       {id:'wordTrace',label:'단어 따라쓰기',title:'Trace the Words',instruction:'Trace each word. Then write it on your own.',items:wordRows(entry=>({trace:entry.word,image:entry.image,answer:entry.word,lines:1}))},
       {id:'letters',label:'빠진 글자 채우기',title:'Missing Letters',instruction:'Complete the missing letters.',items:wordRows(entry=>entry.meaning&&/^[a-z]{3,}$/i.test(entry.word)?{meaning:entry.meaning,prompt:[...entry.word].map((letter,index)=>index>=(entry.word.length>options.letters?1:0)&&index<(entry.word.length>options.letters?1:0)+Math.min(options.letters,entry.word.length)?'_':letter).join(' '),answer:entry.word}:null)},

@@ -1,0 +1,5591 @@
+{
+  "version": 2,
+  "reviewedAt": "2026-11-21T10:36:58.139Z",
+  "sources": [
+    {
+      "youtubeId": "DhKIqYVB_Ws",
+      "duration": 3431.581,
+      "episodeIds": [
+        "DhKIqYVB_Ws:episode:0",
+        "DhKIqYVB_Ws:episode:340000",
+        "DhKIqYVB_Ws:episode:620000",
+        "DhKIqYVB_Ws:episode:920000",
+        "DhKIqYVB_Ws:episode:1200000",
+        "DhKIqYVB_Ws:episode:1440000",
+        "DhKIqYVB_Ws:episode:1740000",
+        "DhKIqYVB_Ws:episode:1960000",
+        "DhKIqYVB_Ws:episode:2180000",
+        "DhKIqYVB_Ws:episode:2400000",
+        "DhKIqYVB_Ws:episode:2640000",
+        "DhKIqYVB_Ws:episode:2920000",
+        "DhKIqYVB_Ws:episode:3160000"
+      ]
+    },
+    {
+      "youtubeId": "O37zFRCQhEQ",
+      "duration": 3386.521,
+      "episodeIds": [
+        "O37zFRCQhEQ:episode:0",
+        "O37zFRCQhEQ:episode:306000",
+        "O37zFRCQhEQ:episode:630000",
+        "O37zFRCQhEQ:episode:940000",
+        "O37zFRCQhEQ:episode:1240000",
+        "O37zFRCQhEQ:episode:1560000",
+        "O37zFRCQhEQ:episode:1860000",
+        "O37zFRCQhEQ:episode:2180000",
+        "O37zFRCQhEQ:episode:2480000",
+        "O37zFRCQhEQ:episode:2780000",
+        "O37zFRCQhEQ:episode:3100000"
+      ]
+    },
+    {
+      "youtubeId": "_EFba-9oNxI",
+      "duration": 3396.461,
+      "episodeIds": [
+        "_EFba-9oNxI:episode:0",
+        "_EFba-9oNxI:episode:340000",
+        "_EFba-9oNxI:episode:640000",
+        "_EFba-9oNxI:episode:960000",
+        "_EFba-9oNxI:episode:1280000",
+        "_EFba-9oNxI:episode:1560000",
+        "_EFba-9oNxI:episode:1880000",
+        "_EFba-9oNxI:episode:2180000",
+        "_EFba-9oNxI:episode:2480000",
+        "_EFba-9oNxI:episode:2780000",
+        "_EFba-9oNxI:episode:3080000"
+      ]
+    },
+    {
+      "youtubeId": "kioBK0l8w5w",
+      "duration": 6802.181,
+      "episodeIds": [
+        "kioBK0l8w5w:episode:0",
+        "kioBK0l8w5w:episode:420000",
+        "kioBK0l8w5w:episode:500000",
+        "kioBK0l8w5w:episode:620000",
+        "kioBK0l8w5w:episode:740000",
+        "kioBK0l8w5w:episode:860000",
+        "kioBK0l8w5w:episode:980000",
+        "kioBK0l8w5w:episode:1080000",
+        "kioBK0l8w5w:episode:1200000",
+        "kioBK0l8w5w:episode:1320000",
+        "kioBK0l8w5w:episode:1440000",
+        "kioBK0l8w5w:episode:1560000",
+        "kioBK0l8w5w:episode:1700000",
+        "kioBK0l8w5w:episode:1804480",
+        "kioBK0l8w5w:episode:1928720",
+        "kioBK0l8w5w:episode:2020000",
+        "kioBK0l8w5w:episode:2160000",
+        "kioBK0l8w5w:episode:2280000",
+        "kioBK0l8w5w:episode:2400000",
+        "kioBK0l8w5w:episode:2525760",
+        "kioBK0l8w5w:episode:2660000",
+        "kioBK0l8w5w:episode:2780000",
+        "kioBK0l8w5w:episode:2900000",
+        "kioBK0l8w5w:episode:3020000",
+        "kioBK0l8w5w:episode:3130760",
+        "kioBK0l8w5w:episode:3260000",
+        "kioBK0l8w5w:episode:3400000",
+        "kioBK0l8w5w:episode:3520000",
+        "kioBK0l8w5w:episode:3640000",
+        "kioBK0l8w5w:episode:3760000",
+        "kioBK0l8w5w:episode:3880000",
+        "kioBK0l8w5w:episode:4000000",
+        "kioBK0l8w5w:episode:4120000",
+        "kioBK0l8w5w:episode:4240000",
+        "kioBK0l8w5w:episode:4360000",
+        "kioBK0l8w5w:episode:4500000",
+        "kioBK0l8w5w:episode:4620000",
+        "kioBK0l8w5w:episode:4740000",
+        "kioBK0l8w5w:episode:4860000",
+        "kioBK0l8w5w:episode:5000000",
+        "kioBK0l8w5w:episode:5100000",
+        "kioBK0l8w5w:episode:5211120",
+        "kioBK0l8w5w:episode:5360000",
+        "kioBK0l8w5w:episode:5460440",
+        "kioBK0l8w5w:episode:5600000",
+        "kioBK0l8w5w:episode:5720000",
+        "kioBK0l8w5w:episode:5840000",
+        "kioBK0l8w5w:episode:5960000",
+        "kioBK0l8w5w:episode:6080000",
+        "kioBK0l8w5w:episode:6180000",
+        "kioBK0l8w5w:episode:6300000",
+        "kioBK0l8w5w:episode:6440000",
+        "kioBK0l8w5w:episode:6554800",
+        "kioBK0l8w5w:episode:6676160"
+      ]
+    },
+    {
+      "youtubeId": "mNt8QH-fyyY",
+      "duration": 2326.541,
+      "episodeIds": [
+        "mNt8QH-fyyY:episode:0",
+        "mNt8QH-fyyY:episode:420000",
+        "mNt8QH-fyyY:episode:800000",
+        "mNt8QH-fyyY:episode:1180000",
+        "mNt8QH-fyyY:episode:1540000",
+        "mNt8QH-fyyY:episode:1940000",
+        "mNt8QH-fyyY:episode:2060000"
+      ]
+    },
+    {
+      "youtubeId": "gk73udXY__E",
+      "duration": 6409.021,
+      "episodeIds": [
+        "gk73udXY__E:episode:0",
+        "gk73udXY__E:episode:140000",
+        "gk73udXY__E:episode:240000",
+        "gk73udXY__E:episode:380000",
+        "gk73udXY__E:episode:500000",
+        "gk73udXY__E:episode:600000",
+        "gk73udXY__E:episode:740000",
+        "gk73udXY__E:episode:880000",
+        "gk73udXY__E:episode:1000000",
+        "gk73udXY__E:episode:1080000",
+        "gk73udXY__E:episode:1200000",
+        "gk73udXY__E:episode:1320000",
+        "gk73udXY__E:episode:1440000",
+        "gk73udXY__E:episode:1560000",
+        "gk73udXY__E:episode:1680000",
+        "gk73udXY__E:episode:1780000",
+        "gk73udXY__E:episode:1920000",
+        "gk73udXY__E:episode:2040000",
+        "gk73udXY__E:episode:2160000",
+        "gk73udXY__E:episode:2280000",
+        "gk73udXY__E:episode:2400000",
+        "gk73udXY__E:episode:2499400",
+        "gk73udXY__E:episode:2620920",
+        "gk73udXY__E:episode:2760000",
+        "gk73udXY__E:episode:2900000",
+        "gk73udXY__E:episode:3000000",
+        "gk73udXY__E:episode:3120000",
+        "gk73udXY__E:episode:3240000",
+        "gk73udXY__E:episode:3380000",
+        "gk73udXY__E:episode:3500000",
+        "gk73udXY__E:episode:3620000",
+        "gk73udXY__E:episode:3740000",
+        "gk73udXY__E:episode:3860000",
+        "gk73udXY__E:episode:3980000",
+        "gk73udXY__E:episode:4120000",
+        "gk73udXY__E:episode:4220000",
+        "gk73udXY__E:episode:4340000",
+        "gk73udXY__E:episode:4460000",
+        "gk73udXY__E:episode:4580000",
+        "gk73udXY__E:episode:4700000",
+        "gk73udXY__E:episode:4815120",
+        "gk73udXY__E:episode:4941440",
+        "gk73udXY__E:episode:5080000",
+        "gk73udXY__E:episode:5200000",
+        "gk73udXY__E:episode:5340000",
+        "gk73udXY__E:episode:5440000",
+        "gk73udXY__E:episode:5556120",
+        "gk73udXY__E:episode:5686760",
+        "gk73udXY__E:episode:5800000",
+        "gk73udXY__E:episode:5920000",
+        "gk73udXY__E:episode:6060000",
+        "gk73udXY__E:episode:6180000",
+        "gk73udXY__E:episode:6300000"
+      ]
+    },
+    {
+      "youtubeId": "4-moXCb8D4s",
+      "duration": 1577.821,
+      "episodeIds": [
+        "4-moXCb8D4s:episode:0",
+        "4-moXCb8D4s:episode:420000",
+        "4-moXCb8D4s:episode:820000",
+        "4-moXCb8D4s:episode:1200000"
+      ]
+    },
+    {
+      "youtubeId": "x48eq6AYfTY",
+      "duration": 7925.121,
+      "episodeIds": [
+        "x48eq6AYfTY:episode:0",
+        "x48eq6AYfTY:episode:1526000",
+        "x48eq6AYfTY:episode:3045000",
+        "x48eq6AYfTY:episode:4570000"
+      ]
+    },
+    {
+      "youtubeId": "QdHwcPRqIO8",
+      "duration": 9717.801,
+      "episodeIds": [
+        "QdHwcPRqIO8:episode:0",
+        "QdHwcPRqIO8:episode:1528000",
+        "QdHwcPRqIO8:episode:3053000",
+        "QdHwcPRqIO8:episode:6363000"
+      ]
+    },
+    {
+      "youtubeId": "yCzDip2ma9o",
+      "duration": 211.901,
+      "episodeIds": [
+        "yCzDip2ma9o:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "t081EqotCm8",
+      "duration": 256.641,
+      "episodeIds": [
+        "t081EqotCm8:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "1Fe1ooiTnfI",
+      "duration": 228.181,
+      "episodeIds": [
+        "1Fe1ooiTnfI:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "GuQUr_5dksM",
+      "duration": 265.881,
+      "episodeIds": [
+        "GuQUr_5dksM:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "edlhlPDExIQ",
+      "duration": 279.261,
+      "episodeIds": [
+        "edlhlPDExIQ:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "JR4sK_IFLvw",
+      "duration": 282.301,
+      "episodeIds": [
+        "JR4sK_IFLvw:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "B35BQs-jEf4",
+      "duration": 243.521,
+      "episodeIds": [
+        "B35BQs-jEf4:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "8JvsROfXgyE",
+      "duration": 231.821,
+      "episodeIds": [
+        "8JvsROfXgyE:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "uI01DX8x5yU",
+      "duration": 182.718,
+      "episodeIds": [
+        "uI01DX8x5yU:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "RGOWhnd5IRc",
+      "duration": 184.841,
+      "episodeIds": [
+        "RGOWhnd5IRc:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "hrzkgVBF3FM",
+      "duration": 324.701,
+      "episodeIds": [
+        "hrzkgVBF3FM:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "j_sYPQCqpmA",
+      "duration": 293.541,
+      "episodeIds": [
+        "j_sYPQCqpmA:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "vKVEiOjF-9k",
+      "duration": 404.941,
+      "episodeIds": [
+        "vKVEiOjF-9k:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "G4c-gJlIFaM",
+      "duration": 273.281,
+      "episodeIds": [
+        "G4c-gJlIFaM:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "5isK-DgYUMI",
+      "duration": 285.721,
+      "episodeIds": [
+        "5isK-DgYUMI:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "6P84M_sXCHM",
+      "duration": 270.781,
+      "episodeIds": [
+        "6P84M_sXCHM:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "DhZP2111nNY",
+      "duration": 213.401,
+      "episodeIds": [
+        "DhZP2111nNY:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "xhnetlok_RY",
+      "duration": 195.581,
+      "episodeIds": [
+        "xhnetlok_RY:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "7F_OD9-S9GE",
+      "duration": 201.741,
+      "episodeIds": [
+        "7F_OD9-S9GE:episode:0"
+      ]
+    },
+    {
+      "youtubeId": "0opocDWriTs",
+      "duration": 193.181,
+      "episodeIds": [
+        "0opocDWriTs:episode:0"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "DhKIqYVB_Ws-episode-340000",
+      "from": 340,
+      "to": 335.669,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-episode-620000",
+      "from": 620,
+      "to": 612.112,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-episode-920000",
+      "from": 920,
+      "to": 918.167,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-episode-1200000",
+      "from": 1200,
+      "to": 1200.533,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-episode-1440000",
+      "from": 1440,
+      "to": 1439.688,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-episode-1740000",
+      "from": 1740,
+      "to": 1737.611,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-episode-1960000",
+      "from": 1960,
+      "to": 1941.189,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-584"
+    },
+    {
+      "id": "DhKIqYVB_Ws-episode-2180000",
+      "from": 2180,
+      "to": 2164.079,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-episode-2400000",
+      "from": 2400,
+      "to": 2396.06,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-episode-2640000",
+      "from": 2640,
+      "to": 2637.635,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-766"
+    },
+    {
+      "id": "DhKIqYVB_Ws-episode-2920000",
+      "from": 2920,
+      "to": 2914.954,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-episode-3160000",
+      "from": 3160,
+      "to": 3147.102,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-140000",
+      "from": 140,
+      "to": 133.884,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-31"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-300000",
+      "from": 300,
+      "to": 297.422,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-238"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-460000",
+      "from": 460,
+      "to": 459.96,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-560000",
+      "from": 560,
+      "to": 543.918,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-372"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-700000",
+      "from": 700,
+      "to": 698.573,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-800000",
+      "from": 800,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-880000",
+      "from": 880,
+      "to": 878.628,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-1040000",
+      "from": 1040,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-1140000",
+      "from": 1140,
+      "to": 1144.06,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-1280000",
+      "from": 1280,
+      "to": 1281.238,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-954"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-1420000",
+      "from": 1420,
+      "to": 1439.688,
+      "method": "local-audio-video-review",
+      "candidateId": "fade-5"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-1420000",
+      "method": "folded-context-at-verified-story-edge",
+      "from": 1420,
+      "to": null
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-1580000",
+      "from": 1580,
+      "to": 1578.952,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-1660000",
+      "from": 1660,
+      "to": 1659.741,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-1880000",
+      "from": 1880,
+      "to": 1873.914,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-557"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-2040000",
+      "from": 2040,
+      "to": 2064.312,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-2140000",
+      "from": 2140,
+      "to": 2164.079,
+      "method": "local-audio-video-review",
+      "candidateId": "fade-8"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-2140000",
+      "method": "folded-context-at-verified-story-edge",
+      "from": 2140,
+      "to": null
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-2240000",
+      "from": 2240,
+      "to": 2235.608,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-658"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-2360000",
+      "from": 2360,
+      "to": 2364.153,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-701"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-2480000",
+      "from": 2480,
+      "to": 2477.725,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-728"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-2600000",
+      "from": 2600,
+      "to": 2612.86,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-759"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-2720000",
+      "from": 2720,
+      "to": 2719.926,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-2860000",
+      "from": 2860,
+      "to": 2859.69,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-2940000",
+      "from": 2940,
+      "to": 2914.912,
+      "method": "local-audio-video-review",
+      "candidateId": "cut-820"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-2940000",
+      "method": "folded-context-at-verified-story-edge",
+      "from": 2940,
+      "to": null
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-3020000",
+      "from": 3020,
+      "to": 3015.763,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-2147"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-3060000",
+      "from": 3060,
+      "to": 3058.681,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-3180000",
+      "from": 3180,
+      "to": 3175.005,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-870"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-3300000",
+      "from": 3300,
+      "to": 3291.622,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhKIqYVB_Ws-chapter-3420000",
+      "from": 3420,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "O37zFRCQhEQ-episode-306000",
+      "from": 306,
+      "to": 305.722,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-episode-630000",
+      "from": 630,
+      "to": 625.333,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-episode-940000",
+      "from": 940,
+      "to": 931.389,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-episode-1240000",
+      "from": 1240,
+      "to": 1238.362,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-332"
+    },
+    {
+      "id": "O37zFRCQhEQ-episode-1560000",
+      "from": 1560,
+      "to": 1541.331,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-episode-1860000",
+      "from": 1860,
+      "to": 1853.685,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-episode-2180000",
+      "from": 2180,
+      "to": 2163.745,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-episode-2480000",
+      "from": 2480,
+      "to": 2460.166,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-episode-2780000",
+      "from": 2780,
+      "to": 2770.685,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-episode-3100000",
+      "from": 3100,
+      "to": 3084.29,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-200000",
+      "from": 200,
+      "to": 227.394,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-75"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-260000",
+      "from": 260,
+      "to": 259.593,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-420000",
+      "from": 420,
+      "to": 434.935,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-480000",
+      "from": 480,
+      "to": 479.938,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-740000",
+      "from": 740,
+      "to": 742.617,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-202"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-820000",
+      "from": 820,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-880000",
+      "from": 880,
+      "to": 900.65,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-1093"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-1040000",
+      "from": 1040,
+      "to": 1035.368,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-293"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-1120000",
+      "from": 1120,
+      "to": 1128.878,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-1160000",
+      "from": 1160,
+      "to": 1158.074,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "pause-454"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-1440000",
+      "from": 1440,
+      "to": 1440.814,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-1640000",
+      "from": 1640,
+      "to": 1617.866,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-1800000",
+      "from": 1800,
+      "to": 1790.947,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "pause-663"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-1900000",
+      "from": 1900,
+      "to": null,
+      "method": "merged-no-safe-communicative-boundary",
+      "reason": "The entire clip is a continuous interaction where a character is introduced, greets Caillou, and then explains her job at the museum. There is no natural chapter boundary or change of situation within this continuous conversation."
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-1960000",
+      "from": 1960,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2040000",
+      "from": 2040,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2100000",
+      "from": 2100,
+      "to": 2081.037,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2120000",
+      "from": 2120,
+      "to": 2127.292,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-636"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2160000",
+      "from": 2160,
+      "to": 2163.745,
+      "method": "local-audio-video-review",
+      "candidateId": "fade-7"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2160000",
+      "method": "folded-context-at-verified-story-edge",
+      "from": 2160,
+      "to": null
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2200000",
+      "from": 2200,
+      "to": 2194.401,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2240000",
+      "from": 2240,
+      "to": 2243.783,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-675"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2280000",
+      "from": 2280,
+      "to": 2280.695,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-688"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2300000",
+      "from": 2300,
+      "to": 2302.091,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2360000",
+      "from": 2360,
+      "to": 2355.77,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2400000",
+      "from": 2400,
+      "to": 2394.893,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2540000",
+      "from": 2540,
+      "to": 2545.668,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-769"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2640000",
+      "from": 2640,
+      "to": 2654.819,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2660000",
+      "from": 2660,
+      "to": 2659.583,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2680000",
+      "from": 2680,
+      "to": 2676.382,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2740000",
+      "from": 2740,
+      "to": 2722.803,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2820000",
+      "from": 2820,
+      "to": 2817.857,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-2767"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2860000",
+      "from": 2860,
+      "to": 2854.268,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2940000",
+      "from": 2940,
+      "to": 2923.587,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-2980000",
+      "from": 2980,
+      "to": 2974.138,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-874"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-3020000",
+      "from": 3020,
+      "to": 3012.843,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-3060000",
+      "from": 3060,
+      "to": 3084.29,
+      "method": "local-audio-video-review",
+      "candidateId": "fade-10"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-3060000",
+      "method": "folded-context-at-verified-story-edge",
+      "from": 3060,
+      "to": null
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-3180000",
+      "from": 3180,
+      "to": 3205.244,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-3260000",
+      "from": 3260,
+      "to": 3258.005,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-967"
+    },
+    {
+      "id": "O37zFRCQhEQ-chapter-3340000",
+      "from": 3340,
+      "to": 3335.165,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-1001"
+    },
+    {
+      "id": "_EFba-9oNxI-episode-340000",
+      "from": 340,
+      "to": 320.779,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-episode-640000",
+      "from": 640,
+      "to": 630.839,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-episode-960000",
+      "from": 960,
+      "to": 944.444,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-episode-1280000",
+      "from": 1280,
+      "to": 1246.704,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-episode-1560000",
+      "from": 1560,
+      "to": 1549.631,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-episode-1880000",
+      "from": 1880,
+      "to": 1849.264,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-episode-2180000",
+      "from": 2180,
+      "to": 2161.159,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-753"
+    },
+    {
+      "id": "_EFba-9oNxI-episode-2480000",
+      "from": 2480,
+      "to": 2466.839,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-episode-2780000",
+      "from": 2780,
+      "to": 2779.193,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-episode-3080000",
+      "from": 3080,
+      "to": 3076.949,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-80000",
+      "from": 80,
+      "to": 80.258,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-240000",
+      "from": 240,
+      "to": 233.024,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-400000",
+      "from": 400,
+      "to": 397.23,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-500000",
+      "from": 500,
+      "to": 504.254,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-560000",
+      "from": 560,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-740000",
+      "from": 740,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-820000",
+      "from": 820,
+      "to": 831.998,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-880000",
+      "from": 880,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-1060000",
+      "from": 1060,
+      "to": 1056.764,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-1100000",
+      "from": 1100,
+      "to": 1098.931,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-1160000",
+      "from": 1160,
+      "to": 1159.575,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-1340000",
+      "from": 1340,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-1440000",
+      "from": 1440,
+      "to": 1439.605,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-1660000",
+      "from": 1660,
+      "to": 1672.045,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-1760000",
+      "from": 1760,
+      "to": 1772.604,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-1980000",
+      "from": 1980,
+      "to": 1987.903,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-674"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-2000000",
+      "from": 2000,
+      "to": 2009.508,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-2140000",
+      "from": 2140,
+      "to": 2141.556,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-2240000",
+      "from": 2240,
+      "to": 2242.991,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-2280000",
+      "from": 2280,
+      "to": 2279.986,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-2400000",
+      "from": 2400,
+      "to": 2388.553,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-828"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-2560000",
+      "from": 2560,
+      "to": 2565.98,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-884"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-2640000",
+      "from": 2640,
+      "to": 2643.516,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-3046"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-2840000",
+      "from": 2840,
+      "to": 2839.67,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-2900000",
+      "from": 2900,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-2960000",
+      "from": 2960,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-2980000",
+      "from": 2980,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-3180000",
+      "from": 3180,
+      "to": 3187.476,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "_EFba-9oNxI-chapter-3240000",
+      "from": 3240,
+      "to": 3240.362,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "kioBK0l8w5w:episode:0",
+      "from": null,
+      "to": 0,
+      "end": 404.96,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 0,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 137.482,
+          "candidateId": "pause-111"
+        },
+        {
+          "start": 172.116,
+          "candidateId": "pause-152"
+        },
+        {
+          "start": 254.509,
+          "candidateId": "pause-240"
+        },
+        {
+          "start": 313.207,
+          "candidateId": "pause-297"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:420000",
+      "from": null,
+      "to": 404.96,
+      "end": 480.2,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 404.96,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 430.44,
+          "candidateId": "cut-122"
+        },
+        {
+          "start": 468.762,
+          "candidateId": "pause-353"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:500000",
+      "from": null,
+      "to": 480.2,
+      "end": 601.48,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 480.2,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 523,
+          "candidateId": "cut-152"
+        },
+        {
+          "start": 559.44,
+          "candidateId": "cut-158"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:620000",
+      "from": null,
+      "to": 601.48,
+      "end": 724.64,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 601.48,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 645.46,
+          "candidateId": "pause-466"
+        },
+        {
+          "start": 671.52,
+          "candidateId": "cut-182"
+        },
+        {
+          "start": 702.121,
+          "candidateId": "pause-508"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:740000",
+      "from": null,
+      "to": 724.64,
+      "end": 843.92,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 724.64,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 760.613,
+          "candidateId": "pause-547"
+        },
+        {
+          "start": 802.438,
+          "candidateId": "pause-589"
+        },
+        {
+          "start": 824.818,
+          "candidateId": "pause-609"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:860000",
+      "from": null,
+      "to": 843.92,
+      "end": 962.76,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 843.92,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 881.648,
+          "candidateId": "pause-652"
+        },
+        {
+          "start": 950.84,
+          "candidateId": "cut-240"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:980000",
+      "from": null,
+      "to": 962.76,
+      "end": 1077.72,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 962.76,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1006.56,
+          "candidateId": "cut-250"
+        },
+        {
+          "start": 1036.991,
+          "candidateId": "pause-763"
+        },
+        {
+          "start": 1070.8,
+          "candidateId": "cut-256"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:1080000",
+      "from": null,
+      "to": 1077.72,
+      "end": 1188.04,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1077.72,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1113.32,
+          "candidateId": "cut-270"
+        },
+        {
+          "start": 1136.56,
+          "candidateId": "cut-272"
+        },
+        {
+          "start": 1159.115,
+          "candidateId": "pause-865"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:1200000",
+      "from": null,
+      "to": 1188.04,
+      "end": 1309.92,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1188.04,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1219.72,
+          "candidateId": "cut-291"
+        },
+        {
+          "start": 1239.96,
+          "candidateId": "cut-293"
+        },
+        {
+          "start": 1269.52,
+          "candidateId": "cut-297"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:1320000",
+      "from": null,
+      "to": 1309.92,
+      "end": 1432.32,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1309.92,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1336.96,
+          "candidateId": "cut-315"
+        },
+        {
+          "start": 1365.12,
+          "candidateId": "cut-324"
+        },
+        {
+          "start": 1404.04,
+          "candidateId": "cut-352"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:1440000",
+      "from": null,
+      "to": 1432.32,
+      "end": 1552.72,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1432.32,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1470.6,
+          "candidateId": "cut-381"
+        },
+        {
+          "start": 1526.36,
+          "candidateId": "cut-389"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:1560000",
+      "from": null,
+      "to": 1552.72,
+      "end": 1680.04,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1552.72,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1582.32,
+          "candidateId": "cut-400"
+        },
+        {
+          "start": 1617.92,
+          "candidateId": "cut-406"
+        },
+        {
+          "start": 1632.76,
+          "candidateId": "cut-411"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:1700000",
+      "from": null,
+      "to": 1680.04,
+      "end": 1804.48,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1680.04,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1725.36,
+          "candidateId": "cut-446"
+        },
+        {
+          "start": 1763.96,
+          "candidateId": "cut-454"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:1804480",
+      "from": null,
+      "to": 1804.48,
+      "end": 1928.72,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1804.48,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1857.24,
+          "candidateId": "cut-464"
+        },
+        {
+          "start": 1893.939,
+          "candidateId": "pause-1244"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:1928720",
+      "from": null,
+      "to": 1928.72,
+      "end": 2048.76,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1928.72,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1969.4,
+          "candidateId": "pause-1281"
+        },
+        {
+          "start": 2008.624,
+          "candidateId": "pause-1301"
+        },
+        {
+          "start": 2034.4,
+          "candidateId": "cut-497"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:2020000",
+      "from": null,
+      "to": 2048.76,
+      "end": 2157.08,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2048.76,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 2094.48,
+          "candidateId": "cut-507"
+        },
+        {
+          "start": 2127.88,
+          "candidateId": "cut-524"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:2160000",
+      "from": null,
+      "to": 2157.08,
+      "end": 2278.44,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2157.08,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 2205.52,
+          "candidateId": "cut-542"
+        },
+        {
+          "start": 2250.697,
+          "candidateId": "pause-1452"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:2280000",
+      "from": null,
+      "to": 2278.44,
+      "end": 2398.36,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2278.44,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 2328.44,
+          "candidateId": "cut-580"
+        },
+        {
+          "start": 2350.36,
+          "candidateId": "cut-583"
+        },
+        {
+          "start": 2375.2,
+          "candidateId": "cut-586"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:2400000",
+      "from": null,
+      "to": 2398.36,
+      "end": 2525.76,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2398.36,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 2440,
+          "candidateId": "cut-607"
+        },
+        {
+          "start": 2462.36,
+          "candidateId": "cut-615"
+        },
+        {
+          "start": 2497.8,
+          "candidateId": "cut-627"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:2525760",
+      "from": null,
+      "to": 2525.76,
+      "end": 2647.84,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2525.76,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 2563.28,
+          "candidateId": "cut-640"
+        },
+        {
+          "start": 2596.771,
+          "candidateId": "pause-1677"
+        },
+        {
+          "start": 2628.2,
+          "candidateId": "cut-651"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:2660000",
+      "from": null,
+      "to": 2647.84,
+      "end": 2768.16,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2647.84,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 2684.648,
+          "candidateId": "pause-1770"
+        },
+        {
+          "start": 2719.475,
+          "candidateId": "pause-1802"
+        },
+        {
+          "start": 2744.88,
+          "candidateId": "cut-672"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:2780000",
+      "from": null,
+      "to": 2768.16,
+      "end": 2885.52,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2768.16,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 2818.61,
+          "candidateId": "pause-1848"
+        },
+        {
+          "start": 2847.48,
+          "candidateId": "cut-689"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:2900000",
+      "from": null,
+      "to": 2885.52,
+      "end": 3009.52,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2885.52,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 2900.12,
+          "candidateId": "cut-698"
+        },
+        {
+          "start": 2943.609,
+          "candidateId": "pause-1893"
+        },
+        {
+          "start": 2963.6,
+          "candidateId": "cut-706"
+        },
+        {
+          "start": 2977.68,
+          "candidateId": "cut-708"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:3020000",
+      "from": null,
+      "to": 3009.52,
+      "end": 3130.76,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 3009.52,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 3055.775,
+          "candidateId": "pause-1930"
+        },
+        {
+          "start": 3082.313,
+          "candidateId": "pause-1956"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:3130760",
+      "from": null,
+      "to": 3130.76,
+      "end": 3259.84,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 3130.76,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 3185.195,
+          "candidateId": "pause-2031"
+        },
+        {
+          "start": 3213,
+          "candidateId": "cut-755"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:3260000",
+      "from": null,
+      "to": 3259.84,
+      "end": 3381.76,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 3259.84,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 3287.821,
+          "candidateId": "pause-2094"
+        },
+        {
+          "start": 3320.2,
+          "candidateId": "cut-777"
+        },
+        {
+          "start": 3369.16,
+          "candidateId": "cut-796"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:3400000",
+      "from": null,
+      "to": 3381.76,
+      "end": 3501.96,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 3381.76,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 3410.76,
+          "candidateId": "cut-806"
+        },
+        {
+          "start": 3449.08,
+          "candidateId": "cut-810"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:3520000",
+      "from": null,
+      "to": 3501.96,
+      "end": 3623.28,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 3501.96,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 3534.395,
+          "candidateId": "pause-2239"
+        },
+        {
+          "start": 3571.408,
+          "candidateId": "pause-2244"
+        },
+        {
+          "start": 3590.2,
+          "candidateId": "cut-824"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:3640000",
+      "from": null,
+      "to": 3623.28,
+      "end": 3744.48,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 3623.28,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 3650.08,
+          "candidateId": "cut-834"
+        },
+        {
+          "start": 3680.005,
+          "candidateId": "pause-2321"
+        },
+        {
+          "start": 3690.2,
+          "candidateId": "cut-842"
+        },
+        {
+          "start": 3716.229,
+          "candidateId": "pause-2336"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:3760000",
+      "from": null,
+      "to": 3744.48,
+      "end": 3866.36,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 3744.48,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 3769.12,
+          "candidateId": "cut-866"
+        },
+        {
+          "start": 3818.12,
+          "candidateId": "cut-878"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:3880000",
+      "from": null,
+      "to": 3866.36,
+      "end": 3988.28,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 3866.36,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 3905.142,
+          "candidateId": "pause-2479"
+        },
+        {
+          "start": 3941.141,
+          "candidateId": "pause-2488"
+        },
+        {
+          "start": 3969.352,
+          "candidateId": "pause-2498"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:4000000",
+      "from": null,
+      "to": 3988.28,
+      "end": 4107.48,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 3988.28,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 4026.047,
+          "candidateId": "pause-2536"
+        },
+        {
+          "start": 4070,
+          "candidateId": "cut-940"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:4120000",
+      "from": null,
+      "to": 4107.48,
+      "end": 4229.88,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 4107.48,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 4155.2,
+          "candidateId": "cut-954"
+        },
+        {
+          "start": 4178.68,
+          "candidateId": "cut-963"
+        },
+        {
+          "start": 4206.56,
+          "candidateId": "cut-968"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:4240000",
+      "from": null,
+      "to": 4229.88,
+      "end": 4351.92,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 4229.88,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 4247.6,
+          "candidateId": "cut-982"
+        },
+        {
+          "start": 4312.465,
+          "candidateId": "pause-2768"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:4360000",
+      "from": null,
+      "to": 4351.92,
+      "end": 4482.52,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 4351.92,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 4384.2,
+          "candidateId": "cut-1023"
+        },
+        {
+          "start": 4435.52,
+          "candidateId": "cut-1028"
+        },
+        {
+          "start": 4456.84,
+          "candidateId": "cut-1031"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:4500000",
+      "from": null,
+      "to": 4482.52,
+      "end": 4605.04,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 4482.52,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 4529.48,
+          "candidateId": "cut-1045"
+        },
+        {
+          "start": 4556.96,
+          "candidateId": "cut-1048"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:4620000",
+      "from": null,
+      "to": 4605.04,
+      "end": 4726.8,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 4605.04,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 4650.301,
+          "candidateId": "pause-2909"
+        },
+        {
+          "start": 4682.36,
+          "candidateId": "cut-1085"
+        },
+        {
+          "start": 4712.76,
+          "candidateId": "cut-1091"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:4740000",
+      "from": null,
+      "to": 4726.8,
+      "end": 4853.48,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 4726.8,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 4769.76,
+          "candidateId": "cut-1102"
+        },
+        {
+          "start": 4807.6,
+          "candidateId": "cut-1113"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:4860000",
+      "from": null,
+      "to": 4853.48,
+      "end": 4980.64,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 4853.48,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 4906.505,
+          "candidateId": "pause-2989"
+        },
+        {
+          "start": 4932.919,
+          "candidateId": "pause-2997"
+        },
+        {
+          "start": 4960.88,
+          "candidateId": "cut-1164"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:5000000",
+      "from": null,
+      "to": 4980.64,
+      "end": 5095.48,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 4980.64,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5021.44,
+          "candidateId": "cut-1177"
+        },
+        {
+          "start": 5050.691,
+          "candidateId": "pause-3032"
+        },
+        {
+          "start": 5077.328,
+          "candidateId": "pause-3054"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:5100000",
+      "from": null,
+      "to": 5095.48,
+      "end": 5211.12,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 5095.48,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5139.8,
+          "candidateId": "cut-1205"
+        },
+        {
+          "start": 5177.64,
+          "candidateId": "cut-1215"
+        },
+        {
+          "start": 5194.28,
+          "candidateId": "cut-1221"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:5211120",
+      "from": null,
+      "to": 5211.12,
+      "end": 5333.76,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 5211.12,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5257.594,
+          "candidateId": "pause-3168"
+        },
+        {
+          "start": 5290.568,
+          "candidateId": "pause-3203"
+        },
+        {
+          "start": 5318.64,
+          "candidateId": "cut-1249"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:5360000",
+      "from": null,
+      "to": 5333.76,
+      "end": 5460.44,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 5333.76,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5387,
+          "candidateId": "cut-1265"
+        },
+        {
+          "start": 5423.44,
+          "candidateId": "cut-1269"
+        },
+        {
+          "start": 5433.12,
+          "candidateId": "cut-1271"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:5460440",
+      "from": null,
+      "to": 5460.44,
+      "end": 5583.92,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 5460.44,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5498.84,
+          "candidateId": "cut-1281"
+        },
+        {
+          "start": 5526.52,
+          "candidateId": "cut-1291"
+        },
+        {
+          "start": 5554.8,
+          "candidateId": "cut-1294"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:5600000",
+      "from": null,
+      "to": 5583.92,
+      "end": 5706.52,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 5583.92,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5624.08,
+          "candidateId": "cut-1301"
+        },
+        {
+          "start": 5644.8,
+          "candidateId": "cut-1308"
+        },
+        {
+          "start": 5682.921,
+          "candidateId": "pause-3435"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:5720000",
+      "from": null,
+      "to": 5706.52,
+      "end": 5829.68,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 5706.52,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5756.96,
+          "candidateId": "cut-1336"
+        },
+        {
+          "start": 5777.4,
+          "candidateId": "cut-1343"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:5840000",
+      "from": null,
+      "to": 5829.68,
+      "end": 5949.48,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 5829.68,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5860.28,
+          "candidateId": "cut-1360"
+        },
+        {
+          "start": 5900.56,
+          "candidateId": "cut-1364"
+        },
+        {
+          "start": 5925.08,
+          "candidateId": "cut-1367"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:5960000",
+      "from": null,
+      "to": 5949.48,
+      "end": 6070.2,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 5949.48,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5981.938,
+          "candidateId": "pause-3612"
+        },
+        {
+          "start": 5999.4,
+          "candidateId": "cut-1375"
+        },
+        {
+          "start": 6058.88,
+          "candidateId": "cut-1380"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:6080000",
+      "from": null,
+      "to": 6070.2,
+      "end": 6175.68,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 6070.2,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 6118.384,
+          "candidateId": "pause-3743"
+        },
+        {
+          "start": 6157.722,
+          "candidateId": "pause-3776"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:6180000",
+      "from": null,
+      "to": 6175.68,
+      "end": 6297.08,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 6175.68,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 6204.902,
+          "candidateId": "pause-3801"
+        },
+        {
+          "start": 6241.067,
+          "candidateId": "pause-3807"
+        },
+        {
+          "start": 6264.16,
+          "candidateId": "cut-1416"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:6300000",
+      "from": null,
+      "to": 6297.08,
+      "end": 6420.28,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 6297.08,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 6323.72,
+          "candidateId": "cut-1430"
+        },
+        {
+          "start": 6348.96,
+          "candidateId": "cut-1438"
+        },
+        {
+          "start": 6385.52,
+          "candidateId": "cut-1443"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:6440000",
+      "from": null,
+      "to": 6420.28,
+      "end": 6554.8,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 6420.28,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 6449.68,
+          "candidateId": "cut-1453"
+        },
+        {
+          "start": 6481.48,
+          "candidateId": "cut-1461"
+        },
+        {
+          "start": 6525.36,
+          "candidateId": "cut-1470"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:6554800",
+      "from": null,
+      "to": 6554.8,
+      "end": 6676.16,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 6554.8,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 6587.72,
+          "candidateId": "cut-1483"
+        },
+        {
+          "start": 6606.112,
+          "candidateId": "pause-4096"
+        },
+        {
+          "start": 6633.215,
+          "candidateId": "pause-4124"
+        }
+      ]
+    },
+    {
+      "id": "kioBK0l8w5w:episode:6676160",
+      "from": null,
+      "to": 6676.16,
+      "end": 6802.181,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 6676.16,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 6732.92,
+          "candidateId": "cut-1522"
+        },
+        {
+          "start": 6761.6,
+          "candidateId": "cut-1534"
+        },
+        {
+          "start": 6772.308,
+          "candidateId": "pause-4190"
+        }
+      ]
+    },
+    {
+      "id": "mNt8QH-fyyY:episode:0",
+      "from": null,
+      "to": 0,
+      "end": 404.8,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 0,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 66.359,
+          "candidateId": "pause-27"
+        },
+        {
+          "start": 117.496,
+          "candidateId": "pause-59"
+        },
+        {
+          "start": 165.931,
+          "candidateId": "pause-92"
+        },
+        {
+          "start": 241.557,
+          "candidateId": "pause-121"
+        },
+        {
+          "start": 313.771,
+          "candidateId": "pause-167"
+        },
+        {
+          "start": 334.058,
+          "candidateId": "pause-185"
+        }
+      ]
+    },
+    {
+      "id": "mNt8QH-fyyY:episode:420000",
+      "from": null,
+      "to": 404.8,
+      "end": 786.88,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 404.8,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 498.12,
+          "candidateId": "cut-68"
+        },
+        {
+          "start": 578.92,
+          "candidateId": "cut-80"
+        },
+        {
+          "start": 629.943,
+          "candidateId": "pause-372"
+        },
+        {
+          "start": 729.12,
+          "candidateId": "cut-96"
+        }
+      ]
+    },
+    {
+      "id": "mNt8QH-fyyY:episode:800000",
+      "from": null,
+      "to": 786.88,
+      "end": 1168.92,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 786.88,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 913.72,
+          "candidateId": "cut-135"
+        },
+        {
+          "start": 979.2,
+          "candidateId": "cut-151"
+        },
+        {
+          "start": 1081.44,
+          "candidateId": "cut-188"
+        }
+      ]
+    },
+    {
+      "id": "mNt8QH-fyyY:episode:1180000",
+      "from": null,
+      "to": 1168.92,
+      "end": 1550.96,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1168.92,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1237.951,
+          "candidateId": "pause-842"
+        },
+        {
+          "start": 1303.93,
+          "candidateId": "pause-913"
+        },
+        {
+          "start": 1449.16,
+          "candidateId": "cut-314"
+        },
+        {
+          "start": 1492,
+          "candidateId": "cut-329"
+        }
+      ]
+    },
+    {
+      "id": "mNt8QH-fyyY:episode:1540000",
+      "from": null,
+      "to": 1550.96,
+      "end": 1932.6,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1550.96,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1635.544,
+          "candidateId": "pause-1118"
+        },
+        {
+          "start": 1666.52,
+          "candidateId": "cut-383"
+        },
+        {
+          "start": 1788.68,
+          "candidateId": "cut-416"
+        }
+      ]
+    },
+    {
+      "id": "mNt8QH-fyyY:episode:1940000",
+      "from": null,
+      "to": 1932.6,
+      "end": 2059.611,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1932.6,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1977.455,
+          "candidateId": "pause-1229"
+        },
+        {
+          "start": 2006.936,
+          "candidateId": "pause-1250"
+        },
+        {
+          "start": 2040.72,
+          "candidateId": "cut-474"
+        }
+      ]
+    },
+    {
+      "id": "mNt8QH-fyyY:episode:2060000",
+      "from": null,
+      "to": 2059.611,
+      "end": 2326.541,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2059.611,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 2113.529,
+          "candidateId": "pause-1302"
+        },
+        {
+          "start": 2185.04,
+          "candidateId": "cut-492"
+        },
+        {
+          "start": 2227.291,
+          "candidateId": "pause-1370"
+        },
+        {
+          "start": 2275.158,
+          "candidateId": "pause-1400"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:0",
+      "from": null,
+      "to": 0,
+      "end": 125.04,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 0,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 49.8,
+          "candidateId": "cut-10"
+        },
+        {
+          "start": 75.32,
+          "candidateId": "cut-18"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:140000",
+      "from": null,
+      "to": 125.04,
+      "end": 248.4,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 125.04,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 164.573,
+          "candidateId": "pause-54"
+        },
+        {
+          "start": 192.36,
+          "candidateId": "cut-43"
+        },
+        {
+          "start": 233.32,
+          "candidateId": "cut-51"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:240000",
+      "from": null,
+      "to": 248.4,
+      "end": 369.76,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 248.4,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 281.8,
+          "candidateId": "cut-56"
+        },
+        {
+          "start": 317.854,
+          "candidateId": "pause-128"
+        },
+        {
+          "start": 336.64,
+          "candidateId": "cut-64"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:380000",
+      "from": null,
+      "to": 369.76,
+      "end": 495.48,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 369.76,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 435.64,
+          "candidateId": "cut-88"
+        },
+        {
+          "start": 451.96,
+          "candidateId": "cut-91"
+        },
+        {
+          "start": 473.8,
+          "candidateId": "cut-95"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:500000",
+      "from": null,
+      "to": 495.48,
+      "end": 616.8,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 495.48,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 534.08,
+          "candidateId": "cut-110"
+        },
+        {
+          "start": 567.6,
+          "candidateId": "cut-120"
+        },
+        {
+          "start": 597.04,
+          "candidateId": "cut-129"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:600000",
+      "from": null,
+      "to": 616.8,
+      "end": 739.68,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 616.8,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 652.546,
+          "candidateId": "pause-351"
+        },
+        {
+          "start": 660.12,
+          "candidateId": "cut-145"
+        },
+        {
+          "start": 705.789,
+          "candidateId": "pause-378"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:740000",
+      "from": null,
+      "to": 739.68,
+      "end": 862.96,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 739.68,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 798.44,
+          "candidateId": "cut-182"
+        },
+        {
+          "start": 821.52,
+          "candidateId": "cut-187"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:880000",
+      "from": null,
+      "to": 862.96,
+      "end": 985.88,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 862.96,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 899.682,
+          "candidateId": "pause-499"
+        },
+        {
+          "start": 942.76,
+          "candidateId": "cut-218"
+        },
+        {
+          "start": 951.412,
+          "candidateId": "pause-540"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:1000000",
+      "from": null,
+      "to": 985.88,
+      "end": 1075.76,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 985.88,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 990.48,
+          "candidateId": "cut-230"
+        },
+        {
+          "start": 1048.36,
+          "candidateId": "cut-237"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:1080000",
+      "from": null,
+      "to": 1075.76,
+      "end": 1192.12,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1075.76,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1116.68,
+          "candidateId": "cut-253"
+        },
+        {
+          "start": 1153.52,
+          "candidateId": "cut-260"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:1200000",
+      "from": null,
+      "to": 1192.12,
+      "end": 1312.92,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1192.12,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1212.12,
+          "candidateId": "cut-271"
+        },
+        {
+          "start": 1250.84,
+          "candidateId": "pause-713"
+        },
+        {
+          "start": 1285.4,
+          "candidateId": "cut-288"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:1320000",
+      "from": null,
+      "to": 1312.92,
+      "end": 1435.32,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1312.92,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1364.28,
+          "candidateId": "cut-300"
+        },
+        {
+          "start": 1412,
+          "candidateId": "cut-313"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:1440000",
+      "from": null,
+      "to": 1435.32,
+      "end": 1556.52,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1435.32,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1455.16,
+          "candidateId": "cut-322"
+        },
+        {
+          "start": 1490.28,
+          "candidateId": "cut-327"
+        },
+        {
+          "start": 1507.6,
+          "candidateId": "cut-330"
+        },
+        {
+          "start": 1530.08,
+          "candidateId": "cut-334"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:1560000",
+      "from": null,
+      "to": 1556.52,
+      "end": 1678.48,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1556.52,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1599.071,
+          "candidateId": "pause-917"
+        },
+        {
+          "start": 1618.285,
+          "candidateId": "pause-925"
+        },
+        {
+          "start": 1661.086,
+          "candidateId": "pause-946"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:1680000",
+      "from": null,
+      "to": 1678.48,
+      "end": 1794.12,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1678.48,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1722.8,
+          "candidateId": "cut-393"
+        },
+        {
+          "start": 1760.64,
+          "candidateId": "cut-403"
+        },
+        {
+          "start": 1777.28,
+          "candidateId": "cut-409"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:1780000",
+      "from": null,
+      "to": 1794.12,
+      "end": 1913.48,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1794.12,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1836,
+          "candidateId": "cut-425"
+        },
+        {
+          "start": 1888.48,
+          "candidateId": "cut-432"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:1920000",
+      "from": null,
+      "to": 1913.48,
+      "end": 2034.28,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 1913.48,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 1956,
+          "candidateId": "cut-450"
+        },
+        {
+          "start": 1992.28,
+          "candidateId": "cut-466"
+        },
+        {
+          "start": 2010.2,
+          "candidateId": "cut-477"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:2040000",
+      "from": null,
+      "to": 2034.28,
+      "end": 2148.32,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2034.28,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 2073.135,
+          "candidateId": "pause-1311"
+        },
+        {
+          "start": 2116.04,
+          "candidateId": "cut-498"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:2160000",
+      "from": null,
+      "to": 2148.32,
+      "end": 2270.4,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2148.32,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 2185.84,
+          "candidateId": "cut-509"
+        },
+        {
+          "start": 2200.24,
+          "candidateId": "cut-510"
+        },
+        {
+          "start": 2252.68,
+          "candidateId": "cut-521"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:2280000",
+      "from": null,
+      "to": 2270.4,
+      "end": 2393.92,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2270.4,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 2303.608,
+          "candidateId": "pause-1444"
+        },
+        {
+          "start": 2322.16,
+          "candidateId": "cut-541"
+        },
+        {
+          "start": 2364,
+          "candidateId": "cut-551"
+        },
+        {
+          "start": 2377.2,
+          "candidateId": "cut-555"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:2400000",
+      "from": null,
+      "to": 2393.92,
+      "end": 2499.4,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2393.92,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 2417.72,
+          "candidateId": "cut-564"
+        },
+        {
+          "start": 2450.08,
+          "candidateId": "cut-573"
+        },
+        {
+          "start": 2481.48,
+          "candidateId": "cut-574"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:2499400",
+      "from": null,
+      "to": 2499.4,
+      "end": 2620.92,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2499.4,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 2537.36,
+          "candidateId": "cut-588"
+        },
+        {
+          "start": 2566.36,
+          "candidateId": "cut-601"
+        },
+        {
+          "start": 2582.16,
+          "candidateId": "cut-605"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:2620920",
+      "from": null,
+      "to": 2620.92,
+      "end": 2747.08,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2620.92,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 2641.35,
+          "candidateId": "pause-1706"
+        },
+        {
+          "start": 2699.248,
+          "candidateId": "pause-1760"
+        },
+        {
+          "start": 2731.118,
+          "candidateId": "pause-1781"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:2760000",
+      "from": null,
+      "to": 2747.08,
+      "end": 2870.92,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2747.08,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 2776.854,
+          "candidateId": "pause-1824"
+        },
+        {
+          "start": 2797.799,
+          "candidateId": "pause-1841"
+        },
+        {
+          "start": 2846.96,
+          "candidateId": "cut-674"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:2900000",
+      "from": null,
+      "to": 2870.92,
+      "end": 2995.76,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2870.92,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 2897.48,
+          "candidateId": "cut-685"
+        },
+        {
+          "start": 2934.56,
+          "candidateId": "cut-700"
+        },
+        {
+          "start": 2970.483,
+          "candidateId": "pause-1920"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:3000000",
+      "from": null,
+      "to": 2995.76,
+      "end": 3117.04,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 2995.76,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 3038.56,
+          "candidateId": "cut-741"
+        },
+        {
+          "start": 3073.04,
+          "candidateId": "cut-746"
+        },
+        {
+          "start": 3095.106,
+          "candidateId": "pause-1983"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:3120000",
+      "from": null,
+      "to": 3117.04,
+      "end": 3238.44,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 3117.04,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 3163.72,
+          "candidateId": "cut-764"
+        },
+        {
+          "start": 3203.076,
+          "candidateId": "pause-2041"
+        },
+        {
+          "start": 3226.592,
+          "candidateId": "pause-2048"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:3240000",
+      "from": null,
+      "to": 3238.44,
+      "end": 3361.64,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 3238.44,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 3276.08,
+          "candidateId": "cut-788"
+        },
+        {
+          "start": 3295.2,
+          "candidateId": "cut-794"
+        },
+        {
+          "start": 3329.68,
+          "candidateId": "cut-804"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:3380000",
+      "from": null,
+      "to": 3361.64,
+      "end": 3484.52,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 3361.64,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 3394.12,
+          "candidateId": "cut-819"
+        },
+        {
+          "start": 3424.52,
+          "candidateId": "cut-828"
+        },
+        {
+          "start": 3457.6,
+          "candidateId": "cut-833"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:3500000",
+      "from": null,
+      "to": 3484.52,
+      "end": 3604.12,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 3484.52,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 3528.889,
+          "candidateId": "pause-2270"
+        },
+        {
+          "start": 3568.4,
+          "candidateId": "cut-854"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:3620000",
+      "from": null,
+      "to": 3604.12,
+      "end": 3725.6,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 3604.12,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 3645.831,
+          "candidateId": "pause-2297"
+        },
+        {
+          "start": 3675.8,
+          "candidateId": "cut-870"
+        },
+        {
+          "start": 3711.76,
+          "candidateId": "cut-875"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:3740000",
+      "from": null,
+      "to": 3725.6,
+      "end": 3840.48,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 3725.6,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 3797.56,
+          "candidateId": "cut-900"
+        },
+        {
+          "start": 3823.2,
+          "candidateId": "cut-904"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:3860000",
+      "from": null,
+      "to": 3840.48,
+      "end": 3961.2,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 3840.48,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 3873.954,
+          "candidateId": "pause-2418"
+        },
+        {
+          "start": 3906.467,
+          "candidateId": "pause-2458"
+        },
+        {
+          "start": 3951.514,
+          "candidateId": "pause-2493"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:3980000",
+      "from": null,
+      "to": 3961.2,
+      "end": 4083.84,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 3961.2,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 4005.96,
+          "candidateId": "cut-934"
+        },
+        {
+          "start": 4040.36,
+          "candidateId": "cut-941"
+        },
+        {
+          "start": 4071.2,
+          "candidateId": "cut-949"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:4120000",
+      "from": null,
+      "to": 4083.84,
+      "end": 4207.32,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 4083.84,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 4115.84,
+          "candidateId": "cut-961"
+        },
+        {
+          "start": 4181.32,
+          "candidateId": "cut-972"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:4220000",
+      "from": null,
+      "to": 4207.32,
+      "end": 4328.6,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 4207.32,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 4244.48,
+          "candidateId": "cut-984"
+        },
+        {
+          "start": 4273.646,
+          "candidateId": "pause-2761"
+        },
+        {
+          "start": 4302.44,
+          "candidateId": "cut-1014"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:4340000",
+      "from": null,
+      "to": 4328.6,
+      "end": 4448.92,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 4328.6,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 4353.556,
+          "candidateId": "pause-2804"
+        },
+        {
+          "start": 4401.339,
+          "candidateId": "pause-2851"
+        },
+        {
+          "start": 4425.537,
+          "candidateId": "pause-2860"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:4460000",
+      "from": null,
+      "to": 4448.92,
+      "end": 4570.68,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 4448.92,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 4497.36,
+          "candidateId": "cut-1063"
+        },
+        {
+          "start": 4537.36,
+          "candidateId": "cut-1071"
+        },
+        {
+          "start": 4556.64,
+          "candidateId": "cut-1073"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:4580000",
+      "from": null,
+      "to": 4570.68,
+      "end": 4693.04,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 4570.68,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 4594.24,
+          "candidateId": "cut-1084"
+        },
+        {
+          "start": 4635.76,
+          "candidateId": "cut-1096"
+        },
+        {
+          "start": 4646.68,
+          "candidateId": "cut-1098"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:4700000",
+      "from": null,
+      "to": 4693.04,
+      "end": 4815.12,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 4693.04,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 4723.2,
+          "candidateId": "cut-1113"
+        },
+        {
+          "start": 4763,
+          "candidateId": "cut-1126"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:4815120",
+      "from": null,
+      "to": 4815.12,
+      "end": 4941.44,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 4815.12,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 4879.013,
+          "candidateId": "pause-3172"
+        },
+        {
+          "start": 4900.712,
+          "candidateId": "pause-3188"
+        },
+        {
+          "start": 4921.04,
+          "candidateId": "cut-1163"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:4941440",
+      "from": null,
+      "to": 4941.44,
+      "end": 5068.48,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 4941.44,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5009.62,
+          "candidateId": "pause-3269"
+        },
+        {
+          "start": 5025,
+          "candidateId": "cut-1185"
+        },
+        {
+          "start": 5055.444,
+          "candidateId": "pause-3306"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:5080000",
+      "from": null,
+      "to": 5068.48,
+      "end": 5189.84,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 5068.48,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5098.76,
+          "candidateId": "cut-1199"
+        },
+        {
+          "start": 5128.626,
+          "candidateId": "pause-3383"
+        },
+        {
+          "start": 5153.96,
+          "candidateId": "cut-1221"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:5200000",
+      "from": null,
+      "to": 5189.84,
+      "end": 5311.2,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 5189.84,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5231.72,
+          "candidateId": "cut-1244"
+        },
+        {
+          "start": 5258.52,
+          "candidateId": "cut-1250"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:5340000",
+      "from": null,
+      "to": 5311.2,
+      "end": 5435.88,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 5311.2,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5356.4,
+          "candidateId": "cut-1265"
+        },
+        {
+          "start": 5380.68,
+          "candidateId": "cut-1268"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:5440000",
+      "from": null,
+      "to": 5435.88,
+      "end": 5556.12,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 5435.88,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5459.08,
+          "candidateId": "cut-1278"
+        },
+        {
+          "start": 5489.12,
+          "candidateId": "cut-1286"
+        },
+        {
+          "start": 5508.76,
+          "candidateId": "cut-1291"
+        },
+        {
+          "start": 5540.88,
+          "candidateId": "cut-1305"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:5556120",
+      "from": null,
+      "to": 5556.12,
+      "end": 5686.76,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 5556.12,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5588.918,
+          "candidateId": "pause-3698"
+        },
+        {
+          "start": 5630.732,
+          "candidateId": "pause-3720"
+        },
+        {
+          "start": 5661.04,
+          "candidateId": "cut-1321"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:5686760",
+      "from": null,
+      "to": 5686.76,
+      "end": 5797.96,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 5686.76,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5734.939,
+          "candidateId": "pause-3772"
+        },
+        {
+          "start": 5751.589,
+          "candidateId": "pause-3784"
+        },
+        {
+          "start": 5775.667,
+          "candidateId": "pause-3806"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:5800000",
+      "from": null,
+      "to": 5797.96,
+      "end": 5918.16,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 5797.96,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5826.96,
+          "candidateId": "cut-1349"
+        },
+        {
+          "start": 5865.28,
+          "candidateId": "cut-1353"
+        },
+        {
+          "start": 5908.033,
+          "candidateId": "pause-3897"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:5920000",
+      "from": null,
+      "to": 5918.16,
+      "end": 6041.4,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 5918.16,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 5960.24,
+          "candidateId": "cut-1365"
+        },
+        {
+          "start": 5999.56,
+          "candidateId": "cut-1376"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:6060000",
+      "from": null,
+      "to": 6041.4,
+      "end": 6163.88,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 6041.4,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 6067.96,
+          "candidateId": "cut-1396"
+        },
+        {
+          "start": 6106.76,
+          "candidateId": "cut-1401"
+        },
+        {
+          "start": 6137.52,
+          "candidateId": "cut-1410"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:6180000",
+      "from": null,
+      "to": 6163.88,
+      "end": 6283.16,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 6163.88,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 6210.72,
+          "candidateId": "cut-1431"
+        },
+        {
+          "start": 6261.678,
+          "candidateId": "pause-4096"
+        }
+      ]
+    },
+    {
+      "id": "gk73udXY__E:episode:6300000",
+      "from": null,
+      "to": 6283.16,
+      "end": 6409.021,
+      "method": "decoded-original-title-transition-and-full-story-av",
+      "chapters": [
+        {
+          "start": 6283.16,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 6325.12,
+          "candidateId": "cut-1454"
+        },
+        {
+          "start": 6377.92,
+          "candidateId": "cut-1466"
+        }
+      ]
+    },
+    {
+      "id": "4-moXCb8D4s-episode-420000",
+      "from": 420,
+      "to": 407.92,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-episode-820000",
+      "from": 820,
+      "to": 813.4,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-episode-1200000",
+      "from": 1200,
+      "to": 1187.64,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-80000",
+      "from": 80,
+      "to": 79.04,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-120000",
+      "from": 120,
+      "to": 118.28,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-180000",
+      "from": 180,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-240000",
+      "from": 240,
+      "to": 243.2,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-63"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-280000",
+      "from": 280,
+      "to": 284.12,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-300000",
+      "from": 300,
+      "to": 305,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-89"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-360000",
+      "from": 360,
+      "to": 362.52,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-460000",
+      "from": 460,
+      "to": 466.76,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-119"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-500000",
+      "from": 500,
+      "to": 489.799,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "pause-94"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-540000",
+      "from": 540,
+      "to": 538.16,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-600000",
+      "from": 600,
+      "to": 595.72,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-660000",
+      "from": 660,
+      "to": 661.92,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-720000",
+      "from": 720,
+      "to": 712.56,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-860000",
+      "from": 860,
+      "to": 851.4,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-920000",
+      "from": 920,
+      "to": 912.72,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-254"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-960000",
+      "from": 960,
+      "to": 960.36,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-421"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-980000",
+      "from": 980,
+      "to": 981.8,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1000000",
+      "from": 1000,
+      "to": 1004.92,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1020000",
+      "from": 1020,
+      "to": 1020.6,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1060000",
+      "from": 1060,
+      "to": 1062.92,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1080000",
+      "from": 1080,
+      "to": 1076.52,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1120000",
+      "from": 1120,
+      "to": 1105.48,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1140000",
+      "from": 1140,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1160000",
+      "from": 1160,
+      "to": 1157,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1180000",
+      "from": 1180,
+      "to": 1170.52,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1240000",
+      "from": 1240,
+      "to": 1239.48,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1260000",
+      "from": 1260,
+      "to": 1258.96,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1280000",
+      "from": 1280,
+      "to": 1279.12,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1320000",
+      "from": 1320,
+      "to": 1318.8,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1360000",
+      "from": 1360,
+      "to": 1363.2,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-611"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1420000",
+      "from": 1420,
+      "to": 1417.04,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1460000",
+      "from": 1460,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1500000",
+      "from": 1500,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1520000",
+      "from": 1520,
+      "to": 1525.68,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "4-moXCb8D4s-chapter-1560000",
+      "from": 1560,
+      "to": 1553.84,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-episode-1526000",
+      "from": 1526,
+      "to": 1525.324,
+      "method": "manual-decoded-frame-review",
+      "reason": "Decoded original frames: outgoing Elmo/Abby shot ends at the first blurred wipe frame; includes the following cold open before the theme."
+    },
+    {
+      "id": "x48eq6AYfTY-episode-3045000",
+      "from": 3045,
+      "to": 3046.477,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-1376"
+    },
+    {
+      "id": "x48eq6AYfTY-episode-4570000",
+      "from": 4570,
+      "to": 4569.932,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-1841"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-80000",
+      "from": 80,
+      "to": 63.897,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-210000",
+      "from": 210,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-480000",
+      "from": 480,
+      "to": 462.096,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-560000",
+      "from": 560,
+      "to": 559.903,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-720000",
+      "from": 720,
+      "to": 705.805,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-178"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-810000",
+      "from": 810,
+      "to": 781.725,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-1110000",
+      "from": 1110,
+      "to": 1084.745,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-1170000",
+      "from": 1170,
+      "to": 1140.906,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-308"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-1230000",
+      "from": 1230,
+      "to": 1220.553,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-1620000",
+      "from": 1620,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-1710000",
+      "from": 1710,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-1860000",
+      "from": 1860,
+      "to": 1874.673,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-319"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-2010000",
+      "from": 2010,
+      "to": 2005.27,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-2130000",
+      "from": 2130,
+      "to": 2101.866,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-2220000",
+      "from": 2220,
+      "to": 2219.184,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-1112"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-2370000",
+      "from": 2370,
+      "to": 2374.405,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-1136"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-2600000",
+      "from": 2600,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-2730000",
+      "from": 2730,
+      "to": 2723.554,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-2910000",
+      "from": 2910,
+      "to": 2918.949,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-3120000",
+      "from": 3120,
+      "to": 3105.569,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-3150000",
+      "from": 3150,
+      "to": 3148.445,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-3240000",
+      "from": 3240,
+      "to": 3235.365,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-3270000",
+      "from": 3270,
+      "to": 3268.165,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-3300000",
+      "from": 3300,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-3450000",
+      "from": 3450,
+      "to": 3449.413,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-1487"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-3510000",
+      "from": 3510,
+      "to": 3509.439,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-3630000",
+      "from": 3630,
+      "to": 3620.817,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-1552"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-3750000",
+      "from": 3750,
+      "to": 3737.901,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-4050000",
+      "from": 4050,
+      "to": 4022.931,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-4110000",
+      "from": 4110,
+      "to": 4084.029,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "pause-1663"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-4260000",
+      "from": 4260,
+      "to": 4257.186,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-4560000",
+      "from": 4560,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-4690000",
+      "from": 4690,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-4830000",
+      "from": 4830,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-4970000",
+      "from": 4970,
+      "to": 4963.659,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-5040000",
+      "from": 5040,
+      "to": 5034.663,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-5320000",
+      "from": 5320,
+      "to": 5334.095,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-1985"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-5460000",
+      "from": 5460,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-5600000",
+      "from": 5600,
+      "to": 5610.405,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-5740000",
+      "from": 5740,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-6090000",
+      "from": 6090,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-6230000",
+      "from": 6230,
+      "to": 6248.576,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-1062"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-6370000",
+      "from": 6370,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-6720000",
+      "from": 6720,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-6860000",
+      "from": 6860,
+      "to": 6851.345,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-2750"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-7070000",
+      "from": 7070,
+      "to": 7070.363,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-7140000",
+      "from": 7140,
+      "to": 7161.287,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-1288"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-7280000",
+      "from": 7280,
+      "to": 7273.785,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "x48eq6AYfTY-chapter-7840000",
+      "from": 7840,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "QdHwcPRqIO8-episode-1528000",
+      "from": 1528,
+      "to": 1527.893,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-549"
+    },
+    {
+      "id": "QdHwcPRqIO8-episode-3053000",
+      "from": 3053,
+      "to": 3052.816,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-1043"
+    },
+    {
+      "id": "QdHwcPRqIO8-episode-6363000",
+      "from": 6363,
+      "to": 6362.857,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-100000",
+      "from": 100,
+      "to": 124.224,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-260000",
+      "from": 260,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-450000",
+      "from": 450,
+      "to": 446.746,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-105"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-620000",
+      "from": 620,
+      "to": 612.605,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-720000",
+      "from": 720,
+      "to": 701.968,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-192"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-880000",
+      "from": 880,
+      "to": 860.483,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-1160000",
+      "from": 1160,
+      "to": 1149.715,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-416"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-1260000",
+      "from": 1260,
+      "to": 1264.864,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-1400000",
+      "from": 1400,
+      "to": 1405.838,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-301"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-1620000",
+      "from": 1620,
+      "to": 1619.718,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-1710000",
+      "from": 1710,
+      "to": 1710.842,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-1980000",
+      "from": 1980,
+      "to": 1984.649,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-2190000",
+      "from": 2190,
+      "to": 2166.031,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-2280000",
+      "from": 2280,
+      "to": 2279.862,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-2520000",
+      "from": 2520,
+      "to": 2518.981,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-2670000",
+      "from": 2670,
+      "to": 2641.672,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-541"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-2760000",
+      "from": 2760,
+      "to": 2737.034,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-2880000",
+      "from": 2880,
+      "to": 2861.392,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-2970000",
+      "from": 2970,
+      "to": 2984.949,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-3160000",
+      "from": 3160,
+      "to": 3151.187,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "pause-1462"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-3340000",
+      "from": 3340,
+      "to": 3352.976,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-3710000",
+      "from": 3710,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-3850000",
+      "from": 3850,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-3990000",
+      "from": 3990,
+      "to": 3977.207,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-1239"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-4060000",
+      "from": 4060,
+      "to": 4056.286,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-4200000",
+      "from": 4200,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-4480000",
+      "from": 4480,
+      "to": 4503.766,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-4660000",
+      "from": 4660,
+      "to": 4645.441,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-4760000",
+      "from": 4760,
+      "to": 4734.129,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-1376"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-5280000",
+      "from": 5280,
+      "to": 5262.991,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-1705"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-5420000",
+      "from": 5420,
+      "to": 5403.565,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-5620000",
+      "from": 5620,
+      "to": 5601.196,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-5740000",
+      "from": 5740,
+      "to": 5741.296,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-6020000",
+      "from": 6020,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-6510000",
+      "from": 6510,
+      "to": 6500.294,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-6720000",
+      "from": 6720,
+      "to": 6731.959,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-1104"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-7000000",
+      "from": 7000,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-7210000",
+      "from": 7210,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-7280000",
+      "from": 7280,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-7560000",
+      "from": 7560,
+      "to": 7556.115,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-7910000",
+      "from": 7910,
+      "to": 7905.279,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "pause-4213"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-8050000",
+      "from": 8050,
+      "to": 8046.301,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-8190000",
+      "from": 8190,
+      "to": 8170.963,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-1372"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-8680000",
+      "from": 8680,
+      "to": 8668.393,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "fine-3023"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-8890000",
+      "from": 8890,
+      "to": 8871.663,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-9030000",
+      "from": 9030,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-9380000",
+      "from": 9380,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "QdHwcPRqIO8-chapter-9520000",
+      "from": 9520,
+      "to": 9530.454,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "yCzDip2ma9o-chapter-54240",
+      "from": 54.24,
+      "to": 50.28,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-5"
+    },
+    {
+      "id": "yCzDip2ma9o-chapter-104119",
+      "from": 104.119,
+      "to": 102.857,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "yCzDip2ma9o-chapter-155800",
+      "from": 155.8,
+      "to": 155.632,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "pause-65"
+    },
+    {
+      "id": "t081EqotCm8-chapter-37480",
+      "from": 37.48,
+      "to": 37.48,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "t081EqotCm8-chapter-88480",
+      "from": 88.48,
+      "to": 82.8,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-34"
+    },
+    {
+      "id": "t081EqotCm8-chapter-136080",
+      "from": 136.08,
+      "to": 136.08,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "t081EqotCm8-chapter-165480",
+      "from": 165.48,
+      "to": 168.72,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "t081EqotCm8-chapter-223240",
+      "from": 223.24,
+      "to": 223.24,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "1Fe1ooiTnfI-chapter-26640",
+      "from": 26.639999,
+      "to": 25.68,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "1Fe1ooiTnfI-chapter-73720",
+      "from": 73.72,
+      "to": 71.275,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "pause-21"
+    },
+    {
+      "id": "1Fe1ooiTnfI-chapter-156560",
+      "from": 156.56,
+      "to": 156.44,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "GuQUr_5dksM-chapter-33280",
+      "from": 33.279999,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "GuQUr_5dksM-chapter-60160",
+      "from": 60.16,
+      "to": 73.712,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "pause-37"
+    },
+    {
+      "id": "GuQUr_5dksM-chapter-128840",
+      "from": 128.84,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "GuQUr_5dksM-chapter-179400",
+      "from": 179.39999,
+      "to": 207.969,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "pause-127"
+    },
+    {
+      "id": "edlhlPDExIQ-chapter-66000",
+      "from": 66,
+      "to": 67.24,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "edlhlPDExIQ-chapter-90000",
+      "from": 90,
+      "to": 99.72,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "edlhlPDExIQ-chapter-132000",
+      "from": 132,
+      "to": 134.84,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "edlhlPDExIQ-chapter-240000",
+      "from": 240,
+      "to": 239.989,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "pause-105"
+    },
+    {
+      "id": "JR4sK_IFLvw-chapter-48000",
+      "from": 48,
+      "to": 47.24,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "JR4sK_IFLvw-chapter-108000",
+      "from": 108,
+      "to": 104.2,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "JR4sK_IFLvw-chapter-162000",
+      "from": 162,
+      "to": 165.16,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-45"
+    },
+    {
+      "id": "JR4sK_IFLvw-chapter-228000",
+      "from": 228,
+      "to": 227.76,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "B35BQs-jEf4-chapter-48000",
+      "from": 48,
+      "to": 45.893,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "B35BQs-jEf4-chapter-72000",
+      "from": 72,
+      "to": 76.04,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "B35BQs-jEf4-chapter-120000",
+      "from": 120,
+      "to": 124.6,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "B35BQs-jEf4-chapter-186000",
+      "from": 186,
+      "to": 186.24,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "B35BQs-jEf4-chapter-204000",
+      "from": 204,
+      "to": 198.44,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-43"
+    },
+    {
+      "id": "8JvsROfXgyE-chapter-78000",
+      "from": 78,
+      "to": 78.4,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "8JvsROfXgyE-chapter-138000",
+      "from": 138,
+      "to": 135,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "8JvsROfXgyE-chapter-180000",
+      "from": 180,
+      "to": 175.6,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "uI01DX8x5yU-chapter-48000",
+      "from": 48,
+      "to": 49.716,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "uI01DX8x5yU-chapter-84000",
+      "from": 84,
+      "to": 81.214,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "uI01DX8x5yU-chapter-102000",
+      "from": 102,
+      "to": 101.702,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-24"
+    },
+    {
+      "id": "uI01DX8x5yU-chapter-132000",
+      "from": 132,
+      "to": 135.602,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "RGOWhnd5IRc-chapter-24000",
+      "from": 24,
+      "to": 26.47,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "RGOWhnd5IRc-chapter-84000",
+      "from": 84,
+      "to": 86.753,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-24"
+    },
+    {
+      "id": "RGOWhnd5IRc-chapter-120000",
+      "from": 120,
+      "to": 116.817,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-28"
+    },
+    {
+      "id": "hrzkgVBF3FM-chapter-6960",
+      "from": 6.96,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "hrzkgVBF3FM-chapter-81520",
+      "from": 81.519997,
+      "to": 81.681,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "hrzkgVBF3FM-chapter-145240",
+      "from": 145.24,
+      "to": 148.72,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "hrzkgVBF3FM-chapter-210880",
+      "from": 210.88,
+      "to": 210.88,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "j_sYPQCqpmA-chapter-72000",
+      "from": 72,
+      "to": 76.92,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "j_sYPQCqpmA-chapter-120000",
+      "from": 120,
+      "to": 118.8,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "j_sYPQCqpmA-chapter-168000",
+      "from": 168,
+      "to": 163.92,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-48"
+    },
+    {
+      "id": "j_sYPQCqpmA-chapter-210000",
+      "from": 210,
+      "to": 210.28,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "j_sYPQCqpmA-chapter-258000",
+      "from": 258,
+      "to": 255.64,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "vKVEiOjF-9k-chapter-68240",
+      "from": 68.239998,
+      "to": 70.4,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "vKVEiOjF-9k-chapter-131160",
+      "from": 131.16,
+      "to": 131.16,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "vKVEiOjF-9k-chapter-211160",
+      "from": 211.16,
+      "to": 211.16,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "vKVEiOjF-9k-chapter-318760",
+      "from": 318.76,
+      "to": 326.12,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-87"
+    },
+    {
+      "id": "G4c-gJlIFaM-chapter-96000",
+      "from": 96,
+      "to": 98.44,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "G4c-gJlIFaM-chapter-120000",
+      "from": 120,
+      "to": 124.48,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "G4c-gJlIFaM-chapter-168000",
+      "from": 168,
+      "to": 168.32,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "G4c-gJlIFaM-chapter-234000",
+      "from": 234,
+      "to": 243.96,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-68"
+    },
+    {
+      "id": "5isK-DgYUMI-chapter-63760",
+      "from": 63.759998,
+      "to": 75.08,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-16"
+    },
+    {
+      "id": "5isK-DgYUMI-chapter-124040",
+      "from": 124.04,
+      "to": 127.28,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-27"
+    },
+    {
+      "id": "5isK-DgYUMI-chapter-182120",
+      "from": 182.12,
+      "to": 182.12,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "5isK-DgYUMI-chapter-247000",
+      "from": 247,
+      "to": 257.56,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-75"
+    },
+    {
+      "id": "6P84M_sXCHM:episode:0",
+      "from": null,
+      "to": 0,
+      "end": 270.781,
+      "method": "manual-frame-dialogue-review",
+      "reason": "Decoded original classroom/bedroom/stage frames and existing timed narration: preserve the complete question before searching, and both practice/next-day narration before the performance. Cut at native cut-6 and detected pause-81; no independent curtain chapter.",
+      "chapters": [
+        {
+          "start": 0,
+          "candidateId": "episode-start"
+        },
+        {
+          "start": 30.4,
+          "candidateId": "cut-6"
+        },
+        {
+          "start": 190.722,
+          "candidateId": "pause-81"
+        }
+      ]
+    },
+    {
+      "id": "DhZP2111nNY-chapter-18000",
+      "from": 18,
+      "to": 17.568,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "pause-10"
+    },
+    {
+      "id": "DhZP2111nNY-chapter-36000",
+      "from": 36,
+      "to": 33.12,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhZP2111nNY-chapter-60000",
+      "from": 60,
+      "to": 59.64,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhZP2111nNY-chapter-78000",
+      "from": 78,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "DhZP2111nNY-chapter-126000",
+      "from": 126,
+      "to": 117.76,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhZP2111nNY-chapter-150000",
+      "from": 150,
+      "to": 150.04,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "DhZP2111nNY-chapter-174000",
+      "from": 174,
+      "to": 173.24,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "xhnetlok_RY-chapter-36000",
+      "from": 36,
+      "to": 30.2,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "xhnetlok_RY-chapter-78000",
+      "from": 78,
+      "to": null,
+      "method": "merged-no-safe-communicative-boundary",
+      "reason": "Target 60.08 cuts directly into Caillou's spoken line ('You got it! Let's find that treasure!'). None of the other candidate timestamps offer a clean chapter transition without separating a question from its immediate answer or cutting dialogue."
+    },
+    {
+      "id": "xhnetlok_RY-chapter-108000",
+      "from": 108,
+      "to": 106.52,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "xhnetlok_RY-chapter-156000",
+      "from": 156,
+      "to": 153.32,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-56"
+    },
+    {
+      "id": "xhnetlok_RY-chapter-174000",
+      "from": 174,
+      "to": 170.28,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "cut-67"
+    },
+    {
+      "id": "7F_OD9-S9GE-chapter-30000",
+      "from": 30,
+      "to": 28.48,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "7F_OD9-S9GE-chapter-42000",
+      "from": 42,
+      "to": 40.96,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "7F_OD9-S9GE-chapter-66000",
+      "from": 66,
+      "to": 67.92,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "7F_OD9-S9GE-chapter-96000",
+      "from": 96,
+      "to": 102.64,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "7F_OD9-S9GE-chapter-120000",
+      "from": 120,
+      "to": 117.8,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "7F_OD9-S9GE-chapter-144000",
+      "from": 144,
+      "to": 150.04,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "7F_OD9-S9GE-chapter-174000",
+      "from": 174,
+      "to": 176.4,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "0opocDWriTs-chapter-48000",
+      "from": 48,
+      "to": 48.08,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "0opocDWriTs-chapter-78000",
+      "from": 78,
+      "to": 77.16,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "0opocDWriTs-chapter-114000",
+      "from": 114,
+      "to": 116.32,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    },
+    {
+      "id": "0opocDWriTs-chapter-144000",
+      "from": 144,
+      "to": null,
+      "method": "local-av-context-merge"
+    },
+    {
+      "id": "0opocDWriTs-chapter-168000",
+      "from": 168,
+      "to": 179.16,
+      "method": "single-clip-audio-video-confirmation",
+      "candidateId": "selected"
+    }
+  ]
+}

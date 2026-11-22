@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  disconnectParent, loadParentAccount, removeParentAccount, publishParentFeedback, type ParentAccount,
+  ParentError, disconnectParent, loadParentAccount, removeParentAccount, publishParentFeedback, type ParentAccount,
 } from '../lib/parentPortal';
 import type { Student } from '../lib/types';
 
@@ -107,7 +107,7 @@ function FeedbackForm({ student }: { student: string }) {
       setBody('');
       setRequest(crypto.randomUUID());
       setStatus('feedbackSent');
-    } catch { setStatus('failed'); }
+    } catch (error) { setStatus(error instanceof ParentError ? error.kind : 'failed'); }
     finally { setBusy(false); }
   }}>
     <label className="block space-y-1 text-sm font-bold">

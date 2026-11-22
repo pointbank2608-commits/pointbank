@@ -34,6 +34,7 @@ const server = await createServer({
       if (id === fixtureId) return `
         import { createElement, useState } from 'react';
         import { createRoot } from 'react-dom/client';
+        import ClassCommunication from '/src/components/ClassCommunication.tsx';
         import ParentAccessPanel from '/src/components/ParentAccessPanel.tsx';
         import AddStudentModal from '/src/components/AddStudentModal.tsx';
         import '/src/i18n/index.ts';
@@ -43,6 +44,7 @@ const server = await createServer({
           const [name,setName]=useState('민서');
           return createElement('div',null,
             createElement('button',{onClick:()=>setForm({})},'학생 등록'),
+            createElement(ClassCommunication,{classId:'class',userId:'teacher',owner:true}),
             createElement(ParentAccessPanel,{
               students:[{id:'student',name}],revision,onEditStudent:student=>setForm({student}),
             }),
@@ -68,9 +70,12 @@ try {
   let enabled = false, read = '2026-11-17T00:00:00Z', linked = false;
   let account = null;
   let publishedFeedback = '';
+  const settings = { published:true,started:false,completed:true,overdue:true,attendance:true,feedback:true,inquiry:false };
+  const threads = [];
+  let teacherSubscribed = false;
   await ctx.addInitScript((url) => {
     let current = null;
-    const fake = { endpoint: url, toJSON: () => ({ keys: { p256dh: 'a'.repeat(87), auth: 'a'.repeat(22) } }) };
+    const fake = { endpoint: url, unsubscribe: async () => { current = null; return true; }, toJSON: () => ({ keys: { p256dh: 'a'.repeat(87), auth: 'a'.repeat(22) } }) };
     PushManager.prototype.getSubscription = async () => current;
     PushManager.prototype.subscribe = async () => (current = fake);
   }, endpoint);
@@ -82,6 +87,11 @@ try {
     const args = route.request().postDataJSON();
     let data = null;
     if (fn === 'parent_account_status') data = account;
+    else if (fn === 'class_communication') data = { settings,subscribed:teacherSubscribed,teacher:'teacher',teachers:[{id:'teacher',name:'담임'}],threads,push_key:publicPushKey };
+    else if (fn === 'teacher_set_inquiry_push') teacherSubscribed = args.p_enabled;
+    else if (fn === 'class_set_channel') settings[args.p_channel] = args.p_enabled;
+    else if (fn === 'parent_ask') threads.push({ id:args.p_request,question:args.p_question,created_at:snapshot,answer:null });
+    else if (fn === 'parent_answer') threads.find(i => i.id === args.p_thread).answer = args.p_answer;
     else if (fn === 'student_save_info') {
       assert.equal(args.p_class, 'class');
       assert.equal(args.p_parent_name, '김보호');
@@ -101,7 +111,7 @@ try {
     } else if (fn === 'parent_home') {
       assert.equal(args.p_token, token);
       data = linked ? { name: '민서', academy: 'QA 학원', read_through: read, snapshot,
-        push_key: publicPushKey,
+        settings, threads, push_key: publicPushKey,
         push_enabled: enabled && args.p_endpoint === endpoint, homework: [
           { assignment_id: '1', source: 'online', title: '철자 숙제', published_at: '2026-11-18T01:00:00Z',
             due_at: '2026-11-19T14:59:00Z', completed_at: '2026-11-18T03:00:00Z', status: 'completed' },
@@ -148,7 +158,12 @@ try {
   await staff.getByRole('checkbox').check();
   await registerStudent.click();
   await staff.getByRole('dialog').waitFor({state:'hidden'});
-  await staff.close();
+  await staff.getByText('이 반의 학부모 소통 설정·문의').click();
+  await staff.getByRole('checkbox',{name:'문의',exact:true}).click();
+  await staff.getByRole('heading',{name:'학부모 문의',exact:true}).waitFor();
+  await staff.getByRole('button',{name:'이 기기 문의 푸시 켜기'}).click();
+  await staff.getByRole('button',{name:'이 기기 문의 푸시 끄기'}).waitFor();
+  assert.equal(teacherSubscribed,true);
   const page = await ctx.newPage();
   await page.goto(origin + '/p');
   await page.getByRole('heading', { name: '우리 아이 소식' }).waitFor();
@@ -173,6 +188,18 @@ try {
   await page.getByRole('button', { name: '푸시 끄기' }).click();
   await page.getByRole('button', { name: '푸시 켜기' }).waitFor();
   assert.equal(enabled, false);
+  await page.getByRole('button',{name:'선생님께 문의하기'}).click();
+  await page.getByLabel('문의 내용').fill('숙제 범위를 알려 주세요.');
+  await page.getByRole('button',{name:'문의 보내기'}).click();
+  await page.getByText('숙제 범위를 알려 주세요.',{exact:true}).waitFor();
+  await staff.reload(); await staff.getByText('이 반의 학부모 소통 설정·문의').click();
+  await staff.getByLabel('답변 내용').fill('3과까지예요.');
+  await staff.getByRole('button',{name:'답변 보내기'}).click();
+  await staff.getByText('3과까지예요.',{exact:false}).waitFor();
+  await page.goto(origin+'/p?inquiry='+threads[0].id);
+  await page.getByText('3과까지예요.',{exact:false}).waitFor();
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'inquiry-'+threads[0].id);
+  await staff.close();
   await page.getByRole('button', { name: '로그아웃', exact: true }).click();
   await page.getByRole('heading', { name: '학부모 로그인' }).waitFor();
   await page.waitForFunction(() => localStorage.getItem('classbank.parentSessions') === '[]');
@@ -187,7 +214,7 @@ try {
   await apple.goto(origin + '/p');
   await apple.getByRole('heading', { name: '학부모 로그인' }).waitFor();
   await apple.getByText(/Safari 공유 메뉴/).waitFor();
-  console.log('PASS: parent registration inside student add/edit, teacher feedback, parent login, attendance, inbox and push (simulated API).');
+  console.log('PASS: parent registration inside student add/edit, teacher feedback, parent login, attendance, private inquiries and replies, teacher and family push (simulated API).');
 } finally {
   await browser?.close();
   await server.close();

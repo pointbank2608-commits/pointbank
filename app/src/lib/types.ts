@@ -728,6 +728,9 @@ export interface GameTemplate {
 /* ---------------- 단어장(선생님이 반/수업별로 만드는 것 — word_bank 와 다름) ---------------- */
 
 export interface WordListItem {
+  /** Source/provenance of episode vocabulary; context suggestions are not transcript quotations. */
+  videoSource?: {version:1;youtubeId:string;episodeId:string;episodeStart:number;episodeEnd:number;
+    chapters:{start:number;end:number;basis?:'script'|'scene-context'}[];basis:'script'|'scene-context'};
   /** Optional dictionary example retained when saving workbook vocabulary. */
   example?: string | null;
   id: string;
@@ -812,7 +815,11 @@ export interface AnimationExpression {
   examples: {situation:string;answer:string}[];
 }
 export interface VideoSlide {
-  animationSession?: { source:string; words:{word:string;meaning:string;imageUrl?:string}[]; originalUrl:string; expression?:AnimationExpression; expressions?:AnimationExpression[] };
+  animationSession?: { source:string; words:{word:string;meaning:string;imageUrl?:string}[]; originalUrl:string; originalStart?:number; originalEnd?:number; expression?:AnimationExpression; expressions?:AnimationExpression[] };
+  /** Episode/chapter snapshot chosen by the teacher; remains editable with the lesson. */
+  animationEpisode?: {id:string;revision:number;start:number;end:number};
+  chapters?: {title:string;start:number;end:number}[];
+  source?: string;
   timedQuestions?: import('./videoQuestions').VideoQuestion[];
   questionLesson?: boolean;
   questionVersion?: 1;

@@ -1,0 +1,88 @@
+[
+  {
+    "youtubeId": "aCahKt5wtUQ",
+    "evidence": "Original storyboard frames 125–224: Hospital Sleepover title at 1350s, Caring For Grandpa Pig at 1620s, Indoor Adventure at 1890s. Native frames sampled every 10s; these are observed frame boundaries, not frame-exact edits.",
+    "episodes": [
+      {"start":1350,"title":"Hospital Sleepover","titleOrigin":"on-screen","chapters":[
+        {"start":1350,"title":"다친 할아버지를 위해 도움을 요청해요","intent":"발을 다친 상황을 알아보고 필요한 도움을 구해요.","words":[{"word":"hurt","meaning":"다치다"},{"word":"ankle","meaning":"발목"},{"word":"doctor","meaning":"의사"},{"word":"help","meaning":"도움"}]},
+        {"start":1470,"title":"병원에서 상태를 설명하고 진찰받아요","intent":"의료진에게 불편한 곳을 알리고 검사를 받아요.","words":[{"word":"hospital","meaning":"병원"},{"word":"nurse","meaning":"간호사"},{"word":"check","meaning":"살펴보다"},{"word":"wheelchair","meaning":"휠체어"}]},
+        {"start":1570,"title":"가족과 함께 걱정을 덜어요","intent":"병원에서 지내야 하는 할아버지를 가족이 안심시켜요.","words":[{"word":"stay","meaning":"머무르다"},{"word":"rest","meaning":"쉬다"},{"word":"feel better","meaning":"몸이 나아지다"},{"word":"family","meaning":"가족"}]}
+      ]},
+      {"start":1620,"title":"Caring For Grandpa Pig","titleOrigin":"on-screen","chapters":[
+        {"start":1620,"title":"병실의 할아버지를 살펴봐요","intent":"가족이 할아버지의 상태와 필요한 것을 확인해요.","words":[{"word":"visit","meaning":"방문하다"},{"word":"bed","meaning":"침대"},{"word":"television","meaning":"텔레비전"},{"word":"comfortable","meaning":"편안한"}]},
+        {"start":1720,"title":"집으로 돌아갈 준비를 해요","intent":"의료진의 도움을 받아 집으로 돌아갈 준비를 해요.","words":[{"word":"go home","meaning":"집에 가다"},{"word":"ready","meaning":"준비가 된"},{"word":"careful","meaning":"조심하는"},{"word":"walk","meaning":"걷다"}]},
+        {"start":1810,"title":"가족이 할아버지를 돌봐요","intent":"집에 돌아온 할아버지가 쉴 수 있게 돕고 간호 놀이를 해요.","words":[{"word":"look after","meaning":"돌보다"},{"word":"armchair","meaning":"안락의자"},{"word":"rest","meaning":"쉬다"},{"word":"get well","meaning":"회복하다"}]}
+      ]},
+      {"start":1890,"title":"Indoor Adventure","titleOrigin":"on-screen","chapters":[
+        {"start":1890,"title":"비 때문에 계획을 바꿔요","intent":"밖에 나가기 어려운 상황에서 가족이 다른 놀이를 찾아요.","words":[{"word":"rain","meaning":"비"},{"word":"backpack","meaning":"배낭"},{"word":"inside","meaning":"안에서"},{"word":"plan","meaning":"계획"}]},
+        {"start":1990,"title":"집 안에서 모험할 곳을 찾아요","intent":"가족이 함께 집 안을 탐험하며 놀이를 이어 가요.","words":[{"word":"upstairs","meaning":"위층으로"},{"word":"attic","meaning":"다락방"},{"word":"explore","meaning":"탐험하다"},{"word":"together","meaning":"함께"}]},
+        {"start":2080,"title":"다락방을 캠핑장처럼 만들어요","intent":"침낭과 손전등으로 실내 캠핑을 즐겨요.","words":[{"word":"sleeping bag","meaning":"침낭"},{"word":"torch","meaning":"손전등"},{"word":"pretend","meaning":"~인 척하다"},{"word":"adventure","meaning":"모험"}]}
+      ]}
+    ],
+    "removeStarts":[1280,1680,2080]
+  },
+  {
+    "youtubeId":"hyacEIXP3oc",
+    "evidence":"Original storyboard frames 425–474 show Paris café ending by 4350s, family restaurant roleplay at 4360–4540s, then a penguin ice-lolly maker at 4550–4730s. Checked the 5500–5990s supermarket, granny and Peace and Quiet sequence separately.",
+    "episodes":[
+      {"start":4360,"title":"집에서 즐기는 식당 놀이","titleOrigin":"summary","chapters":[
+        {"start":4360,"title":"가족을 식당 손님으로 맞아요","intent":"집에서 식당 역할을 나누고 가족을 손님으로 맞아요.","words":[{"word":"restaurant","meaning":"식당"},{"word":"customer","meaning":"손님"},{"word":"table","meaning":"식탁"},{"word":"welcome","meaning":"환영하다"}]},
+        {"start":4430,"title":"손님에게 음식과 즐길 거리를 제공해요","intent":"가족에게 음식을 내고 즐겁게 식사하도록 도와요.","words":[{"word":"serve","meaning":"음식을 내다"},{"word":"pasta","meaning":"파스타"},{"word":"menu","meaning":"메뉴"},{"word":"enjoy","meaning":"즐기다"}]},
+        {"start":4500,"title":"함께 먹으며 반응을 나눠요","intent":"음식을 먹은 가족의 반응을 보고 식당 놀이를 마무리해요.","words":[{"word":"delicious","meaning":"맛있는"},{"word":"dinner","meaning":"저녁 식사"},{"word":"thank you","meaning":"고마워요"},{"word":"finished","meaning":"끝난"}]}
+      ]},
+      {"start":4550,"title":"펭귄 아이스바 기계","titleOrigin":"summary","chapters":[
+        {"start":4550,"title":"새로운 기계의 쓰임을 알아봐요","intent":"가족이 펭귄 모양 기계를 살펴보고 무엇을 만드는지 알아봐요.","words":[{"word":"penguin","meaning":"펭귄"},{"word":"machine","meaning":"기계"},{"word":"ice lolly","meaning":"막대 아이스크림"},{"word":"make","meaning":"만들다"}]},
+        {"start":4630,"title":"재료를 넣고 함께 만들어요","intent":"재료와 도구를 나누어 쓰며 아이스바를 만들어요.","words":[{"word":"mix","meaning":"섞다"},{"word":"pour","meaning":"붓다"},{"word":"fruit","meaning":"과일"},{"word":"try","meaning":"해 보다"}]},
+        {"start":4690,"title":"결과를 살펴보고 정리해요","intent":"만든 음식과 어질러진 부엌을 가족이 함께 살펴봐요.","words":[{"word":"mess","meaning":"어질러진 상태"},{"word":"clean up","meaning":"정리하다"},{"word":"kitchen","meaning":"부엌"},{"word":"help","meaning":"돕다"}]}
+      ]}
+    ],
+    "removeStarts":[4400]
+  },
+  {
+    "youtubeId":"mNt8QH-fyyY",
+    "evidence":"Original frames 194–224: the classroom scene at 1940s is followed by an animator credit screen at 2050s and a distinct STORIES title card at 2060s. Preserve the second occurrence rather than collapsing matching automated labels.",
+    "removeStarts":[],
+    "episodes":[
+      {"start":1940,"title":"이야기 시간과 황금 동물","titleOrigin":"summary","chapters":[
+        {"start":1940,"title":"선생님과 이야기 시간을 시작해요","intent":"교실에 모인 친구들이 이야기와 작은 동물 모형에 관심을 보여요.","words":[{"word":"story time","meaning":"이야기를 듣는 시간"},{"word":"teacher","meaning":"선생님"},{"word":"classroom","meaning":"교실"},{"word":"listen","meaning":"듣다"}]},
+        {"start":1990,"title":"궁금한 것을 물으며 상상해요","intent":"친구가 하는 활동을 살펴보고 황금 동물을 보며 상상해요.","words":[{"word":"golden","meaning":"금빛의"},{"word":"animal","meaning":"동물"},{"word":"imagine","meaning":"상상하다"},{"word":"curious","meaning":"궁금한"}]}
+      ]},
+      {"start":2060,"title":"Stories","titleOrigin":"on-screen","chapters":[
+        {"start":2060,"title":"친구에게 하고 싶은 일을 알려요","intent":"교실에서 친구의 활동에 관심을 보이고 함께할 방법을 찾아요.","words":[{"word":"friend","meaning":"친구"},{"word":"join in","meaning":"함께 참여하다"},{"word":"make","meaning":"만들다"},{"word":"idea","meaning":"생각"}]},
+        {"start":2130,"title":"책을 보며 이야기를 만들어요","intent":"책 속 내용을 함께 살펴보고 상상할 재료를 찾아요.","words":[{"word":"book","meaning":"책"},{"word":"read","meaning":"읽다"},{"word":"picture","meaning":"그림"},{"word":"tell a story","meaning":"이야기를 들려주다"}]},
+        {"start":2200,"title":"상상을 바꿔 가며 함께 놀이해요","intent":"친구의 생각에 반응하고 상상의 동물과 모험을 함께 이어 가요.","words":[{"word":"dragon","meaning":"용"},{"word":"pretend","meaning":"~인 척하다"},{"word":"together","meaning":"함께"},{"word":"adventure","meaning":"모험"}]}
+      ]}
+    ]
+  },
+  {
+    "youtubeId":"gk73udXY__E",
+    "evidence":"Native frames 175–224 show shopping, postal roleplay, then distinct toy-store (1920s), nursery/baby roleplay (2040s), and family dinner (2160s) sequences. The broad automated food-related label incorrectly swallowed the toy-shop and nursery sections.",
+    "removeStarts":[],
+    "episodes":[
+      {"start":1920,"title":"장난감 가게에서 고르기","titleOrigin":"summary","chapters":[
+        {"start":1920,"title":"장난감 가게에서 원하는 것을 찾아요","intent":"가족과 가게에 들어가 관심 있는 장난감을 살펴봐요.","words":[{"word":"toy shop","meaning":"장난감 가게"},{"word":"look for","meaning":"찾다"},{"word":"want","meaning":"원하다"},{"word":"choose","meaning":"고르다"}]},
+        {"start":1990,"title":"여러 장난감을 비교하며 이야기해요","intent":"진열된 장난감을 비교하고 가족에게 원하는 것을 알려요.","words":[{"word":"doll","meaning":"인형"},{"word":"different","meaning":"서로 다른"},{"word":"favourite","meaning":"가장 좋아하는"},{"word":"which one","meaning":"어느 것"}]}
+      ]},
+      {"start":2040,"title":"유치원에서 아기 돌보기 놀이","titleOrigin":"summary","chapters":[
+        {"start":2040,"title":"아기를 돌보는 역할을 정해요","intent":"친구들과 돌봄 역할을 나누고 놀이를 시작해요.","words":[{"word":"baby","meaning":"아기"},{"word":"look after","meaning":"돌보다"},{"word":"pretend","meaning":"~인 척하다"},{"word":"friend","meaning":"친구"}]},
+        {"start":2100,"title":"친구에게 필요한 도움을 주고받아요","intent":"친구의 상황을 살펴보며 놀이를 함께 이어 가요.","words":[{"word":"help","meaning":"돕다"},{"word":"carry","meaning":"안고 가다"},{"word":"together","meaning":"함께"},{"word":"take turns","meaning":"번갈아 하다"}]}
+      ]},
+      {"start":2160,"title":"가족이 함께하는 식사 시간","titleOrigin":"summary","chapters":[
+        {"start":2160,"title":"식탁에서 음식에 대해 이야기해요","intent":"가족과 식사하며 음식에 대한 반응을 나눠요.","words":[{"word":"dinner","meaning":"저녁 식사"},{"word":"vegetables","meaning":"채소"},{"word":"plate","meaning":"접시"},{"word":"hungry","meaning":"배고픈"}]},
+        {"start":2220,"title":"좋아하는 음식과 어려운 점을 알려요","intent":"음식에 대한 생각을 말하고 가족의 반응을 살펴봐요.","words":[{"word":"like","meaning":"좋아하다"},{"word":"try","meaning":"먹어 보다"},{"word":"taste","meaning":"맛"},{"word":"full","meaning":"배부른"}]}
+      ]}
+    ]
+  },
+  {
+    "youtubeId":"kioBK0l8w5w",
+    "evidence":"The 3260s boundary contains an opening followed by a narrative; the opening is part of that story, not a standalone episode.",
+    "removeStarts":[],"episodes":[],
+    "rename":{"3260":"탐정 놀이와 숲속 탐험"}
+  },
+  {
+    "youtubeId":"O37zFRCQhEQ",
+    "evidence":"Original 300s frame still shows the winter fair; 310s shows egg painting. Existing timed dialogue starts the egg-painting speech at 306.8s, so use a cue-based 306s boundary to keep that dialogue together. The 620s frame is still the Easter garden, while 630s is the New Year party. These remain approximate narrative boundaries, not frame-exact edits.",
+    "removeStarts":[],"episodes":[],
+    "moveStarts":[{"from":320,"to":306},{"from":640,"to":630}]
+  }
+]

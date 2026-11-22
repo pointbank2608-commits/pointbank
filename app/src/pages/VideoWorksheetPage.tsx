@@ -2,6 +2,8 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useVideoClips, type VideoClip } from '../lib/videoClips';
+import {animationEpisodeLibrary} from '../lib/animationEpisodes';
+import {animationEpisodeClip} from '../lib/animationSession';
 import { loadWordBank } from '../lib/wordBankCache';
 import { animationCrossword, animationPrintActivities, type PaperItem } from '../lib/animationPrint';
 import { chunk, makeRng, shuffled } from '../lib/worksheetGenerators';
@@ -22,7 +24,7 @@ function Matching({items,pictures,teacher,start}:{items:PaperItem[];pictures:boo
   if (teacher) return <ol start={start} className="animation-match-key">{items.map(item=><li key={item.id}>{item.label} → {String.fromCharCode(65+right.indexOf(item))}{!pictures&&' · '+item.answer}</li>)}</ol>;
   return <div className="animation-match-grid">
     <div>{items.map((item,index)=><div key={item.id}>{start+index}. {item.label}<span className="animation-match-dot" aria-hidden="true"/></div>)}</div>
-    <div>{right.map((item,index)=><div key={item.id}><span className="animation-match-dot" aria-hidden="true"/>{String.fromCharCode(65+index)}. {pictures?<div><img src={item.image} alt=""/><small>{item.meaning}</small></div>:item.answer}</div>)}</div>
+    <div>{right.map((item,index)=><div key={item.id}><span className="animation-match-dot" aria-hidden="true"/>{String.fromCharCode(65+index)}. {pictures?<div>{item.image&&<img src={item.image} alt=""/>}<small lang="ko">{item.meaning}</small></div>:item.answer}</div>)}</div>
   </div>;
 }
 
@@ -61,13 +63,12 @@ function Worksheet({ clip }: { clip: VideoClip }) {
   const {puzzle,included}=useMemo(()=>animationCrossword(crosswordSelected),[crosswordSelected]);
   const crosswordMissing=crosswordSelected.filter(item=>!included.has(item.id));
 
-  const available = useCallback((type: (typeof groups)[number]['types'][number]) => type.items.length >= (minimumFive.has(type.id) ? 5 : 1) && (type.id !== 'pictureMatch' || pictureSelected.some(item=>item.image)) && (type.id !== 'crossword' || included.size >= 2), [pictureSelected,included]);
+  const available = useCallback((type: (typeof groups)[number]['types'][number]) => type.items.length >= (minimumFive.has(type.id) ? 5 : 1) && (type.id !== 'crossword' || included.size >= 2), [included]);
   const missing = groups.flatMap(group=>group.types.filter(type=>!available(type)));
   const rows = useMemo(() => groups.flatMap(group=>group.types.flatMap<Row>(type=>{
     if (!enabled.has(type.id) || !available(type)) return [];
-    let items=type.items;
+    const items=type.items;
     const base={group:group.id,groupTitle:group.en,type:type.id,title:type.title,instruction:type.instruction};
-    if (type.id==='pictureMatch') items=items.filter(item=>item.image);
     if (matchTypes.includes(type.id)) return chunk(items,type.id==='pictureMatch'?5:7).map((matching,index)=>({...base,id:String(index),label:type.title,number:index*(type.id==='pictureMatch'?5:7)+1,matching}));
     if (type.id==='crossword') return included.size?[{...base,id:'puzzle',label:type.title,number:1,puzzle,bank:options.bank?shuffled(puzzle.entries.map(entry=>entry.word.word),makeRng(67)):undefined}]:[];
     return items.map((item,index)=>({...base,...item,number:index+1,
@@ -171,7 +172,7 @@ function Worksheet({ clip }: { clip: VideoClip }) {
               {enabled.has(type.id)&&type.id==='sentenceGap'&&<div><label className="animation-group-toggle"><input type="checkbox" checked={options.sentenceBank} onChange={event=>setOptions({...options,sentenceBank:event.target.checked})}/> {en?'Include word banks':'단어 상자 넣기'}</label></div>}
               {enabled.has(type.id)&&type.id==='questionChoice'&&<div><label className="animation-group-toggle">객관식 보기 개수 <select value={options.choiceCount} onChange={event=>setOptions({...options,choiceCount:Number(event.target.value)})}><option>3</option><option>2</option></select></label></div>}
               {enabled.has(type.id)&&type.id==='sentenceScramble'&&<div><label className="animation-group-toggle"><input type="checkbox" checked={options.chunks} onChange={event=>setOptions({...options,chunks:event.target.checked})}/> {en?'Group sentence chunks':'문장 배열에 어구 묶기'}</label></div>}
-              {type.id==="pictureMatch"&&pictureMissing.length>0&&<p className="animation-activity-note">그림 없는 단어 · {pictureMissing.map(item=>item.label).join(", ")}</p>}
+              {type.id==="pictureMatch"&&pictureMissing.length>0&&<p className="animation-activity-note">{t('readyMedia.pictureMatchFallback', {words:pictureMissing.map(item=>item.label).join(', ')})}</p>}
               {type.id==='crossword'&&enabled.has(type.id)&&<p className="animation-activity-note">{en?`Used ${included.size} of ${crosswordSelected.length} words`:`선택한 ${crosswordSelected.length}개 중 ${included.size}개 사용`}{crosswordMissing.length>0&&' · '+crosswordMissing.map(item=>item.label).join(', ')}{!included.size&&' · 교차할 단어를 다시 고르거나 단어 스크램블을 선택하세요.'}</p>}
             </section>;
           })}
@@ -195,8 +196,10 @@ export default function VideoWorksheetPage() {
   const {t} = useTranslation();
   const [params] = useSearchParams();
   const {clips,error} = useVideoClips();
-  const clip = clips?.find(item => item.id === params.get('clip') && !item.pack?.phonicsSong);
+  const episodeId=params.get('episode'),clipId=params.get('clip');
+  const material=useMemo(()=>episodeId&&clips?animationEpisodeLibrary(clips).episodes.find(m=>m.episode.id===episodeId):undefined,[clips,episodeId]);
+  const clip=useMemo(()=>material?animationEpisodeClip(material):clips?.find(item=>item.id===clipId&&!item.pack?.phonicsSong),[material,clips,clipId]);
   if (error) return <p role="alert">{t('readyMedia.noWorksheet')}</p>;
   if (!clips) return <p>{t('common.loading')}</p>;
-  return clip ? <Worksheet key={clip.id} clip={clip} /> : <p role="alert">{t('readyMedia.noWorksheet')}</p>;
+  return clip ? <Worksheet key={episodeId??clip.id} clip={clip} /> : <p role="alert">{t('readyMedia.noWorksheet')}</p>;
 }

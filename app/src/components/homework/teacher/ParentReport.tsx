@@ -4,7 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useToast } from '../../../context/ToastContext';
 import { fetchReportExtras, type LearningCard, type ReportExtras } from '../../../lib/homework';
 import { strengthsAndFocus, subLabelKey, type Grade, type StatSheet } from '../../../lib/homework/stats';
-import { publishParentFeedback } from '../../../lib/parentPortal';
+import { ParentError, publishParentFeedback } from '../../../lib/parentPortal';
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const GRADE_BG: Record<Grade, string> = { 'S+': '#f5c542', S: '#f0a93b', A: '#4cc38a', B: '#5aa9f0', C: '#b39ddb' };
@@ -160,7 +160,7 @@ ${sheet.enough ? '' : `<p class="muted">${esc(t('studentHw.collectingTitle'))} Â
             try {
               await publishParentFeedback(card.student.id, text, request.id);
               notify(t('parentPortal.feedbackSent'));
-            } catch { notify(t('parentPortal.feedbackSendFailed'), 'error'); }
+            } catch (error) { notify(t(error instanceof ParentError && error.kind === 'feedbackDisabled' ? 'parentPortal.feedbackDisabled' : 'parentPortal.feedbackSendFailed'), 'error'); }
             finally { setSending(false); }
           }}>{t('parentPortal.sendFeedback')}</button>
         <button

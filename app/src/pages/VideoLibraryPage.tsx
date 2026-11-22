@@ -1,6 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useFeature } from '../lib/features';
 import VideoClipLibrary from '../components/VideoClipLibrary';
+import {useState} from 'react';
+import AnimationGroupLibrary from '../components/AnimationGroupLibrary';
 
 /**
  * 영상 라이브러리 메뉴(2026-10-03 사용자 요청: 왼쪽 내비에 따로) — 클래스뱅크가 미리 만든 유튜브 장면을 둘러보고,
@@ -9,14 +12,21 @@ import VideoClipLibrary from '../components/VideoClipLibrary';
 export default function VideoLibraryPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const soloEnabled = useFeature('solo');
+  const [view,setView]=useState<'episodes'|'clips'>('episodes');
   return (
     <div className="space-y-6">
       <div>
         <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-deep-navy md:font-headline-lg md:text-headline-lg">{t('videoLibrary.pageTitle')}</h1>
         <p className="mt-1 font-body-md text-body-md text-on-surface-variant">{t('readyMedia.videoIntro')}</p>
+        {soloEnabled && <Link to="/solo/animation" className="mt-3 inline-flex min-h-11 items-center rounded-xl bg-primary px-4 py-2 font-bold text-on-primary">{t('animationSolo.title')}</Link>}
       </div>
       <div className="rounded-xl bg-surface-container-lowest p-4 shadow-sm">
-        <VideoClipLibrary tall pickLabel={t('readyMedia.makeLesson')} onPick={(clip,activities,plan) => navigate('/curriculum', { state: { createFromClipId: clip.id,clipActivities:activities,clipPlan:plan } })} />
+        <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label={t('animationSolo.groupCatalogue')}>
+          <button type="button" aria-pressed={view==='episodes'} className="min-h-11 rounded-xl border px-4" onClick={()=>setView('episodes')}>{t('animationSolo.episodeCatalogue')}</button>
+          <button type="button" aria-pressed={view==='clips'} className="min-h-11 rounded-xl border px-4" onClick={()=>setView('clips')}>{t('animationSolo.excerptCatalogue')}</button>
+        </div>
+        {view==='episodes'?<AnimationGroupLibrary/>:<VideoClipLibrary tall pickLabel={t('readyMedia.makeLesson')} onPick={(clip,activities,plan) => navigate('/curriculum', { state: { createFromClipId: clip.id,clipActivities:activities,clipPlan:plan } })}/>}
       </div>
     </div>
   );

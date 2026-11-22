@@ -1,6 +1,6 @@
 import type { SceneTeaching } from '../lib/animationScene';
 
-// The dictionary picture for "back" is deliberately absent: this scene uses the adverb.
+// Reviewed scene pictures take priority over dictionary pictures.
 const washingPictures = {'washing|빨래':'/word-bank-images/laundry.webp','wind|바람':'/word-bank-images/wind.webp'};
 const washingActivities: NonNullable<SceneTeaching["print"]> = {
   scene:[{prompt:'What is Mum doing at the beginning of the scene?',answer:'A. Hanging out the washing.',pictures:['/word-bank-images/laundry.webp','/word-bank-images/wind.webp']}],

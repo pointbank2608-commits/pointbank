@@ -91,6 +91,7 @@ export default function SoloCatalogModal({
   academyId,
   classId,
   initialVideoDraft,
+  allowInitialVideoSave = false,
   onClose,
   onBatch,
   onScratch,
@@ -98,6 +99,7 @@ export default function SoloCatalogModal({
   academyId: string;
   classId?: string | null;
   initialVideoDraft?: { draft: SoloVideoDraft; source: string; caillouCourse?: boolean };
+  allowInitialVideoSave?: boolean;
   onClose: () => void;
   onBatch: (lessons: BatchLesson[], level: string, source: string) => Promise<void>;
   /** 빈 수업으로 시작(편집기가 바로 열린다) */
@@ -141,7 +143,7 @@ export default function SoloCatalogModal({
   /** 만들 수업 묶음 — 블록 조립기에서 켜고 끄고 만든다 */
   const [pending, setPending] = useState<{ title: string; lessons: BatchLesson[]; level: string; source: string } | null>(null);
   const [videoDraft, setVideoDraft] = useState<SoloVideoDraft | null>(initialVideoDraft?.draft ?? null);
-  const [videoGames, setVideoGames] = useState<VideoReviewGames>(() => initialVideoDraft?.caillouCourse ? DEFAULT_CAILLOU_GAMES : {});
+  const [videoGames, setVideoGames] = useState<VideoReviewGames>(() => initialVideoDraft?.draft.finalReview || initialVideoDraft?.caillouCourse ? DEFAULT_CAILLOU_GAMES : {});
   const reviewOptionsId = useId();
   const [excludedVideoSteps, setExcludedVideoSteps] = useState<number[]>(() =>
     (initialVideoDraft?.caillouCourse ? buildCaillouCourseDraft(10, 0, initialVideoDraft.draft)?.defaultExcluded : undefined)
@@ -568,7 +570,7 @@ export default function SoloCatalogModal({
         {evidenceError && <p role="alert">근거 원음을 재생하지 못했어요.</p>}
         <div className="flex flex-wrap gap-2">
           <button type="button" className="rounded-xl border border-outline-variant px-4 py-2" onClick={() => setVideoPreview(true)}>학생 화면 미리보기</button>
-          {!initialVideoDraft && <button type="button" disabled={busy === 'make'} className="rounded-xl bg-primary px-4 py-2 font-bold text-white disabled:opacity-50" onClick={async () => {
+          {(!initialVideoDraft || allowInitialVideoSave) && <button type="button" disabled={busy === 'make'} className="rounded-xl bg-primary px-4 py-2 font-bold text-white disabled:opacity-50" onClick={async () => {
             setBusy('make');
             try {
               await onBatch([{ name: lessonDraft.name, steps, minutes }], t('solo.clipLevel'), courseSource ? `${videoDraftSource}-${courseMinutes}-${coursePart + 1}` : videoDraftSource);
@@ -890,7 +892,7 @@ export default function SoloCatalogModal({
               : t('solo.cat_scratch');
 
   const canBack = !!videoDraft || !!pending || (!q && view.id !== 'home');
-  const showCatalogFilters = !pending && !(videoDraft && courseSource);
+  const showCatalogFilters = !pending && !videoDraft;
   const goBack = () => {
     if (videoDraft) setVideoDraft(null);
     else if (pending) setPending(null);

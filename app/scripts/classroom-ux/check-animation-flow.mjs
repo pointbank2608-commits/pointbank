@@ -5,7 +5,8 @@ try{
  const {findVideoQuestionLesson}=await server.ssrLoadModule('/src/lib/videoQuestionLessons.ts');
  const {parseShadowText,shadowLineAtTime}=await server.ssrLoadModule('/src/lib/shadowLines.ts');
  const {nextVideoQuestion,questionTimeInVideo}=await server.ssrLoadModule('/src/lib/videoQuestions.ts');
- const {animationPracticeLines,animationEpisodeWords,animationRangeInvalid,animationExpressionFits}=await server.ssrLoadModule('/src/lib/animationSession.ts');
+ const {animationPracticeLines,animationEpisodeWords,animationRangeInvalid,animationExpressionFits,animationEpisodeClip}=await server.ssrLoadModule('/src/lib/animationSession.ts');
+ const {animationEpisodeLibrary}=await server.ssrLoadModule('/src/lib/animationEpisodes.ts');
  const {animationSentenceChunks,animationPrintActivities}=await server.ssrLoadModule('/src/lib/animationPrint.ts');
  const slide=(clipId,at)=>({id:clipId,kind:'video',clipId,questionLesson:true,startSec:24.5,endSec:89.5,timedQuestions:[{id:'q',kind:'spoken',at,prompt:'Question'}]});
  const lesson=(id,owner,clipId,date,at)=>({id,created_by:owner,playlist:[slide(clipId,at)],created_at:date,updated_at:date});
@@ -15,6 +16,11 @@ try{
  assert.equal(found.lesson.id,'mine');assert.equal(found.slide.timedQuestions[0].at,38.51);
  assert.equal(findVideoQuestionLesson(rows,'missing','me'),null);
  assert.equal(JSON.stringify(rows),before);
+ const episodeRow=lesson('episode','me','clip','2026-11-22',100);
+ episodeRow.playlist[0].animationEpisode={id:'episode-one',start:0,end:400,revision:2};
+ assert.equal(findVideoQuestionLesson([...rows,episodeRow],'clip','me').lesson.id,'mine');
+ assert.equal(findVideoQuestionLesson([...rows,episodeRow],'clip','me','episode-one').lesson.id,'episode');
+ assert.equal(findVideoQuestionLesson([...rows,episodeRow],'clip','me','episode-two'),null);
  const lines=parseShadowText('[0:25-0:27] First line. | 첫 문장\n[0:27-0:30] Second line. | 둘째 문장\n[0:32-0:35] Third line. | 셋째 문장');
  assert.equal(shadowLineAtTime(lines,24.5),0);
  assert.equal(shadowLineAtTime(lines,27.5),1); // clip-relative 3 seconds
@@ -31,6 +37,14 @@ try{
  const crossing=animationPracticeLines('[2:15-2:19] Second chapter.\n[1:40-1:44] Hi!\n[2:15-2:19] Second chapter.\n[2:39-2:42] Outside.',100,160);
  assert.deepEqual(crossing.map(line=>line.start),[100,135]);
  assert.equal(animationRangeInvalid(100,160,336),false);
+ const catalogClip={id:'source',youtube_id:'kioBK0l8w5w',series:'Bluey',start_sec:0,end_sec:6800,hidden:false,script:'[1:40-1:44] A cat. | 고양이',pack:{words:[{word:'cat',meaning:'고양이',example:'A cat.',time:100}]}};
+ const materials=animationEpisodeLibrary([catalogClip]).episodes;
+ const catalogueBefore=JSON.stringify(materials.map(m=>m.episode));
+ const adapted=animationEpisodeClip(materials[0]);
+ assert.equal(adapted.start_sec,materials[0].episode.start);assert.equal(adapted.end_sec,materials[0].episode.end);
+ assert.equal(adapted.pack.words.length,materials[0].words.length);
+ assert.equal(JSON.stringify(materials.map(m=>m.episode)),catalogueBefore);
+ assert.equal(parseShadowText('[113:01-113:04] A long source.')[0].start,6781);
  for(const [start,end] of [[-1,160],[160,100],[100,337],[100,100],[NaN,160]])assert.equal(animationRangeInvalid(start,end,336),true);
  const chapters=[{pack:{words:[{word:'cat',meaning:'고양이'},{word:'dog',meaning:'개'}]}}];
  const untouched=JSON.stringify(chapters);

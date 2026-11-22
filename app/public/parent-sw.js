@@ -10,7 +10,7 @@ self.addEventListener('push', (event) => {
     body: notice.body,
     icon: '/icon-192.png',
     tag: notice.tag,
-    data: { child: notice.child },
+    data: { child: notice.child, thread: notice.thread },
   }));
 });
 
@@ -18,6 +18,8 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil((async () => {
     const path = new URL('/p?view=notices', self.location.origin);
+    const thread = event.notification.data?.thread;
+    if (typeof thread === 'string' && /^[a-f0-9-]{36}$/.test(thread)) path.searchParams.set('inquiry', thread);
     const child = event.notification.data?.child;
     if (typeof child === 'string' && /^[a-f0-9-]{36}$/.test(child)) path.hash = 'child=' + child;
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });

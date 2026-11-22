@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CAILLOU_VIDEO_ID } from '../../lib/caillouVideoCourse';
 import SoloGameStep from './SoloGameStep';
 import SoloReviewGame from './SoloReviewGame';
 import type { SensorContext } from '../../lib/learningSensors/core';
@@ -21,7 +22,6 @@ import { checkCondition, looseNorm } from '../../lib/soloLessons';
 import SoloTestRunner from './SoloTestRunner';
 import SoloPracticeGame from './SoloPracticeGame';
 import SoloSourceVideo from './SoloSourceVideo';
-import { CAILLOU_VIDEO_ID } from '../../lib/caillouVideoCourse';
 
 /**
  * 개별수업 플레이어 — 화면이 선생님이 되어 한 단계씩 이끈다. 학생 화면(/s/lesson)과 선생님 미리보기가 같이 쓴다.
@@ -190,7 +190,8 @@ export default function SoloPlayer({
   const step = steps[idx];
   const sensor = useLearningActivity(!preview && historyAt === null ? api.sensor : undefined, !finished && result === null && breakNext === null && step ? idx : null);
   const zoom = useStageZoom();
-  const videoNavigation = useMemo(() => steps.some(step => step.t === 'watch' && step.clip.videoId === CAILLOU_VIDEO_ID), [steps]);
+  const videoNavigation = useMemo(() => steps.some(step =>
+    (step.t === 'watch' && (step.mode === 'listen' || step.clip.videoId === CAILLOU_VIDEO_ID)) || (step.t === 'lyricBlank' && !!step.afterDialogue)), [steps]);
 
   // 노래·영상 단계가 쓰는 유튜브 플레이어(수업 하나에 영상 하나) — 한 번만 만들고 구간만 바꿔 튼다
   const videoId = useMemo(() => {
@@ -815,7 +816,7 @@ export default function SoloPlayer({
           <p className="text-center text-lg">영상 속 목소리를 들으면서 한 박자 뒤에 따라 말해요.</p>
         )}
         {sourceVideo && clip && !questionVideo && (
-          <SoloSourceVideo key={idx + ':' + nonce} clip={clip}
+          <SoloSourceVideo key={idx + ':' + nonce} clip={clip} bounded
             playLabel={pronunciationPractice === 'shadow' ? '쉐도잉 시작' : pronunciationPractice === 'repeat' ? '이 부분 듣기' : undefined}
             onCaptionShown={() => sensor('hint')}
             onPlay={() => { setSourceError(false); sensor('audio'); }}
