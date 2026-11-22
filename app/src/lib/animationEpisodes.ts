@@ -6,6 +6,7 @@ import type {SoloStep} from './soloLessons';
 import type {SoloVideoDraft} from './soloVideoTemplate';
 import {sceneWordPicture} from './animationScene';
 import {excludedAnimationSources} from './animationExclusions';
+import {chapterTeaching} from '../data/animationChapterTeaching';
 
 export type EpisodeChapter = {title:string;start:number;end:number;thumbnail:string|null;intent?:string;providerTitle?:string;
   frames?:number[];words?:{word:string;meaning:string;basis:'scene-context';imageUrl?:string|null}[]};
@@ -52,7 +53,7 @@ export function animationEpisodeLibrary(clips:VideoClip[]){
     return [{...source,rows,lines,series:rows[0].series}];
   });
   const episodes=sources.flatMap(source=>source.episodes.map(episode=>{
-    const lines=source.lines.filter(line=>line.start>=episode.start&&line.end<=episode.end);
+    const lines=[...new Map([...source.lines.filter(line=>line.start>=episode.start&&line.end<=episode.end),...(chapterTeaching[episode.id]?.lines??[])].map(line=>[`${line.start}:${line.en}`,line])).values()].sort((a,b)=>a.start-b.start);
     const chapters=episodeChapters(episode).map((chapter,index)=>source.youtubeId==='yCzDip2ma9o'&&beeCommunication[index]
       ?{...chapter,providerTitle:chapter.title,...beeCommunication[index]}:chapter);
     const words=new Map<string,{id:string;word:string;meaning:string;imageUrl:string|null;example:string;start:number;end:number;chapterIds:number[];scriptChapterIds:number[];basis:'script'|'scene-context'}>();
@@ -69,8 +70,9 @@ export function animationEpisodeLibrary(clips:VideoClip[]){
       if(!word.word.trim()||!word.meaning.trim())continue;
       const key=norm(word.word)+'|'+word.meaning.trim();const existing=words.get(key);
       if(existing){if(!existing.chapterIds.includes(chapterIndex))existing.chapterIds.push(chapterIndex);continue;}
+      const evidence=lines.find(line=>line.start>=chapter.start&&line.start<chapter.end&&includesWord(line.en,word.word));
       words.set(key,{id:`${episode.id}/word/${encodeURIComponent(key)}`,word:word.word,meaning:word.meaning,imageUrl:word.imageUrl??null,
-        example:'',start:chapter.start,end:chapter.end,chapterIds:[chapterIndex],scriptChapterIds:[],basis:'scene-context'});
+        example:evidence?.en??'',start:evidence?.start??chapter.start,end:evidence?.end??chapter.end,chapterIds:[chapterIndex],scriptChapterIds:evidence?[chapterIndex]:[],basis:evidence?'script':'scene-context'});
     }
     return {episode,source,lines,chapters,words:[...words.values()]};
   }));

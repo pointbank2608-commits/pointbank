@@ -3,18 +3,28 @@ import { createServer, preview } from 'vite';
 import { readFile } from 'node:fs/promises';
 const animationQA=process.env.CLASSROOM_ANIMATION_QA==='true';
 const rangeQA=process.env.CLASSROOM_RANGE_QA==='true';
+const blocked=process.env.CLASSROOM_VIDEO_BLOCKED==='true';
 const catalogue=process.env.CLASSROOM_CATALOGUE?JSON.parse(await readFile(process.env.CLASSROOM_CATALOGUE,'utf8')):null;
 const ref='classroom-fixture';
 const uid='00000000-0000-4000-8000-000000000001',aid='00000000-0000-4000-8000-0000000000aa';
 const user={id:uid,aud:'authenticated',role:'authenticated',email:'classroom-qa@example.test',app_metadata:{},user_metadata:{}};
 const exp=Math.floor(Date.now()/1000)+86400,b64=o=>Buffer.from(JSON.stringify(o)).toString('base64url');
 const session={access_token:`${b64({alg:'HS256',typ:'JWT'})}.${b64({sub:uid,role:'authenticated',exp,aud:'authenticated'})}.test-only`,refresh_token:'test-only',expires_at:exp,expires_in:86400,token_type:'bearer',user};
-const bootstrap=({ref,session,user,uid,aid,animationQA,rangeQA,catalogue})=>{
+const bootstrap=({ref,session,user,uid,aid,animationQA,rangeQA,catalogue,blocked})=>{
  localStorage.setItem(`sb-${ref}-auth-token`,JSON.stringify(session));localStorage.setItem('classbank.lang','ko');
  const profile={id:uid,academy_id:aid,role:'owner',display_name:'수업 확인'},academy={id:aid,name:'수업 확인',point_unit:'별',plan:'paid',plan_status:'active',features:{group:true,solo:true,homework:true}};
  const animalWords=['cat','dog','pig','cow','duck','horse'];
  let lists=[{id:'qa-words',name:'집·농장 동물',kind:'word',academy_id:aid,class_id:null,items:animalWords.map((word,i)=>({id:'w'+i,word,meaning:['고양이','개','돼지','소','오리','말'][i],image_url:`/phonics-images/${word}.webp`}))},{id:'qa-sentences',name:'집·농장 동물',kind:'sentence',academy_id:aid,class_id:null,items:['I like cats.','I can see a dog.','The pig is pink.','I have a duck.'].map((word,i)=>({id:'s'+i,word,meaning:'문장 '+(i+1),image_url:null}))}];
  let lessons=JSON.parse(sessionStorage.getItem('qa-lessons')||'null')??[{id:'qa-lesson',academy_id:aid,class_id:'qa-class',name:'함께 쓰는 수업',word_list_id:'qa-words',playlist:[],created_by:uid,created_at:'2026-11-19',updated_at:'2026-11-19'}];
+ if(blocked){
+  // Test-only blocked video transport. No external playback or fabricated timings.
+  window.YT={Player:class{
+   constructor(id,options){this.time=0;this.options=options;document.getElementById(id).textContent='외부 영상 재생 차단 검증';setTimeout(()=>options.events.onReady(),0);}
+   getCurrentTime(){return this.time;}getDuration(){return 336;}getPlayerState(){return 2;}getAvailablePlaybackRates(){return [0.75,1];}
+   pauseVideo(){}playVideo(){}setPlaybackRate(){}setVolume(){}destroy(){}seekTo(time){this.time=time;}
+  }};
+  lessons=[{...lessons[0],name:'영상 차단 · 시간 없는 문장 검증',word_list_id:null,playlist:[{id:'blocked-video',kind:'video',title:'영상 차단 · 시간 없는 문장 검증',videoUrl:'https://www.youtube.com/watch?v=DhKIqYVB_Ws',startSec:0,endSec:336,source:'',animationSession:{source:'',originalUrl:'https://www.youtube.com/watch?v=DhKIqYVB_Ws',words:['work','tie','elevator','floor'].map(word=>({word,meaning:word})),practiceSentences:['So it can copy anything.'],expression:{text:'It can copy …',original:'So it can copy anything.',explanation:'복사할 수 있는 것을 바꿔 말해요.',examples:[{situation:'그림',answer:'It can copy a picture.'}]}}}]}];
+ }
  let gameTemplates=JSON.parse(sessionStorage.getItem('qa-game-templates')||'[]');
  const clips=[{id:'qa-clip',series:'수업 확인용 영상',title:'I like it.',summary:'한 문장 연습',youtube_id:'aqz-KE-bpKQ',channel:'Sample',start_sec:0,end_sec:8,level:1,tags:['일상'],script:'[0:01-0:04] I **like** it. | 나는 그게 좋아요.\n[0:04-0:07] I can do it. | 나는 할 수 있어요.',words:['like'],pack:{},sort_order:1,hidden:false}];
  if(animationQA){Object.assign(clips[0],{title:'Mum’s Washing Game · 합성 질문 검증',youtube_id:'kioBK0l8w5w',start_sec:24.5,end_sec:89.5,script:'[0:25-0:28] I **like** it. | 합성 대사\n[0:30-0:34] I can do it. | 합성 대사',pack:{scene:{range:{start:24.5,end:89.5}}}});}
@@ -47,11 +57,11 @@ const bootstrap=({ref,session,user,uid,aid,animationQA,rangeQA,catalogue})=>{
   return new Response(JSON.stringify(data),{status:200,headers:{'content-type':'application/json'}});
  };
 };
-const injection=`(${bootstrap.toString()})(${JSON.stringify({ref,session,user,uid,aid,animationQA,rangeQA,catalogue})})`;
+const injection=`(${bootstrap.toString()})(${JSON.stringify({ref,session,user,uid,aid,animationQA,rangeQA,catalogue,blocked})})`;
 const port=Number(process.env.CLASSROOM_QA_PORT||5272);
 if(process.env.CLASSROOM_BUNDLED_QA==='true'){
- const html=(await readFile('dist/index.html','utf8')).replace('<head>',`<head><script>${injection}</script>`);
- await preview({plugins:[{name:'bundled-classroom-fixture',configurePreviewServer(server){server.middlewares.use((req,res,next)=>{if(req.headers.accept?.includes('text/html')){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(html);}else next();});}}],preview:{host:'127.0.0.1',port,strictPort:true}});
+ let html=await readFile('dist/index.html','utf8');
+ await preview({plugins:[{name:'bundled-classroom-fixture',configurePreviewServer(server){server.middlewares.use(async(req,res,next)=>{if(req.headers.accept?.includes('text/html')){try{html=await readFile('dist/index.html','utf8');}catch{/* Keep the last HTML while a local rebuild replaces dist. */}res.setHeader('Content-Type','text/html; charset=utf-8');res.end(html.replace('<head>',`<head><script>${injection}</script>`));}else next();});}}],preview:{host:'127.0.0.1',port,strictPort:true}});
 }else{
  const server=await createServer({define:{'import.meta.env.VITE_LEARNING_SENSORS_ENABLED':'"false"','import.meta.env.VITE_SUPABASE_URL':'"https://classroom-fixture.supabase.co"','import.meta.env.VITE_SUPABASE_ANON_KEY':'"test-only"'},plugins:[{name:'synthetic-classroom-fixture',transformIndexHtml(){return [{tag:'script',children:injection,injectTo:'head-prepend'}];}}],server:{host:'127.0.0.1',port,strictPort:true}});
  await server.listen();

@@ -9,12 +9,13 @@ import {createWordList} from '../../lib/api';
 import {useToast} from '../../context/ToastContext';
 import SoloCatalogModal from './SoloCatalogModal';
 import type {EpisodeGroupSelection} from '../../lib/animationEpisodeGroup';
+import {useNavigate} from 'react-router-dom';
 
 export default function EpisodeLessonPanel({material,academyId,classId,teacherId,onBack,onSaved,onGroupLesson,onGroupPreview}:{material:EpisodeMaterial;academyId:string;classId:string|null;teacherId?:string;onBack:()=>void;onSaved?:()=>void;onGroupLesson?:(selection:EpisodeGroupSelection)=>void;onGroupPreview?:(selection:EpisodeGroupSelection)=>void}){
-  const {t}=useTranslation();const {notify}=useToast();
+  const {t}=useTranslation();const {notify}=useToast();const navigate=useNavigate();const [worksheetError,setWorksheetError]=useState('');
   const {episode,source,chapters,words}=material;
   const [selectedChapters,setSelectedChapters]=useState(chapters.map((_,index)=>index));
-  const [selectedWords,setSelectedWords]=useState(words.slice(0,4).map(word=>word.id));
+  const [selectedWords,setSelectedWords]=useState(words.map(word=>word.id));
   const [scope,setScope]=useState<'episode'|'chapters'>('episode');
   const [wordChapter,setWordChapter]=useState(0);
   const [minutes,setMinutes]=useState<number>(onGroupLesson?30:10);
@@ -32,11 +33,12 @@ export default function EpisodeLessonPanel({material,academyId,classId,teacherId
   function toggleChapter(index:number){
     const next=selectedChapters.includes(index)?selectedChapters.filter(value=>value!==index):[...selectedChapters,index].sort((a,b)=>a-b);
     setSelectedChapters(next);
-    setSelectedWords(current=>current.filter(id=>words.some(word=>word.id===id&&word.chapterIds.some(index=>next.includes(index)))));
+    // Keep individual choices when a chapter is temporarily excluded or tabs change.
+    setWorksheetError('');
   }
   return <section className="min-w-0 space-y-5 break-words" data-episode-detail={episode.id}>
     <button type="button" onClick={onBack} className="min-h-11 font-bold text-primary">← {t('animationSolo.backEpisodes')}</button>
-    <header><p className="text-sm font-bold text-primary">{source.series}</p><h2 className="mt-1 text-2xl font-bold text-deep-navy">{episode.title}</h2><p className="mt-2 text-sm">{t('animationSolo.episodeDuration',{time:sourceTime(episode.end-episode.start)})}</p>{episode.boundary?.method==='original-video-and-indexed-frames'&&<p className="mt-2 text-sm text-on-surface-variant">{t('animationSolo.boundaryNotice',{seconds:episode.boundary.sampleSeconds})}</p>}{episode.boundary?.revision===2&&<p className="mt-2 text-sm text-on-surface-variant">{t('animationSolo.boundaryVerifiedNotice')}</p>}</header>
+    <header><p className="text-sm font-bold text-primary">{source.series}</p><div className="flex items-center gap-4"><h2 className="mt-1 min-w-0 text-2xl font-bold text-deep-navy">{episode.title}</h2>{onGroupLesson&&<button className="min-h-12 shrink-0 rounded-xl bg-primary px-5 font-bold text-white" onClick={()=>{if(!selectedChapters.length){setWorksheetError('워크시트를 열려면 챕터를 하나 이상 선택해 주세요.');return;}control.current?.pause();const params=new URLSearchParams({episode:episode.id,chapters:JSON.stringify(groupSelection().chapterStarts),words:JSON.stringify(effective.map(w=>w.id))});navigate('/materials/video-worksheet?'+params.toString());}}>워크시트</button>}</div>{worksheetError&&<p role="alert" className="mt-2 text-red-700">{worksheetError}</p>}<p className="mt-2 text-sm">{t('animationSolo.episodeDuration',{time:sourceTime(episode.end-episode.start)})} · 챕터 {chapters.length}개</p>{episode.boundary?.method==='original-video-and-indexed-frames'&&<p className="mt-2 text-sm text-on-surface-variant">{t('animationSolo.boundaryNotice',{seconds:episode.boundary.sampleSeconds})}</p>}{episode.boundary?.revision===2&&<p className="mt-2 text-sm text-on-surface-variant">{t('animationSolo.boundaryVerifiedNotice')}</p>}</header>
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] items-start gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(260px,1fr)]">
       <div className="h-[480px] min-w-0 w-full"><PlainTeachingVideo key={episode.id} videoUrl={`https://www.youtube.com/watch?v=${source.youtubeId}`} title={episode.title} start={episode.start} end={episode.end} simple controlRef={control} chapters={chapters} onReady={()=>setReady(true)} onTime={time=>setNow(time)} onChapterSelect={index=>{setScope('chapters');setWordChapter(index);}}/></div>
       <fieldset className="max-h-[480px] min-w-0 space-y-2 overflow-y-auto rounded-2xl border border-outline-variant bg-white p-4"><legend className="px-1 font-bold">{t('animationSolo.chooseChapters')}</legend>

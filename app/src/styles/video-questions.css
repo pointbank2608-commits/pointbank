@@ -83,3 +83,33 @@
 .animation-review-grid small { display:block;margin-top:8px; }
 .animation-flip { display:block;width:100%;min-height:140px;font-size:clamp(30px,4vw,64px); }
 .vq-editor input[type=checkbox] { width:18px!important;height:18px;display:inline-block;margin-right:8px; }
+.vq-classroom .tv-tool-controls { flex-wrap:wrap;gap:10px; }
+.vq-classroom .tv-tool-controls>.animation-menu { display:flex;flex:0 0 100%;width:100%;flex-wrap:nowrap;gap:8px;overflow-x:auto;padding:4px 0; }
+.vq-classroom .animation-menu button { display:flex;flex:1 0 auto;align-items:center;justify-content:center;gap:8px;min-height:54px;min-width:0;white-space:nowrap;padding:10px 12px;border:2px solid #0866ff;border-radius:8px;background:white;color:#0866ff;font-size:clamp(18px,1.35vw,20px);font-weight:700;line-height:1.25; }
+.vq-classroom .animation-menu button[aria-pressed=true] { background:#0866ff;color:white; }
+.animation-switch { display:inline-flex;align-items:center;width:44px;height:26px;flex-shrink:0;border-radius:20px;padding:3px;background:#8294ac;border:1px solid white; }
+.animation-switch>span { width:18px;height:18px;border-radius:50%;background:white;transform:translateX(0);transition:transform .15s; }
+.animation-switch[data-on=true] { background:#053c94; }
+.animation-switch[data-on=true]>span { transform:translateX(16px); }
+.vq-classroom .tv-tool-controls>.tv-setting-anchor>button,.vq-classroom .tv-tool-controls>button { font-size:18px;min-height:46px;padding:8px 12px; }
+.vq-classroom .tv-main-controls .tv-control { font-size:18px;grid-template-rows:56px 28px;min-height:90px; }
+.vq-classroom .tv-player[data-video-full=true] .animation-menu button { font-size:clamp(24px,1.7vw,28px);min-height:64px; }
+.vq-classroom .tv-player[data-video-full=true] .tv-tool-controls>button,.vq-classroom .tv-player[data-video-full=true] .tv-control { font-size:24px; }
+.animation-activity-panel { width:min(620px,62%);z-index:30;font-size:20px; }
+.animation-activity-panel>header { display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:-20px;background:white;z-index:3;padding-bottom:10px; }
+.animation-activity-panel h2 { font-weight:700; }
+.animation-activity-panel button,.animation-peek button { min-height:46px;padding:8px 12px;border:1px solid #0866ff;color:#164290;background:white;border-radius:8px; }
+.animation-close { white-space:nowrap;min-height:46px;padding:8px 12px!important;border:2px solid #0866ff!important;border-radius:8px;background:white!important;color:#164290!important;font-weight:700; }
+.animation-peek>.animation-close { position:absolute;right:16px;top:16px;z-index:3; }
+.animation-scene-actions { position:absolute;left:16px;bottom:16px;display:flex;align-items:center;flex-wrap:wrap;gap:12px;background:#ffffffed;color:#173456;padding:10px;border-radius:10px; }
+.animation-editor-panel { position:absolute;inset:0;z-index:35;background:#fff;color:#173456;overflow:auto;border:2px solid #0866ff;border-radius:12px; }
+.animation-editor-panel .vq-editor { width:100%; }
+.animation-editor-panel .vq-editor>header { position:sticky;top:-20px;background:white;z-index:4;padding:10px 0; }
+.vq-classroom .tv-player[data-video-full=true] .animation-activity-panel { max-height:calc(100% - 24px); }
+.vq-classroom .tv-player[data-video-full=true] .tv-video { min-height:200px; }
+@media(max-width:650px){.animation-activity-panel{width:calc(100% - 16px);font-size:18px;}.animation-menu button{font-size:18px;}.animation-editor-panel .vq-grid{grid-template-columns:1fr;}}
+.classroom-dialog:has([data-group-episode-preview]) { width:min(1480px,calc(100vw - 24px));max-width:calc(100vw - 24px); }
+[data-group-episode-preview] { display:flex;flex-direction:column;height:calc(100dvh - 48px);min-height:0; }
+[data-group-preview-slide] { flex:1;height:auto;min-height:0; }
+[data-group-preview-slide] .vq-classroom,[data-group-preview-slide] .vq-player,[data-group-preview-slide] .tv-player { height:100%; }
+[data-group-preview-slide] .vq-classroom .tv-player .tv-video { flex:1;height:auto;min-height:160px; }

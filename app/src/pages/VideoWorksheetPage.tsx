@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useVideoClips, type VideoClip } from '../lib/videoClips';
 import {animationEpisodeLibrary} from '../lib/animationEpisodes';
-import {animationEpisodeClip} from '../lib/animationSession';
+import {animationSelectedClip} from '../lib/animationSession';
 import { loadWordBank } from '../lib/wordBankCache';
 import { animationCrossword, animationPrintActivities, type PaperItem } from '../lib/animationPrint';
 import { chunk, makeRng, shuffled } from '../lib/worksheetGenerators';
@@ -14,7 +14,7 @@ import '../styles/video-worksheet.css';
 
 type Row = PaperItem & { group: string; groupTitle: string; type: string; title: string; instruction: string; number: number; matching?: PaperItem[]; bank?: string[] };
 const defaults = ['study','questionChoice','grammarPractice'];
-const minimumFive = new Set(['scene','trueFalse','questionHint','questionFull','infer','grammarPractice','substitute','create','wordContext','readCircle']);
+const minimumFive = new Set<string>();
 const matchTypes = ['pictureMatch','meaningMatch'];
 const printOptions = {letters:1,bank:true,chunks:true,pictureClues:false,choiceCount:3,sentenceBank:true};
 
@@ -198,8 +198,13 @@ export default function VideoWorksheetPage() {
   const {clips,error} = useVideoClips();
   const episodeId=params.get('episode'),clipId=params.get('clip');
   const material=useMemo(()=>episodeId&&clips?animationEpisodeLibrary(clips).episodes.find(m=>m.episode.id===episodeId):undefined,[clips,episodeId]);
-  const clip=useMemo(()=>material?animationEpisodeClip(material):clips?.find(item=>item.id===clipId&&!item.pack?.phonicsSong),[material,clips,clipId]);
+  const chapterParam=params.get('chapters'),wordParam=params.get('words');
+  const clip=useMemo(()=>{
+    if(!material)return clips?.find(item=>item.id===clipId&&!item.pack?.phonicsSong);
+    if(chapterParam===null)return animationSelectedClip(material,material.chapters.map(c=>c.start),material.words.map(w=>w.id));
+    try{const chapters=JSON.parse(chapterParam),words=JSON.parse(wordParam??'[]');if(!Array.isArray(chapters)||!Array.isArray(words)||!chapters.some(s=>material.chapters.some(c=>c.start===s)))return undefined;return animationSelectedClip(material,chapters,words);}catch{return undefined;}
+  },[material,clips,clipId,chapterParam,wordParam]);
   if (error) return <p role="alert">{t('readyMedia.noWorksheet')}</p>;
   if (!clips) return <p>{t('common.loading')}</p>;
-  return clip ? <Worksheet key={episodeId??clip.id} clip={clip} /> : <p role="alert">{t('readyMedia.noWorksheet')}</p>;
+  return clip ? <><p className="no-print">{material&&`선택한 챕터 ${chapterParam?JSON.parse(chapterParam).length:material.chapters.length}개 · 단어 ${clip.pack.words?.length??0}개`}</p><Worksheet key={(episodeId??clip.id)+(chapterParam??'')+(wordParam??'')} clip={clip} /></> : <p role="alert">챕터 선택을 확인해 주세요. {t('readyMedia.noWorksheet')}</p>;
 }

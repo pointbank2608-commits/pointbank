@@ -1,8 +1,10 @@
 import type {EpisodeMaterial} from './animationEpisodes';
 import {lessonBoard,lessonTitleSlide} from './lessonCanvas';
 import type {FullCardItem,LessonSlide,VideoSlide} from './types';
+import {animationSelectedClip} from './animationSession';
+import {chapterTeaching} from '../data/animationChapterTeaching';
 
-export type EpisodeGroupSelection={episodeId:string;chapterStarts:number[];wordIds:string[];minutes:number};
+export type EpisodeGroupSelection={episodeId:string;chapterStarts:number[];wordIds:string[];minutes:number;timedQuestions?:import('./videoQuestions').VideoQuestion[]};
 const stamp=(seconds:number)=>`${Math.floor(seconds/60)}:${(seconds%60).toFixed(3).padStart(6,'0')}`;
 
 /** Editable classroom draft from the shared reviewed catalogue. No writes. */
@@ -22,8 +24,12 @@ export function episodeGroupLesson(material:EpisodeMaterial,selection:EpisodeGro
     const start=run[0].start,end=run.at(-1)!.end;
     const lines=material.lines.filter(line=>line.start>=start&&line.end<=end);
     const script=lines.map(line=>`[${stamp(line.start)}-${stamp(line.end)}] ${line.speaker?line.speaker+': ':''}${line.en}${line.ko?' | '+line.ko:''}`).join('\n');
+    const selectedClip=animationSelectedClip(material,run.map(c=>c.start),selection.wordIds);
     const video:VideoSlide={id:crypto.randomUUID(),kind:'video',title:episode.title,clipId:source.rows[0].id,videoUrl:`https://www.youtube.com/watch?v=${source.youtubeId}`,startSec:start,endSec:end,
       source:script,chapters:run.map(chapter=>({title:chapter.title,start:chapter.start,end:chapter.end})),
+      timedQuestions:selection.timedQuestions?.filter(q=>q.at>=start&&q.at<=end),
+      animationSession:{source:script,words:cards.map(w=>({word:w.word,meaning:w.meaning,imageUrl:w.imageUrl??undefined})),originalUrl:`https://www.youtube.com/watch?v=${source.youtubeId}`,originalStart:episode.start,originalEnd:episode.end,
+       expression:selectedClip.pack.scene?.expression,expressions:material.chapters.flatMap((c,i)=>run.some(r=>r.start===c.start)&&chapterTeaching[episode.id]?.chapters[i]?.expression?[chapterTeaching[episode.id].chapters[i].expression!]:[]).concat(selectedClip.pack.scene?.expression?[selectedClip.pack.scene.expression]:[]),practiceSentences:[...new Set([...(selectedClip.pack.scene?.scrambleSentences??[]),...selectedClip.pack.words!.map(w=>w.example).filter(Boolean)])]},
       animationEpisode:{id:episode.id,revision:episode.boundary?.revision??1,start:episode.start,end:episode.end}};
     slides.push(video,lessonBoard('상황과 말하는 뜻을 이야기해요',['누가 무엇을 원했나요?','상대방은 어떻게 반응했나요?','말하는 뜻을 우리말로 설명해 보세요.'],4,'whiteboard'));
     if(lines.length)slides.push({id:crypto.randomUUID(),kind:'shadow',title:episode.title,videoUrl:video.videoUrl,source:script,flow:'manual',repeat:1,speed:1,subtitle:'both',roleTeams:0,clipId:video.clipId});

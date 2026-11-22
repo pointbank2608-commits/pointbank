@@ -3,6 +3,7 @@ import type { AnimationExpression, VideoSlide } from './types';
 import { parseShadowText } from './shadowLines';
 import type { EpisodeMaterial } from './animationEpisodes';
 import { sceneQuestions, sceneTeaching } from './animationScene';
+import {chapterTeaching} from '../data/animationChapterTeaching';
 
 /** A lesson owns its selection; catalog chapters remain immutable. */
 export function animationEpisodeWords(chapters: VideoClip[], saved: VideoSlide['animationSession']) {
@@ -15,7 +16,9 @@ export function animationEpisodeSource(chapters: VideoClip[]) {
 }
 
 export function animationPracticeLines(source: string, start = 0, end = Infinity) {
-  const unique = new Map(parseShadowText(source)
+  // Untimed text must never acquire the parser's synthetic 3-second timing.
+  const timed=source.split(/\r?\n/).filter(line=>/^\s*\[\d{1,3}:\d{2}(?:\.\d+)?\s*[-–—]\s*\d{1,3}:\d{2}/.test(line)).join('\n');
+  const unique = new Map(parseShadowText(timed)
     .filter(line => line.start >= start && line.end <= end)
     .map(line => [`${line.start}|${line.end}|${line.en}`, line]));
   return [...unique.values()].sort((a, b) => a.start - b.start || a.end - b.end);
@@ -52,4 +55,22 @@ export function animationEpisodeClip(material:EpisodeMaterial):VideoClip {
         print:Object.assign({},...teaching.map(t=>t.print)),questionEvidence:Object.assign({},...teaching.map(t=>t.questionEvidence)),
         choices:Object.assign({},...teaching.map(t=>t.choices)),definitions:Object.assign({},...teaching.map(t=>t.definitions)),
         wordPictures:Object.assign({},...teaching.map(t=>t.wordPictures)),scrambleSentences:[...new Set(teaching.flatMap(t=>t.scrambleSentences??[]))]}}};
+}
+
+/** One selection snapshot feeds both classroom activities and the real print renderer. */
+export function animationSelectedClip(material:EpisodeMaterial,chapterStarts:number[],wordIds:string[]):VideoClip {
+ const selected=material.chapters.filter(c=>chapterStarts.includes(c.start));
+ const inSelection=(time:number)=>selected.some(c=>time>=c.start&&time<c.end);
+ const clip=animationEpisodeClip(material);
+ const rows=material.source.rows.filter(row=>selected.some(c=>row.start_sec<c.end&&row.end_sec>c.start));
+ const reviewed=chapterTeaching[material.episode.id];
+ const chapterData=material.chapters.flatMap((c,i)=>chapterStarts.includes(c.start)&&reviewed?.chapters[i]?[reviewed.chapters[i]]:[]);
+ const questions=[...rows.flatMap(row=>selected.flatMap(c=>sceneQuestions(row,{start:c.start,end:c.end}))),...chapterData.flatMap(c=>c.questions.map(({q,a})=>({q,a})))];
+ const expressions=[...chapterData.flatMap(c=>c.expression?[c.expression]:[]),...rows.flatMap(row=>{const e=sceneTeaching(row).expression;return e?[e]:[];})];
+ const words=material.words.filter(w=>wordIds.includes(w.id)&&w.chapterIds.some(i=>chapterStarts.includes(material.chapters[i].start)));
+ const lines=material.lines.filter(l=>inSelection(l.start)&&selected.some(c=>l.start>=c.start&&l.end<=c.end));
+ return {...clip,start_sec:selected[0]?.start??material.episode.start,end_sec:selected.at(-1)?.end??material.episode.end,script:animationSourceText(lines),
+  pack:{words:words.map(w=>({word:w.word,meaning:w.meaning,example:w.example,time:w.start,imageUrl:w.imageUrl??undefined})),questions:[...new Map(questions.map(q=>[q.q,q])).values()],scene:{range:{start:selected[0]?.start??0,end:selected.at(-1)?.end??0},
+   expression:expressions[0]?{...expressions[0],explanation:expressions[0].explanation??''}:undefined,choices:Object.assign({},...rows.map(row=>sceneTeaching(row).choices),...chapterData.map(c=>Object.fromEntries(c.questions.map(q=>[q.q,q.choices])))),
+   scrambleSentences:lines.map(l=>l.en),print:Object.assign({},...rows.map(row=>sceneTeaching(row).print)),wordPictures:Object.assign({},...rows.map(row=>sceneTeaching(row).wordPictures))}}};
 }

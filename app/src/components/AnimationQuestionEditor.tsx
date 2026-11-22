@@ -15,7 +15,7 @@ import PlainTeachingVideo, { type TeachingVideoControl } from './PlainTeachingVi
 import TimedVideoLesson from './TimedVideoLesson';
 import '../styles/video-questions.css';
 
-export default function AnimationQuestionEditor({ clip, onClose, initialSlide, onSave }: { clip: VideoClip; onClose: () => void; initialSlide?:VideoSlide; onSave?:(slide:VideoSlide)=>Promise<void> }) {
+export default function AnimationQuestionEditor({ clip, onClose, initialSlide, onSave, embedded=false, initialAt }: { clip: VideoClip; onClose: () => void; initialSlide?:VideoSlide; onSave?:(slide:VideoSlide)=>Promise<void>;embedded?:boolean;initialAt?:number }) {
   const { academy, profile } = useAuth();
   const player = useRef<TeachingVideoControl | null>(null);
   const range = learningRange(clip);
@@ -23,8 +23,8 @@ export default function AnimationQuestionEditor({ clip, onClose, initialSlide, o
   const [slide, setSlide] = useState<VideoSlide>(() => initialSlide ?? ({ id: crypto.randomUUID(), kind: 'video', clipId: clip.id, title: clip.title, videoUrl: `https://www.youtube.com/watch?v=${clip.youtube_id}`, startSec: range?.start ?? 0, endSec: range?.end, timedQuestions: [], questionLesson: true, questionVersion: 1 }));
   const [videoReady,setVideoReady]=useState(false);
   const [loading, setLoading] = useState(!initialSlide), [busy, setBusy] = useState(false), [error, setError] = useState('');
-  const [draft, setDraft] = useState<VideoQuestion | null>(null);
-  const [at, setAt] = useState('');
+  const [draft, setDraft] = useState<VideoQuestion | null>(()=>initialAt===undefined?null:{id:crypto.randomUUID(),kind:'spoken',at:initialAt,prompt:''});
+  const [at, setAt] = useState(()=>initialAt===undefined?'':formatQuestionTime(questionTimeInClip(initialAt,initialSlide?.startSec)));
   const [draftError, setDraftError] = useState('');
   const [preview, setPreview] = useState<VideoQuestion | null>(null), [run, setRun] = useState(false);
   const saving = useRef(false);
@@ -81,13 +81,13 @@ export default function AnimationQuestionEditor({ clip, onClose, initialSlide, o
     if (relative <= (slide.endSec ?? Infinity) - (slide.startSec ?? 0)) { player.current?.pause(); player.current?.seek(questionTimeInVideo(relative, slide.startSec)); }
   };
   const timeInput = <label>질문 시점<div className="vq-time"><input aria-label="질문 시점" aria-invalid={!!timeError} aria-describedby={timeError ? 'vq-time-error' : undefined} placeholder="00:27.00" value={at} onChange={e => changeTime(e.target.value)}/><button type="button" aria-label="질문 시점 −1초" onClick={() => adjustTime(-1)}>−1초</button><button type="button" aria-label="질문 시점 +1초" onClick={() => adjustTime(1)}>+1초</button></div></label>;
-  return <AccessibleDialog label="영상 중간 질문 편집" onClose={() => { if (!busy) onClose(); }}><div className="vq-editor">
-    <header><h2>{clip.title} · 영상 중간 질문 편집</h2><button disabled={busy} onClick={onClose}>닫기</button></header>
+  const content=<div className="vq-editor">
+    <header><h2>{clip.title} · 영상 중간 질문 편집</h2><button className="animation-close" disabled={busy} onClick={onClose}>× 닫기</button></header>
     {loading && <p role="status">편집본을 불러오고 있어요.</p>}
     {error && <p role="alert">{error}</p>}
     <div className="vq-grid"><div>
-      {!loading && <div className="vq-player"><PlainTeachingVideo key={`${slide.startSec}:${slide.endSec}`} videoUrl={slide.videoUrl} start={slide.startSec} end={slide.endSec} title={clip.title} source={source} simple settingsLabel="수업 설정" onReady={()=>setVideoReady(true)} controlRef={player} onSeek={seekDraft} questionMarkers={questions} onQuestionMarker={openSaved}/></div>}
-      <button disabled={loading || busy || !videoReady} className="vq-primary" onClick={() => { const time = player.current?.getTime() ?? slide.startSec ?? 0; player.current?.pause(); open({ id: crypto.randomUUID(), kind: 'spoken', at: Math.round(time * 100) / 100, prompt: '' }); }}>여기에 질문 넣기</button>
+      {!loading && <div className="vq-player"><PlainTeachingVideo key={`${slide.startSec}:${slide.endSec}`} videoUrl={slide.videoUrl} start={slide.startSec} end={slide.endSec} title={clip.title} source={source} simple settingsLabel="설정" onReady={()=>{setVideoReady(true);if(initialAt!==undefined)player.current?.seek(initialAt);}} controlRef={player} onSeek={seekDraft} questionMarkers={questions} onQuestionMarker={openSaved}/></div>}
+      <button disabled={loading || busy || !videoReady} className="vq-primary" onClick={() => { const time = player.current?.getTime() ?? slide.startSec ?? 0; player.current?.pause(); open({ id: crypto.randomUUID(), kind: 'spoken', at: Math.round(time * 100) / 100, prompt: '' }); }}>{embedded?'현재 시점에 질문 추가':'여기에 질문 넣기'}</button>
       <nav aria-label="저장된 질문 타임라인" className="vq-timeline">{questions.map((q, i) => <button key={q.id} disabled={busy} onClick={() => openSaved(q.id)}>{questionNumber(i)} {formatQuestionTime(questionTimeInClip(q.at, slide.startSec))} · {questionKinds[q.kind].split(' · ')[0]}</button>)}</nav>
       <div className="vq-actions"><button disabled={!slide.timedQuestions?.length || busy || !!draft} onClick={() => { player.current?.pause(); setRun(true); }}>저장한 질문으로 수업 재생</button>{lesson && <Link to="/curriculum">내 수업에서 편집본 열기</Link>}</div>
       <p role="status">{onSave ? '현재 수업 편집본의 질문을 편집하고 있어요.' : lesson ? '이 영상의 질문은 내 수업의 편집본에 저장돼요.' : '첫 질문을 저장하면 내 수업에 영상 편집본이 만들어져요.'}</p>
@@ -111,5 +111,6 @@ export default function AnimationQuestionEditor({ clip, onClose, initialSlide, o
       </form>}
     </div></div>
     {(preview || run) && <AccessibleDialog label={preview ? '이 문항 미리보기' : '영상 질문 수업'} onClose={() => { setPreview(null); setRun(false); }}><div className="vq-editor"><button onClick={() => { setPreview(null); setRun(false); }}>편집으로 돌아가기</button><TimedVideoLesson slide={slide} source={source} previewQuestion={preview ?? undefined}/></div></AccessibleDialog>}
-  </div></AccessibleDialog>;
+  </div>;
+  return embedded?content:<AccessibleDialog label="영상 중간 질문 편집" onClose={()=>{if(!busy)onClose();}}>{content}</AccessibleDialog>;
 }

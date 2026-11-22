@@ -217,7 +217,7 @@ const ko = {
     saveFailed: "저장하지 못했어요. 입력한 내용은 그대로 있어요. 연결을 확인하고 다시 저장해 주세요.",
     retrySave: "다시 저장하기",
     removeWord: "{{word}} 삭제",
-    launch: "이 단어장으로 게임하기",
+    launch: "게임하기",
     launchSentence: "이 문장 모음으로 게임하기",
     launchTitle: "수업 게임 시작하기",
     launchHint: "단어를 다시 입력할 필요 없어요. 반과 게임을 고르면 수업용 게임이 저장돼요.",

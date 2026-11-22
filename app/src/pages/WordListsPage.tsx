@@ -873,7 +873,7 @@ export default function WordListsPage() {
               className={`bg-surface-container-lowest rounded-xl p-4 shadow-card ${g ? 'ml-4 border-l-4 border-primary/30' : ''}`}
             >
               {/* 제목은 한 줄로 줄이고(길면 …), "게임하기" 버튼은 늘 같은 자리에 맞춘다 */}
-              <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_12.5rem_auto] lg:items-center">
+              <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 xl:grid-cols-[minmax(0,1fr)_auto_auto]">
                 <button
                   type="button"
                   onClick={() => setOpenId((prev) => (prev === list.id ? null : list.id))}
@@ -895,12 +895,12 @@ export default function WordListsPage() {
                 <span className="flex">
                   {list.items.length > 0 && <button type="button"
                     onClick={() => { setLaunchError(false); setLaunchListId(list.id); }}
-                    className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-center font-semibold text-on-primary hover:bg-primary-container">
+                    className="flex min-h-11 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-primary px-4 py-2 text-center font-semibold text-on-primary hover:bg-primary-container">
                     <span aria-hidden className="material-symbols-outlined">play_circle</span>
                     {t(wordListKindOf(list) === 'sentence' ? 'classroomUx.launchSentence' : 'classroomUx.launch')}
                   </button>}
                 </span>
-                <span className="flex flex-wrap items-center gap-3">
+                <span className="col-span-2 flex flex-wrap items-center gap-3 xl:col-span-1">
                   {list.items.length > 0 && wordListKindOf(list) === 'word' && (
                     <button
                       type="button"
