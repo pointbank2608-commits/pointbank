@@ -34,6 +34,10 @@
 }
 .ad-balloon:is(:hover,:focus-visible):not(:disabled) { animation-play-state:paused; }
 .ad-balloon:is(:hover,:focus-visible):not(:disabled) .ad-balloon-art { filter:drop-shadow(0 0 5px #fff9) drop-shadow(2px 7px 4px #37557230); }
+.ad-game .ad-picture-balloon { width:min(96cqw,calc(96cqh * 400 / 270)); }
+.ad-game .ad-picture-balloon>span:last-of-type {
+  left:12%;right:12%;top:41%;font-size:clamp(16px,18cqw,72px);
+}
 @container balloon-scene (max-width:480px) {
   .ad-balloonpop .ad-sky { gap:10px; }
 }

@@ -83,7 +83,7 @@ function Vocabulary({type,c,e,r}:{type:AdventureType;c:AdventureConfig;e:Adventu
       {r.choices.map((w,i)=>{
         const reacting = picked === w.id && (e.busy || (fishing && e.phase === 'review'));
         const feedback = reacting ? (fishing ? `ad-fish-${e.reaction}` : e.reaction) : '';
-        return <div className="ad-vocab-slot" key={w.id}><button data-word={w.word} disabled={e.busy} className={`ad-word ${fishing?'ad-fish':'ad-balloon'} ${feedback}`} style={{'--color':['#ff9abd','#ffdf70','#94dec8','#a4c9ff','#c4a3ef','#ffa981'][i],'--delay':`${i*-.8}s`} as CSSProperties} onClick={event=>choose(w.id,event.currentTarget)}>{fishing?<FishArt index={i}/>:<BalloonArt index={i}/>}<GameFitText text={w.word} fit="block" singleLine/></button>{!fishing&&picked===w.id&&e.reaction==='correct'&&<span className="ad-sparkles">✦ ★ ✨</span>}</div>;
+        return <div className="ad-vocab-slot" key={w.id}><button data-word={w.word} disabled={e.busy} className={`ad-word ${fishing?'ad-fish':`ad-balloon ${r.imageUrl?'ad-picture-balloon':''}`} ${feedback}`} style={{'--color':['#ff9abd','#ffdf70','#94dec8','#a4c9ff','#c4a3ef','#ffa981'][i],'--delay':`${i*-.8}s`} as CSSProperties} onClick={event=>choose(w.id,event.currentTarget)}>{fishing?<FishArt index={i}/>:<BalloonArt index={i} wide={!!r.imageUrl}/>}<GameFitText text={w.word} fit="block" singleLine/></button>{!fishing&&picked===w.id&&e.reaction==='correct'&&<span className="ad-sparkles">✦ ★ ✨</span>}</div>;
       })}
     </div>{streak&&<span className="ad-gold">{fishing?<><img src="/skins/adventure/goldfish.webp" alt=""/> 황금 물고기 보너스!</>:'★ 연속 정답! 반짝반짝 별 보너스!'}</span>}<p className="ad-control-help">정답을 누르세요. Tab으로 선택하고 Enter로도 답할 수 있어요.</p></>;
 }

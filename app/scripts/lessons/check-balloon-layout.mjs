@@ -41,12 +41,16 @@ try {
    const s=document.querySelector('[data-game-stage]').getBoundingClientRect(),p=document.querySelector('.ad-prompt').getBoundingClientRect();
    return {viewport:innerWidth+'x'+innerHeight,prompt:p.height,options:[...document.querySelectorAll('.ad-balloon')].map(e=>{
     const r=e.getBoundingClientRect(),label=e.querySelector('.game-fit-inner').getBoundingClientRect(),top=document.elementFromPoint(r.left+r.width/2,r.top+r.height*.35);
-    return {text:e.dataset.word,h:r.height,inside:r.left>=s.left-2&&r.right<=s.right+2&&r.top>=s.top-2&&r.bottom<=s.bottom+2,uncovered:!!top&&e.contains(top),labelFits:label.left>=r.left-2&&label.right<=r.right+2};
+    return {text:e.dataset.word,w:r.width,h:r.height,labelHeight:label.height,inside:r.left>=s.left-2&&r.right<=s.right+2&&r.top>=s.top-2&&r.bottom<=s.bottom+2,uncovered:!!top&&e.contains(top),labelFits:label.left>=r.left-2&&label.right<=r.right+2};
    })};
   });
   assert.equal(data.options.length,count);
   for(const o of data.options){assert(o.inside,'Clipped '+JSON.stringify(o));assert(o.uncovered,'Covered '+o.text);assert(o.labelFits,'Clipped label '+o.text);}
   if(count===4&&!mode.startsWith('picture')&&data.viewport==='3440x1300')assert(data.options[0].h>data.prompt*2,'Balloons too small');
+  if(count===4&&mode.startsWith('picture')&&data.viewport==='3440x1300'){
+   assert(data.options.every(o=>o.w>400),'Picture balloons too narrow for classroom display');
+   assert(data.options.every(o=>o.labelHeight>55),'Picture choice words too small for classroom display');
+  }
   results.push({count,mode,...data});console.log('PASS choices',data.viewport,mode,count);
  }
  async function outcome(selector){
