@@ -450,6 +450,7 @@ export interface GameTemplateConfig {
   lightningChar?: string;
   /** 컵 속 친구 찾기 전용: 팀 수(1~4)·컵 수(3~5)·섞는 속도(slow|normal|fast)·판 수(1~30) */
   shuffleTeams?: number;
+  shuffleMode?: 'none' | 'solo' | 'team';
   shuffleCups?: number;
   shuffleSpeed?: string;
   shuffleRounds?: number;

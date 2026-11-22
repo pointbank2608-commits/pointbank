@@ -12,6 +12,8 @@ import {
   type ShuffleRound, type ShuffleScore, type ShuffleSpeed,
 } from '../lib/shuffleFind';
 import type { GameItem } from '../lib/types';
+import type { GameParticipant, GameParticipantMode } from '../lib/gameParticipants';
+import GameFitText from './GameFitText';
 
 /**
  * 컵 속 친구 찾기(2026-10-20) — PPT "Pokemon Shuffle" 방식만 참고(그림·소리는 우리 것).
@@ -25,6 +27,8 @@ interface Props {
   cups: number;
   speed: ShuffleSpeed;
   rounds: number;
+  mode?: GameParticipantMode;
+  players?: GameParticipant[];
 }
 
 type Phase = 'ready' | 'show' | 'hide' | 'shuffle' | 'pick' | 'reveal' | 'done';
@@ -40,9 +44,13 @@ const STYLE = `
 
 const TEAM_COLORS = ['#ef5b5b', '#3b82f6', '#22a559', '#f59e0b'];
 
-export default function ShuffleFind({ items, teams, cups: wantCups, speed, rounds }: Props) {
+export default function ShuffleFind({ items, teams, cups: wantCups, speed, rounds, mode = teams === 1 ? 'solo' : 'team', players: givenPlayers }: Props) {
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
+  const players = givenPlayers ?? (mode === 'none' ? [] : mode === 'solo' ? [{id:'solo',label:t('gameTelepathy.me')}] : Array.from({length:teams},(_,i)=>({id:`team-${i}`,label:t('gameShuffle.teamLabel',{n:i+1})})));
+  const playerKey = players.map(player => player.id).join(',');
+  const playerCount = Math.max(1, players.length);
+  const showScores = mode !== 'none' && players.length > 0;
   const cups = usableCups(items.length, wantCups);
   const itemKey = items.map((i) => i.id).join(',');
   const centers = useMemo(() => slotCenters(cups), [cups]);
@@ -59,7 +67,7 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
   const [picked, setPicked] = useState<number | null>(null);
   const [found, setFound] = useState<boolean | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [score, setScore] = useState<ShuffleScore>({ scores: Array(Math.max(1, teams)).fill(0), turn: 0 });
+  const [score, setScore] = useState<ShuffleScore>({ scores: Array(playerCount).fill(0), turn: 0 });
   const [turnPlayed, setTurnPlayed] = useState(0);
   const deck = useRef<number[]>([]);
   const prevAnimal = useRef<string | undefined>(undefined);
@@ -86,12 +94,13 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
     setPicked(null);
     setFound(null);
     setShowAnswer(false);
-    setScore({ scores: Array(Math.max(1, teams)).fill(0), turn: 0 });
+    setScore({ scores: Array(playerCount).fill(0), turn: 0 });
+    setTurnPlayed(0);
   }
   useEffect(() => {
     resetAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemKey, cups, teams, rounds]);
+  }, [itemKey, cups, playerKey, mode, rounds]);
 
   const slotOfCup = (cup: number) => cupAtSlot.indexOf(cup);
 
@@ -157,7 +166,7 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
     setFound(hit);
     setLifted([cupAtSlot[slot]]);
     setPhase('reveal');
-    setScore((s) => scoreRound(s, hit));
+    if (showScores) setScore((s) => scoreRound(s, hit));
     setTurnPlayed(score.turn);
     playSfx(hit ? GAME_SFX.shufflefind.hit : GAME_SFX.shufflefind.miss);
     if (!hit) {
@@ -203,7 +212,7 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
           : [],
   );
 
-  useNativeGameTurn({current:t('gameShuffle.teamLabel',{n:score.turn+1}),next:t('gameShuffle.teamLabel',{n:(score.turn+1)%Math.max(1,teams)+1}),index:score.turn,total:Math.max(1,teams),enabled:items.length>0&&phase!=='done'});
+  useNativeGameTurn({current:players[score.turn%playerCount]?.label??'',next:players[(score.turn+1)%playerCount]?.label??'',index:score.turn%playerCount,total:playerCount,enabled:showScores&&items.length>0&&phase!=='done'});
   if (items.length === 0) {
     return (
       <div className="rounded-xl border-2 border-dashed border-outline-variant px-5 py-12 text-center text-on-surface-variant">
@@ -227,11 +236,11 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
               ? t('gameShuffle.pickPrompt')
               : phase === 'reveal'
                 ? found
-                  ? t('gameShuffle.found')
+                  ? t(showScores ? 'gameShuffle.found' : 'gameShuffle.foundUnscored')
                   : t('gameShuffle.missed')
                 : '';
-  const ranking = rankTeams(score.scores);
-  const solo = score.scores.length === 1;
+  const ranking = rankTeams(players.map((_,i)=>score.scores[i]??0));
+  const solo = players.length === 1;
   const hitCount = score.scores[0] ?? 0;
 
   return (
@@ -240,25 +249,26 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
 
       {/* 팀 점수 */}
       <div className="mb-3 flex flex-wrap items-center justify-center gap-2" aria-label={t('gameShuffle.scoreboard')}>
-        {solo ? (
-          <div className="rounded-full bg-white px-4 py-1.5 font-bold text-deep-navy shadow">{t('gameShuffle.soloScore', { n: hitCount, total: Math.max(round - (phase === 'reveal' || phase === 'done' ? 0 : 1), 0) })}</div>
+        {showScores && (solo ? (
+          <div data-shuffle-score={players[0].id} className="rounded-full bg-white px-4 py-1.5 font-bold text-deep-navy shadow">{players[0].label} · {t('gameShuffle.soloScore', { n: hitCount, total: Math.max(round - (phase === 'reveal' || phase === 'done' ? 0 : 1), 0) })}</div>
         ) : (
-          score.scores.map((s, i) => {
+          players.map((player, i) => {
             const active = phase === 'reveal' ? i === turnPlayed : i === score.turn;
             return (
               <div
-                key={i}
+                key={player.id}
+                data-shuffle-score={player.id}
                 className={`flex items-center gap-1.5 rounded-full border-2 px-3 py-1 font-bold shadow ${active ? 'bg-white text-deep-navy' : 'bg-white/70 text-on-surface-variant'}`}
-                style={{ borderColor: active ? TEAM_COLORS[i] : 'transparent' }}
+                style={{ borderColor: active ? TEAM_COLORS[i%TEAM_COLORS.length] : 'transparent' }}
               >
-                <span className="inline-block h-3 w-3 rounded-full" style={{ background: TEAM_COLORS[i] }} aria-hidden />
-                <span>{t('gameShuffle.teamLabel', { n: i + 1 })}</span>
-                <span className="tabular-nums">{t('gameShuffle.points', { n: s })}</span>
+                <span className="inline-block h-3 w-3 rounded-full" style={{ background: TEAM_COLORS[i%TEAM_COLORS.length] }} aria-hidden />
+                <span>{player.label}</span>
+                <span className="tabular-nums">{t('gameShuffle.points', { n: score.scores[i]??0 })}</span>
                 {active && phase !== 'reveal' && phase !== 'ready' && <span className="text-xs text-primary">{t('gameShuffle.turnMark')}</span>}
               </div>
             );
           })
-        )}
+        ))}
         <div className="rounded-full bg-white/80 px-3 py-1 text-sm font-bold text-on-surface-variant shadow">{t('gameShuffle.roundOf', { n: Math.max(round, 1), total: rounds })}</div>
       </div>
 
@@ -337,21 +347,17 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
           <div className="absolute inset-0 z-[6] flex flex-col items-center justify-center gap-[1.4cqw] bg-white/90 p-[3cqw] text-center">
             <img src="/skins/lightning/trophy.webp" alt="" className="h-[14cqw] w-auto" />
             <div className="font-extrabold text-deep-navy" style={{ fontSize: 'clamp(20px, 4cqw, 52px)' }}>{t('gameShuffle.resultTitle')}</div>
-            {solo ? (
-              <div className="font-bold text-on-surface" style={{ fontSize: 'clamp(16px, 2.8cqw, 36px)' }}>{t('gameShuffle.soloResult', { n: hitCount, total: rounds })}</div>
+            {showScores && (solo ? (
+              <div data-shuffle-result={players[0].id} className="font-bold text-on-surface" style={{ fontSize: 'clamp(16px, 2.8cqw, 36px)' }}>{players[0].label} · {t('gameShuffle.soloResult', { n: hitCount, total: rounds })}</div>
             ) : (
-              <ol className="space-y-1">
+              <ol className="grid w-full min-w-0 gap-x-4 gap-y-1" style={{gridTemplateColumns:`repeat(${Math.max(1,Math.ceil(ranking.length/5))},minmax(0,1fr))`}}>
                 {ranking.map((r) => (
-                  <li key={r.team} className="flex items-center justify-center gap-2 font-bold text-deep-navy" style={{ fontSize: 'clamp(15px, 2.6cqw, 34px)' }}>
-                    <span className="w-8 text-center">{r.rank}</span>
-                    <span className="inline-block h-3 w-3 rounded-full" style={{ background: TEAM_COLORS[r.team] }} aria-hidden />
-                    <span>{t('gameShuffle.teamLabel', { n: r.team + 1 })}</span>
-                    <span className="tabular-nums">{t('gameShuffle.points', { n: r.score })}</span>
-                    {r.rank === 1 && <span aria-hidden>🏆</span>}
+                  <li key={players[r.team].id} data-shuffle-result={players[r.team].id} className="flex min-w-0 items-center justify-center gap-2 font-bold text-deep-navy" style={{ fontSize: 'clamp(15px, 2.6cqw, 34px)' }}>
+                    <GameFitText text={`${r.rank===1?'🏆 ':''}${r.rank}. ${players[r.team].label} · ${t('gameShuffle.points',{n:r.score})}`} fit="block" singleLine/>
                   </li>
                 ))}
               </ol>
-            )}
+            ))}
             <button type="button" onClick={resetAll} className={`${btn} bg-primary`}>{t('gameShuffle.playAgain')}</button>
           </div>
         )}

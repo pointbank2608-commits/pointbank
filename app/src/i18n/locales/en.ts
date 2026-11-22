@@ -1814,6 +1814,7 @@ const en: Ko = {
     shuffling: "The cups are shuffling! Keep your eyes open!",
     pickPrompt: "Read the words under a cup aloud and pick it!",
     found: "Found it! +1 point",
+    foundUnscored: "Found it!",
     missed: "Oh no! The friend was here",
     nextRound: "Next round",
     seeResult: "See results",

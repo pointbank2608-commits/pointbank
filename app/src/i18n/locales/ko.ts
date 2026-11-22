@@ -1811,6 +1811,7 @@ const ko = {
     shuffling: "컵이 섞여요! 눈을 크게 뜨세요!",
     pickPrompt: "컵 아래 글을 소리 내어 읽고 컵을 골라요!",
     found: "찾았어요! +1점",
+    foundUnscored: "찾았어요!",
     missed: "아쉬워요! 친구는 여기에 있었어요",
     nextRound: "다음 판",
     seeResult: "결과 보기",

@@ -243,6 +243,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   }, []);
 
   const type = info?.gameType;
+  const savedParticipantMode = type === 'shufflefind' ? info?.selected?.config.shuffleMode : type === 'telepathy' ? info?.selected?.config.telepathyMode : undefined;
   const unified = usesUnifiedGameSettings(type);
   const hasRoundSettings = hasAdventureRoundSettings(type);
   const isDetective = type === 'grammardetective';
@@ -355,8 +356,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     setPPictureList('');
     setPSaved('');
     setPClass(info?.classId || '');
-    const teamCap = isGrammar || isTwoDice ? 4 : type==='telepathy' ? 6 : nativeTeams ? 8 : 6;
-    setPMode(isTwoDice ? info?.selected?.config.twoDiceMode ?? (diceTeams > 1 ? 'team' : 'none') : type==='telepathy' && info?.selected?.config.telepathyMode ? info.selected.config.telepathyMode : isGrammar ? (play.teams > 0 ? 'team' : play.showScore ? 'solo' : 'none') : !isShowOrderOn() ? 'none' : turnState?.mode === 'team' ? 'team' : 'solo');
+    const teamCap = isGrammar || isTwoDice || type === 'shufflefind' ? 4 : type==='telepathy' ? 6 : nativeTeams ? 8 : 6;
+    setPMode(isTwoDice ? info?.selected?.config.twoDiceMode ?? (diceTeams > 1 ? 'team' : 'none') : savedParticipantMode ?? (isGrammar ? (play.teams > 0 ? 'team' : play.showScore ? 'solo' : 'none') : !isShowOrderOn() ? 'none' : turnState?.mode === 'team' ? 'team' : 'solo'));
     setPTeams(Math.min(teamCap, Math.max(2, isTwoDice ? diceTeams : nativeTeams ? (info?.teamCount ?? 2) : (turnState?.mode === 'team' ? turnState.teamCount : play.teams || 2))));
     setPAbsent(info?.classId ? loadAbsent(info.classId) : []);
     setPSound(unified ? info?.selected?.config.adventure?.sound ?? info?.selected?.config.storybook?.sound ?? soundOn : soundOn);
@@ -415,7 +416,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     return () => { live = false; };
   }, [open, pClass]);
 
-  const teamCapOf = () => (isGrammar || isTwoDice ? 4 : type==='telepathy' ? 6 : nativeTeams ? 8 : 6);
+  const teamCapOf = () => (isGrammar || isTwoDice || type === 'shufflefind' ? 4 : type==='telepathy' ? 6 : nativeTeams ? 8 : 6);
   const toggle = (next: Exclude<Open, null>, anchor: HTMLButtonElement) => {
     setPanelAnchor(anchor);
     setOpen((o) => (o === next ? null : next));
@@ -548,9 +549,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       if (lesson?.slideId && info.selected) await info.applyGuide({items: info.selected.items, config: {...info.selected.config, grammarPlay: play}});
       setGrammarPlay(play);
     }
-    if(type==='telepathy'&&info.selected){
-      const config={...info.selected.config,telepathyMode:pMode,...(pMode==='team'?{telepathyTeams:pTeams}:{})};
-      if(config.telepathyMode!==info.selected.config.telepathyMode||config.telepathyTeams!==info.selected.config.telepathyTeams)await info.applyGuide({items:info.selected.items,config});
+    if((type==='telepathy'||type==='shufflefind')&&info.selected){
+      const modeKey=type==='telepathy'?'telepathyMode':'shuffleMode';
+      const teamsKey=type==='telepathy'?'telepathyTeams':'shuffleTeams';
+      const config={...info.selected.config,[modeKey]:pMode,...(pMode==='team'?{[teamsKey]:pTeams}:{})};
+      if(config[modeKey]!==info.selected.config[modeKey]||config[teamsKey]!==info.selected.config[teamsKey])await info.applyGuide({items:info.selected.items,config});
     }else if (nativeTeams && pMode === 'team' && pTeams !== info.teamCount) await info.configureTeams(pTeams);
   });
   const applySettings = () => run(async () => {

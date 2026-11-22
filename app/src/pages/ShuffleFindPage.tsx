@@ -5,6 +5,7 @@ import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
 import ShuffleFind from '../components/ShuffleFind';
 import { normalizeShuffleConfig, SHUFFLE_DEFAULTS } from '../lib/shuffleFind';
+import { useGameParticipants } from '../lib/useGameParticipants';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import { useGameTemplates } from '../lib/useGameTemplates';
@@ -56,6 +57,7 @@ export default function ShuffleFindPage() {
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
   const cfg = normalizeShuffleConfig(selected?.config);
+  const { mode, players } = useGameParticipants(classId, roster, selected?.config.shuffleMode, cfg.teams, n => t('gameShuffle.teamLabel', { n }));
 
   /** 문장 목록의 문장(+해석)을 "영어 | 해석" 한 줄로 담는다 */
 
@@ -204,7 +206,7 @@ export default function ShuffleFindPage() {
           <EditOnly>{classPicker}</EditOnly>
           <div>
             <GameThemeFrame gameType="shufflefind" roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-              <ShuffleFind items={demoItems} teams={cfg.teams} cups={cfg.cups} speed={cfg.speed} rounds={cfg.rounds} />
+              <ShuffleFind items={demoItems} teams={cfg.teams} mode={mode} players={players} cups={cfg.cups} speed={cfg.speed} rounds={cfg.rounds} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameShuffle.emptyStaff') : t('gameShuffle.emptyStudent')}
@@ -226,7 +228,7 @@ export default function ShuffleFindPage() {
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <ShuffleFind key={roundKey} items={selected.items} teams={cfg.teams} cups={cfg.cups} speed={cfg.speed} rounds={cfg.rounds} />
+            <ShuffleFind key={roundKey} items={selected.items} teams={cfg.teams} mode={mode} players={players} cups={cfg.cups} speed={cfg.speed} rounds={cfg.rounds} />
           </GameThemeFrame>
 
           <div className="space-y-4">
