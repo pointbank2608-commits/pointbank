@@ -74,7 +74,7 @@ function Vocabulary({type,c,e,r}:{type:AdventureType;c:AdventureConfig;e:Adventu
     setPicked(id);
     if(fishing)setCast({fish:node,correct,duration,reducedMotion});
   }
-  return <><div className={`ad-prompt ${fishing&&!r.imageUrl?'ad-fishing-text-prompt':''} ${listening?'ad-fishing-listening-prompt':''}`}>{r.imageUrl
+  return <><div className={`ad-prompt ${r.imageUrl?'ad-picture-prompt':''} ${fishing&&!r.imageUrl?'ad-fishing-text-prompt':''} ${listening?'ad-fishing-listening-prompt':''}`}>{r.imageUrl
     ? <img data-picture-word src={r.imageUrl} alt={t('gameWordHoops.askWord')} className="h-[min(14vh,132px)] object-contain" draggable={false}/>
     : fishing?<><span className="ad-fishing-prompt-copy"><strong className="ad-fishing-prompt-text">{listening?'소리를 듣고 물고기를 찾아요':r.word.meaning}</strong>{!listening&&<small>영어로 무엇일까요?</small>}</span><Voice text={r.word.word} onFallback={()=>setFallback(true)}/></>
     : <span>{r.word.meaning}</span>}</div>{fallback&&c.listening&&<p className="ad-fallback">영어 음성을 사용할 수 없어 뜻을 보여드려요.</p>}

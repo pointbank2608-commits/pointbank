@@ -72,8 +72,21 @@ try {
   }
   assert.equal((await outcome('.ad-results')).count,2);console.log('PASS feedback and results',size.width);
  }
- await page.setViewportSize({width:3440,height:1300});await config({picture:true});
- for(const count of [3,4,5,6]){await apply(count);await choices(count,'picture');}
+ for(const size of [{width:3440,height:1300},{width:1920,height:1080},{width:1366,height:768},{width:1024,height:768},{width:390,height:844}]){
+  await page.setViewportSize(size);await config({picture:true});
+  for(const count of [3,4,5,6]){
+   await apply(count);await choices(count,'picture');
+   const picture=await page.evaluate(()=>{
+    const scene=document.querySelector('.ad-balloonpop').getBoundingClientRect(),header=document.querySelector('.ad-header').getBoundingClientRect(),image=document.querySelector('[data-picture-word]').getBoundingClientRect(),prompt=document.querySelector('.ad-prompt').getBoundingClientRect();
+    return {height:image.height,sceneHeight:scene.height,headerHeight:header.height,inside:image.left>=scene.left&&image.right<=scene.right&&image.top>=scene.top&&image.bottom<=scene.bottom,
+     overlaps:[...document.querySelectorAll('.ad-balloon')].some(e=>{const r=e.getBoundingClientRect();return r.left<prompt.right&&r.right>prompt.left&&r.top<prompt.bottom&&r.bottom>prompt.top;})};
+   });
+   assert(picture.inside,'Picture outside scene');assert(!picture.overlaps,'Picture overlaps balloon');
+   if(size.width===3440){assert(picture.height>picture.sceneHeight*.24,'Picture too small for classroom display');assert(picture.headerHeight<picture.sceneHeight*.09,'Title takes too much height');}
+   if(count===4)await shot('picture-'+size.width);
+  }
+ }
+ await page.setViewportSize({width:3440,height:1300});
  await config({count:50,long:true});
  for(let i=0;i<50;i++){
   await page.locator('.ad-balloon[data-word="extraordinary-supercalifragilistic-word-'+i+'"]').click();await page.clock.runFor(1550);
