@@ -1,4 +1,5 @@
 import AnimationQuestionEditor from './AnimationQuestionEditor';
+import AnimationPreparation from './AnimationPreparation';
 import TimedVideoLesson from './TimedVideoLesson';
 import { useAuth } from '../context/AuthContext';
 import { fetchAllCurriculumLessons } from '../lib/api';
@@ -78,7 +79,7 @@ export default function VideoClipLibrary({ onPick, pickLabel, tall = false }: { 
         )}
       </div>
       <label>{t('readyMedia.topics')} <select value={topic} onChange={e=>setTopic(e.target.value)} className="rounded-lg border bg-white p-2"><option value="">{t('readyMedia.allTopics')}</option>{clipTopics(clips).map(tag=><option key={tag}>{tag}</option>)}</select></label>
-      {selected && <ClipPreview clip={selected} planned={tall} onPick={(activities,plan)=>onPick(selected,activities,plan)} onClose={() => setSelectedId(null)} pickLabel={pickLabel} />}
+      {selected && <ClipPreview chapters={clips.filter(c=>c.youtube_id===selected.youtube_id)} clip={selected} planned={tall} onPick={(activities,plan)=>onPick(selected,activities,plan)} onClose={() => setSelectedId(null)} pickLabel={pickLabel} />}
       {/* 좁은 화면: 시리즈 칩 한 줄 */}
       <div className="flex gap-1.5 overflow-x-auto pb-1 md:hidden">
         <button type="button" className={chip(!series)} onClick={() => setSeries('')}>
@@ -155,10 +156,10 @@ export default function VideoClipLibrary({ onPick, pickLabel, tall = false }: { 
   );
 }
 
-function ClipPreview({clip,onPick,onClose,pickLabel,planned}:{clip:VideoClip;planned:boolean;onPick:(activities:ClipActivity[],plan?:AnimationLessonPlan)=>void;onClose:()=>void;pickLabel?:string}){
+function ClipPreview({clip,chapters,onPick,onClose,pickLabel,planned}:{chapters:VideoClip[];clip:VideoClip;planned:boolean;onPick:(activities:ClipActivity[],plan?:AnimationLessonPlan)=>void;onClose:()=>void;pickLabel?:string}){
  const {t}=useTranslation();const choices=useMemo(()=>clipActivities(planned?{...clip,script:animationTimedSource(clip)}:clip),[clip,planned]);const defaults=useMemo(()=>planned?[]:choices.filter(x=>['words','shadow','questions','cloze','reading'].includes(x)),[choices,planned]);const [activities,setActivities]=useState<ClipActivity[]>(defaults);const [learning,setLearning]=useState(false),[playerOpen,setPlayerOpen]=useState(false);
  useEffect(()=>{setLearning(false);setPlayerOpen(false);setActivities(defaults);},[clip.id,defaults]);
- const [questionsOpen,setQuestionsOpen]=useState(false);
+ const [questionsOpen,setQuestionsOpen]=useState(false),[preparing,setPreparing]=useState(false);
  const timedSource=animationTimedSource(clip);
  const lines=parseShadowText(planned?timedSource:clip.script);const expressions=clip.pack?.grammar?.sentence?[{en:clip.pack.grammar.sentence,ko:clip.pack.grammar.sentenceKo}]:lines.slice(0,2).map(l=>({en:l.en.replace(/\*\*/g,''),ko:l.ko}));
  const words=clip.pack.words??[];
@@ -187,8 +188,9 @@ function ClipPreview({clip,onPick,onClose,pickLabel,planned}:{clip:VideoClip;pla
   <details open={!planned||undefined}><summary>활동 바꾸기</summary><fieldset className="vl-activity-order"><legend>{planned?'추가할 활동':t('readyMedia.recommend')}</legend>{choices.filter(activity=>!planned||!['words','questions'].includes(activity)).map((activity,i)=><label key={activity} className={activities.includes(activity)?'is-selected':''}><input type="checkbox" checked={activities.includes(activity)} onChange={e=>setActivities(prev=>e.target.checked?[...prev,activity]:prev.filter(x=>x!==activity))}/><b>{i+1}</b><span>{t('readyMedia.'+activity)}</span></label>)}</fieldset></details>
   {planned&&<label><input type="checkbox" checked={!!plan.gameLast} onChange={event=>setPlan({...plan,gameLast:event.target.checked})}/> 게임을 마지막에 배치</label>}
 {planned&&scene.missing.length>0&&<p role="status">수업 생성에 필요한 자료 · {scene.missing.join(" · ")}</p>}
-<div className="vl-action-bar">{planned&&<button type="button" onClick={()=>setQuestionsOpen(true)}>영상에 질문 넣기</button>}{!planned&&<button type="button" onClick={()=>void openPlayer()}>{t('readyMedia.watch')}</button>}<Link to={`/materials/video-worksheet?clip=${clip.id}`}>활동지</Link><button type="button" className="is-primary" disabled={planned ? !!scene.missing.length : !activities.length} aria-label={pickLabel??t('readyMedia.makeLesson')} onClick={()=>onPick(choices.filter(x=>activities.includes(x)),planned?plan:undefined)}>{pickLabel??t('readyMedia.makeLesson')}</button></div><p className="vl-time-note">{t('videoUi.selectionHint')}</p>
+<div className="vl-action-bar">{planned&&<button type="button" onClick={()=>setQuestionsOpen(true)}>질문 넣기</button>}{!planned&&<button type="button" onClick={()=>void openPlayer()}>{t('readyMedia.watch')}</button>}<Link to={`/materials/video-worksheet?clip=${clip.id}`}>활동지</Link><button type="button" className="is-primary" disabled={!planned&&!activities.length} aria-label={pickLabel??t('readyMedia.makeLesson')} onClick={()=>planned?setPreparing(true):onPick(choices.filter(x=>activities.includes(x)),undefined)}>{pickLabel??t('readyMedia.makeLesson')}</button></div><p className="vl-time-note">{t('videoUi.selectionHint')}</p>
   {planned&&<AnimationRecordingHomework key={clip.id} clip={clip}/>}
+  {preparing&&<AnimationPreparation clip={clip} chapters={chapters} onClose={()=>setPreparing(false)}/>}
   {questionsOpen&&<AnimationQuestionEditor clip={clip} onClose={()=>setQuestionsOpen(false)}/>}
   {playerOpen&&<AccessibleDialog label={t('videoUi.player')} onClose={closePlayer}><div className="vl-player-surface"><header><strong>{clip.title}</strong><button type="button" onClick={closePlayer}>{t('videoUi.back')}</button></header><div className="vl-player-content">{planned?(playbackError?<div role="alert"><p>{playbackError}</p><button onClick={()=>void openPlayer()}>다시 시도</button></div>:playbackSlide?<TimedVideoLesson slide={playbackSlide} source={clip.script} autoPlay/>:<p role="status">영상과 저장한 질문을 불러오고 있어요.</p>):lines.length?<ShadowBoard key={clip.id} flow="video" rememberKey={`clip:${clip.id}`} source={clip.script} title={clip.title} videoUrl={`https://www.youtube.com/watch?v=${clip.youtube_id}`} expanded/>:<PlainTeachingVideo videoUrl={`https://www.youtube.com/watch?v=${clip.youtube_id}`} title={clip.title} start={Number(clip.start_sec)} end={Number(clip.end_sec)} rememberKey={`clip:${clip.id}`}/>}</div></div></AccessibleDialog>}
  </article>;

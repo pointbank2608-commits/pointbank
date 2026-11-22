@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useVideoClips, type VideoClip } from '../lib/videoClips';
@@ -12,9 +12,9 @@ import '../styles/video-worksheet.css';
 
 type Row = PaperItem & { group: string; groupTitle: string; type: string; title: string; instruction: string; number: number; matching?: PaperItem[]; bank?: string[] };
 const defaults = ['study','questionChoice','grammarPractice'];
-const minimumFive = new Set(['scene','questionChoice','trueFalse','questionHint','questionFull','infer','grammarPractice','substitute','create','wordContext','readCircle']);
+const minimumFive = new Set(['scene','trueFalse','questionHint','questionFull','infer','grammarPractice','substitute','create','wordContext','readCircle']);
 const matchTypes = ['pictureMatch','meaningMatch'];
-const printOptions = {letters:1,bank:true,chunks:true,pictureClues:false,choiceCount:3};
+const printOptions = {letters:1,bank:true,chunks:true,pictureClues:false,choiceCount:3,sentenceBank:true};
 
 function Matching({items,pictures,teacher,start}:{items:PaperItem[];pictures:boolean;teacher:boolean;start:number}) {
   const mixed = shuffled(items,makeRng(31));
@@ -53,7 +53,7 @@ function Worksheet({ clip }: { clip: VideoClip }) {
     void Promise.all([document.fonts.load('400 15pt "Atkinson Hyperlegible Next"'),document.fonts.load('700 24pt "Atkinson Hyperlegible Next"'),document.fonts.ready]).catch(()=>{}).then(()=>{if(live)setFontReady(true);});
     return () => { live = false; };
   }, []);
-  const groups=useMemo(()=>animationPrintActivities(clip,bank,options),[clip,bank,options]);
+  const groups=useMemo(()=>animationPrintActivities(clip,bank,{...options,bank:options.sentenceBank}),[clip,bank,options]);
   const pictureSelected=groups[0].types.find(type=>type.id==='pictureMatch')!.items;
   const pictureMissing=pictureSelected.filter(item=>!item.image);
   const crosswordType=groups[0].types.find(type=>type.id==='crossword')!;
@@ -61,7 +61,7 @@ function Worksheet({ clip }: { clip: VideoClip }) {
   const {puzzle,included}=useMemo(()=>animationCrossword(crosswordSelected),[crosswordSelected]);
   const crosswordMissing=crosswordSelected.filter(item=>!included.has(item.id));
 
-  const available = (type: (typeof groups)[number]['types'][number]) => type.items.length >= (minimumFive.has(type.id) ? 5 : 1) && (type.id !== 'pictureMatch' || pictureSelected.some(item=>item.image)) && (type.id !== 'crossword' || included.size >= 2);
+  const available = useCallback((type: (typeof groups)[number]['types'][number]) => type.items.length >= (minimumFive.has(type.id) ? 5 : 1) && (type.id !== 'pictureMatch' || pictureSelected.some(item=>item.image)) && (type.id !== 'crossword' || included.size >= 2), [pictureSelected,included]);
   const missing = groups.flatMap(group=>group.types.filter(type=>!available(type)));
   const rows = useMemo(() => groups.flatMap(group=>group.types.flatMap<Row>(type=>{
     if (!enabled.has(type.id) || !available(type)) return [];
@@ -73,7 +73,7 @@ function Worksheet({ clip }: { clip: VideoClip }) {
     return items.map((item,index)=>({...base,...item,number:index+1,
       ...(type.id==='fromMeaning'&&options.bank&&index===0?{bank:shuffled(items.map(word=>word.answer!),makeRng(67))}:{}),
     }));
-  })), [groups, enabled, options.bank, puzzle, included, pictureSelected]);
+  })), [groups, enabled, options.bank, puzzle, included, available]);
   const sections = useMemo(() => {
     const grouped: {content: Row[]; teacher: boolean}[] = [];
     for (const isTeacher of teacher ? [false, true] : [false]) {
@@ -166,19 +166,18 @@ function Worksheet({ clip }: { clip: VideoClip }) {
           {group.types.filter(available).map(type=>{ return <section key={type.id} data-print-activity={type.id}>
               <label className="animation-group-toggle"><input type="checkbox" checked={enabled.has(type.id)}
                 onChange={event=>toggleType(type.id,event.target.checked)}/> {en?type.title:type.label}</label>
+              {enabled.has(type.id)&&type.id==='crossword'&&<div><label className="animation-group-toggle"><input type="checkbox" checked={options.pictureClues} onChange={event=>setOptions({...options,pictureClues:event.target.checked})}/> {en?'Picture clues for word puzzles':'그림 힌트 넣기'}</label></div>}
+              {enabled.has(type.id)&&type.id==='letters'&&<div><label className="animation-group-toggle">{en?'Missing letters':'단어당 빈칸 수'} <select value={options.letters} onChange={event=>setOptions({...options,letters:Number(event.target.value)})}><option>1</option><option>2</option><option>3</option></select></label></div>}
+              {enabled.has(type.id)&&type.id==='sentenceGap'&&<div><label className="animation-group-toggle"><input type="checkbox" checked={options.sentenceBank} onChange={event=>setOptions({...options,sentenceBank:event.target.checked})}/> {en?'Include word banks':'단어 상자 넣기'}</label></div>}
+              {enabled.has(type.id)&&type.id==='questionChoice'&&<div><label className="animation-group-toggle">객관식 보기 개수 <select value={options.choiceCount} onChange={event=>setOptions({...options,choiceCount:Number(event.target.value)})}><option>3</option><option>2</option></select></label></div>}
+              {enabled.has(type.id)&&type.id==='sentenceScramble'&&<div><label className="animation-group-toggle"><input type="checkbox" checked={options.chunks} onChange={event=>setOptions({...options,chunks:event.target.checked})}/> {en?'Group sentence chunks':'문장 배열에 어구 묶기'}</label></div>}
               {type.id==="pictureMatch"&&pictureMissing.length>0&&<p className="animation-activity-note">그림 없는 단어 · {pictureMissing.map(item=>item.label).join(", ")}</p>}
               {type.id==='crossword'&&enabled.has(type.id)&&<p className="animation-activity-note">{en?`Used ${included.size} of ${crosswordSelected.length} words`:`선택한 ${crosswordSelected.length}개 중 ${included.size}개 사용`}{crosswordMissing.length>0&&' · '+crosswordMissing.map(item=>item.label).join(', ')}{!included.size&&' · 교차할 단어를 다시 고르거나 단어 스크램블을 선택하세요.'}</p>}
             </section>;
           })}
         </details>)}
         {missing.length>0&&<details><summary>자료 준비 현황</summary><ul>{missing.map(type=><li key={type.id}>{type.label} · {minimumFive.has(type.id)?type.items.length+'/5문항':type.id==='crossword'?'서로 교차할 낱말이 2개 이상 필요해요.':type.reason}</li>)}</ul></details>}
-        <details><summary><strong>{en?'Print options':'인쇄 옵션'}</strong></summary>
-          <label className="animation-group-toggle">내용 질문 보기 수 <select value={options.choiceCount} onChange={event=>setOptions({...options,choiceCount:Number(event.target.value)})}><option>3</option><option>2</option></select></label>
-          <label className="animation-group-toggle">{en?'Missing letters':'비울 글자 수'} <select value={options.letters} onChange={event=>setOptions({...options,letters:Number(event.target.value)})}><option>1</option><option>2</option><option>3</option></select></label>
-          <label className="animation-group-toggle"><input type="checkbox" checked={options.bank} onChange={event=>setOptions({...options,bank:event.target.checked})}/> {en?'Include word banks':'단어 상자 넣기'}</label>
-          <label className="animation-group-toggle"><input type="checkbox" checked={options.chunks} onChange={event=>setOptions({...options,chunks:event.target.checked})}/> {en?'Group sentence chunks':'문장 배열에 어구 묶기'}</label>
-          <label className="animation-group-toggle"><input type="checkbox" checked={options.pictureClues} onChange={event=>setOptions({...options,pictureClues:event.target.checked})}/> {en?'Picture clues for word puzzles':'낱말 퍼즐에 그림 힌트 넣기'}</label>
-        </details>
+        <h3>인쇄 옵션</h3>
         <label className="animation-group-toggle"><input type="checkbox" checked={teacher} onChange={event=>setTeacher(event.target.checked)}/> {en?'Teacher notes and answers':'교사용 설명·정답'}</label>
       </aside>
       <div className="min-w-0">

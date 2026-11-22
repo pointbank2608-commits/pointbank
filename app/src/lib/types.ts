@@ -805,7 +805,14 @@ export interface PhonicsGameSlide {
   classPlay?: PhonicsClassPlay;
 }
 
+export interface AnimationExpression {
+  text: string;
+  original?: string;
+  explanation?: string;
+  examples: {situation:string;answer:string}[];
+}
 export interface VideoSlide {
+  animationSession?: { source:string; words:{word:string;meaning:string;imageUrl?:string}[]; originalUrl:string; expression?:AnimationExpression; expressions?:AnimationExpression[] };
   timedQuestions?: import('./videoQuestions').VideoQuestion[];
   questionLesson?: boolean;
   questionVersion?: 1;

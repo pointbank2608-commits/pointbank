@@ -4,6 +4,14 @@ import { sceneLesson, sceneQuestions, sceneTeaching } from './animationScene';
 import { parseShadowText } from './shadowLines';
 import { makeRng, shuffled } from './worksheetGenerators';
 import { printableCrossword, type PrintCrossword } from './worksheetActivityPrinting';
+import { BASIC_PHRASES } from './basicPhrases';
+
+export function animationSentenceChunks(parts:string[]) {
+  const phrases=[...BASIC_PHRASES.map(([phrase])=>phrase),'hung out','hang out','hanging out','blew off','being small'].map(phrase=>phrase.split(' ')).sort((a,b)=>b.length-a.length);
+  const result:string[]=[];
+  for(let i=0;i<parts.length;){const phrase=phrases.find(words=>words.length>1&&words.every((word,j)=>parts[i+j]?.toLowerCase()===word));const length=phrase?.length??1;result.push(parts.slice(i,i+length).join(' '));i+=length;}
+  return result;
+}
 
 export type PaperItem = {
   id: string; label: string; prompt?: string; answer?: string; lines?: number;
@@ -78,7 +86,7 @@ export function animationPrintActivities(clip: VideoClip, bank: WordBankEntry[],
       {id:'pictureMatch',label:'그림과 영어 단어 연결',title:'Picture Match',instruction:'Match each picture to its word.',items:wordRows(entry=>({image:entry.image,meaning:entry.meaning,answer:entry.word})),reason:'이 단어 목록에는 연결할 그림이 없어요.'},
       {id:'meaningMatch',label:'영어 단어와 한국어 뜻 연결',title:'Meaning Match',instruction:'Match each word to its meaning.',items:wordRows(entry=>entry.meaning?{answer:entry.meaning}:null)},
       {id:'wordTrace',label:'단어 따라쓰기',title:'Trace the Words',instruction:'Trace each word. Then write it on your own.',items:wordRows(entry=>({trace:entry.word,image:entry.image,answer:entry.word,lines:1}))},
-      {id:'letters',label:'빠진 글자 채우기',title:'Missing Letters',instruction:'Complete the missing letters.',items:wordRows(entry=>entry.meaning&&/^[a-z]{3,}$/i.test(entry.word)?{meaning:entry.meaning,prompt:[...entry.word].map((letter,index)=>index>0&&index<=Math.min(options.letters,entry.word.length-2)?'_':letter).join(' '),answer:entry.word}:null)},
+      {id:'letters',label:'빠진 글자 채우기',title:'Missing Letters',instruction:'Complete the missing letters.',items:wordRows(entry=>entry.meaning&&/^[a-z]{3,}$/i.test(entry.word)?{meaning:entry.meaning,prompt:[...entry.word].map((letter,index)=>index>=(entry.word.length>options.letters?1:0)&&index<(entry.word.length>options.letters?1:0)+Math.min(options.letters,entry.word.length)?'_':letter).join(' '),answer:entry.word}:null)},
       {id:'wordScramble',label:'단어 스크램블',title:'Unscramble the Words',instruction:'Put the letters in order. Write the word.',items:wordRows(entry=>/^[a-z]+$/i.test(entry.word)&&new Set(key(entry.word)).size>1?{prompt:mix([...entry.word.toUpperCase()]).join(' ')+(entry.meaning?' · '+entry.meaning:''),pictures:options.pictureClues&&entry.image?[entry.image]:undefined,answer:entry.word,lines:1}:null)},
       {id:'fromMeaning',label:'뜻 보고 영단어 쓰기',title:'Write the English Word',instruction:'Read the meaning. Write the English word.',items:wordRows(entry=>entry.meaning?{prompt:entry.meaning,answer:entry.word,lines:1}:null)},
       {id:'meaning',label:'영단어 보고 뜻 쓰기',title:'Vocabulary',instruction:'Write the meaning.',items:wordRows(entry=>entry.meaning?{prompt:entry.word,answer:entry.meaning,lines:1}:null)},
@@ -110,7 +118,7 @@ export function animationPrintActivities(clip: VideoClip, bank: WordBankEntry[],
         const parts=words(sentence.replace(/[.?!]$/,''));
         if (parts.length<4 || !/[.?!]$/.test(sentence)) return [];
         const first=parts.shift()!;
-        const chunks=options.chunks?parts.reduce<string[]>((out,part,index)=>{if(index%2===0)out.push(part);else out[out.length-1]+=' '+part;return out;},[]):parts;
+        const chunks=options.chunks?animationSentenceChunks(parts):parts;
         return [{id:String(index),label:sentence,prompt:first+'  |  '+mix(chunks.length<2?parts:chunks).join(' / '),answer:sentence,lines:2}];
       }),reason:'문장 순서 맞추기에 쓸 완전한 문장이 아직 검토되지 않았어요.'},
       {id:'grammarPractice',label:'대표 문법과 응용',title:'Use the Pattern',instruction:'Read the pattern. Try it in a new situation.',items:(practice?.examples??[]).slice(0,5).map((example,index)=>{

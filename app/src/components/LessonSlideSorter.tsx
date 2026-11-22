@@ -1,3 +1,4 @@
+import AnimationSessionQuestionButton from './AnimationSessionQuestionButton';
 import {
   closestCenter,
   DndContext,
@@ -1230,6 +1231,7 @@ function SlideDetail({
           <VideoThumbnail id={videoId}/>
         </PreviewFrame>
         {slide.timedQuestions?.length ? <p>중간 질문 {slide.timedQuestions.length}개가 이 영상에 저장돼 있어요. 영상 주소를 바꾸면 질문은 초기화돼요. 질문은 애니메이션 영어에서 다시 편집할 수 있어요.</p> : null}
+        {slide.animationSession&&<AnimationSessionQuestionButton slide={slide} onChange={onUpdate}/>}
         {!videoId && <p>{t('lessonUx.needVideo')}</p>}
         <label className="block">{t('lessonUx.videoTitle')}
           <input className="block w-full rounded-lg border p-2" value={slide.title ?? ''} onChange={e => onUpdate({ title: e.target.value })} />
@@ -1239,7 +1241,7 @@ function SlideDetail({
           aria-label={t('lessonUx.videoLink')}
           placeholder={t('lessonUx.videoLink')}
           value={slide.videoUrl}
-          onChange={(e) => onUpdate({ videoUrl: e.target.value, title: undefined, startSec: undefined, endSec: undefined, clipId: undefined, timedQuestions: undefined, questionLesson: undefined, questionVersion: undefined } as Partial<VideoSlide>)}
+          onChange={(e) => onUpdate({ videoUrl: e.target.value, title: undefined, startSec: undefined, endSec: undefined, clipId: undefined, animationSession: undefined, timedQuestions: undefined, questionLesson: undefined, questionVersion: undefined } as Partial<VideoSlide>)}
           className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         />
         <details>

@@ -22,8 +22,8 @@ export const sortedQuestions = (questions: VideoQuestion[]) => [...questions].so
 export const questionTimeInClip = (absolute: number, start = 0) => Math.round((absolute - start) * 100) / 100;
 export const questionTimeInVideo = (relative: number, start = 0) => Math.round((relative + start) * 100) / 100;
 export const questionNumber = (index: number) => index < 20 ? String.fromCodePoint(0x2460 + index) : `${index + 1}`;
-export function nextVideoQuestion(questions: VideoQuestion[], served: Set<string>, time: number): VideoQuestion | undefined {
-  return sortedQuestions(questions).find(q => !served.has(q.id) && q.at <= time + .03);
+export function nextVideoQuestion(questions: VideoQuestion[], served: Set<string>, time: number, previousTime = -Infinity): VideoQuestion | undefined {
+  return sortedQuestions(questions).find(q => !served.has(q.id) && q.at >= previousTime - .03 && q.at <= time + .03);
 }
 export function shuffledWordIndices(sentence: string): number[] {
   const indices = sentenceWords(sentence).map((_, i) => i);

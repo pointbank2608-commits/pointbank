@@ -271,7 +271,7 @@ export default function LessonSlideContent({
   }
 
   if (slide.kind === 'video') {
-    if (slide.timedQuestions?.length) return <div className={fill?'absolute inset-0 overflow-auto':''}><TimedVideoLesson key={slide.id} slide={slide} source={animationClip?.script} observation={!student&&runner?.steps[runner.stepIndex]?.slideId===slide.id?{lessonId:runner.lessonId,position:runner.stepIndex}:undefined}/></div>;
+    if (slide.animationSession || slide.timedQuestions?.length) return <div className={fill?'absolute inset-0 overflow-auto':''}><TimedVideoLesson key={slide.id} slide={slide} source={animationClip?.script} observation={!student&&runner?.steps[runner.stepIndex]?.slideId===slide.id?{lessonId:runner.lessonId,position:runner.stepIndex}:undefined}/></div>;
     if (student) {
       // 학생 화면: 영상은 선생님 화면 공유로 보는 게 기본 — 혼자 다시 볼 수 있게 영상만 끼워 둔다.
       const vid = extractYoutubeId(slide.videoUrl);

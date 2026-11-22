@@ -1,12 +1,15 @@
 // Local, synthetic browser fixture. No production requests or learning events.
-import { createServer } from 'vite';
+import { createServer, preview } from 'vite';
+import { readFile } from 'node:fs/promises';
 const animationQA=process.env.CLASSROOM_ANIMATION_QA==='true';
+const rangeQA=process.env.CLASSROOM_RANGE_QA==='true';
+const catalogue=process.env.CLASSROOM_CATALOGUE?JSON.parse(await readFile(process.env.CLASSROOM_CATALOGUE,'utf8')):null;
 const ref='classroom-fixture';
 const uid='00000000-0000-4000-8000-000000000001',aid='00000000-0000-4000-8000-0000000000aa';
 const user={id:uid,aud:'authenticated',role:'authenticated',email:'classroom-qa@example.test',app_metadata:{},user_metadata:{}};
 const exp=Math.floor(Date.now()/1000)+86400,b64=o=>Buffer.from(JSON.stringify(o)).toString('base64url');
 const session={access_token:`${b64({alg:'HS256',typ:'JWT'})}.${b64({sub:uid,role:'authenticated',exp,aud:'authenticated'})}.test-only`,refresh_token:'test-only',expires_at:exp,expires_in:86400,token_type:'bearer',user};
-const bootstrap=({ref,session,user,uid,aid,animationQA})=>{
+const bootstrap=({ref,session,user,uid,aid,animationQA,rangeQA,catalogue})=>{
  localStorage.setItem(`sb-${ref}-auth-token`,JSON.stringify(session));localStorage.setItem('classbank.lang','ko');
  const profile={id:uid,academy_id:aid,role:'owner',display_name:'수업 확인'},academy={id:aid,name:'수업 확인',point_unit:'별',plan:'paid',plan_status:'active',features:{group:true,solo:true,homework:true}};
  const animalWords=['cat','dog','pig','cow','duck','horse'];
@@ -16,6 +19,8 @@ const bootstrap=({ref,session,user,uid,aid,animationQA})=>{
  const clips=[{id:'qa-clip',series:'수업 확인용 영상',title:'I like it.',summary:'한 문장 연습',youtube_id:'aqz-KE-bpKQ',channel:'Sample',start_sec:0,end_sec:8,level:1,tags:['일상'],script:'[0:01-0:04] I **like** it. | 나는 그게 좋아요.\n[0:04-0:07] I can do it. | 나는 할 수 있어요.',words:['like'],pack:{},sort_order:1,hidden:false}];
  if(animationQA){Object.assign(clips[0],{title:'Mum’s Washing Game · 합성 질문 검증',youtube_id:'kioBK0l8w5w',start_sec:24.5,end_sec:89.5,script:'[0:25-0:28] I **like** it. | 합성 대사\n[0:30-0:34] I can do it. | 합성 대사',pack:{scene:{range:{start:24.5,end:89.5}}}});}
  if(animationQA)clips.push({...clips[0],id:'qa-no-questions',title:'질문 없는 영상 검증'});
+ if(rangeQA){const vocabulary=['cat','dog','pig','cow','duck','horse','apple','banana','book','bag','pen','pencil','desk','chair','door','window','red','blue','yellow','green','sun','moon','star','rain','wind','milk','juice','water','cake','bread'].map((word,i)=>({word,meaning:'테스트 뜻 '+(i+1),time:105+i}));clips.splice(0,clips.length,...[0,1].map(i=>({...clips[0],id:'range-chapter-'+i,title:'구간 검증 챕터 '+(i+1),youtube_id:'kioBK0l8w5w',start_sec:i?134:100,end_sec:i?170:134,script:i?'[2:15-2:19] Bingo: I like **juice**. | 나는 주스가 좋아.\n[2:20-2:24] Bluey: Would you like some juice? | 주스 좀 마실래?':'[1:40-1:44] Bluey: Hi! | 안녕!\n[1:45-1:49] Bingo: How are you? | 잘 지내?\n[1:50-1:54] Bluey: I **like** it. | 나는 그게 좋아.',pack:{words:vocabulary,scene:{expression:{text:'Would you like some juice?',examples:[{situation:'milk',answer:'Would you like some milk?'}]}}}})));}
+ if(catalogue?.length)clips.splice(0,clips.length,...catalogue);
  const nativeSpeech=window.speechSynthesis?.speak.bind(window.speechSynthesis);if(nativeSpeech)window.speechSynthesis.speak=utterance=>{console.log('[classroom audio] '+utterance.text);utterance.addEventListener('start',()=>console.log('[classroom speech start] '+utterance.text));utterance.addEventListener('end',()=>console.log('[classroom speech end] '+utterance.text));utterance.addEventListener('error',event=>console.log('[classroom speech error] '+utterance.text+' '+event.error));return nativeSpeech(utterance);};document.addEventListener('play',event=>{if(event.target instanceof HTMLAudioElement)console.log('[classroom recording] '+event.target.currentSrc);},true);
  const native=window.fetch.bind(window);window.fetch=async(input,init)=>{
   const raw=typeof input==='string'?input:input instanceof URL?input.href:input.url;
@@ -42,5 +47,13 @@ const bootstrap=({ref,session,user,uid,aid,animationQA})=>{
   return new Response(JSON.stringify(data),{status:200,headers:{'content-type':'application/json'}});
  };
 };
-const server=await createServer({define:{'import.meta.env.VITE_LEARNING_SENSORS_ENABLED':'"false"','import.meta.env.VITE_SUPABASE_URL':'"https://classroom-fixture.supabase.co"','import.meta.env.VITE_SUPABASE_ANON_KEY':'"test-only"'},plugins:[{name:'synthetic-classroom-fixture',transformIndexHtml(){return [{tag:'script',children:`(${bootstrap.toString()})(${JSON.stringify({ref,session,user,uid,aid,animationQA})})`,injectTo:'head-prepend'}];}}],server:{host:'127.0.0.1',port:Number(process.env.CLASSROOM_QA_PORT||5272),strictPort:true}});
-await server.listen();console.log('Synthetic classroom fixture: http://127.0.0.1:5272');
+const injection=`(${bootstrap.toString()})(${JSON.stringify({ref,session,user,uid,aid,animationQA,rangeQA,catalogue})})`;
+const port=Number(process.env.CLASSROOM_QA_PORT||5272);
+if(process.env.CLASSROOM_BUNDLED_QA==='true'){
+ const html=(await readFile('dist/index.html','utf8')).replace('<head>',`<head><script>${injection}</script>`);
+ await preview({plugins:[{name:'bundled-classroom-fixture',configurePreviewServer(server){server.middlewares.use((req,res,next)=>{if(req.headers.accept?.includes('text/html')){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(html);}else next();});}}],preview:{host:'127.0.0.1',port,strictPort:true}});
+}else{
+ const server=await createServer({define:{'import.meta.env.VITE_LEARNING_SENSORS_ENABLED':'"false"','import.meta.env.VITE_SUPABASE_URL':'"https://classroom-fixture.supabase.co"','import.meta.env.VITE_SUPABASE_ANON_KEY':'"test-only"'},plugins:[{name:'synthetic-classroom-fixture',transformIndexHtml(){return [{tag:'script',children:injection,injectTo:'head-prepend'}];}}],server:{host:'127.0.0.1',port,strictPort:true}});
+ await server.listen();
+}
+console.log(`Synthetic classroom fixture: http://127.0.0.1:${port}`);
