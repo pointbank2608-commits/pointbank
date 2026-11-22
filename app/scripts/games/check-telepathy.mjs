@@ -8,6 +8,9 @@ import { createServer } from "vite";
 import { chromium } from "../../node_modules/homework-test-tools/node_modules/@playwright/test/index.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+process.env.VITE_SUPABASE_URL='http://127.0.0.1:5197';
+process.env.VITE_SUPABASE_ANON_KEY='local-fixture-key';
+process.env.VITE_LEARNING_SENSORS_ENABLED='false';
 const shotDir = process.env.SHOT_DIR;
 if (shotDir) mkdirSync(shotDir, { recursive: true });
 let pass = 0;
@@ -94,7 +97,7 @@ try {
     // 1팀 1점, 3팀 2점, 2팀 0점
     assert.match(body, /1[\s\S]*3팀[\s\S]*2점/);
     if (shotDir) await page.screenshot({ path: `${shotDir}/tp-done-1440.png` });
-    await page.getByRole("button", { name: "다시 하기" }).click();
+    await page.getByRole("button", { name: "다시 플레이", exact: true }).click();
     assert.match(await page.locator('[role="status"]').first().innerText(), /텔레파시 준비/);
     await ctx.close();
     ok("전체 흐름: 후보→적기→흔들림→열림→맞힌 팀 표시(토글)→다음 판→결과→다시 하기");

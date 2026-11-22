@@ -455,6 +455,7 @@ export interface GameTemplateConfig {
   shuffleRounds?: number;
   /** 텔레파시 전용: 팀 수(2~6)·후보 수(3~4)·판 수(1~30)·적는 시간(초, 0=제한 없음) */
   telepathyTeams?: number;
+  telepathyMode?: 'none' | 'solo' | 'team';
   telepathyChoices?: number;
   telepathyRounds?: number;
   telepathySeconds?: number;

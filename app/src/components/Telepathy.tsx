@@ -7,7 +7,8 @@ import { GAME_SFX, playSfx } from '../lib/gameSfx';
 import { useRemoteActions } from '../lib/remote';
 import { speak } from '../lib/speech';
 import { shuffled } from '../lib/shuffleFind';
-import { addRoundScores, buildTelepathyRound, parseTelepathyLabel, rankTeams, usableChoices, type TelepathyRound } from '../lib/telepathy';
+import { addRoundScores, buildTelepathyRound, parseTelepathyLabel, rankTeams, usableChoices, type TelepathyRound, type TelepathyMode, type TelepathyPlayer } from '../lib/telepathy';
+import GameFitText from './GameFitText';
 import type { GameItem } from '../lib/types';
 
 /**
@@ -22,6 +23,8 @@ interface Props {
   choices: number;
   rounds: number;
   seconds: number;
+  mode?: TelepathyMode;
+  players?: TelepathyPlayer[];
 }
 
 type Phase = 'ready' | 'predict' | 'shake' | 'open' | 'reveal' | 'done';
@@ -39,16 +42,20 @@ const STYLE = `
 @media (prefers-reduced-motion: reduce) { .tp-anim { animation-duration:.01s !important; animation-iteration-count:1 !important; } }
 `;
 
-export default function Telepathy({ items, teams, choices: wantChoices, rounds, seconds }: Props) {
+export default function Telepathy({ items, teams, choices: wantChoices, rounds, seconds, mode='team', players:givenPlayers }: Props) {
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
+  const players=givenPlayers??(mode==='none'?[]:mode==='solo'?[{id:'solo',label:t('gameTelepathy.me')}]:Array.from({length:teams},(_,i)=>({id:`team-${i}`,label:t('gameTelepathy.teamLabel',{n:i+1})})));
+  const playerKey=players.map(player=>player.id).join(',');
+  const showScores=mode!=='none'&&players.length>0;
+  const whoRight=t(mode==='solo'?'gameTelepathy.whoRightSolo':'gameTelepathy.whoRight');
   const choices = usableChoices(items.length, wantChoices);
   const itemKey = items.map((i) => i.id).join(',');
   const [phase, setPhase] = useState<Phase>('ready');
   const [round, setRound] = useState(0);
   const [rd, setRd] = useState<TelepathyRound | null>(null);
-  const [scores, setScores] = useState<number[]>(() => Array(teams).fill(0));
-  const [won, setWon] = useState<boolean[]>(() => Array(teams).fill(false));
+  const [scores, setScores] = useState<number[]>(() => Array(players.length).fill(0));
+  const [won, setWon] = useState<boolean[]>(() => Array(players.length).fill(false));
   const [left, setLeft] = useState(seconds);
   const deck = useRef<number[]>([]);
   const timers = useRef<number[]>([]);
@@ -73,14 +80,14 @@ export default function Telepathy({ items, teams, choices: wantChoices, rounds, 
     setPhase('ready');
     setRound(0);
     setRd(null);
-    setScores(Array(teams).fill(0));
-    setWon(Array(teams).fill(false));
+    setScores(Array(players.length).fill(0));
+    setWon(Array(players.length).fill(false));
     setLeft(seconds);
   }
   useEffect(() => {
     resetAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemKey, choices, teams, rounds, seconds]);
+  }, [itemKey, choices, playerKey, mode, rounds, seconds]);
 
   function startRound() {
     if (items.length === 0) return;
@@ -98,7 +105,7 @@ export default function Telepathy({ items, teams, choices: wantChoices, rounds, 
     deck.current = built.deck;
     setRd(built.round);
     setRound((r) => r + 1);
-    setWon(Array(teams).fill(false));
+    setWon(Array(players.length).fill(false));
     setPhase('predict');
     setLeft(seconds);
     playSfx(GAME_SFX.telepathy.show);
@@ -157,7 +164,7 @@ export default function Telepathy({ items, teams, choices: wantChoices, rounds, 
         ? [{ id: 'reveal', label: t('gameTelepathy.reveal'), tone: 'primary', run: reveal }]
         : phase === 'reveal'
           ? [
-              ...Array.from({ length: teams }, (_, i) => ({ id: `team${i}`, label: t('gameTelepathy.teamRight', { n: i + 1 }), tone: 'neutral' as const, run: () => toggleWon(i) })),
+              ...players.map((player,i) => ({ id: `player${i}`, label: t('gameTelepathy.playerRight', { name:player.label }), tone: 'neutral' as const, run: () => toggleWon(i) })),
               { id: 'next', label: round >= rounds ? t('gameTelepathy.seeResult') : t('gameTelepathy.nextRound'), tone: 'primary' as const, run: advance },
             ]
           : [],
@@ -184,9 +191,9 @@ export default function Telepathy({ items, teams, choices: wantChoices, rounds, 
           : phase === 'open'
             ? t('gameTelepathy.opening')
             : phase === 'reveal'
-              ? t('gameTelepathy.revealed')
+              ? t(mode==='solo'?'gameTelepathy.revealedSolo':mode==='none'?'gameTelepathy.revealedNone':'gameTelepathy.revealed')
               : '';
-  const ranking = rankTeams(scores);
+  const ranking = rankTeams(players.map((_,i)=>scores[i]??0));
   const eggUp = phase === 'open' || phase === 'reveal';
   const answerAnimal = rd ? rd.animals[rd.answer] : null;
 
@@ -196,11 +203,11 @@ export default function Telepathy({ items, teams, choices: wantChoices, rounds, 
 
       {/* 팀 점수 */}
       <div className="mb-3 flex flex-wrap items-center justify-center gap-2" aria-label={t('gameTelepathy.scoreboard')}>
-        {scores.map((s, i) => (
-          <div key={i} className="flex items-center gap-1.5 rounded-full border-2 bg-white px-3 py-1 font-bold text-deep-navy shadow" style={{ borderColor: phase === 'reveal' && won[i] ? TEAM_COLORS[i] : 'transparent' }}>
-            <span className="inline-block h-3 w-3 rounded-full" style={{ background: TEAM_COLORS[i] }} aria-hidden />
-            <span>{t('gameTelepathy.teamLabel', { n: i + 1 })}</span>
-            <span className="tabular-nums">{t('gameTelepathy.points', { n: s + (phase === 'reveal' && won[i] ? 1 : 0) })}</span>
+        {showScores&&players.map((player, i) => (
+          <div key={player.id} data-telepathy-score={player.id} className="flex items-center gap-1.5 rounded-full border-2 bg-white px-3 py-1 font-bold text-deep-navy shadow" style={{ borderColor: phase === 'reveal' && won[i] ? TEAM_COLORS[i%TEAM_COLORS.length] : 'transparent' }}>
+            <span className="inline-block h-3 w-3 rounded-full" style={{ background: TEAM_COLORS[i%TEAM_COLORS.length] }} aria-hidden />
+            <span>{player.label}</span>
+            <span className="tabular-nums">{t('gameTelepathy.points', { n: (scores[i]??0) + (phase === 'reveal' && won[i] ? 1 : 0) })}</span>
           </div>
         ))}
         <div className="rounded-full bg-white/80 px-3 py-1 text-sm font-bold text-on-surface-variant shadow">{t('gameTelepathy.roundOf', { n: Math.max(round, 1), total: rounds })}</div>
@@ -253,14 +260,10 @@ export default function Telepathy({ items, teams, choices: wantChoices, rounds, 
           <div className="absolute inset-0 z-[6] flex flex-col items-center justify-center gap-[1.4cqw] bg-white/90 p-[3cqw] text-center">
             <img src="/skins/lightning/trophy.webp" alt="" className="h-[14cqw] w-auto" />
             <div className="font-extrabold text-deep-navy" style={{ fontSize: 'clamp(20px, 4cqw, 52px)' }}>{t('gameTelepathy.resultTitle')}</div>
-            <ol className="space-y-1">
+            <ol className="grid w-full min-w-0 gap-x-4 gap-y-1" style={{gridTemplateColumns:`repeat(${Math.max(1,Math.ceil(ranking.length/5))},minmax(0,1fr))`}}>
               {ranking.map((r) => (
-                <li key={r.team} className="flex items-center justify-center gap-2 font-bold text-deep-navy" style={{ fontSize: 'clamp(15px, 2.6cqw, 34px)' }}>
-                  <span className="w-8 text-center">{r.rank}</span>
-                  <span className="inline-block h-3 w-3 rounded-full" style={{ background: TEAM_COLORS[r.team] }} aria-hidden />
-                  <span>{t('gameTelepathy.teamLabel', { n: r.team + 1 })}</span>
-                  <span className="tabular-nums">{t('gameTelepathy.points', { n: r.score })}</span>
-                  {r.rank === 1 && <span aria-hidden>🏆</span>}
+                <li key={players[r.team].id} data-telepathy-result={players[r.team].id} className="flex min-w-0 items-center justify-center gap-2 font-bold text-deep-navy" style={{ fontSize: 'clamp(15px, 2.6cqw, 34px)' }}>
+                  <GameFitText text={`${r.rank===1?'🏆 ':''}${r.rank}. ${players[r.team].label} · ${t('gameTelepathy.points',{n:r.score})}`} fit="block" singleLine/>
                 </li>
               ))}
             </ol>
@@ -296,12 +299,12 @@ export default function Telepathy({ items, teams, choices: wantChoices, rounds, 
 
       {/* 진행 */}
       <div className="mt-4 flex flex-col items-center gap-3">
-        {phase === 'reveal' && (
-          <div className="flex flex-wrap items-center justify-center gap-2" role="group" aria-label={t('gameTelepathy.whoRight')}>
-            <span className="text-sm font-bold text-on-surface-variant">{t('gameTelepathy.whoRight')}</span>
-            {Array.from({ length: teams }, (_, i) => (
-              <button key={i} type="button" aria-pressed={won[i]} onClick={() => toggleWon(i)} className={`rounded-full border-2 px-4 py-1.5 font-bold shadow ${won[i] ? 'text-white' : 'bg-white text-deep-navy'}`} style={{ borderColor: TEAM_COLORS[i], background: won[i] ? TEAM_COLORS[i] : undefined }}>
-                {t('gameTelepathy.teamLabel', { n: i + 1 })} {won[i] ? '✓' : ''}
+        {phase === 'reveal' && showScores && (
+          <div className="flex flex-wrap items-center justify-center gap-2" role="group" aria-label={whoRight}>
+            <span className="rounded-full bg-[#fffdf2] px-3 py-1 text-sm font-bold text-[#193959]">{whoRight}</span>
+            {players.map((player,i) => (
+              <button key={player.id} type="button" aria-pressed={won[i]} onClick={() => toggleWon(i)} className={`rounded-full border-2 px-4 py-1.5 font-bold shadow ${won[i] ? 'text-white' : 'bg-white text-deep-navy'}`} style={{ borderColor: TEAM_COLORS[i%TEAM_COLORS.length], background: won[i] ? TEAM_COLORS[i%TEAM_COLORS.length] : undefined }}>
+                {player.label} {won[i] ? '✓' : ''}
               </button>
             ))}
           </div>
@@ -314,7 +317,7 @@ export default function Telepathy({ items, teams, choices: wantChoices, rounds, 
             </button>
           )}
           {phase === 'reveal' && <button type="button" onClick={advance} className={`${btn} bg-primary`}>{round >= rounds ? t('gameTelepathy.seeResult') : t('gameTelepathy.nextRound')}</button>}
-          {(phase === 'ready' || phase === 'predict') && <span className="text-sm text-on-surface-variant">{t(phase === 'ready' ? 'gameTelepathy.ruleReady' : 'gameTelepathy.rulePredict')}</span>}
+          {(phase === 'ready' || phase === 'predict') && <span data-telepathy-instructions className="rounded-xl border border-white bg-[#fffdf2] px-4 py-2 text-base font-semibold leading-relaxed text-[#193959] shadow-sm">{t(phase === 'ready' ? 'gameTelepathy.ruleReady' : mode==='team'?'gameTelepathy.rulePredict':'gameTelepathy.rulePredictSolo')}</span>}
         </div>
       </div>
     </div>
