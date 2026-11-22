@@ -15,7 +15,7 @@ export function animationSentenceChunks(parts:string[]) {
 
 export type PaperItem = {
   id: string; label: string; prompt?: string; answer?: string; lines?: number;
-  meaning?: string; definition?: string; exampleSentence?: string; choices?: string[]; trace?: string; cue?: string; example?: boolean; image?: string;
+  meaning?: string; definition?: string; exampleSentence?: string; exampleTranslation?:string; exampleOrigin?:'script'|'recommended'; choices?: string[]; trace?: string; cue?: string; example?: boolean; image?: string;
   pictures?: string[]; puzzle?: PrintCrossword; context?: string[]; situation?: string;
 };
 type Options = { letters: number; bank: boolean; chunks: boolean; pictureClues: boolean; choiceCount?: number };
@@ -85,7 +85,7 @@ export function animationPrintActivities(clip: VideoClip, bank: WordBankEntry[],
   };
   return [
     {id:'words',title:'단어 연습',en:'Vocabulary',types:[
-      {id:'study',label:'단어 학습표',title:'Words for the Scene',instruction:'Read the words and examples.',items:wordRows(entry=>entry.meaning?{meaning:entry.meaning,definition:teaching.definitions?.[entry.word],exampleSentence:entry.example}:null)},
+      {id:'study',label:'단어 학습표',title:'Words for the Scene',instruction:'Read the words and examples.',items:wordRows(entry=>entry.meaning?{meaning:entry.meaning,definition:entry.definition??teaching.definitions?.[entry.word],exampleSentence:entry.example,exampleTranslation:entry.exampleKo,exampleOrigin:entry.exampleOrigin}:null)},
       {id:'pictureMatch',label:'그림과 영어 단어 연결',title:'Picture Match',instruction:'Match each word to its picture or Korean meaning.',items:wordRows(entry=>({image:entry.image,meaning:entry.meaning,answer:entry.word}))},
       {id:'meaningMatch',label:'영어 단어와 한국어 뜻 연결',title:'Meaning Match',instruction:'Match each word to its meaning.',items:wordRows(entry=>entry.meaning?{answer:entry.meaning}:null)},
       {id:'wordTrace',label:'단어 따라쓰기',title:'Trace the Words',instruction:'Trace each word. Then write it on your own.',items:wordRows(entry=>({trace:entry.word,image:entry.image,answer:entry.word,lines:1}))},

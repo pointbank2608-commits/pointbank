@@ -4,8 +4,10 @@ import type {ShadowLine} from '../lib/shadowLines';
 /** Source: YouTube English auto captions exported 2026-11-22.
  * Bounds below are existing caption cue starts, not guessed speech durations.
  * Catalogue episode/chapter boundaries remain unchanged. */
-export const chapterTeaching:Record<string,{lines:ShadowLine[];chapters:{questions:{q:string;a:string;choices:string[]}[];expression?:AnimationExpression}[]}>={
+export const chapterTeaching:Record<string,{definitions?:Record<string,string>;lines:ShadowLine[];chapters:{questions:{q:string;a:string;choices:string[]}[];expression?:AnimationExpression}[]}>={
  'DhKIqYVB_Ws:episode:0':{
+  // Teaching definitions, authored separately from the caption quotations.
+  definitions:{copy:'to make another document or picture that is the same as the original',glasses:'two lenses in a frame that you wear over your eyes to help you see'},
   lines:[
    [8,12,'Are you excited to come to work with me today, Caillou?','오늘 아빠와 함께 출근해서 신나니?','Dad'],
    [19,31,'Wow. What a great tie.','와, 정말 멋진 넥타이구나.','Dad'],

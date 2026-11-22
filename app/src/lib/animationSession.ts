@@ -49,7 +49,7 @@ export function animationEpisodeClip(material:EpisodeMaterial):VideoClip {
   const teaching=rows.map(sceneTeaching);
   const questions=[...new Map(rows.flatMap(row=>sceneQuestions(row,{start:episode.start,end:episode.end})).map(q=>[q.q,q])).values()];
   return {...source.rows[0],title:episode.title,start_sec:episode.start,end_sec:episode.end,script:animationSourceText(lines),
-    pack:{words:words.map(word=>({word:word.word,meaning:word.meaning,example:word.example,time:word.start,imageUrl:word.imageUrl??undefined})),questions,
+    pack:{words:words.map(word=>({word:word.word,meaning:word.meaning,example:word.example,exampleKo:word.exampleKo,definition:word.definition,exampleOrigin:word.basis==='script'?'script':'recommended',time:word.start,imageUrl:word.imageUrl??undefined})),questions,
       scene:{range:{start:episode.start,end:episode.end},
         expression:teaching.find(t=>t.expression)?.expression,
         print:Object.assign({},...teaching.map(t=>t.print)),questionEvidence:Object.assign({},...teaching.map(t=>t.questionEvidence)),
@@ -70,7 +70,7 @@ export function animationSelectedClip(material:EpisodeMaterial,chapterStarts:num
  const words=material.words.filter(w=>wordIds.includes(w.id)&&w.chapterIds.some(i=>chapterStarts.includes(material.chapters[i].start)));
  const lines=material.lines.filter(l=>inSelection(l.start)&&selected.some(c=>l.start>=c.start&&l.end<=c.end));
  return {...clip,start_sec:selected[0]?.start??material.episode.start,end_sec:selected.at(-1)?.end??material.episode.end,script:animationSourceText(lines),
-  pack:{words:words.map(w=>({word:w.word,meaning:w.meaning,example:w.example,time:w.start,imageUrl:w.imageUrl??undefined})),questions:[...new Map(questions.map(q=>[q.q,q])).values()],scene:{range:{start:selected[0]?.start??0,end:selected.at(-1)?.end??0},
+  pack:{words:words.map(w=>({word:w.word,meaning:w.meaning,example:w.example,exampleKo:w.exampleKo,definition:w.definition,exampleOrigin:w.basis==='script'?'script':'recommended',time:w.start,imageUrl:w.imageUrl??undefined})),questions:[...new Map(questions.map(q=>[q.q,q])).values()],scene:{range:{start:selected[0]?.start??0,end:selected.at(-1)?.end??0},
    expression:expressions[0]?{...expressions[0],explanation:expressions[0].explanation??''}:undefined,choices:Object.assign({},...rows.map(row=>sceneTeaching(row).choices),...chapterData.map(c=>Object.fromEntries(c.questions.map(q=>[q.q,q.choices])))),
-   scrambleSentences:lines.map(l=>l.en),print:Object.assign({},...rows.map(row=>sceneTeaching(row).print)),wordPictures:Object.assign({},...rows.map(row=>sceneTeaching(row).wordPictures))}}};
+   definitions:clip.pack.scene?.definitions,scrambleSentences:lines.map(l=>l.en),print:Object.assign({},...rows.map(row=>sceneTeaching(row).print)),wordPictures:Object.assign({},...rows.map(row=>sceneTeaching(row).wordPictures))}}};
 }

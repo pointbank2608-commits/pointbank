@@ -37,3 +37,13 @@ export function episodeGroupLesson(material:EpisodeMaterial,selection:EpisodeGro
   slides.push(lessonBoard('오늘 배운 내용 총정리',['어떤 상황에서 어떤 뜻으로 말했나요?','오늘 고른 표현을 새로운 상황에 써 보세요.'],5,'whiteboard'));
   return {name:episode.title,slides};
 }
+
+/** Direct episode playback uses the same selected materials as lesson creation. */
+export function episodeClassroomSlide(material:EpisodeMaterial,selection:EpisodeGroupSelection):VideoSlide{
+ const selected=animationSelectedClip(material,selection.chapterStarts,selection.wordIds);
+ const video=episodeGroupLesson(material,{...selection,chapterStarts:selection.chapterStarts.length?selection.chapterStarts:material.chapters.map(c=>c.start)}).slides.find((s):s is VideoSlide=>s.kind==='video')!;
+ return {...video,id:material.episode.id+'/classroom',startSec:material.episode.start,endSec:material.episode.end,
+  source:selected.script,chapters:material.chapters.map(c=>({...c,selected:selection.chapterStarts.includes(c.start)})),
+  timedQuestions:selection.timedQuestions,
+  animationSession:{...video.animationSession!,source:selected.script,words:selected.pack.words??[],practiceSentences:selected.pack.scene?.scrambleSentences??[]}};
+}

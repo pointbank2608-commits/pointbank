@@ -4,7 +4,7 @@ import {parseShadowText} from './shadowLines';
 import {withSource} from './soloBoard';
 import type {SoloStep} from './soloLessons';
 import type {SoloVideoDraft} from './soloVideoTemplate';
-import {sceneWordPicture} from './animationScene';
+import {sceneTeaching,sceneWordPicture} from './animationScene';
 import {excludedAnimationSources} from './animationExclusions';
 import {chapterTeaching} from '../data/animationChapterTeaching';
 
@@ -56,7 +56,7 @@ export function animationEpisodeLibrary(clips:VideoClip[]){
     const lines=[...new Map([...source.lines.filter(line=>line.start>=episode.start&&line.end<=episode.end),...(chapterTeaching[episode.id]?.lines??[])].map(line=>[`${line.start}:${line.en}`,line])).values()].sort((a,b)=>a.start-b.start);
     const chapters=episodeChapters(episode).map((chapter,index)=>source.youtubeId==='yCzDip2ma9o'&&beeCommunication[index]
       ?{...chapter,providerTitle:chapter.title,...beeCommunication[index]}:chapter);
-    const words=new Map<string,{id:string;word:string;meaning:string;imageUrl:string|null;example:string;start:number;end:number;chapterIds:number[];scriptChapterIds:number[];basis:'script'|'scene-context'}>();
+    const words=new Map<string,{id:string;word:string;meaning:string;imageUrl:string|null;example:string;exampleKo?:string;definition?:string;start:number;end:number;chapterIds:number[];scriptChapterIds:number[];basis:'script'|'scene-context'}>();
     for(const row of source.rows)for(const word of row.pack.words??[]){
       const evidence=lines.find(line=>includesWord(line.en,word.word)||norm(line.en)===norm(word.example));
       if(!evidence||!word.word.trim()||!word.meaning.trim())continue;
@@ -64,7 +64,7 @@ export function animationEpisodeLibrary(clips:VideoClip[]){
       const appearances=lines.filter(line=>includesWord(line.en,word.word)||norm(line.en)===norm(word.example));
       const chapterIds=chapters.flatMap((chapter,index)=>appearances.some(line=>line.start>=chapter.start&&line.start<chapter.end)?[index]:[]);
       words.set(key,{id:`${episode.id}/word/${encodeURIComponent(key)}`,word:word.word,meaning:word.meaning,
-        imageUrl:word.imageUrl??sceneWordPicture(row,word.word,word.meaning)??null,example:evidence.en,start:evidence.start,end:evidence.end,chapterIds,scriptChapterIds:[...chapterIds],basis:'script'});
+        imageUrl:word.imageUrl??sceneWordPicture(row,word.word,word.meaning)??null,example:evidence.en,exampleKo:evidence.ko||(norm(evidence.en)===norm(word.example)?word.exampleKo:undefined),definition:sceneTeaching(row).definitions?.[word.word]??chapterTeaching[episode.id]?.definitions?.[word.word],start:evidence.start,end:evidence.end,chapterIds,scriptChapterIds:[...chapterIds],basis:'script'});
     }
     for(const [chapterIndex,chapter] of chapters.entries())for(const word of chapter.words??[]){
       if(!word.word.trim()||!word.meaning.trim())continue;
@@ -72,7 +72,7 @@ export function animationEpisodeLibrary(clips:VideoClip[]){
       if(existing){if(!existing.chapterIds.includes(chapterIndex))existing.chapterIds.push(chapterIndex);continue;}
       const evidence=lines.find(line=>line.start>=chapter.start&&line.start<chapter.end&&includesWord(line.en,word.word));
       words.set(key,{id:`${episode.id}/word/${encodeURIComponent(key)}`,word:word.word,meaning:word.meaning,imageUrl:word.imageUrl??null,
-        example:evidence?.en??'',start:evidence?.start??chapter.start,end:evidence?.end??chapter.end,chapterIds:[chapterIndex],scriptChapterIds:evidence?[chapterIndex]:[],basis:evidence?'script':'scene-context'});
+        example:evidence?.en??'',exampleKo:evidence?.ko,definition:chapterTeaching[episode.id]?.definitions?.[word.word]??source.rows.map(row=>sceneTeaching(row).definitions?.[word.word]).find(Boolean),start:evidence?.start??chapter.start,end:evidence?.end??chapter.end,chapterIds:[chapterIndex],scriptChapterIds:evidence?[chapterIndex]:[],basis:evidence?'script':'scene-context'});
     }
     return {episode,source,lines,chapters,words:[...words.values()]};
   }));

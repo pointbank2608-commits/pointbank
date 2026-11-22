@@ -1,6 +1,11 @@
-import {useMemo,useRef,useState} from 'react';
+import {useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import PlainTeachingVideo,{type TeachingVideoControl} from '../PlainTeachingVideo';
+import type {TeachingVideoControl} from '../PlainTeachingVideo';
+import AnimationClassroomPlayer from '../AnimationClassroomPlayer';
+import {episodeClassroomSlide} from '../../lib/animationEpisodeGroup';
+import {fetchAllCurriculumLessons} from '../../lib/api';
+import {findVideoQuestionLesson} from '../../lib/videoQuestionLessons';
+import type {VideoQuestion} from '../../lib/videoQuestions';
 import {episodeLessonDraft,type EpisodeMaterial} from '../../lib/animationEpisodes';
 import {sourceTime} from '../../lib/animationSources';
 import {VIDEO_LESSON_MINUTES} from '../../lib/caillouVideoCourse';
@@ -13,7 +18,9 @@ import {useNavigate} from 'react-router-dom';
 
 export default function EpisodeLessonPanel({material,academyId,classId,teacherId,onBack,onSaved,onGroupLesson,onGroupPreview}:{material:EpisodeMaterial;academyId:string;classId:string|null;teacherId?:string;onBack:()=>void;onSaved?:()=>void;onGroupLesson?:(selection:EpisodeGroupSelection)=>void;onGroupPreview?:(selection:EpisodeGroupSelection)=>void}){
   const {t}=useTranslation();const {notify}=useToast();const navigate=useNavigate();const [worksheetError,setWorksheetError]=useState('');
-  const {episode,source,chapters,words}=material;
+  const {episode,source,chapters,words}=material;const clipId=source.rows[0].id;
+  const [savedQuestions,setSavedQuestions]=useState<VideoQuestion[]>();
+  useEffect(()=>{let live=true;if(academyId&&teacherId)void fetchAllCurriculumLessons(academyId).then(rows=>{if(live)setSavedQuestions(findVideoQuestionLesson(rows,clipId,teacherId,episode.id)?.slide.timedQuestions);}).catch(()=>{});return()=>{live=false;};},[academyId,teacherId,episode.id,clipId]);
   const [selectedChapters,setSelectedChapters]=useState(chapters.map((_,index)=>index));
   const [selectedWords,setSelectedWords]=useState(words.map(word=>word.id));
   const [scope,setScope]=useState<'episode'|'chapters'>('episode');
@@ -23,13 +30,16 @@ export default function EpisodeLessonPanel({material,academyId,classId,teacherId
   const [ready,setReady]=useState(false);
   const [now,setNow]=useState(episode.start);
   const [saving,setSaving]=useState(false);const saveLock=useRef(false);
-  const control=useRef<TeachingVideoControl|null>(null);
+  const control=useRef<TeachingVideoControl|null>(null);const stage=useRef<HTMLDivElement|null>(null);
+  useLayoutEffect(()=>{let frame=0;const measure=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{const el=stage.current;if(el)el.style.height=Math.max(280,Math.min(800,window.innerHeight-Math.max(70,el.getBoundingClientRect().top)-12))+'px';});};measure();window.addEventListener('resize',measure);window.addEventListener('scroll',measure,true);return()=>{cancelAnimationFrame(frame);window.removeEventListener('resize',measure);window.removeEventListener('scroll',measure,true);};},[episode.id]);
   const activeChapter=Math.max(0,chapters.findIndex(chapter=>now>=chapter.start&&now<chapter.end));
   const visibleWords=scope==='episode'?words:words.filter(word=>word.chapterIds.includes(wordChapter));
-  const effective=words.filter(word=>selectedWords.includes(word.id)&&word.chapterIds.some(index=>selectedChapters.includes(index)));
+  const effective=useMemo(()=>words.filter(word=>selectedWords.includes(word.id)&&word.chapterIds.some(index=>selectedChapters.includes(index))),[words,selectedWords,selectedChapters]);
   const draft=useMemo(()=>episodeLessonDraft(material,selectedChapters,selectedWords,minutes),[material,selectedChapters,selectedWords,minutes]);
   const hasActivities=draft.steps.some(step=>step.t==='meet'||step.t==='lineSing');
-  const groupSelection=():EpisodeGroupSelection=>({episodeId:episode.id,chapterStarts:chapters.filter((_,index)=>selectedChapters.includes(index)).map(chapter=>chapter.start),wordIds:effective.map(word=>word.id),minutes});
+  const selection=useMemo<EpisodeGroupSelection>(()=>({episodeId:episode.id,chapterStarts:chapters.filter((_,index)=>selectedChapters.includes(index)).map(chapter=>chapter.start),wordIds:effective.map(word=>word.id),minutes}),[episode.id,chapters,selectedChapters,effective,minutes]);
+  const groupSelection=()=>selection;
+  const classroom=useMemo(()=>episodeClassroomSlide(material,{...selection,timedQuestions:savedQuestions}),[material,selection,savedQuestions]);
   function toggleChapter(index:number){
     const next=selectedChapters.includes(index)?selectedChapters.filter(value=>value!==index):[...selectedChapters,index].sort((a,b)=>a-b);
     setSelectedChapters(next);
@@ -39,9 +49,9 @@ export default function EpisodeLessonPanel({material,academyId,classId,teacherId
   return <section className="min-w-0 space-y-5 break-words" data-episode-detail={episode.id}>
     <button type="button" onClick={onBack} className="min-h-11 font-bold text-primary">← {t('animationSolo.backEpisodes')}</button>
     <header><p className="text-sm font-bold text-primary">{source.series}</p><div className="flex items-center gap-4"><h2 className="mt-1 min-w-0 text-2xl font-bold text-deep-navy">{episode.title}</h2>{onGroupLesson&&<button className="min-h-12 shrink-0 rounded-xl bg-primary px-5 font-bold text-white" onClick={()=>{if(!selectedChapters.length){setWorksheetError('워크시트를 열려면 챕터를 하나 이상 선택해 주세요.');return;}control.current?.pause();const params=new URLSearchParams({episode:episode.id,chapters:JSON.stringify(groupSelection().chapterStarts),words:JSON.stringify(effective.map(w=>w.id))});navigate('/materials/video-worksheet?'+params.toString());}}>워크시트</button>}</div>{worksheetError&&<p role="alert" className="mt-2 text-red-700">{worksheetError}</p>}<p className="mt-2 text-sm">{t('animationSolo.episodeDuration',{time:sourceTime(episode.end-episode.start)})} · 챕터 {chapters.length}개</p>{episode.boundary?.method==='original-video-and-indexed-frames'&&<p className="mt-2 text-sm text-on-surface-variant">{t('animationSolo.boundaryNotice',{seconds:episode.boundary.sampleSeconds})}</p>}{episode.boundary?.revision===2&&<p className="mt-2 text-sm text-on-surface-variant">{t('animationSolo.boundaryVerifiedNotice')}</p>}</header>
-    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] items-start gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(260px,1fr)]">
-      <div className="h-[480px] min-w-0 w-full"><PlainTeachingVideo key={episode.id} videoUrl={`https://www.youtube.com/watch?v=${source.youtubeId}`} title={episode.title} start={episode.start} end={episode.end} simple controlRef={control} chapters={chapters} onReady={()=>setReady(true)} onTime={time=>setNow(time)} onChapterSelect={index=>{setScope('chapters');setWordChapter(index);}}/></div>
-      <fieldset className="max-h-[480px] min-w-0 space-y-2 overflow-y-auto rounded-2xl border border-outline-variant bg-white p-4"><legend className="px-1 font-bold">{t('animationSolo.chooseChapters')}</legend>
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] items-start gap-5">
+      <div ref={stage} className="episode-classroom-stage min-w-0 w-full"><AnimationClassroomPlayer slide={classroom} controlRef={control} onReady={()=>setReady(true)} onTime={setNow} onQuestionsChange={setSavedQuestions}/></div>
+      <fieldset className="grid max-h-[480px] min-w-0 gap-2 md:grid-cols-3 overflow-y-auto rounded-2xl border border-outline-variant bg-white p-4"><legend className="px-1 font-bold">{t('animationSolo.chooseChapters')}</legend>
         {!episode.chapters.length&&<p className="text-sm text-on-surface-variant">{t('animationSolo.chapterPendingDetail')}</p>}
         {chapters.map((chapter,index)=><div key={chapter.start} className={'flex items-center gap-3 rounded-xl border p-3 '+(activeChapter===index?'border-primary bg-sky-50':'border-outline-variant')}>
           <input aria-label={t('animationSolo.selectChapter',{title:chapter.title})} type="checkbox" checked={selectedChapters.includes(index)} onChange={()=>toggleChapter(index)}/>

@@ -8,7 +8,7 @@ try{
  const clips=JSON.parse(await readFile(process.argv[2],'utf8'));
  const {animationEpisodeLibrary}=await server.ssrLoadModule('/src/lib/animationEpisodes.ts');
  const {animationSelectedClip,animationPracticeLines}=await server.ssrLoadModule('/src/lib/animationSession.ts');
- const {episodeGroupLesson}=await server.ssrLoadModule('/src/lib/animationEpisodeGroup.ts');
+ const {episodeGroupLesson,episodeClassroomSlide}=await server.ssrLoadModule('/src/lib/animationEpisodeGroup.ts');
  const {animationPrintActivities}=await server.ssrLoadModule('/src/lib/animationPrint.ts');
  const before=JSON.stringify(clips),materials=animationEpisodeLibrary(clips).episodes;
  const caillou=materials.find(m=>m.episode.id==='DhKIqYVB_Ws:episode:0');
@@ -32,6 +32,14 @@ try{
   assert.equal(activities.find(t=>t.id==='study').items.length,selected.pack.words.length);
   assert.equal(activities.find(t=>t.id==='questionChoice').items.length,chapterIndices.length*2);
  }
+ const printWords=caillou.words.filter(w=>['copy','glasses'].includes(w.word));
+ const scoped=animationSelectedClip(caillou,[caillou.chapters[1].start],printWords.map(w=>w.id));
+ const study=printing(scoped).find(t=>t.id==='study').items;
+ assert.equal(study.length,2);
+ for(const item of study){assert.ok(item.meaning);assert.ok(item.definition);assert.ok(item.exampleTranslation);assert.equal(item.exampleOrigin,'script');assert.ok(caillou.lines.some(l=>l.en===item.exampleSentence&&l.ko===item.exampleTranslation));}
+ const direct=episodeClassroomSlide(caillou,{episodeId:caillou.episode.id,chapterStarts:[caillou.chapters[1].start],wordIds:printWords.map(w=>w.id),minutes:30});
+ assert.equal(direct.startSec,caillou.episode.start);assert.equal(direct.endSec,caillou.episode.end);
+ assert.deepEqual(direct.chapters.map(c=>c.selected),[false,true,false]);assert.deepEqual(direct.animationSession.words.map(w=>w.word),['copy','glasses']);
  assert.deepEqual(animationSelectedClip(caillou,[],[]).pack.words,[]);
  assert.deepEqual(animationPracticeLines('An untimed sentence.\nAnother sentence.'),[],'Untimed text never receives guessed timestamps');
  for(const m of materials){
