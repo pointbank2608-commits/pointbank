@@ -2,6 +2,8 @@
 .ad-wordclaw .ad-play { flex: 1 0 auto; }
 .ad-wordclaw .ad-prompt img { max-height: 5rem; object-fit: contain; }
 .ad-wordclaw .ad-prompt > span { white-space: nowrap; }
+.claw-meaning-prompt { display:grid;gap:4px;min-width:0;overflow-wrap:anywhere; }
+.claw-meaning-prompt small { font-size:.55em;font-weight:650; }
 .claw-cabinet {
   --cabinet-edge: #512864;
   --glass-padding: 1rem;
