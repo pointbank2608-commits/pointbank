@@ -124,13 +124,13 @@ export function detectiveRoundSize(available: number, limit?: number): number | 
   return Number.isSafeInteger(limit) && limit >= 1 ? Math.min(available, limit) : null;
 }
 
-export function adventureErrors(type: AdventureType,c: AdventureConfig): string[] {
+export function adventureErrors(type: AdventureType,c: AdventureConfig,{pictureMode=false}:{pictureMode?:boolean}={}): string[] {
   const out:string[]=[];
   if(type!=='grammardetective'&&(!Number.isInteger(c.count)||c.count<1||c.count>MAX_ADVENTURE_QUESTIONS))out.push(`문제 개수는 1~${MAX_ADVENTURE_QUESTIONS}개로 입력해 주세요.`);
   if(![0,20,30,45,60,90].includes(c.seconds))out.push('제한 시간을 다시 선택해 주세요.');
   if(type==='balloonpop'||type==='wordfishing'||type==='wordclaw'){
     const unique=new Set(c.words.map(w=>wordKey(w.word)));
-    if(c.words.some(w=>!w.word.trim()||((type==='balloonpop'||type==='wordfishing')&&!w.meaning.trim())))out.push('영어 단어와 뜻을 빠짐없이 입력해 주세요.');
+    if(c.words.some(w=>!w.word.trim()||((type!=='wordclaw'||!pictureMode)&&!w.meaning.trim())))out.push('영어 단어와 뜻을 빠짐없이 입력해 주세요.');
     if(type==='wordclaw'){
       if(!c.words.length||unique.size!==c.words.length)out.push('뽑기에는 서로 다른 단어를 1개 이상 사용해 주세요.');
     }else{
@@ -180,7 +180,8 @@ export type AdventureRound =
  | {kind:'sentence';id:string;sentence:AdventureSentence}
  | {kind:'case';id:string;item:DetectiveCase}
  | {kind:'clue';id:string;clue:IslandClue}
- | {kind:'draw';id:string; picture?: { imageUrl: string; answer: string; words: AdventureWord[] }};
+ | {kind:'draw';id:string;word:AdventureWord;choices:AdventureWord[];picture?:undefined}
+ | {kind:'draw';id:string;picture:{imageUrl:string;answer:string;words:AdventureWord[]};word?:undefined;choices?:undefined};
 export function adventureRounds(type: AdventureType,c: AdventureConfig): AdventureRound[] {
   let rows:AdventureRound[];
   if(type==='balloonpop'||type==='wordfishing'){
@@ -189,7 +190,7 @@ export function adventureRounds(type: AdventureType,c: AdventureConfig): Adventu
   }else if(type==='wordtrain'||type==='sentencerocket')rows=c.sentences.map(sentence=>({kind:'sentence',id:sentence.id,sentence}));
   else if(type==='grammardetective')rows=c.cases.map(item=>({kind:'case',id:item.id,item}));
   else if(type==='treasurehunt')rows=c.clues.map(clue=>({kind:'clue',id:clue.id,clue}));
-  else rows=c.words.map(word=>({kind:'draw',id:word.id}));
+  else rows=c.words.map(word=>({kind:'draw',id:word.id,word,choices:shuffled([word,...shuffled(c.words.filter(other=>wordKey(other.word)!==wordKey(word.word))).slice(0,11)])}));
   if(type==='grammardetective'){
     const roundSize=detectiveRoundSize(rows.length,c.detectiveQuestionLimit);
     return (c.shuffle?shuffled(rows):rows).slice(0,roundSize??0);

@@ -13,7 +13,8 @@ const SEPARATE = new Set<GameType>(['wordhoops', 'tugofwar', 'quizshow']);
 const EXTRA_WORD_GAMES = new Set<GameType>(['shopping', 'watermelon', 'order', 'ladder']);
 
 export function pictureWordModeKind(type?: GameType): 'native' | 'turn' | null {
-  if (!type || SEPARATE.has(type)) return null;
+  // Telepathy predicts an egg reveal; it does not ask a picture question between moves.
+  if (!type || type === 'telepathy' || SEPARATE.has(type)) return null;
   if (NATIVE.has(type)) return 'native';
   const game = GAME_CATALOG.find(game => game.type === type);
   return game && (EXTRA_WORD_GAMES.has(type) || gameBrowseGroups(game).includes('word')) ? 'turn' : null;

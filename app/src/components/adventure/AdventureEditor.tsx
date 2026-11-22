@@ -16,7 +16,7 @@ function casesFromQuestions(questions: ReturnType<typeof builtInDetectiveQuestio
   return questions.map(({variant,context})=>detectiveCaseFromVariant(variant,undefined,context||undefined));
 }
 
-export default function AdventureEditor({type,value,lists,loading,busy,onApply,onDirty}:{type:AdventureType;value:AdventureConfig;lists:WordList[];loading:boolean;busy:boolean;onApply:(value:AdventureConfig,start?:boolean)=>Promise<void>;onDirty:(dirty:boolean)=>void}){
+export default function AdventureEditor({type,value,lists,loading,busy,onApply,onDirty,pictureMode=false}:{type:AdventureType;value:AdventureConfig;lists:WordList[];loading:boolean;busy:boolean;onApply:(value:AdventureConfig,start?:boolean)=>Promise<void>;onDirty:(dirty:boolean)=>void;pictureMode?:boolean}){
   const {t,i18n}=useTranslation();const root=useRef<HTMLElement>(null);
   const en=i18n.resolvedLanguage?.startsWith('en');
   const [c,setC]=useState(()=>structuredClone(value));const [wordText,setWordText]=useState(()=>value.words.map(w=>`${w.word} / ${w.meaning} / ${w.tags.join(', ')}`).join('\n'));
@@ -90,7 +90,7 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
       onDirty(false);
       return true;
     }
-    if((showAuthoring&&draftDirty)||adventureErrors(type,prepared).length){
+    if((showAuthoring&&draftDirty)||adventureErrors(type,prepared,{pictureMode}).length){
       const authoring=wordPreview?detectiveWordAuthoring.current:detectiveAuthoring.current;
       if(authoring)authoring.open=true;
       root.current?.querySelector<HTMLElement>('[role=alert]')?.scrollIntoView({block:'nearest'});
@@ -144,7 +144,7 @@ export default function AdventureEditor({type,value,lists,loading,busy,onApply,o
       ? '지금 미리보기에는 적용할 문제가 없어요. 문법이나 입력 내용을 바꿔 보세요.'
       : '';
   const errors = showAuthoring&&draftQuestions.length || !showAuthoring&&nextSource
-    ? [] : [...(showAuthoring&&draftError ? [draftError] : []), ...adventureErrors(type,prepared)];
+    ? [] : [...(showAuthoring&&draftError ? [draftError] : []), ...adventureErrors(type,prepared,{pictureMode})];
   const vocab=['balloonpop','wordfishing','wordclaw'].includes(type);const sentence=type==='wordtrain'||type==='sentencerocket';
   function set<K extends keyof AdventureConfig>(key:K,v:AdventureConfig[K]){edit({...c,[key]:v});}
   function targetSelect(v:IslandTarget,onChange:(v:IslandTarget)=>void){return <select value={targetKey(v)} onChange={e=>{const [placeId,relation]=e.target.value.split(':');onChange({placeId,relation:relation as IslandTarget['relation']});}}>{c.places.flatMap(p=>RELATIONS.map(relation=><option key={`${p.id}:${relation}`} value={`${p.id}:${relation}`}>{p.name} · {RELATION_NAMES[relation]}</option>))}</select>;}

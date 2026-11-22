@@ -1,10 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import EditOnly from '../components/EditOnly';
 import ClassChipRow from '../components/ClassChipRow';
 import Telepathy from '../components/Telepathy';
-import { normalizeTelepathyConfig, TELEPATHY_DEFAULTS } from '../lib/telepathy';
+import { normalizeTelepathyConfig, telepathyPlayers, TELEPATHY_DEFAULTS } from '../lib/telepathy';
+import {useAuth} from '../context/AuthContext';
+import {ABSENT_EVENT,loadAbsent} from '../lib/absent';
+import {isShowOrderOn,loadTeamOrder,TEAM_ORDER_EVENT} from '../lib/teamOrder';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import { useGameTemplates } from '../lib/useGameTemplates';
@@ -56,6 +59,18 @@ export default function TelepathyPage() {
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
   const cfg = normalizeTelepathyConfig(selected?.config);
+  const {session,academy}=useAuth();
+  const [orderRevision,setOrderRevision]=useState(0);
+  useEffect(()=>{
+    const refresh=()=>setOrderRevision(value=>value+1);
+    window.addEventListener(TEAM_ORDER_EVENT,refresh);window.addEventListener(ABSENT_EVENT,refresh);
+    return()=>{window.removeEventListener(TEAM_ORDER_EVENT,refresh);window.removeEventListener(ABSENT_EVENT,refresh);};
+  },[]);
+  const attending=useMemo(()=>{void orderRevision;const absent=new Set(loadAbsent(classId??''));return roster.filter(row=>!absent.has(row.id));},[roster,classId,orderRevision]);
+  const scope=`${session?.user.id}:${academy?.id}`;
+  const order=useMemo(()=>{void orderRevision;return attending.length?loadTeamOrder(attending,scope):null;},[attending,scope,orderRevision]);
+  const mode=selected?.config.telepathyMode??(!isShowOrderOn()?'none':order?.mode==='team'?'team':'solo');
+  const players=telepathyPlayers(mode,attending,order,cfg.teams,n=>t('gameTelepathy.teamLabel',{n}),classId?'':t('gameTelepathy.me'));
 
   /** 문장 목록의 문장(+해석)을 "영어 | 해석" 한 줄로 담는다 */
 
@@ -204,7 +219,7 @@ export default function TelepathyPage() {
           <EditOnly>{classPicker}</EditOnly>
           <div>
             <GameThemeFrame gameType="telepathy" roster={roster} className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]">
-              <Telepathy items={demoItems} teams={cfg.teams} choices={cfg.choices} rounds={cfg.rounds} seconds={cfg.seconds} />
+              <Telepathy items={demoItems} teams={cfg.teams} mode={mode} players={players} choices={cfg.choices} rounds={cfg.rounds} seconds={cfg.seconds} />
             </GameThemeFrame>
             <div className="mt-3 text-center font-body-md text-body-md text-on-surface-variant">
               {isStaff ? t('gameTelepathy.emptyStaff') : t('gameTelepathy.emptyStudent')}
@@ -226,7 +241,7 @@ export default function TelepathyPage() {
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-4 md:p-6 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <Telepathy key={roundKey} items={selected.items} teams={cfg.teams} choices={cfg.choices} rounds={cfg.rounds} seconds={cfg.seconds} />
+            <Telepathy key={roundKey} items={selected.items} teams={cfg.teams} mode={mode} players={players} choices={cfg.choices} rounds={cfg.rounds} seconds={cfg.seconds} />
           </GameThemeFrame>
 
           <div className="space-y-4">

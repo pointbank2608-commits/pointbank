@@ -5,12 +5,27 @@
  * 순수 로직만 이 파일에 둔다(화면은 components/Telepathy.tsx).
  */
 import { SHUFFLE_ANIMALS, drawLabels, shuffled, type Rng } from './shuffleFind';
+import type {GameItem} from './types';
+import type {TeamOrderState} from './teamOrder';
 
 export { parseShuffleLabel as parseTelepathyLabel, rankTeams } from './shuffleFind';
 
 export const TELEPATHY_DEFAULTS = { teams: 3, choices: 3, rounds: 8, seconds: 20 };
 /** 적는 시간(초): 0은 시간 제한 없음(선생님이 직접 "공개"를 누른다) */
 export const TELEPATHY_SECONDS = [0, 10, 15, 20, 30, 45, 60] as const;
+export type TelepathyMode = 'none' | 'solo' | 'team';
+export interface TelepathyPlayer {id:string;label:string}
+export function telepathyPlayers(mode:TelepathyMode,roster:GameItem[],order:TeamOrderState|null,teams:number,teamLabel:(n:number)=>string,soloLabel:string):TelepathyPlayer[]{
+  if(mode==='none')return [];
+  if(mode==='solo'){
+    if(!roster.length)return soloLabel?[{id:'solo',label:soloLabel}]:[];
+    const ids=order?.mode==='individual'?order.order:roster.map(row=>row.id);
+    return ids.flatMap(id=>{const row=roster.find(student=>student.id===id);return row?[{id:row.id,label:row.label}]:[];});
+  }
+  const ids=Array.from({length:teams},(_,i)=>`team-${i}`);
+  const sorted=order?.mode==='team'?[...order.order.filter(id=>ids.includes(id)),...ids.filter(id=>!order.order.includes(id))]:ids;
+  return sorted.map(id=>({id,label:order?.teamNames?.[id]||teamLabel(Number(id.slice(5))+1)}));
+}
 
 export interface TelepathyConfig {
   teams: number;
