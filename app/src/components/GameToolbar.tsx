@@ -113,7 +113,7 @@ const SIMPLE_OPTS: Record<string, SimpleOpt[]> = {
     { key: 'hoopsSeconds', ko: '제한 시간(시간제일 때)', en: 'Time limit (timed)', kind: 'choice', def: '60', parse: Number, choices: [{ v: '30', ko: '30초', en: '30s' }, { v: '45', ko: '45초', en: '45s' }, { v: '60', ko: '1분', en: '1 min' }, { v: '90', ko: '1분 30초', en: '1:30' }, { v: '120', ko: '2분', en: '2 min' }, { v: '180', ko: '3분', en: '3 min' }] },
     { key: 'hoopsShots', ko: '슛 수(정해진 슛일 때)', en: 'Shots', kind: 'number', def: 10, min: 3, max: 30 },
   ],
-  telepathy: [{ key: 'telepathyTeams', ko: '팀 수', en: 'Teams', kind: 'number', def: 3, min: 2, max: 6 }, { key: 'telepathyChoices', ko: '후보 수', en: 'Choices', kind: 'number', def: 3, min: 3, max: 4 }, { key: 'telepathyRounds', ko: '판 수', en: 'Rounds', kind: 'number', def: 8, min: 1, max: 30 }, { key: 'telepathySeconds', ko: '적는 시간', en: 'Time', kind: 'choice', def: '20', parse: Number, choices: [{ v: '0', ko: '제한 없음', en: 'No limit' }, { v: '10', ko: '10초', en: '10s' }, { v: '15', ko: '15초', en: '15s' }, { v: '20', ko: '20초', en: '20s' }, { v: '30', ko: '30초', en: '30s' }, { v: '45', ko: '45초', en: '45s' }, { v: '60', ko: '60초', en: '60s' }] }],
+  telepathy: [{ key: 'telepathyChoices', ko: '후보 수', en: 'Choices', kind: 'number', def: 3, min: 3, max: 4 }, { key: 'telepathyRounds', ko: '판 수', en: 'Rounds', kind: 'number', def: 8, min: 1, max: 30 }, { key: 'telepathySeconds', ko: '적는 시간', en: 'Time', kind: 'choice', def: '20', parse: Number, choices: [{ v: '0', ko: '제한 없음', en: 'No limit' }, { v: '10', ko: '10초', en: '10s' }, { v: '15', ko: '15초', en: '15s' }, { v: '20', ko: '20초', en: '20s' }, { v: '30', ko: '30초', en: '30s' }, { v: '45', ko: '45초', en: '45s' }, { v: '60', ko: '60초', en: '60s' }] }],
   lightning: [{ key: 'lightningPlayers', ko: '학생 수', en: 'Players', kind: 'number', def: 8, min: 2, max: 40 }, { key: 'lightningMin', ko: '번개 최소(초)', en: 'Min (sec)', kind: 'number', def: 4, min: 2, max: 30 }, { key: 'lightningMax', ko: '번개 최대(초)', en: 'Max (sec)', kind: 'number', def: 12, min: 3, max: 40 }, { key: 'lightningChar', ko: '번개 맞을 친구', en: 'Character', kind: 'choice', def: 'sheep', choices: [{ v: 'sheep', ko: '양 빌리', en: 'Billy' }, { v: 'boy', ko: '남자아이', en: 'Boy' }, { v: 'girl', ko: '여자아이', en: 'Girl' }, { v: 'umbrella', ko: '우산 든 아저씨', en: 'Umbrella man' }, { v: 'zeus', ko: '번개의 신 제우스', en: 'Zeus' }, { v: 'mermaid', ko: '인어공주', en: 'Mermaid' }] }],
   doctor: [{ key: 'doctorKo', ko: '우리말 해석', en: 'Korean', kind: 'choice', def: 'false', parse: (v) => v === 'true', choices: [{ v: 'false', ko: '가려 두기', en: 'Hidden' }, { v: 'true', ko: '처음부터 보여 주기', en: 'Shown' }] }],
   icecream: [{ key: 'iceCreamKo', ko: '우리말 해석', en: 'Korean', kind: 'choice', def: 'false', parse: (v) => v === 'true', choices: [{ v: 'false', ko: '가려 두기', en: 'Hidden' }, { v: 'true', ko: '처음부터 보여 주기', en: 'Shown' }] }, { key: 'iceCreamMenu', ko: '메뉴 수준', en: 'Menu', kind: 'choice', def: 'full', choices: [{ v: 'basic', ko: '쉬운 메뉴(맛 6가지)', en: 'Easy (6 flavours)' }, { v: 'full', ko: '전체 메뉴(맛 9가지)', en: 'Full (9 flavours)' }] }, { key: 'iceCreamCurrency', ko: '가격 기호', en: 'Currency', kind: 'choice', def: '£', choices: [{ v: '$', ko: '$', en: '$' }, { v: '£', ko: '£', en: '£' }] }],
@@ -243,6 +243,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   }, []);
 
   const type = info?.gameType;
+  const savedParticipantMode = type === 'shufflefind' ? info?.selected?.config.shuffleMode : type === 'telepathy' ? info?.selected?.config.telepathyMode : undefined;
   const unified = usesUnifiedGameSettings(type);
   const hasRoundSettings = hasAdventureRoundSettings(type);
   const isDetective = type === 'grammardetective';
@@ -355,8 +356,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     setPPictureList('');
     setPSaved('');
     setPClass(info?.classId || '');
-    const teamCap = isGrammar || isTwoDice ? 4 : type==='telepathy' ? 6 : nativeTeams ? 8 : 6;
-    setPMode(isTwoDice ? info?.selected?.config.twoDiceMode ?? (diceTeams > 1 ? 'team' : 'none') : type==='telepathy' && info?.selected?.config.telepathyMode ? info.selected.config.telepathyMode : isGrammar ? (play.teams > 0 ? 'team' : play.showScore ? 'solo' : 'none') : !isShowOrderOn() ? 'none' : turnState?.mode === 'team' ? 'team' : 'solo');
+    const teamCap = isGrammar || isTwoDice || type === 'shufflefind' ? 4 : type==='telepathy' ? 6 : nativeTeams ? 8 : 6;
+    setPMode(isTwoDice ? info?.selected?.config.twoDiceMode ?? (diceTeams > 1 ? 'team' : 'none') : savedParticipantMode ?? (isGrammar ? (play.teams > 0 ? 'team' : play.showScore ? 'solo' : 'none') : !isShowOrderOn() ? 'none' : turnState?.mode === 'team' ? 'team' : 'solo'));
     setPTeams(Math.min(teamCap, Math.max(2, isTwoDice ? diceTeams : nativeTeams ? (info?.teamCount ?? 2) : (turnState?.mode === 'team' ? turnState.teamCount : play.teams || 2))));
     setPAbsent(info?.classId ? loadAbsent(info.classId) : []);
     setPSound(unified ? info?.selected?.config.adventure?.sound ?? info?.selected?.config.storybook?.sound ?? soundOn : soundOn);
@@ -415,7 +416,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     return () => { live = false; };
   }, [open, pClass]);
 
-  const teamCapOf = () => (isGrammar || isTwoDice ? 4 : type==='telepathy' ? 6 : nativeTeams ? 8 : 6);
+  const teamCapOf = () => (isGrammar || isTwoDice || type === 'shufflefind' ? 4 : type==='telepathy' ? 6 : nativeTeams ? 8 : 6);
   const toggle = (next: Exclude<Open, null>, anchor: HTMLButtonElement) => {
     setPanelAnchor(anchor);
     setOpen((o) => (o === next ? null : next));
@@ -548,9 +549,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       if (lesson?.slideId && info.selected) await info.applyGuide({items: info.selected.items, config: {...info.selected.config, grammarPlay: play}});
       setGrammarPlay(play);
     }
-    if(type==='telepathy'&&info.selected){
-      const config={...info.selected.config,telepathyMode:pMode,...(pMode==='team'?{telepathyTeams:pTeams}:{})};
-      if(config.telepathyMode!==info.selected.config.telepathyMode||config.telepathyTeams!==info.selected.config.telepathyTeams)await info.applyGuide({items:info.selected.items,config});
+    if((type==='telepathy'||type==='shufflefind')&&info.selected){
+      const modeKey=type==='telepathy'?'telepathyMode':'shuffleMode';
+      const teamsKey=type==='telepathy'?'telepathyTeams':'shuffleTeams';
+      const config={...info.selected.config,[modeKey]:pMode,...(pMode==='team'?{[teamsKey]:pTeams}:{})};
+      if(config[modeKey]!==info.selected.config[modeKey]||config[teamsKey]!==info.selected.config[teamsKey])await info.applyGuide({items:info.selected.items,config});
     }else if (nativeTeams && pMode === 'team' && pTeams !== info.teamCount) await info.configureTeams(pTeams);
   });
   const applySettings = () => run(async () => {
