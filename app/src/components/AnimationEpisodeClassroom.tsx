@@ -5,6 +5,7 @@ import {createCurriculumLesson,fetchAllCurriculumLessons,updateCurriculumLesson}
 import {effectiveSlides} from '../lib/lessonSlides';
 import {animationEpisodeClip,animationSourceText} from '../lib/animationSession';
 import {sceneLesson} from '../lib/animationScene';
+import {sourceTime} from '../lib/animationSources';
 import type {EpisodeMaterial} from '../lib/animationEpisodes';
 import type {CurriculumLesson,VideoSlide} from '../lib/types';
 import {findVideoQuestionLesson} from '../lib/videoQuestionLessons';
@@ -50,7 +51,7 @@ export default function AnimationEpisodeClassroom({material,classId,onBack,legac
   };
   return <section className="space-y-4" data-episode-detail={material.episode.id}>
     <button type="button" onClick={onBack}>← 에피소드 목록</button>
-    <header><p>{material.source.series}</p><h2 className="text-2xl font-bold">{material.episode.title}</h2><p>영상 길이 {Math.floor((material.episode.end-material.episode.start)/60)}:{String(Math.floor((material.episode.end-material.episode.start)%60)).padStart(2,'0')} · 챕터 {material.chapters.length}개</p></header>
+    <header><p>{material.source.series}</p><h2 className="text-2xl font-bold">{material.episode.title}</h2><p>영상 길이 {sourceTime(material.episode.end-material.episode.start)} · 챕터 {material.chapters.length}개</p></header>
     <button type="button" className="relative block aspect-video w-full overflow-hidden rounded-2xl bg-slate-900" aria-label="영상 보기" disabled={loading} onClick={()=>void open('playback')}>
       <img src={material.episode.thumbnail??`https://i.ytimg.com/vi/${material.source.youtubeId}/hqdefault.jpg`} alt="" className="h-full w-full object-cover"/>
       <span className="absolute left-1/2 top-1/2 grid h-20 w-20 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-blue-600 text-4xl text-white">▶</span>
