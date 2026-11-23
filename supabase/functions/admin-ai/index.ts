@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.109.0';
 import { FAQ } from '../../../app/src/data/faq.ts';
+import { similarity } from '../../../app/src/lib/ticketMatch.ts';
 
 type Job = { kind: 'ticket' | 'error'; source_id: string; revision: string; attempts: number };
 type ErrorContext = { message: string; page: string | null; stack: string | null } & Record<string, unknown>;
@@ -35,9 +36,8 @@ async function checkAsset(message: string) {
 }
 
 function relevantFaq(faqs: Faq[], question: string) {
-  const query = question.toLowerCase().match(/[가-힣a-z0-9]{2,}/g) ?? [];
-  const score = (faq: Faq) => query.filter((word) => faq.q_ko.toLowerCase().includes(word)).length;
-  return faqs.map((faq) => ({ faq, score: score(faq) })).filter((item) => item.score > 0)
+  const score = (faq: Faq) => similarity(question, faq.q_ko) * 0.7 + similarity(question, faq.a_ko) * 0.3;
+  return faqs.map((faq) => ({ faq, score: score(faq) })).filter((item) => item.score > 0.03)
     .sort((a, b) => b.score - a.score).slice(0, 4)
     .map(({ faq }) => ({ question: redact(faq.q_ko, 180), answer: redact(faq.a_ko, 550) }));
 }
