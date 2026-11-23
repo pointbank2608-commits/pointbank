@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatPhone } from '../lib/studentPortal';
-import { loadParentAccount, type ParentAccount } from '../lib/parentPortal';
-import { saveStudentInfo } from '../lib/studentInfo';
+import SavedPhone from './SavedPhone';
+import { formatPhone, revealGuardianPhone } from '../lib/studentPortal';
+import type { ParentAccount } from '../lib/parentPortal';
+import { loadStudentContacts, revealParentPhone, saveStudentInfo } from '../lib/studentInfo';
 import type { Student } from '../lib/types';
 
 /** Shared student registration and editing form, including parent portal access. */
@@ -19,6 +20,9 @@ export default function AddStudentModal({
   const { t } = useTranslation();
   const [name, setName] = useState(student?.name ?? '');
   const [phone, setPhone] = useState('');
+  const [loginLast4, setLoginLast4] = useState<string | null>(null);
+  const [canReveal, setCanReveal] = useState(false);
+  const [changeLogin, setChangeLogin] = useState(false);
   const [consent, setConsent] = useState(false);
   const [parent, setParent] = useState<ParentAccount | null>(null);
   const [parentName, setParentName] = useState('');
@@ -38,8 +42,10 @@ export default function AddStudentModal({
     let current = true;
     setLoading(true);
     setLoadFailed(false);
-    loadParentAccount(student.id).then((account) => {
+    loadStudentContacts(student.id).then(({parent: account, login_last4, can_reveal}) => {
       if (!current) return;
+      setLoginLast4(login_last4);
+      setCanReveal(can_reveal);
       setParent(account);
       setParentName(account?.name ?? '');
       setParentEditing(!account);
@@ -101,12 +107,20 @@ export default function AddStudentModal({
           <input autoFocus value={name} maxLength={100} onChange={(event) => setName(event.target.value)} disabled={busy} className={inputStyle} />
         </label>
         {sameName && <p className="rounded-lg bg-warm-yellow/25 p-3 text-sm">{t('addStudent.sameName')}</p>}
-        <label className="block space-y-1">
-          <span className="text-sm font-bold">{t(student ? 'parentPortal.studentLoginEdit' : 'addStudent.phone')}</span>
+        {student && !loading && !loadFailed && loginLast4 && <div className="space-y-1">
+          <SavedPhone key={student.id} label={t('parentPortal.savedLoginPhone')} last4={loginLast4} canReveal={canReveal}
+            reveal={() => revealGuardianPhone(student.id)} />
+          {canReveal && <button type="button" disabled={busy} className="min-h-10 text-sm text-primary underline"
+            onClick={() => { setChangeLogin(!changeLogin); setPhone(''); setConsent(false); }}>
+            {t(changeLogin ? 'common.cancel' : 'parentPortal.changeLoginPhone')}
+          </button>}
+        </div>}
+        {!loading && !loadFailed && (!loginLast4 || changeLogin) && <label className="block space-y-1">
+          <span className="text-sm font-bold">{t(student && loginLast4 ? 'parentPortal.studentLoginEdit' : 'addStudent.phone')}</span>
           <input type="tel" inputMode="numeric" value={phone} disabled={busy} className={inputStyle}
             onChange={(event) => setPhone(formatPhone(event.target.value))} />
-          <span className="text-sm text-on-surface-variant">{t(student ? 'parentPortal.keepStudentPhone' : 'addStudent.phoneHint')}</span>
-        </label>
+          <span className="text-sm text-on-surface-variant">{t(student && loginLast4 ? 'parentPortal.keepStudentPhone' : 'addStudent.phoneHint')}</span>
+        </label>}
         {wantsPhone && <label className="flex items-start gap-2 text-sm">
           <input type="checkbox" checked={consent} disabled={busy} onChange={(event) => setConsent(event.target.checked)} className="mt-1" />
           <span>{t('studentLogin.consent')}</span>
@@ -114,6 +128,8 @@ export default function AddStudentModal({
         <section className="space-y-3 rounded-xl border border-outline-variant p-3">
           <h4 className="font-bold text-deep-navy">{t('parentPortal.parentInfoTitle')}</h4>
           <p className="text-sm text-on-surface-variant">{t('parentPortal.siblingInfoHint')}</p>
+          {student && parent && !loading && !loadFailed && <SavedPhone key={student.id} label={t('parentPortal.savedParentPhone')}
+            last4={parent.last4} canReveal={canReveal} reveal={() => revealParentPhone(student.id)} />}
           {loading ? <p role="status">{t('common.loading')}</p> : loadFailed ? (
             <div className="text-sm" role="alert">
               <p>{t('parentPortal.parentLoadFailed')}</p>
@@ -121,7 +137,7 @@ export default function AddStudentModal({
             </div>
           ) : parent && !parentEditing ? (
             <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span>{parent.name} · ···{parent.last4}</span>
+              <span>{parent.name}</span>
               <button type="button" disabled={busy} className="min-h-10 px-2 text-primary underline" onClick={() => setParentEditing(true)}>
                 {t('parentPortal.editAccount')}
               </button>
@@ -134,7 +150,7 @@ export default function AddStudentModal({
                 <input value={parentName} maxLength={80} disabled={busy} className={inputStyle} onChange={(event) => setParentName(event.target.value)} />
               </label>
               <label className="block space-y-1">
-                <span className="text-sm font-bold">{t('parentPortal.guardianPhone')}</span>
+                <span className="text-sm font-bold">{t(parent ? 'parentPortal.replacementParentPhone' : 'parentPortal.guardianPhone')}</span>
                 <input type="tel" inputMode="numeric" value={parentPhone} disabled={busy} className={inputStyle}
                   onChange={(event) => setParentPhone(formatPhone(event.target.value))} />
               </label>

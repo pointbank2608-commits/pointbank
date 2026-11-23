@@ -326,6 +326,19 @@ try {
   assert.deepEqual((await home(token)).homework,[]);
   await channel('feedback',false);
   await assert.rejects(db.query('select parent_publish_feedback($1,$2,$3)',[student,'피드백',crypto.randomUUID()]),/feedback_disabled/);
+  await db.exec(readFileSync(new URL('../../../supabase/142_student_info_phones.sql', import.meta.url), 'utf8'));
+  const contacts=()=>val('select student_info_contacts($1) value',[older.student_id]);
+  const reveal=(id)=>val('select parent_contact_reveal($1) value',[id]);
+  await db.exec("set role anon");
+  await assert.rejects(contacts(),/permission denied/);
+  await assert.rejects(reveal(older.student_id),/permission denied/);
+  await db.exec("set role authenticated; set test.owner='no'");
+  assert.deepEqual(await contacts(), {parent:{name:'김형제',last4:'8888'},login_last4:'8888',can_reveal:false});
+  await assert.rejects(reveal(older.student_id),/not_owner/);
+  await db.exec("set test.owner='yes'");
+  assert.equal(await reveal(older.student_id),'01099998888');
+  await assert.rejects(reveal(other),/not_found/);
+  console.log('PASS: masked contact summaries and owner-only, academy-scoped parent phone reveal.');
   console.log('PASS: seven class switches, assigned-teacher and child isolation, idempotent inquiries/replies, restricted starts and bidirectional push routing.');
   console.log('PASS: existing-account login migration, parent credentials/siblings/lockout, academy isolation, homework/attendance/feedback/daily push, retries and revocation.');
 } finally {

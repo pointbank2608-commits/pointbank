@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toWmError, wmPlanClose, wmPlanLinks, wmPlanList, wmPlanResults, wmStudentUrl } from '../../lib/wordMemory/api';
+import { toWmError, wmPlanClose, wmPlanDelete, wmPlanLinks, wmPlanList, wmPlanResults, wmStudentUrl } from '../../lib/wordMemory/api';
 import type { WmPlanResults, WmPlanSummary, WmStudentResult } from '../../lib/wordMemory/types';
 import WordMemoryCoach from './WordMemoryCoach';
 
@@ -17,13 +17,14 @@ function weakSkills(skill: Record<string, number>): string[] {
  * 숙제 페이지의 "단어암기숙제 현황". 숙제 완료(오늘 학습)와 장기 기억(며칠 뒤에도 기억한 단어)을 다른 지표로 나눠 보여 준다.
  * 능력별(뜻·철자·듣기…) 더 연습할 부분과 개인 링크도 여기서 본다.
  */
-export default function WordMemoryResults({ classId, initialPlanId }: { classId: string; initialPlanId?: string | null }) {
+export default function WordMemoryResults({ classId, initialPlanId, onDeleted }: { classId: string; initialPlanId?: string | null; onDeleted: () => void }) {
   const { t } = useTranslation();
   const [plans, setPlans] = useState<WmPlanSummary[] | null>(null);
   const [openId, setOpenId] = useState<string | null>(initialPlanId ?? null);
   const [results, setResults] = useState<WmPlanResults | null>(null);
   const [links, setLinks] = useState<{ student_id: string; name: string; access: string }[]>([]);
   const [error, setError] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -78,6 +79,22 @@ export default function WordMemoryResults({ classId, initialPlanId }: { classId:
       setCopied(access);
     } catch {
       setCopied(null);
+    }
+  }
+
+  async function deletePlan(plan: WmPlanSummary) {
+    if (deleting || !window.confirm(t('wordMemory.deletePlanConfirm', { title: plan.title || t('wordMemory.title') }))) return;
+    setDeleting(true);
+    try {
+      await wmPlanDelete(plan.id);
+      setPlans(previous => previous?.filter(item => item.id !== plan.id) ?? null);
+      setOpenId(current => current === plan.id ? null : current);
+      setError(false);
+      onDeleted();
+    } catch {
+      setError(true);
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -157,11 +174,17 @@ export default function WordMemoryResults({ classId, initialPlanId }: { classId:
                     ))}
                   </ul>
                 </details>
+              </div>
+            )}
+            {openId === p.id && (
+              <div className="flex flex-wrap gap-2 p-3">
                 {!p.closed && (
-                  <button type="button" className="min-h-11 rounded-xl border border-outline-variant px-4 text-sm font-bold text-error" onClick={() => void close(p.id)}>
+                  <button type="button" disabled={deleting} className="min-h-11 rounded-xl border border-outline-variant px-4 text-sm font-bold" onClick={() => void close(p.id)}>
                     {t('wordMemory.closePlan')}
                   </button>
                 )}
+                <button type="button" disabled={deleting} className="min-h-11 rounded-xl border border-outline-variant px-4 text-sm font-bold text-error disabled:opacity-50"
+                  onClick={() => void deletePlan(p)}>{t('wordMemory.deletePlan')}</button>
               </div>
             )}
           </li>

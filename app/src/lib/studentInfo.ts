@@ -1,5 +1,19 @@
 import { supabase } from './supabase';
 
+import type { ParentAccount } from './parentPortal';
+
+export async function loadStudentContacts(student: string) {
+  const { data, error } = await supabase.rpc('student_info_contacts', { p_student: student });
+  if (error || !data) throw new Error('contact_load_failed');
+  return data as { parent: ParentAccount | null; login_last4: string | null; can_reveal: boolean };
+}
+
+export async function revealParentPhone(student: string): Promise<string | null> {
+  const { data, error } = await supabase.rpc('parent_contact_reveal', { p_student: student });
+  if (error) throw new Error('phone_load_failed');
+  return data;
+}
+
 export interface StudentInfoInput {
   request: string;
   student: string | null;

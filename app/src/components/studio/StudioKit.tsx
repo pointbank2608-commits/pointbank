@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import GameFitText from '../GameFitText';
 
 /**
  * 학습 스튜디오 — 학생 숙제(단어)와 문법 학습이 함께 쓰는 화면 조각.
@@ -79,7 +80,7 @@ const STATE_LABEL: Partial<Record<StudioOptionState, { icon: string; text: strin
 };
 
 /** 보기 목록 — 짧은 보기 4개 이하는 넓은 화면에서 2×2, 긴 보기·모바일은 한 줄씩. 숫자 키(1~)로도 고른다 */
-export function StudioOptions({ options, onPick, disabled = false, label, className = 'mt-5' }: { options: StudioOption[]; onPick: (id: string, index: number) => void; disabled?: boolean; label?: string; className?: string }) {
+export function StudioOptions({ options, onPick, disabled = false, label, className = 'mt-5', fitWords = false }: { options: StudioOption[]; onPick: (id: string, index: number) => void; disabled?: boolean; label?: string; className?: string; fitWords?: boolean }) {
   const pickRef = useRef(onPick);
   pickRef.current = onPick;
   const compact = options.length <= 4 && options.every((o) => o.text.length <= 16);
@@ -99,7 +100,7 @@ export function StudioOptions({ options, onPick, disabled = false, label, classN
     return () => window.removeEventListener('keydown', onKey);
   }, [options, disabled]);
   return (
-    <div role="group" aria-label={label} className={`${className} grid gap-3 ${compact ? 'sm:grid-cols-2' : ''}`}>
+    <div role="group" aria-label={label} className={`${className} grid gap-3 ${compact ? fitWords ? 'grid-cols-[repeat(auto-fit,minmax(min(100%,max(12rem,45%)),1fr))]' : 'sm:grid-cols-2' : ''}`}>
       {options.map((o, i) => {
         const st = o.state ?? 'idle';
         const mark = STATE_LABEL[st];
@@ -114,7 +115,9 @@ export function StudioOptions({ options, onPick, disabled = false, label, classN
             className={`${OPT_BASE} ${OPT_STATE[st]} ${o.disabled ? 'line-through opacity-40' : ''}`}
           >
             <span aria-hidden="true" className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-base ${BADGE_STATE[st]}`}>{i + 1}</span>
-            <span className="min-w-0 flex-1 break-words">{o.text}</span>
+            <span className="min-w-0 flex-1 break-words">{fitWords && /^\S+$/.test(o.text)
+              ? <GameFitText text={o.text} fit="block" align="left" singleLine="when-readable" />
+              : o.text}</span>
             {mark && (
               <span className={`flex shrink-0 items-center gap-1 text-sm font-bold ${mark.cls}`}>
                 <span aria-hidden="true" className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: "'FILL' 1" }}>{mark.icon}</span>

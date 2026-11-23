@@ -14,8 +14,8 @@ interface Props {
   maxSize?: number;
   /** 최소 글자 크기에서도 칸에 들어가지 않는 단어만 줄바꿈한다. */
   wrapLongWord?: boolean;
-  /** Keep every label on one line, shrinking below the normal minimum if needed. */
-  singleLine?: boolean;
+  /** true always fits; 'when-readable' wraps if a single line would be smaller than 14px. */
+  singleLine?: boolean | 'when-readable';
 }
 
 /**
@@ -40,7 +40,7 @@ export default function GameFitText({ text, className, fit = 'box', align = 'cen
         maxH = kind === 'word' ? 96 : 160;
       }
 
-      const min = singleLine ? .1 : 11;
+      const min = singleLine === 'when-readable' ? 14 : singleLine ? .1 : 11;
       const wordDefault = fit === 'box' ? 68 : 72;
       const sentenceDefault = fit === 'box' ? 32 : 40;
       const wordCap = Math.min(maxSize ?? wordDefault, Math.floor(maxH * 0.82) || 48);
@@ -57,7 +57,8 @@ export default function GameFitText({ text, className, fit = 'box', align = 'cen
       el.style.wordBreak = 'keep-all';
       el.style.width = singleLine ? 'max-content' : '';
       el.style.maxWidth = singleLine ? 'none' : '';
-      el.style.marginInline = singleLine ? 'auto' : '';
+      el.style.marginInline = singleLine && align === 'center' ? 'auto' : '';
+      if (singleLine === 'when-readable') wrap.style.justifyContent = align === 'left' ? 'flex-start' : 'center';
       if (!singleLine && kind === 'word' && wrapLongWord) {
         el.style.fontSize = `${min}px`;
         if (el.scrollWidth > maxW + 1) {
@@ -82,6 +83,11 @@ export default function GameFitText({ text, className, fit = 'box', align = 'cen
         }
       }
       el.style.fontSize = `${best}px`;
+      if (singleLine === 'when-readable' && el.scrollWidth > maxW) {
+        el.style.width = '100%';
+        el.style.whiteSpace = 'normal';
+        el.style.overflowWrap = 'anywhere';
+      }
     };
 
     apply();
@@ -95,7 +101,7 @@ export default function GameFitText({ text, className, fit = 'box', align = 'cen
       void document.fonts.ready.then(fontsChanged);
     }
     return () => { live = false; ro.disconnect(); document.fonts.removeEventListener('loadingdone', fontsChanged); if (frame) window.cancelAnimationFrame(frame); };
-  }, [text, kind, fit, maxSize, wrapLongWord, singleLine]);
+  }, [text, kind, fit, align, maxSize, wrapLongWord, singleLine]);
 
   return (
     <span

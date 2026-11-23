@@ -1,4 +1,7 @@
 export const parentPortalKo = {
+  savedLoginPhone: '등록된 학생 로그인 전화번호', savedParentPhone: '등록된 학부모 전화번호',
+  changeLoginPhone: '학생 로그인 번호 변경', replacementParentPhone: '저장할 학부모 전화번호',
+  showSavedPhone: '{{label}} 보기', hideSavedPhone: '{{label}} 숨기기', phoneLoadFailed: '번호를 확인하지 못했어요. 다시 시도해 주세요.',
   studentInfoTitle: '학생 정보 수정', parentInfoTitle: '학부모 정보 (선택)',
   editStudentInfo: '{{name}} 학생 정보 수정', studentInfoSaved: '학생 정보를 저장했어요.',
   studentLoginEdit: '학생 로그인 전화번호 변경 (선택)', keepStudentPhone: '비워 두면 기존 학생 로그인 번호를 유지해요.',
@@ -65,6 +68,9 @@ export const parentPortalKo = {
 };
 
 export const parentPortalEn: typeof parentPortalKo = {
+  savedLoginPhone: 'Registered student login phone', savedParentPhone: 'Registered parent phone',
+  changeLoginPhone: 'Change student login number', replacementParentPhone: 'Parent phone to save',
+  showSavedPhone: 'Show {{label}}', hideSavedPhone: 'Hide {{label}}', phoneLoadFailed: 'Could not load this number. Please try again.',
   studentInfoTitle: 'Edit student information', parentInfoTitle: 'Parent information (optional)',
   editStudentInfo: 'Edit {{name}}’s student information', studentInfoSaved: 'Student information saved.',
   studentLoginEdit: 'Change student login phone (optional)', keepStudentPhone: 'Leave blank to keep the current student login number.',

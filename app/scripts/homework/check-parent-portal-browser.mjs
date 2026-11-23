@@ -69,6 +69,7 @@ try {
   const snapshot = '2026-11-18T12:00:00Z';
   let enabled = false, read = '2026-11-17T00:00:00Z', linked = false;
   let account = null;
+  let phoneReads = 0;
   let publishedFeedback = '';
   const settings = { published:true,started:false,completed:true,overdue:true,attendance:true,feedback:true,inquiry:false };
   const threads = [];
@@ -87,6 +88,10 @@ try {
     const args = route.request().postDataJSON();
     let data = null;
     if (fn === 'parent_account_status') data = account;
+    else if (fn === 'student_info_contacts') data = {parent:account,login_last4:'9876',can_reveal:true};
+    else if (fn === 'student_guardian_reveal' || fn === 'parent_contact_reveal') {
+      phoneReads++; data = fn === 'parent_contact_reveal' ? '01012345678' : '01088889876';
+    }
     else if (fn === 'class_communication') data = { settings,subscribed:teacherSubscribed,teacher:'teacher',teachers:[{id:'teacher',name:'담임'}],threads,push_key:publicPushKey };
     else if (fn === 'teacher_set_inquiry_push') teacherSubscribed = args.p_enabled;
     else if (fn === 'class_set_channel') settings[args.p_channel] = args.p_enabled;
@@ -144,6 +149,20 @@ try {
   await saveInformation.click();
   await staff.getByText(/김보호.*5678/).waitFor();
   await staff.getByRole('button', { name: '학부모 로그인 주소 복사' }).waitFor();
+  await staff.getByRole('button', {name:'학생 정보 수정',exact:true}).click();
+  const dialog=staff.getByRole('dialog');
+  await dialog.getByText('***-****-9876',{exact:true}).waitFor();
+  await dialog.getByText('***-****-5678',{exact:true}).waitFor();
+  assert.equal(phoneReads,0);
+  for(const [label,number,suffix] of [['학생 로그인','010-8888-9876','9876'],['학부모','010-1234-5678','5678']]){
+    await dialog.getByRole('button',{name:'등록된 '+label+' 전화번호 보기',exact:true}).click();
+    await dialog.getByText(number,{exact:true}).waitFor();
+    await dialog.getByRole('button',{name:'등록된 '+label+' 전화번호 숨기기',exact:true}).click();
+    await dialog.getByText('***-****-'+suffix,{exact:true}).waitFor();
+  }
+  assert.equal(phoneReads,2);
+  assert.equal(await dialog.getByRole('checkbox').count(),0);
+  await dialog.getByRole('button',{name:'닫기',exact:true}).click();
   await staff.getByLabel('학생 피드백', { exact: true }).fill('road 철자를 혼자 썼어요. 내일 다시 확인해 주세요.');
   await staff.getByRole('button', { name: '학부모에게 보내기', exact: true }).click();
   await staff.getByText('학부모에게 피드백을 보냈어요.', { exact: true }).waitFor();

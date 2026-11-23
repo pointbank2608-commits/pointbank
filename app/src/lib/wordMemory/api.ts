@@ -56,6 +56,7 @@ export const wmPlanList = (classId: string | null) => rpc<WmPlanSummary[]>('wm_p
 export const wmPlanResults = (planId: string) => rpc<WmPlanResults>('wm_plan_results', { p_plan: planId });
 export const wmPlanLinks = (planId: string) => rpc<{ student_id: string; name: string; access: string }[]>('wm_plan_links', { p_plan: planId });
 export const wmPlanClose = (planId: string) => rpc<null>('wm_plan_close', { p_plan: planId });
+export const wmPlanDelete = (planId: string) => rpc<null>('wm_plan_delete', { p_plan: planId });
 
 export const wmPlanBriefing = (planId: string) => rpc<WmBriefing>('wm_plan_briefing', { p_plan: planId });
 export const wmPlanSteps = (planId: string) => rpc<WmStudentSteps[]>('wm_plan_steps', { p_plan: planId });

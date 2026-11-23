@@ -239,7 +239,7 @@ export default function HomeworkPage() {
       )}
 
       {classId && <AdaptiveHomeworkResults key={`adaptive-${classId}`} classId={classId} revision={adaptiveRevision}/> }
-      {classId && <WordMemoryResults key={JSON.stringify([classId, wordProjectRevision, openPlanId ? location.key : null])} classId={classId} initialPlanId={openPlanId} />}
+      {classId && <WordMemoryResults key={JSON.stringify([classId, wordProjectRevision, openPlanId ? location.key : null])} classId={classId} initialPlanId={openPlanId} onDeleted={() => void reload()} />}
 
       {list === null ? (
         <div className="text-base text-on-surface-variant">{t('common.loading')}</div>

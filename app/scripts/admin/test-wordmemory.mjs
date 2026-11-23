@@ -2,6 +2,7 @@
 // 시간은 app.wm_now 로 움직인다(실제로 기다리지 않는다). 실행: node test-wordmemory.mjs
 import { applyWmPortalFix, makeWmDb, setDay } from './wm-setup.mjs';
 import { as, check, summary } from './lib.mjs';
+import { readFileSync } from 'node:fs';
 
 const db = await makeWmDb();
 const q = async (sql, params = []) => (await db.query(sql, params)).rows;
@@ -425,5 +426,31 @@ check('전부 틀려도 다시 묻기는 하루 상한(가볍게 2개)까지만,
 check('전부 틀린 날도 오늘 학습은 끝난다(무한 반복 없음)', cur.done === true);
 const dueNext = await one("select count(*)::int c from public.wm_words where target_id = $1 and due_day = '2026-12-18' and miss > 0", [spId]);
 check('틀린 낱말은 다음 날 다시 확인하도록 일정이 잡힌다', dueNext.c >= 1);
+
+// Apply the linked-game and deletion migrations to an unfinished assignment.
+await db.exec('create table public.homework_assignments(id uuid primary key, academy_id uuid, closed_at timestamptz)');
+for (const file of ['141_word_memory_homework_games.sql', '143_wm_plan_delete.sql']) {
+  await db.exec(readFileSync(new URL('../../../supabase/' + file, import.meta.url), 'utf8'));
+}
+const active = await assign({title:'미완료 삭제 테스트',students:[S2],cards:withExtras.map(c=>({...c,word:'active-'+c.word}))});
+const activeLink = await tokenOf(active.plan_id,S2);
+const started = await dayOf(activeLink);
+const gameId = uuid();
+await q('insert into homework_assignments(id,academy_id) values($1,$2)',[gameId,A]);
+await q('update wm_plans set game_assignment_id=$1 where id=$2',[gameId,active.plan_id]);
+const teacher = uuid();
+await q('insert into auth.users(id) values($1)',[teacher]);
+await q("insert into profiles(id,academy_id,role,display_name) values($1,$2,'teacher','선생님')",[teacher,A]);
+await as(db,OWNER_B);
+await call('wm_plan_delete',active.plan_id);
+check('다른 학원에서 삭제할 수 없다', !!await one('select id from wm_plans where id=$1',[active.plan_id]));
+check('익명은 삭제 함수를 호출할 수 없다', !(await one("select has_function_privilege('anon','wm_plan_delete(uuid)','execute') as granted")).granted);
+await as(db,teacher);
+await call('wm_plan_delete',active.plan_id);
+await call('wm_plan_delete',active.plan_id);
+check('교사는 완료 전에도 삭제 가능하며 개인 링크는 무효화된다', (await fails('wm_open',activeLink))?.includes('not_found'));
+check('선택한 숙제의 결과와 연결 게임도 삭제된다', !await one('select id from wm_sessions where id=$1',[started.session_id]) && !await one('select id from homework_assignments where id=$1',[gameId]));
+const afterDelete=await call('wm_plan_list',CLASS);
+check('목록에서는 해당 숙제만 사라진다', !afterDelete.some(p=>p.id===active.plan_id) && afterDelete.some(p=>p.id===r1.plan_id));
 
 summary();

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { speak } from '../../lib/speech';
+import GameFitText from '../GameFitText';
 import type { SensorAction } from '../../lib/learningSensors/core';
 import type { HwQuestion } from '../../lib/homework/types';
 import type { HintLevel, SpellingHint } from '../../lib/homework/spellingHints';
@@ -160,6 +161,7 @@ function StudioChoice({ q, guide, listenOnly, disabled, eliminated = [], result,
       <StudioPrompt guide={guide} text={listenOnly ? '' : q.prompt} sub={!listenOnly && hint ? `(${hint})` : undefined} lang={q.style === 'reverse' ? undefined : 'en'}
         extra={q.speak ? <div className="flex justify-center pt-1">{speakBtn}</div> : undefined} />
       <StudioOptions
+        fitWords
         options={options}
         disabled={disabled || picked !== null}
         onPick={(id, i) => { setPicked(i); onAnswer(id); }}
@@ -242,7 +244,9 @@ function ChoiceList({ q, onAnswer, disabled, eliminated = [], compact }: { q: Hw
           style={{ background: CHOICE_COLORS[i % CHOICE_COLORS.length] }}
         >
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/25 text-base">{i + 1}</span>
-          {c}
+          <span className="min-w-0 flex-1 break-words">{/^\S+$/.test(c)
+            ? <GameFitText text={c} fit="block" align="left" singleLine="when-readable" />
+            : c}</span>
         </button>
       ))}
     </div>
