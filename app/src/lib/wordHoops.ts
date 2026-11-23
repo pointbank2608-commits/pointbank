@@ -15,6 +15,7 @@ export type HoopsMode = 'meaning' | 'word' | 'mixed' | 'picture';
 export type HoopsRule = 'race' | 'timed';
 
 export const HOOPS_DEFAULTS = { teams: 2, shots: 10, mode: 'meaning' as HoopsMode, rule: 'race' as HoopsRule, seconds: 60 };
+export const HOOPS_MAX_SHOTS = 10000;
 export const HOOPS_RULES: readonly HoopsRule[] = ['race', 'timed'];
 export const HOOPS_SECONDS = [30, 45, 60, 90, 120, 180] as const;
 /** 제한 시간제에서 미리 만들어 두는 문제 수(시간 안에 다 풀 수 없는 양) */
@@ -41,7 +42,7 @@ export function normalizeHoopsConfig(
   const mode = (HOOPS_MODES as readonly string[]).includes(c?.hoopsMode ?? '') ? (c?.hoopsMode as HoopsMode) : HOOPS_DEFAULTS.mode;
   return {
     teams: clampInt(c?.hoopsTeams, 1, 2, HOOPS_DEFAULTS.teams),
-    shots: clampInt(c?.hoopsShots, 3, 30, HOOPS_DEFAULTS.shots),
+    shots: clampInt(c?.hoopsShots, 1, HOOPS_MAX_SHOTS, HOOPS_DEFAULTS.shots),
     mode,
     rule: (HOOPS_RULES as readonly string[]).includes(c?.hoopsRule ?? '') ? (c?.hoopsRule as HoopsRule) : HOOPS_DEFAULTS.rule,
     seconds: (HOOPS_SECONDS as readonly number[]).includes(c?.hoopsSeconds ?? -1) ? (c?.hoopsSeconds as number) : HOOPS_DEFAULTS.seconds,

@@ -17,11 +17,18 @@ try {
   });
 
   assert.deepEqual(H.normalizeHoopsConfig(undefined), { teams: 2, shots: 10, mode: "meaning", rule: "race", seconds: 60 });
-  assert.deepEqual(H.normalizeHoopsConfig({ hoopsTeams: 9, hoopsShots: 1, hoopsMode: "x", hoopsRule: "y", hoopsSeconds: 7 }), { teams: 2, shots: 3, mode: "meaning", rule: "race", seconds: 60 });
+  assert.deepEqual(H.normalizeHoopsConfig({ hoopsTeams: 9, hoopsShots: 1, hoopsMode: "x", hoopsRule: "y", hoopsSeconds: 7 }), { teams: 2, shots: 1, mode: "meaning", rule: "race", seconds: 60 });
   assert.deepEqual(H.normalizeHoopsConfig({ hoopsRule: "timed", hoopsSeconds: 90 }).rule, "timed");
   assert.equal(H.normalizeHoopsConfig({ hoopsRule: "timed", hoopsSeconds: 90 }).seconds, 90);
-  assert.equal(H.normalizeHoopsConfig({ hoopsTeams: 1, hoopsShots: 99, hoopsMode: "mixed" }).shots, 30);
-  ok("설정 정규화(팀 1~2·문제 수 3~30·방식 3종만)");
+  assert.equal(H.normalizeHoopsConfig({ hoopsTeams: 1, hoopsShots: 99, hoopsMode: "mixed" }).shots, 99);
+  ok("설정 정규화(팀 1~2·전체 단어 수 지원·유효한 방식만)");
+
+  assert.equal(H.normalizeHoopsConfig({hoopsShots: 42}).shots,42);
+  assert.equal(H.normalizeHoopsConfig({hoopsShots: 10001}).shots,H.HOOPS_MAX_SHOTS);
+  const fullList=Array.from({length:42},(_,i)=>({id:'all-'+i,left:'word'+i,right:'뜻'+i}));
+  const allQuestions=H.buildHoopsQuestions(fullList,fullList.length,'meaning');
+  assert.equal(allQuestions.length,42);assert.equal(new Set(allQuestions.map(q=>q.prompt)).size,42);
+  ok('30개 초과 단어장 전체 출제: 모든 단어가 한 번씩 나옴');
 
   for (const mode of ["meaning", "word", "mixed"]) {
     const qs = H.buildHoopsQuestions(pairs, 10, mode);

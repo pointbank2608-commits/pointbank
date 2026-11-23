@@ -12,6 +12,7 @@ import { isSentenceList, listsForGame } from '../lib/gameWorkspace';
 import { preparePlayableList } from '../lib/gameGuide';
 import { pictureWordModeKind, pictureWordQuestions } from '../lib/pictureWordQuestions';
 import { defaultAdventureQuestionCount, MAX_ADVENTURE_QUESTIONS, hasAdventureRoundSettings, sampleAdventure } from '../lib/adventureGames';
+import { HOOPS_MAX_SHOTS, usablePairs } from '../lib/wordHoops';
 import { getGrammarPlay, setGrammarPlay } from '../lib/grammarPlay';
 import { setGameSoundOn, useGameSoundOn } from '../lib/gameSfx';
 import { wordListToCards } from '../lib/gameFromWords';
@@ -113,7 +114,7 @@ const SIMPLE_OPTS: Record<string, SimpleOpt[]> = {
     { key: 'hoopsTeams', ko: '참여', en: 'Players', kind: 'choice', def: '2', parse: Number, choices: [{ v: '2', ko: '두 팀 대결', en: 'Two teams' }, { v: '1', ko: '혼자 연습', en: 'Solo practice' }] },
     { key: 'hoopsRule', ko: '승부 방식', en: 'Game rule', kind: 'choice', def: 'race', choices: [{ v: 'race', ko: '정해진 슛을 빨리·정확히', en: 'Fixed shots, fastest' }, { v: 'timed', ko: '제한 시간 안에 많이', en: 'Most baskets in time' }] },
     { key: 'hoopsSeconds', ko: '제한 시간(시간제일 때)', en: 'Time limit (timed)', kind: 'choice', def: '60', parse: Number, choices: [{ v: '30', ko: '30초', en: '30s' }, { v: '45', ko: '45초', en: '45s' }, { v: '60', ko: '1분', en: '1 min' }, { v: '90', ko: '1분 30초', en: '1:30' }, { v: '120', ko: '2분', en: '2 min' }, { v: '180', ko: '3분', en: '3 min' }] },
-    { key: 'hoopsShots', ko: '슛 수(정해진 슛일 때)', en: 'Shots', kind: 'number', def: 10, min: 3, max: 30 },
+    { key: 'hoopsShots', ko: '슛 수(정해진 슛일 때)', en: 'Shots', kind: 'number', def: 10, min: 1, max: HOOPS_MAX_SHOTS },
   ],
   telepathy: [{ key: 'telepathyChoices', ko: '후보 수', en: 'Choices', kind: 'number', def: 3, min: 3, max: 4 }, { key: 'telepathyRounds', ko: '판 수', en: 'Rounds', kind: 'number', def: 8, min: 1, max: 30 }, { key: 'telepathySeconds', ko: '적는 시간', en: 'Time', kind: 'choice', def: '20', parse: Number, choices: [{ v: '0', ko: '제한 없음', en: 'No limit' }, { v: '10', ko: '10초', en: '10s' }, { v: '15', ko: '15초', en: '15s' }, { v: '20', ko: '20초', en: '20s' }, { v: '30', ko: '30초', en: '30s' }, { v: '45', ko: '45초', en: '45s' }, { v: '60', ko: '60초', en: '60s' }] }],
   lightning: [{ key: 'lightningPlayers', ko: '학생 수', en: 'Players', kind: 'number', def: 8, min: 2, max: 40 }, { key: 'lightningMin', ko: '번개 최소(초)', en: 'Min (sec)', kind: 'number', def: 4, min: 2, max: 30 }, { key: 'lightningMax', ko: '번개 최대(초)', en: 'Max (sec)', kind: 'number', def: 12, min: 3, max: 40 }, { key: 'lightningChar', ko: '번개 맞을 친구', en: 'Character', kind: 'choice', def: 'sheep', choices: [{ v: 'sheep', ko: '양 빌리', en: 'Billy' }, { v: 'boy', ko: '남자아이', en: 'Boy' }, { v: 'girl', ko: '여자아이', en: 'Girl' }, { v: 'umbrella', ko: '우산 든 아저씨', en: 'Umbrella man' }, { v: 'zeus', ko: '번개의 신 제우스', en: 'Zeus' }, { v: 'mermaid', ko: '인어공주', en: 'Mermaid' }] }],
@@ -324,6 +325,9 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const isPassBall = type === 'passball';
   const lightningUsesClass = type === 'lightning' && fullRoster.length > 0;
   const simpleOpts = (SIMPLE_OPTS[type ?? ''] ?? []).filter(option => (option.key !== 'lightningPlayers' || !lightningUsesClass) && (option.key !== 'wordQuestionDirection' || !!info?.selected?.config.classroomSource));
+  const hoopsWordCount = type === 'wordhoops'
+    ? contentDraft ? contentDraft.rows.filter(row => row.cells[0]?.trim() && row.cells[1]?.trim()).length : usablePairs(info?.selected?.config.pairs).length
+    : 0;
   // 개인·팀은 반 학생이 있어야 하므로 반이 없으면 첫 반을 자동으로 고른다.
   function pickMode(next: Mode) {
     setPMode(next);
@@ -1004,7 +1008,10 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
                     {o.choices?.map((c) => <button key={c.v} type="button" className={chip(pOpt[o.key] === c.v)} aria-pressed={pOpt[o.key] === c.v} onClick={() => setPOpt((old) => ({ ...old, [o.key]: c.v }))}>{text(c.ko, c.en)}</button>)}
                   </div>
                 ) : (
-                  <input className={`${field} !mt-0 !w-28`} type="number" min={o.min} max={o.max} value={pOpt[o.key] ?? ''} onChange={(e) => setPOpt((old) => ({ ...old, [o.key]: e.target.value }))} aria-label={text(o.ko, o.en)} />
+                  <div className="flex items-center gap-2">
+                    <input className={`${field} !mt-0 !w-28`} type="number" min={o.min} max={o.max} value={pOpt[o.key] ?? ''} onChange={(e) => setPOpt((old) => ({ ...old, [o.key]: e.target.value }))} aria-label={text(o.ko, o.en)} />
+                    {o.key === 'hoopsShots' && <button type="button" data-hoops-all-shots className={chip(hoopsWordCount > 0 && Number(pOpt.hoopsShots) === hoopsWordCount)} disabled={!hoopsWordCount || hoopsWordCount > HOOPS_MAX_SHOTS} aria-pressed={hoopsWordCount > 0 && Number(pOpt.hoopsShots) === hoopsWordCount} title={text(`현재 자료의 전체 ${hoopsWordCount}개 단어로 설정`, `Use all ${hoopsWordCount} words in this material`)} onClick={() => setPOpt(old => ({...old, hoopsShots:String(hoopsWordCount)}))}>{text('전체', 'All')}</button>}
+                  </div>
                 )}
               </div>
             ))}
