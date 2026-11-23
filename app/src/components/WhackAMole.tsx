@@ -1,6 +1,7 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordDeck } from './PictureWordTurn';
-import { gameClock } from '../lib/gameClock';
-import { useMemo, forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+
+import {useMemo, forwardRef, useImperativeHandle} from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { MatchPair, UndoHandle } from '../lib/types';
@@ -55,29 +56,33 @@ interface Snapshot {
 }
 
 const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs: sourcePairs, mode = 'wordToMeaning', timeLimit = 0, onComplete }, ref) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/WhackAMole.tsx:WhackAMole',()=>({state:{order,pos,holes,hits,misses,locked,hitHole,hitKind,prevSnapshot,timerOn,timeLeft,timeUp},refs:{flashTimer:captureGameRef(flashTimer.current),endAt:captureGameRef(endAt.current),doneRef:captureGameRef(doneRef.current)}}),(snapshot,elapsed)=>{setOrder(()=>snapshot.state.order);setPos(()=>snapshot.state.pos);setHoles(()=>snapshot.state.holes);setHits(()=>snapshot.state.hits);setMisses(()=>snapshot.state.misses);setLocked(()=>snapshot.state.locked);setHitHole(()=>snapshot.state.hitHole);setHitKind(()=>snapshot.state.hitKind);setPrevSnapshot(()=>snapshot.state.prevSnapshot);setTimerOn(()=>snapshot.state.timerOn);setTimeLeft(()=>snapshot.state.timeLeft);setTimeUp(()=>snapshot.state.timeUp);restoreGameRef(flashTimer,snapshot.refs.flashTimer,elapsed,false);restoreGameRef(endAt,snapshot.refs.endAt,elapsed,false);restoreGameRef(doneRef,snapshot.refs.doneRef,elapsed,false);});
+
   const { t } = useTranslation();
   const deck = usePictureWordDeck();
   const pairs = useMemo(() => deck.length ? deck.map(row => ({ id: row.id, left: row.choices[row.correctIndex], right: '' })) : sourcePairs, [deck, sourcePairs]);
   const pictureHoles = useMemo(() => new Map(deck.map(row => [row.id, row.choices.map((left, i) => ({ id: i === row.correctIndex ? row.id : row.id + ':' + i, left, right: '' }))])), [deck]);
   function makeHoles(target: MatchPair) { return dealHoles(target, pictureHoles.get(target.id) ?? pairs); }
-  const [order, setOrder] = useState<MatchPair[]>(() => shuffle(pairs));
-  const [pos, setPos] = useState(0);
-  const [holes, setHoles] = useState<(MatchPair | null)[]>(() =>
+  const [order, setOrder] = useGameHistoryState<MatchPair[]>("app/src/components/WhackAMole.tsx:WhackAMole:order",() => shuffle(pairs));
+  const [pos, setPos] = useGameHistoryState("app/src/components/WhackAMole.tsx:WhackAMole:pos",0);
+  const [holes, setHoles] = useGameHistoryState<(MatchPair | null)[]>("app/src/components/WhackAMole.tsx:WhackAMole:holes",() =>
     pairs[0] ? makeHoles(pairs[0]) : Array(HOLE_COUNT).fill(null),
   );
-  const [hits, setHits] = useState(0);
-  const [misses, setMisses] = useState(0);
-  const [locked, setLocked] = useState(false);
-  const [hitHole, setHitHole] = useState<number | null>(null);
-  const [hitKind, setHitKind] = useState<'ok' | 'no' | null>(null);
-  const [prevSnapshot, setPrevSnapshot] = useState<Snapshot | null>(null);
+  const [hits, setHits] = useGameHistoryState("app/src/components/WhackAMole.tsx:WhackAMole:hits",0);
+  const [misses, setMisses] = useGameHistoryState("app/src/components/WhackAMole.tsx:WhackAMole:misses",0);
+  const [locked, setLocked] = useGameHistoryState("app/src/components/WhackAMole.tsx:WhackAMole:locked",false);
+  const [hitHole, setHitHole] = useGameHistoryState<number | null>("app/src/components/WhackAMole.tsx:WhackAMole:hitHole",null);
+  const [hitKind, setHitKind] = useGameHistoryState<'ok' | 'no' | null>("app/src/components/WhackAMole.tsx:WhackAMole:hitKind",null);
+  const [prevSnapshot, setPrevSnapshot] = useGameHistoryState<Snapshot | null>("app/src/components/WhackAMole.tsx:WhackAMole:prevSnapshot",null);
   const pairKey = `${mode}|${timeLimit}|${pairs.map((p) => p.id).join(',')}`;
-  const flashTimer = useRef<number | null>(null);
+  const flashTimer = useGameHistoryRef<number | null>("app/src/components/WhackAMole.tsx:WhackAMole:flashTimer",null);
   const timed = timeLimit > 0;
-  const [timerOn, setTimerOn] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(timeLimit);
-  const [timeUp, setTimeUp] = useState(false);
-  const endAt = useRef(0);
+  const [timerOn, setTimerOn] = useGameHistoryState("app/src/components/WhackAMole.tsx:WhackAMole:timerOn",false);
+  const [timeLeft, setTimeLeft] = useGameHistoryState("app/src/components/WhackAMole.tsx:WhackAMole:timeLeft",timeLimit);
+  const [timeUp, setTimeUp] = useGameHistoryState("app/src/components/WhackAMole.tsx:WhackAMole:timeUp",false);
+  const endAt = useGameHistoryRef("app/src/components/WhackAMole.tsx:WhackAMole:endAt",0);
 
   function resetTimer() {
     setTimerOn(false);
@@ -85,33 +90,33 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs: so
     setTimeLeft(timeLimit);
   }
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (!timerOn || timeUp) return;
-    const id = gameClock.setInterval(() => {
-      const left = Math.max(0, Math.ceil((endAt.current - gameClock.dateNow()) / 1000));
+    const id = historyClock.setInterval(() => {
+      const left = Math.max(0, Math.ceil((endAt.current - historyClock.dateNow()) / 1000));
       setTimeLeft(left);
       if (left <= 0) {
         setTimeUp(true);
-        if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
+        if (flashTimer.current !== null) historyClock.clearTimeout(flashTimer.current);
       }
     }, 200);
-    return () => gameClock.clearInterval(id);
-  }, [timerOn, timeUp]);
+    return () => historyClock.clearInterval(id);
+  }, [timerOn, timeUp], false, "app/src/components/WhackAMole.tsx:effect1");
 
   // 시간 끝: "Time's up!" → 끝 멜로디 → "Great job!"
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (!timeUp) return;
     playSfx(GAME_SFX.whackamole.timeUp);
-    const a = gameClock.setTimeout(() => playSfx(GAME_SFX.whackamole.finish), 1000);
-    const b = gameClock.setTimeout(() => playSfx(COMMON_SFX.praise), 2100);
+    const a = historyClock.setTimeout(() => playSfx(GAME_SFX.whackamole.finish), 1000);
+    const b = historyClock.setTimeout(() => playSfx(COMMON_SFX.praise), 2100);
     return () => {
-      gameClock.clearTimeout(a);
-      gameClock.clearTimeout(b);
+      historyClock.clearTimeout(a);
+      historyClock.clearTimeout(b);
     };
-  }, [timeUp]);
+  }, [timeUp], false, "app/src/components/WhackAMole.tsx:effect2");
 
-  useEffect(() => {
-    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
+  useGameHistoryEffect(() => {
+    if (flashTimer.current !== null) historyClock.clearTimeout(flashTimer.current);
     const next = shuffle(pairs);
     setOrder(next);
     setPos(0);
@@ -124,19 +129,19 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs: so
     setPrevSnapshot(null);
     resetTimer();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pairKey]);
+  }, [pairKey], false, "app/src/components/WhackAMole.tsx:effect3");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     return () => {
-      if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
+      if (flashTimer.current !== null) historyClock.clearTimeout(flashTimer.current);
     };
-  }, []);
+  }, [], false, "app/src/components/WhackAMole.tsx:effect4");
 
   useImperativeHandle(ref, () => ({
     undo() {
       if (!prevSnapshot) return;
       if (flashTimer.current !== null) {
-        gameClock.clearTimeout(flashTimer.current);
+        historyClock.clearTimeout(flashTimer.current);
         flashTimer.current = null;
       }
       setPos(prevSnapshot.pos);
@@ -155,8 +160,8 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs: so
   const roundDone = timed ? timeUp : order.length > 0 && pos >= order.length;
   useStepSounds(pos, pairs.length >= 2 && roundDone, sfx.popUp, timed ? undefined : sfx.finish);
 
-  const doneRef = useRef(false);
-  useEffect(() => {
+  const doneRef = useGameHistoryRef("app/src/components/WhackAMole.tsx:WhackAMole:doneRef",false);
+  useGameHistoryEffect(() => {
     if (!onComplete) return;
     if (roundDone) {
       if (!doneRef.current) {
@@ -167,7 +172,7 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs: so
       doneRef.current = false;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roundDone]);
+  }, [roundDone], false, "app/src/components/WhackAMole.tsx:effect5");
 
   if (pairs.length < 2) {
     return (
@@ -201,7 +206,7 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs: so
   }
 
   function restart() {
-    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
+    if (flashTimer.current !== null) historyClock.clearTimeout(flashTimer.current);
     const next = shuffle(pairs);
     setOrder(next);
     setPos(0);
@@ -236,7 +241,7 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs: so
     const choice = holes[hole];
     if (!choice || locked || !target) return;
     if (timed && !timerOn) {
-      endAt.current = gameClock.dateNow() + timeLimit * 1000;
+      endAt.current = historyClock.dateNow() + timeLimit * 1000;
       setTimeLeft(timeLimit);
       setTimerOn(true);
     }
@@ -248,8 +253,8 @@ const WhackAMole = forwardRef<UndoHandle, Props>(function WhackAMole({ pairs: so
     setHitHole(hole);
     setHitKind(ok ? 'ok' : 'no');
     setLocked(true);
-    if (flashTimer.current !== null) gameClock.clearTimeout(flashTimer.current);
-    flashTimer.current = gameClock.setTimeout(() => {
+    if (flashTimer.current !== null) historyClock.clearTimeout(flashTimer.current);
+    flashTimer.current = historyClock.setTimeout(() => {
       flashTimer.current = null;
       goNext();
     }, HIT_MS);

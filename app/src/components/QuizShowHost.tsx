@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {useGameHistory,useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock} from '../context/GameHistoryContext';
+import {useCallback, useMemo, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import QRCode from 'qrcode';
 import type { RealtimeChannel } from '@supabase/supabase-js';
@@ -22,7 +23,7 @@ import {
 import type { LiveQuestion } from '../lib/types';
 import { speak } from '../lib/speech';
 import { playSfx, useBgm, useGameSfx } from '../lib/gameSfx';
-import { gameClock } from '../lib/gameClock';
+
 import { useGameWorkspace } from '../context/GameWorkspaceContext';
 
 /**
@@ -65,6 +66,37 @@ const liveClock = {
 };
 
 export default function QuizShowHost({ title, questions, classId, templateId, speedBonus, preview = false, autoPreview = false }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ const history=useGameHistory();
+ // Live answers belong to students. History moves the host phase through the existing RPC;
+ // it never overwrites participants, submitted answers, or server grading.
+ useGameHistorySnapshot('quizshow-host',()=>preview
+   ? {kind:'preview' as const,session,roundIntro,peek,startLocal,now,players,answers,autoRevealed:autoRevealed.current}
+   : {kind:'live' as const,session:session?{id:session.id,phase:session.phase,q_index:session.q_index}:null,roundIntro,
+      grades:answers.filter(answer=>['text','buzzer'].includes(session?.questions[answer.q_index]?.kind??'')).map(({id,correct,points})=>({id,correct,points}))},
+ async snapshot=>{
+   if(snapshot.kind==='preview'){
+     setSession(snapshot.session);setRoundIntro(snapshot.roundIntro);setPeek(snapshot.peek);
+     setStartLocal(snapshot.startLocal);setNow(snapshot.now);setPlayers(snapshot.players);setAnswers(snapshot.answers);
+     autoRevealed.current=snapshot.autoRevealed;return;
+   }
+   if(!snapshot.session||!session||snapshot.session.id!==session.id)return;
+   for(const grade of snapshot.grades){
+     const current=answers.find(answer=>answer.id===grade.id);
+     if(!current||(current.correct===grade.correct&&current.points===grade.points))continue;
+     const {error}=await supabase.from('live_answers').update({correct:grade.correct,points:grade.points}).eq('id',grade.id);
+     if(error)throw error;
+   }
+   const row=session.phase===snapshot.session.phase&&session.q_index===snapshot.session.q_index?session
+     :await liveHostSet(snapshot.session.id,snapshot.session.phase,snapshot.session.q_index);
+   setAnswers(current=>current.map(answer=>{const grade=snapshot.grades.find(item=>item.id===answer.id);return grade?{...answer,...grade}:answer;}));
+   setSession(row);setRoundIntro(snapshot.roundIntro);setPeek(false);autoRevealed.current=-1;
+   if(row.phase==='question'){setStartLocal(Date.parse(row.q_started_at??'')||Date.now());setNow(Date.now());}
+   ping();
+   void refresh(row.id);
+ });
+
   const { t } = useTranslation();
   const setPauseLocked = useGameWorkspace()?.setPauseLocked;
   const [session, setSession] = useState<LiveSession | null>(null);
@@ -79,29 +111,29 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   // 온라인(줌) 수업: 채팅에 붙일 입장 링크 복사
   const [linkCopied, setLinkCopied] = useState(false);
   const [startLocal, setStartLocal] = useState<number | null>(null);
-  const [now, setNow] = useState(() => preview ? gameClock.dateNow() : Date.now());
-  const clock = preview ? gameClock : liveClock;
+  const [now, setNow] = useState(() => preview ? historyClock.dateNow() : Date.now());
+  const clock = preview ? historyClock : liveClock;
   const channelRef = useRef<RealtimeChannel | null>(null);
   const previewStarted = useRef(false);
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (!preview || !autoPreview || !questions.length || previewStarted.current) return;
     previewStarted.current = true;
     const now = Date.now();
     const time = new Date(now).toISOString();
     setSession({ id: 'preview', code: '------', title, questions, speed_bonus: speedBonus, phase: 'question', q_index: 0, q_started_at: time, created_at: time, ended_at: null });
     setPlayers([{ id: PREVIEW_ME, session_id: 'preview', nickname: t('liveQuiz.previewMe'), joined_at: time }]);
-    const startedAt = gameClock.dateNow();
+    const startedAt = historyClock.dateNow();
     setStartLocal(startedAt);
     setNow(startedAt);
-  }, [preview, autoPreview, questions, title, speedBonus, t]);
+  }, [preview, autoPreview, questions, title, speedBonus, t], false, "app/src/components/QuizShowHost.tsx:effect1");
 
   const phase: LivePhase | null = session?.phase ?? null;
   const pauseLocked = !preview && (phase === 'question' || busy);
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (!pauseLocked || !setPauseLocked) return;
     setPauseLocked(true);
     return () => setPauseLocked(false);
-  }, [pauseLocked, setPauseLocked]);
+  }, [pauseLocked, setPauseLocked], true, "app/src/components/QuizShowHost.tsx:effect2");
   const qIndex = session?.q_index ?? -1;
   const qs = session?.questions ?? questions;
   const current = qIndex >= 0 ? qs[qIndex] : null;
@@ -110,7 +142,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   const nameOf = useCallback((pid: string) => players.find((p) => p.id === pid)?.nickname ?? '?', [players]);
 
   // 발표 중 슬라이드를 오가거나 새로고침해도 열려 있던 대회(같은 템플릿, 3시간 안)를 그대로 이어서 진행한다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (!templateId) return;
     let cancelled = false;
     void supabase
@@ -131,7 +163,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
     return () => {
       cancelled = true;
     };
-  }, [templateId]);
+  }, [templateId], false, "app/src/components/QuizShowHost.tsx:effect3");
 
   /* ---------- 불러오기·실시간 ---------- */
   const refresh = useCallback(async (sid: string) => {
@@ -144,14 +176,14 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
     }
   }, []);
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (!session || preview) return;
     const sid = session.id;
     void refresh(sid);
     let timer: number | undefined;
     const soon = () => {
-      window.clearTimeout(timer);
-      timer = window.setTimeout(() => void refresh(sid), 150);
+      historyClock.clearTimeout(timer);
+      timer = historyClock.setTimeout(() => void refresh(sid), 150);
     };
     const db = supabase
       .channel(`live-host-${sid}`)
@@ -162,28 +194,28 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
     bc.subscribe();
     channelRef.current = bc;
     // 실시간이 끊겨도 늦게라도 맞게
-    const poll = window.setInterval(() => void refresh(sid), 3000);
+    const poll = historyClock.setInterval(() => void refresh(sid), 3000);
     return () => {
-      window.clearTimeout(timer);
-      window.clearInterval(poll);
+      historyClock.clearTimeout(timer);
+      historyClock.clearInterval(poll);
       void supabase.removeChannel(db);
       void supabase.removeChannel(bc);
       channelRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.id]);
+  }, [session?.id], false, "app/src/components/QuizShowHost.tsx:effect4");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (!session || preview) return;
     void QRCode.toDataURL(liveJoinUrl(session.code), { margin: 1, width: 480, errorCorrectionLevel: 'M' }).then(setQr);
-  }, [session?.code, session]);
+  }, [session?.code, session], false, "app/src/components/QuizShowHost.tsx:effect5");
 
   // 문제 타이머
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (phase !== 'question') return;
-    const id = clock.setInterval(() => setNow(preview ? gameClock.dateNow() : Date.now()), 250);
+    const id = clock.setInterval(() => setNow(preview ? historyClock.dateNow() : Date.now()), 250);
     return () => clock.clearInterval(id);
-  }, [phase, clock, preview]);
+  }, [phase, clock, preview], false, "app/src/components/QuizShowHost.tsx:effect6");
 
   function ping() {
     void channelRef.current?.send({ type: 'broadcast', event: 'state', payload: {} });
@@ -194,6 +226,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
     if (preview) {
       // 미리보기: 서버 없이 화면 안에서만 단계를 넘긴다
       if (nextPhase === 'ended') {
+        if(!preview)history?.clear();
         setSession(null);
         setPlayers([]);
         setAnswers([]);
@@ -201,11 +234,11 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
         return;
       }
       if (nextPhase === 'question') {
-        const startedAt = gameClock.dateNow();
+        const startedAt = historyClock.dateNow();
         setStartLocal(startedAt);
         setNow(startedAt);
       }
-      setSession({ ...session, phase: nextPhase, q_index: nextIndex, q_started_at: nextPhase === 'question' ? new Date().toISOString() : session.q_started_at });
+      setSession({ ...session, phase: nextPhase, q_index: nextIndex, q_started_at: nextPhase === 'question' ? new Date(historyClock.dateNow()).toISOString() : session.q_started_at });
       setPeek(false);
       return;
     }
@@ -233,7 +266,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
 
   async function start() {
     if (preview) {
-      const now = new Date().toISOString();
+      const now = new Date(historyClock.dateNow()).toISOString();
       setSession({ id: 'preview', code: '------', title, questions, speed_bonus: speedBonus, phase: 'lobby', q_index: -1, q_started_at: null, created_at: now, ended_at: null });
       setPlayers([{ id: PREVIEW_ME, session_id: 'preview', nickname: t('liveQuiz.previewMe'), joined_at: now }]);
       setAnswers([]);
@@ -246,6 +279,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
       const row = await liveHostCreate({ title, questions, classId, templateId, speedBonus });
       setSession(row);
       setRoundIntro(null);
+      history?.clear();
     } catch (e) {
       setError(t(liveErrorKey(e)));
     } finally {
@@ -284,7 +318,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
 
   // 시간이 다 되거나 모두 답하면 정답 공개(부저는 선생님이 판정)
   const autoRevealed = useRef<number>(-1);
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (phase !== 'question' || !current || current.kind === 'buzzer' || busy) return;
     if ((remaining === 0 || everyoneAnswered) && autoRevealed.current !== qIndex) {
       // 문제마다 한 번만. 타이머 숫자가 바뀌어 이 effect 가 다시 돌아도 예약을 취소하지 않는다.
@@ -295,16 +329,16 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
       }, everyoneAnswered ? 900 : 300);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [remaining, everyoneAnswered, phase, qIndex]);
+  }, [remaining, everyoneAnswered, phase, qIndex], false, "app/src/components/QuizShowHost.tsx:effect7");
 
   // 듣기 라운드: 문제가 열릴 때 한 번 읽어 준다(다시 듣기 버튼도 있음)
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (phase === 'question' && current?.style === 'listen' && current.speak) {
       const id = clock.setTimeout(() => speak(current.speak ?? ''), 600);
       return () => clock.clearTimeout(id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, qIndex]);
+  }, [phase, qIndex], false, "app/src/components/QuizShowHost.tsx:effect8");
 
   // ---- 소리(칠판에서만 — 학생 휴대폰에는 안 난다) ----
   const sfx = useGameSfx('quizshow');
@@ -312,40 +346,40 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   useBgm(sfx.bgm, phase === 'question', 0.18);
   const playerCount = players.length;
   const prevPlayers = useRef(playerCount);
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (phase === 'lobby' && playerCount > prevPlayers.current) playSfx(sfx.join, 0.7);
     prevPlayers.current = playerCount;
-  }, [playerCount, phase, sfx.join]);
+  }, [playerCount, phase, sfx.join], false, "app/src/components/QuizShowHost.tsx:effect9");
   // 부저 문제: 새로 누른 학생이 생길 때마다 삑
   const answerCount = currentAnswers.length;
   const prevAnswers = useRef(answerCount);
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (phase === 'question' && current?.kind === 'buzzer' && answerCount > prevAnswers.current) playSfx(sfx.buzz);
     prevAnswers.current = answerCount;
-  }, [answerCount, phase, current?.kind, sfx.buzz]);
+  }, [answerCount, phase, current?.kind, sfx.buzz], false, "app/src/components/QuizShowHost.tsx:effect10");
   const timeUpFor = useRef(-1);
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (remaining === 0 && timeUpFor.current !== qIndex) {
       timeUpFor.current = qIndex;
       playSfx(sfx.timeUp);
     }
-  }, [remaining, qIndex, sfx.timeUp]);
+  }, [remaining, qIndex, sfx.timeUp], false, "app/src/components/QuizShowHost.tsx:effect11");
   const prevPhase = useRef(phase);
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (phase !== prevPhase.current) {
       if (phase === 'reveal') playSfx(sfx.reveal);
       if (phase === 'final') playSfx(sfx.champion);
     }
     prevPhase.current = phase;
-  }, [phase, sfx.reveal, sfx.champion]);
+  }, [phase, sfx.reveal, sfx.champion], false, "app/src/components/QuizShowHost.tsx:effect12");
   // 라운드 소개: 뒤에 다른 라운드가 더 없으면 "Final round", 아니면 "Round"
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (roundIntro == null) return;
     const name = qs[roundIntro]?.round?.trim();
     const later = qs.slice(roundIntro + 1).some((q) => q.round?.trim() && q.round.trim() !== name);
     playSfx(later ? sfx.round : sfx.finalRound);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roundIntro]);
+  }, [roundIntro], false, "app/src/components/QuizShowHost.tsx:effect13");
 
   async function judge(a: LiveAnswer, correct: boolean) {
     setAnswers((prev) => prev.map((x) => (x.id === a.id ? { ...x, correct, points: correct ? x.potential : 0 } : x)));
@@ -363,6 +397,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
     setPlayers((prev) => prev.filter((x) => x.id !== p.id));
     try {
       await liveKick(p.id);
+      history?.clear();
     } catch (e) {
       setError(t(liveErrorKey(e)));
     }
@@ -496,7 +531,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
                 onClick={() => {
                   void navigator.clipboard?.writeText(liveJoinUrl(session.code)).then(() => {
                     setLinkCopied(true);
-                    window.setTimeout(() => setLinkCopied(false), 2000);
+                    historyClock.setTimeout(() => setLinkCopied(false), 2000);
                   });
                 }}
                 className="mt-1 rounded-full border border-white/30 px-3 py-1 text-[clamp(11px,1.1cqw,16px)] text-white/80 hover:bg-white/10"
@@ -910,9 +945,12 @@ function PreviewPhone({
   myScore: number;
   onAnswer: (choice: number | null, text: string | null) => void;
 }) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/QuizShowHost.tsx:PreviewPhone',()=>({state:{text},refs:{}}),(snapshot,elapsed)=>{setText(()=>snapshot.state.text);void elapsed;});
+
   const { t } = useTranslation();
   const [text, setText] = useState('');
-  useEffect(() => setText(''), [q?.id]);
+  useGameHistoryEffect(() => setText(''), [q?.id], false, "app/src/components/QuizShowHost.tsx:effect14");
   const open = phase === 'question' && !roundIntro && !!q;
   const revealed = phase === 'reveal' && !!q;
 

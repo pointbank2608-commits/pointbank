@@ -1,6 +1,7 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import {useNativeGameTurn} from '../context/GameTurnContext';
-import { gameClock } from '../lib/gameClock';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import {useCallback, useMemo} from 'react';
 import { useTranslation } from 'react-i18next';
 import ClayDie from './ClayDie';
 import AccessibleDialog from './AccessibleDialog';
@@ -78,6 +79,10 @@ export default function TwoDice({
   onAddItem,
   onRemoveItem,
 }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/TwoDice.tsx:TwoDice',()=>({state:{board,die1,die2,target1,target2,rolling,highlightIndex,history,tossKey,claimed,turn,rollCount,result,winLine,reshuffleOpen},refs:{rollingRef:captureGameRef(rollingRef.current),timerRef:captureGameRef(timerRef.current),claimSoundRef:captureGameRef(claimSoundRef.current),previousItemIds:captureGameRef(previousItemIds.current)}}),(snapshot,elapsed)=>{setBoard(()=>snapshot.state.board);setDie1(()=>snapshot.state.die1);setDie2(()=>snapshot.state.die2);setTarget1(()=>snapshot.state.target1);setTarget2(()=>snapshot.state.target2);setRolling(()=>snapshot.state.rolling);setHighlightIndex(()=>snapshot.state.highlightIndex);setHistory(()=>snapshot.state.history);setTossKey(()=>snapshot.state.tossKey);setClaimed(()=>snapshot.state.claimed);setTurn(()=>snapshot.state.turn);setRollCount(()=>snapshot.state.rollCount);setResult(()=>snapshot.state.result);setWinLine(()=>snapshot.state.winLine);setReshuffleOpen(()=>snapshot.state.reshuffleOpen);restoreGameRef(rollingRef,snapshot.refs.rollingRef,elapsed,false);restoreGameRef(timerRef,snapshot.refs.timerRef,elapsed,false);restoreGameRef(claimSoundRef,snapshot.refs.claimSoundRef,elapsed,false);restoreGameRef(previousItemIds,snapshot.refs.previousItemIds,elapsed,false);});
+
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const teamOrderKey = JSON.stringify(teamOrder);
@@ -91,48 +96,48 @@ export default function TwoDice({
   const startingTeam = TEAMS[firstTeam] ?? teams[0];
   const solo = teamCount === 1;
   const turnLimit = teamCount >= 3 ? rounds * teamCount : null;
-  const [board, setBoard] = useState<GameItem[]>(() => pickBoardItems(items, size));
-  const [die1, setDie1] = useState<number | null>(null);
-  const [die2, setDie2] = useState<number | null>(null);
-  const [target1, setTarget1] = useState(1);
-  const [target2, setTarget2] = useState(1);
-  const [rolling, setRolling] = useState(false);
-  const [highlightIndex, setHighlightIndex] = useState<number | null>(null);
-  const [history, setHistory] = useState<{ key: string; label: string; team: Team }[]>([]);
-  const [tossKey, setTossKey] = useState(0);
-  const [claimed, setClaimed] = useState<Record<number, Team>>({});
-  const [turn, setTurn] = useState<Team>(startingTeam);
-  const [rollCount, setRollCount] = useState(0);
-  const [result, setResult] = useState<{ leaders: Team[]; bingo: boolean } | null>(null);
+  const [board, setBoard] = useGameHistoryState<GameItem[]>("app/src/components/TwoDice.tsx:TwoDice:board",() => pickBoardItems(items, size));
+  const [die1, setDie1] = useGameHistoryState<number | null>("app/src/components/TwoDice.tsx:TwoDice:die1",null);
+  const [die2, setDie2] = useGameHistoryState<number | null>("app/src/components/TwoDice.tsx:TwoDice:die2",null);
+  const [target1, setTarget1] = useGameHistoryState("app/src/components/TwoDice.tsx:TwoDice:target1",1);
+  const [target2, setTarget2] = useGameHistoryState("app/src/components/TwoDice.tsx:TwoDice:target2",1);
+  const [rolling, setRolling] = useGameHistoryState("app/src/components/TwoDice.tsx:TwoDice:rolling",false);
+  const [highlightIndex, setHighlightIndex] = useGameHistoryState<number | null>("app/src/components/TwoDice.tsx:TwoDice:highlightIndex",null);
+  const [history, setHistory] = useGameHistoryState<{ key: string; label: string; team: Team }[]>("app/src/components/TwoDice.tsx:TwoDice:history",[]);
+  const [tossKey, setTossKey] = useGameHistoryState("app/src/components/TwoDice.tsx:TwoDice:tossKey",0);
+  const [claimed, setClaimed] = useGameHistoryState<Record<number, Team>>("app/src/components/TwoDice.tsx:TwoDice:claimed",{});
+  const [turn, setTurn] = useGameHistoryState<Team>("app/src/components/TwoDice.tsx:TwoDice:turn",startingTeam);
+  const [rollCount, setRollCount] = useGameHistoryState("app/src/components/TwoDice.tsx:TwoDice:rollCount",0);
+  const [result, setResult] = useGameHistoryState<{ leaders: Team[]; bingo: boolean } | null>("app/src/components/TwoDice.tsx:TwoDice:result",null);
   const teamLabel = (team: Team) => solo ? t('gameTwoDice.solo') : teamNames?.[TEAMS.indexOf(team)] || t(`gameTwoDice.teams.${team}`);
   const turnIndex = teams.indexOf(turn);
   const nextTeam = teams[(turnIndex + 1) % teamCount];
   useNativeGameTurn({ current: teamLabel(turn), next: teamLabel(nextTeam), index: turnIndex, total: teamCount, enabled: !solo && items.length > 0 && !result });
-  const [winLine, setWinLine] = useState<number[] | null>(null);
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
-  const [reshuffleOpen, setReshuffleOpen] = useState(false);
-  const rollingRef = useRef(false);
-  const timerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
-  const claimSoundRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
+  const [winLine, setWinLine] = useGameHistoryState<number[] | null>("app/src/components/TwoDice.tsx:TwoDice:winLine",null);
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/TwoDice.tsx:TwoDice:itemDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/TwoDice.tsx:TwoDice:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/TwoDice.tsx:TwoDice:templateNameDraft",'');
+  const [reshuffleOpen, setReshuffleOpen] = useGameHistoryState("app/src/components/TwoDice.tsx:TwoDice:reshuffleOpen",false);
+  const rollingRef = useGameHistoryRef("app/src/components/TwoDice.tsx:TwoDice:rollingRef",false);
+  const timerRef = useGameHistoryRef<ReturnType<typeof historyClock.setTimeout> | null>("app/src/components/TwoDice.tsx:TwoDice:timerRef",null);
+  const claimSoundRef = useGameHistoryRef<ReturnType<typeof historyClock.setTimeout> | null>("app/src/components/TwoDice.tsx:TwoDice:claimSoundRef",null);
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     return () => {
-      if (timerRef.current !== null) gameClock.clearTimeout(timerRef.current);
-      if (claimSoundRef.current !== null) gameClock.clearTimeout(claimSoundRef.current);
+      if (timerRef.current !== null) historyClock.clearTimeout(timerRef.current);
+      if (claimSoundRef.current !== null) historyClock.clearTimeout(claimSoundRef.current);
     };
-  }, []);
+  }, [], false, "app/src/components/TwoDice.tsx:effect1");
 
   // 오른쪽 목록 입력창의 초안 텍스트를 실제 항목과 맞춰둔다 — 타이핑 중엔 이 draft를
   // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
-  }, [items]);
+  }, [items], false, "app/src/components/TwoDice.tsx:effect2");
 
   const reshuffleBoard = useCallback(() => {
-    if (timerRef.current !== null) gameClock.clearTimeout(timerRef.current);
-    if (claimSoundRef.current !== null) gameClock.clearTimeout(claimSoundRef.current);
+    if (timerRef.current !== null) historyClock.clearTimeout(timerRef.current);
+    if (claimSoundRef.current !== null) historyClock.clearTimeout(claimSoundRef.current);
     setBoard(pickBoardItems(items, size));
     rollingRef.current = false;
     setTossKey(0);
@@ -151,8 +156,8 @@ export default function TwoDice({
   }, [items, size, startingTeam]);
 
   const itemIds = JSON.stringify(items.map((item) => item.id));
-  const previousItemIds = useRef(itemIds);
-  useEffect(() => {
+  const previousItemIds = useGameHistoryRef("app/src/components/TwoDice.tsx:TwoDice:previousItemIds",itemIds);
+  useGameHistoryEffect(() => {
     if (previousItemIds.current !== itemIds) {
       previousItemIds.current = itemIds;
       reshuffleBoard();
@@ -160,7 +165,7 @@ export default function TwoDice({
       const byId = new Map(items.map((item) => [item.id, item]));
       setBoard((prev) => prev.map((item) => byId.get(item.id) ?? item));
     }
-  }, [items, itemIds, reshuffleBoard]);
+  }, [items, itemIds, reshuffleBoard], false, "app/src/components/TwoDice.tsx:effect3");
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -195,22 +200,22 @@ export default function TwoDice({
     setTossKey((n) => n + 1);
     playSfx(GAME_SFX.twodice.shake);
     const rollingTeam = turn;
-    if (timerRef.current !== null) gameClock.clearTimeout(timerRef.current);
-    timerRef.current = gameClock.setTimeout(() => {
+    if (timerRef.current !== null) historyClock.clearTimeout(timerRef.current);
+    timerRef.current = historyClock.setTimeout(() => {
       setDie1(d1);
       setDie2(d2);
       const idx = (d1 - 1) * size + (d2 - 1);
       playSfx(GAME_SFX.twodice.roll);
       setHighlightIndex(idx);
       const word = board[idx];
-      setHistory((prev) => [{ key: `${gameClock.dateNow()}`, label: word.label, team: rollingTeam }, ...prev].slice(0, 8));
+      setHistory((prev) => [{ key: `${historyClock.dateNow()}`, label: word.label, team: rollingTeam }, ...prev].slice(0, 8));
       const newClaim = !claimed[idx];
       const next = newClaim ? { ...claimed, [idx]: rollingTeam } : claimed;
       const owners = Object.values(next);
       const line = newClaim ? findWinningLine(next, rollingTeam, size, idx) : null;
       if (newClaim && !line) {
-        if (claimSoundRef.current !== null) gameClock.clearTimeout(claimSoundRef.current);
-        claimSoundRef.current = gameClock.setTimeout(() => playSfx(GAME_SFX.twodice.claim), 220);
+        if (claimSoundRef.current !== null) historyClock.clearTimeout(claimSoundRef.current);
+        claimSoundRef.current = historyClock.setTimeout(() => playSfx(GAME_SFX.twodice.claim), 220);
       }
       setClaimed(next);
       setRollCount(rollCount + 1);
@@ -367,7 +372,7 @@ export default function TwoDice({
         )}
       </div>
 
-      {reshuffleOpen && <AccessibleDialog label={t('classroomUx.restartTitle')} onClose={() => setReshuffleOpen(false)}>
+      {reshuffleOpen && <AccessibleDialog historyActions label={t('classroomUx.restartTitle')} onClose={() => setReshuffleOpen(false)}>
         <div className="p-6">
           <h2 className="text-xl font-bold">{t('classroomUx.restartTitle')}</h2>
           <p className="mt-3">{t('classroomUx.restartHint')}</p>

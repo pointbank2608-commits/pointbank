@@ -1,6 +1,7 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+
+import {type ReactNode} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGamePlay } from './GameThemeFrame';
 import { colorFor } from '../lib/wheel';
@@ -170,24 +171,28 @@ export default function Crossword({
   onAddItem,
   onRemoveItem,
 }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/Crossword.tsx:Crossword',()=>({state:{puzzle,wordBank,filledIds,selectedWordId,wrongSlotId},refs:{wrongTimer:captureGameRef(wrongTimer.current)}}),(snapshot,elapsed)=>{setPuzzle(()=>snapshot.state.puzzle);setWordBank(()=>snapshot.state.wordBank);setFilledIds(()=>snapshot.state.filledIds);setSelectedWordId(()=>snapshot.state.selectedWordId);setWrongSlotId(()=>snapshot.state.wrongSlotId);restoreGameRef(wrongTimer,snapshot.refs.wrongTimer,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const blocks = boardStyle === 'blocks';
-  const [puzzle, setPuzzle] = useState<Puzzle>(() => buildCrossword(items));
-  const [wordBank, setWordBank] = useState<Placement[]>(() => shuffle(puzzle.placements));
-  const [filledIds, setFilledIds] = useState<Set<string>>(new Set());
-  const [selectedWordId, setSelectedWordId] = useState<string | null>(null);
-  const [wrongSlotId, setWrongSlotId] = useState<string | null>(null);
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
-  const wrongTimer = useRef<number | null>(null);
+  const [puzzle, setPuzzle] = useGameHistoryState<Puzzle>("app/src/components/Crossword.tsx:Crossword:puzzle",() => buildCrossword(items));
+  const [wordBank, setWordBank] = useGameHistoryState<Placement[]>("app/src/components/Crossword.tsx:Crossword:wordBank",() => shuffle(puzzle.placements));
+  const [filledIds, setFilledIds] = useGameHistoryState<Set<string>>("app/src/components/Crossword.tsx:Crossword:filledIds",new Set());
+  const [selectedWordId, setSelectedWordId] = useGameHistoryState<string | null>("app/src/components/Crossword.tsx:Crossword:selectedWordId",null);
+  const [wrongSlotId, setWrongSlotId] = useGameHistoryState<string | null>("app/src/components/Crossword.tsx:Crossword:wrongSlotId",null);
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/Crossword.tsx:Crossword:itemDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/Crossword.tsx:Crossword:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/Crossword.tsx:Crossword:templateNameDraft",'');
+  const wrongTimer = useGameHistoryRef<number | null>("app/src/components/Crossword.tsx:Crossword:wrongTimer",null);
   const itemKey = items.map((it) => it.id).join(',');
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
-  }, [items]);
+  }, [items], false, "app/src/components/Crossword.tsx:effect1");
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -209,8 +214,8 @@ export default function Crossword({
     if (trimmed && trimmed !== templateName) onRenameTemplate?.(trimmed);
   }
 
-  useEffect(() => {
-    if (wrongTimer.current !== null) gameClock.clearTimeout(wrongTimer.current);
+  useGameHistoryEffect(() => {
+    if (wrongTimer.current !== null) historyClock.clearTimeout(wrongTimer.current);
     const next = buildCrossword(items);
     setPuzzle(next);
     setWordBank(shuffle(next.placements));
@@ -218,10 +223,10 @@ export default function Crossword({
     setSelectedWordId(null);
     setWrongSlotId(null);
     return () => {
-      if (wrongTimer.current !== null) gameClock.clearTimeout(wrongTimer.current);
+      if (wrongTimer.current !== null) historyClock.clearTimeout(wrongTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemKey]);
+  }, [itemKey], false, "app/src/components/Crossword.tsx:effect2");
 
   const sfx = useGameSfx('crossword');
   useStepSounds(0, puzzle.placements.length > 0 && filledIds.size === puzzle.placements.length, undefined, sfx.finish);
@@ -252,7 +257,7 @@ export default function Crossword({
   const finished = filledIds.size === puzzle.placements.length;
 
   function restart() {
-    if (wrongTimer.current !== null) gameClock.clearTimeout(wrongTimer.current);
+    if (wrongTimer.current !== null) historyClock.clearTimeout(wrongTimer.current);
     const next = buildCrossword(items);
     setPuzzle(next);
     setWordBank(shuffle(next.placements));
@@ -277,8 +282,8 @@ export default function Crossword({
     } else {
       playSfx(sfx.wrong);
       setWrongSlotId(placement.id);
-      if (wrongTimer.current !== null) gameClock.clearTimeout(wrongTimer.current);
-      wrongTimer.current = gameClock.setTimeout(() => setWrongSlotId(null), 400);
+      if (wrongTimer.current !== null) historyClock.clearTimeout(wrongTimer.current);
+      wrongTimer.current = historyClock.setTimeout(() => setWrongSlotId(null), 400);
     }
   }
 

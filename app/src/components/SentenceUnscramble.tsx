@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import {useGameHistorySnapshot, useGameHistoryEffect, useGameHistoryState} from '../context/GameHistoryContext';
+import {} from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GameItem } from '../lib/types';
 import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
@@ -53,19 +54,22 @@ function shuffleSentence(sentence: string): Tile[] {
 }
 
 export default function SentenceUnscramble({ items, boardStyle = 'rack' }: Props) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/SentenceUnscramble.tsx:SentenceUnscramble',()=>({state:{order,pos,pool,placed,status,score},refs:{}}),(snapshot,elapsed)=>{setOrder(()=>snapshot.state.order);setPos(()=>snapshot.state.pos);setPool(()=>snapshot.state.pool);setPlaced(()=>snapshot.state.placed);setStatus(()=>snapshot.state.status);setScore(()=>snapshot.state.score);void elapsed;});
+
   const { t } = useTranslation();
   const hang = boardStyle === 'tags';
-  const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
-  const [pos, setPos] = useState(0);
-  const [pool, setPool] = useState<Tile[]>(() =>
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/SentenceUnscramble.tsx:SentenceUnscramble:order",() => shuffle(items.map((_, i) => i)));
+  const [pos, setPos] = useGameHistoryState("app/src/components/SentenceUnscramble.tsx:SentenceUnscramble:pos",0);
+  const [pool, setPool] = useGameHistoryState<Tile[]>("app/src/components/SentenceUnscramble.tsx:SentenceUnscramble:pool",() =>
     items.length && order.length ? shuffleSentence(items[order[0]].label) : [],
   );
-  const [placed, setPlaced] = useState<Tile[]>([]);
-  const [status, setStatus] = useState<Status>('playing');
-  const [score, setScore] = useState(0);
+  const [placed, setPlaced] = useGameHistoryState<Tile[]>("app/src/components/SentenceUnscramble.tsx:SentenceUnscramble:placed",[]);
+  const [status, setStatus] = useGameHistoryState<Status>("app/src/components/SentenceUnscramble.tsx:SentenceUnscramble:status",'playing');
+  const [score, setScore] = useGameHistoryState("app/src/components/SentenceUnscramble.tsx:SentenceUnscramble:score",0);
   const itemKey = items.map((it) => it.id).join(',');
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     const nextOrder = shuffle(items.map((_, i) => i));
     setOrder(nextOrder);
     setPos(0);
@@ -78,7 +82,7 @@ export default function SentenceUnscramble({ items, boardStyle = 'rack' }: Props
       setPool([]);
       setPlaced([]);
     }
-  }, [itemKey]);
+  }, [itemKey], false, "app/src/components/SentenceUnscramble.tsx:effect1");
 
   const sfx = useGameSfx('unscramble');
   useStepSounds(pos, items.length > 0 && order.length > 0 && pos >= order.length, undefined, sfx.finish);

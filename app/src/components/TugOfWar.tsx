@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef,useGameHistoryMemo} from '../context/GameHistoryContext';
+
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import { gameClock } from '../lib/gameClock';
+
 import { gameKeyboardAllowed } from '../lib/gameKeyboard';
 import { COMMON_SFX, playSfx, useGameSfx } from '../lib/gameSfx';
 import {
@@ -172,6 +173,10 @@ function fontFor(text: string, big: number, mid: number, small: number): number 
 }
 
 export default function TugOfWar({ questions, pull: teamGoal, freeze: teamFreeze, seconds, onContinue, onSubmit }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/TugOfWar.tsx:TugOfWar',()=>({state:{seed,phase,sides,pos,tick,sudden,winner,pulse},refs:{phaseRef:captureGameRef(phaseRef.current),sidesRef:captureGameRef(sidesRef.current),posRef:captureGameRef(posRef.current),suddenRef:captureGameRef(suddenRef.current),winnerRef:captureGameRef(winnerRef.current),startAt:captureGameRef(startAt.current),ticker:captureGameRef(ticker.current),timers:captureGameRef(timers.current),keyRef:captureGameRef(keyRef.current),tickFn:captureGameRef(tickFn.current)}}),(snapshot,elapsed)=>{setSeed(()=>snapshot.state.seed);setPhase(()=>snapshot.state.phase);setSides(()=>snapshot.state.sides);setPos(()=>snapshot.state.pos);setTick(()=>snapshot.state.tick);setSudden(()=>snapshot.state.sudden);setWinner(()=>snapshot.state.winner);setPulse(()=>snapshot.state.pulse);restoreGameRef(phaseRef,snapshot.refs.phaseRef,elapsed,false);restoreGameRef(sidesRef,snapshot.refs.sidesRef,elapsed,false);restoreGameRef(posRef,snapshot.refs.posRef,elapsed,false);restoreGameRef(suddenRef,snapshot.refs.suddenRef,elapsed,false);restoreGameRef(winnerRef,snapshot.refs.winnerRef,elapsed,false);restoreGameRef(startAt,snapshot.refs.startAt,elapsed,false);restoreGameRef(ticker,snapshot.refs.ticker,elapsed,false);restoreGameRef(timers,snapshot.refs.timers,elapsed,false);restoreGameRef(keyRef,snapshot.refs.keyRef,elapsed,false);restoreGameRef(tickFn,snapshot.refs.tickFn,elapsed,false);});
+
   const { t } = useTranslation();
   const sfx = useGameSfx('tugofwar');
   const solo = !!onContinue;
@@ -181,41 +186,41 @@ export default function TugOfWar({ questions, pull: teamGoal, freeze: teamFreeze
   const freeze = solo ? 0 : teamFreeze;
   const timed = !solo && seconds > 0;
   const limitMs = seconds * 1000;
-  const [seed, setSeed] = useState(0);
+  const [seed, setSeed] = useGameHistoryState("app/src/components/TugOfWar.tsx:TugOfWar:seed",0);
   const qKey = questions.map((q) => `${q.id}:${q.question}:${q.choices.join('/')}:${q.correctIndex}:${q.imageUrl ?? ''}`).join('|');
   // 팀마다 따로 만든 문제 순서·보기 배치
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const decks = useMemo<TugShown[][]>(() => solo ? [buildTugDeck(questions, playableCount)] : [buildTugDeck(questions), buildTugDeck(questions)], [qKey, seed, solo, playableCount]);
+  const decks = useGameHistoryMemo<TugShown[][]>("TugOfWar:decks",() => solo ? [buildTugDeck(questions, playableCount)] : [buildTugDeck(questions), buildTugDeck(questions)], [qKey, seed, solo, playableCount]);
   const playable = decks[0].length > 0;
 
-  const [phase, setPhase] = useState<Phase>('ready');
-  const [sides, setSides] = useState<Side[]>([blank(), blank()]);
-  const [pos, setPos] = useState(0);
-  const [tick, setTick] = useState(0);
-  const [sudden, setSudden] = useState(false);
-  const [winner, setWinner] = useState<0 | 1 | null>(null);
-  const [pulse, setPulse] = useState<Pulse | null>(null);
-  const phaseRef = useRef<Phase>('ready');
-  const sidesRef = useRef(sides);
-  const posRef = useRef(0);
-  const suddenRef = useRef(false);
-  const winnerRef = useRef<0 | 1 | null>(null);
-  const startAt = useRef(0);
-  const ticker = useRef<number | null>(null);
-  const timers = useRef<number[]>([]);
-  const keyRef = useRef(0);
-  const tickFn = useRef<() => void>(() => undefined);
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/TugOfWar.tsx:TugOfWar:phase",'ready');
+  const [sides, setSides] = useGameHistoryState<Side[]>("app/src/components/TugOfWar.tsx:TugOfWar:sides",[blank(), blank()]);
+  const [pos, setPos] = useGameHistoryState("app/src/components/TugOfWar.tsx:TugOfWar:pos",0);
+  const [tick, setTick] = useGameHistoryState("app/src/components/TugOfWar.tsx:TugOfWar:tick",0);
+  const [sudden, setSudden] = useGameHistoryState("app/src/components/TugOfWar.tsx:TugOfWar:sudden",false);
+  const [winner, setWinner] = useGameHistoryState<0 | 1 | null>("app/src/components/TugOfWar.tsx:TugOfWar:winner",null);
+  const [pulse, setPulse] = useGameHistoryState<Pulse | null>("app/src/components/TugOfWar.tsx:TugOfWar:pulse",null);
+  const phaseRef = useGameHistoryRef<Phase>("app/src/components/TugOfWar.tsx:TugOfWar:phaseRef",'ready');
+  const sidesRef = useGameHistoryRef("app/src/components/TugOfWar.tsx:TugOfWar:sidesRef",sides);
+  const posRef = useGameHistoryRef("app/src/components/TugOfWar.tsx:TugOfWar:posRef",0);
+  const suddenRef = useGameHistoryRef("app/src/components/TugOfWar.tsx:TugOfWar:suddenRef",false);
+  const winnerRef = useGameHistoryRef<0 | 1 | null>("app/src/components/TugOfWar.tsx:TugOfWar:winnerRef",null);
+  const startAt = useGameHistoryRef("app/src/components/TugOfWar.tsx:TugOfWar:startAt",0);
+  const ticker = useGameHistoryRef<number | null>("app/src/components/TugOfWar.tsx:TugOfWar:ticker",null);
+  const timers = useGameHistoryRef<number[]>("app/src/components/TugOfWar.tsx:TugOfWar:timers",[]);
+  const keyRef = useGameHistoryRef("app/src/components/TugOfWar.tsx:TugOfWar:keyRef",0);
+  const tickFn = useGameHistoryRef<() => void>("app/src/components/TugOfWar.tsx:TugOfWar:tickFn",() => undefined);
 
   const later = (fn: () => void, wait: number) => {
-    timers.current.push(gameClock.setTimeout(fn, wait));
+    timers.current.push(historyClock.setTimeout(fn, wait));
   };
   const clearAll = () => {
-    timers.current.forEach((id) => gameClock.clearTimeout(id));
+    timers.current.forEach((id) => historyClock.clearTimeout(id));
     timers.current = [];
-    if (ticker.current !== null) gameClock.clearInterval(ticker.current);
+    if (ticker.current !== null) historyClock.clearInterval(ticker.current);
     ticker.current = null;
   };
-  useEffect(() => clearAll, []);
+  useGameHistoryEffect(() => clearAll, [], false, "app/src/components/TugOfWar.tsx:effect1");
 
   function commitSides(next: Side[]) {
     sidesRef.current = next;
@@ -244,16 +249,16 @@ export default function TugOfWar({ questions, pull: teamGoal, freeze: teamFreeze
     setPhaseBoth('ready');
   }
   // 문제·설정이 바뀌면 처음부터 다시 준비한다
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [qKey, pull, freeze, seconds]);
+  }, [qKey, pull, freeze, seconds], false, "app/src/components/TugOfWar.tsx:effect2");
 
   function finish(w: 0 | 1) {
     if (winnerRef.current !== null) return;
     winnerRef.current = w;
     setWinner(w);
-    if (ticker.current !== null) gameClock.clearInterval(ticker.current);
+    if (ticker.current !== null) historyClock.clearInterval(ticker.current);
     ticker.current = null;
     later(() => {
       playSfx(sfx.finish);
@@ -262,7 +267,7 @@ export default function TugOfWar({ questions, pull: teamGoal, freeze: teamFreeze
   }
 
   tickFn.current = () => {
-    const now = gameClock.now();
+    const now = historyClock.now();
     setTick(now);
     if (timed && !suddenRef.current && winnerRef.current === null && now - startAt.current >= limitMs) {
       const w = tugWinner(posRef.current, pull, true);
@@ -278,10 +283,10 @@ export default function TugOfWar({ questions, pull: teamGoal, freeze: teamFreeze
   function start() {
     if (phaseRef.current !== 'ready' || !playable) return;
     playSfx(COMMON_SFX.start);
-    startAt.current = gameClock.now();
+    startAt.current = historyClock.now();
     setTick(startAt.current);
     setPhaseBoth('playing');
-    if (!solo) ticker.current = gameClock.setInterval(() => tickFn.current(), 100);
+    if (!solo) ticker.current = historyClock.setInterval(() => tickFn.current(), 100);
   }
 
   function advance(team: number) {
@@ -291,7 +296,7 @@ export default function TugOfWar({ questions, pull: teamGoal, freeze: teamFreeze
   function choose(team: 0 | 1, ci: number) {
     if (phaseRef.current !== 'playing' || winnerRef.current !== null || (solo && team !== 0)) return;
     const side = sidesRef.current[team];
-    const now = gameClock.now();
+    const now = historyClock.now();
     if (side.locked || now < side.frozenUntil) return;
     const q = decks[team][side.idx % decks[team].length];
     if (!q || ci >= q.choices.length || side.removed.includes(ci)) return;
@@ -323,7 +328,7 @@ export default function TugOfWar({ questions, pull: teamGoal, freeze: teamFreeze
   }
 
   // 키보드: 파랑 팀 1·2·3·4, 빨강 팀 7·8·9·0, 시작은 Space/Enter
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!gameKeyboardAllowed(e) || e.repeat) return;
       if (phaseRef.current === 'ready' && (e.key === ' ' || e.key === 'Enter')) {
@@ -339,7 +344,7 @@ export default function TugOfWar({ questions, pull: teamGoal, freeze: teamFreeze
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [decks, pull, freeze, playable, solo, onSubmit]);
+  }, [decks, pull, freeze, playable, solo, onSubmit], true, "app/src/components/TugOfWar.tsx:effect3");
 
   const teamName = (i: number) => (i === 0 ? t('gameTugOfWar.teamBlue') : t('gameTugOfWar.teamRed'));
   const knot = tugKnotPercent(pos, pull, FINISH_WIDTH);

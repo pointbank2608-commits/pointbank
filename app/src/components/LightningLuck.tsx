@@ -1,7 +1,8 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
 import { gameKeyboardAllowed } from '../lib/gameKeyboard';
-import { gameClock } from '../lib/gameClock';
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+
+import {forwardRef, useImperativeHandle, useMemo} from 'react';
 import { useTranslation } from 'react-i18next';
 import { GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
@@ -73,35 +74,39 @@ const STYLE = `
 `;
 
 const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ items, players, participants, minSec, maxSec, char = 'sheep', onChar }, ref) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/LightningLuck.tsx:LightningLuck',()=>({state:{order,pos,round,alive,cur,phase,runId,reading,snapshot},refs:{curRef:captureGameRef(curRef.current),timers:captureGameRef(timers.current)}}),(snapshot,elapsed)=>{setOrder(()=>snapshot.state.order);setPos(()=>snapshot.state.pos);setRound(()=>snapshot.state.round);setAlive(()=>snapshot.state.alive);setCur(()=>snapshot.state.cur);setPhase(()=>snapshot.state.phase);setRunId(()=>snapshot.state.runId);setReading(()=>snapshot.state.reading);setSnapshot(()=>snapshot.state.snapshot);restoreGameRef(curRef,snapshot.refs.curRef,elapsed,false);restoreGameRef(timers,snapshot.refs.timers,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const n = participants?.entries.length ?? Math.min(40, Math.max(2, players));
   const lo = Math.max(2, Math.min(minSec, maxSec));
   const hi = Math.max(lo, maxSec);
   const itemKey = items.map((i) => i.id).join(',');
-  const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
-  const [pos, setPos] = useState(0);
-  const [round, setRound] = useState(1);
-  const [alive, setAlive] = useState<boolean[]>(() => Array(n).fill(true));
-  const [cur, setCur] = useState(0);
-  const [phase, setPhase] = useState<Phase>('ready');
-  const [runId, setRunId] = useState(0);
-  const [reading, setReading] = useState(false);
-  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/LightningLuck.tsx:LightningLuck:order",() => shuffle(items.map((_, i) => i)));
+  const [pos, setPos] = useGameHistoryState("app/src/components/LightningLuck.tsx:LightningLuck:pos",0);
+  const [round, setRound] = useGameHistoryState("app/src/components/LightningLuck.tsx:LightningLuck:round",1);
+  const [alive, setAlive] = useGameHistoryState<boolean[]>("app/src/components/LightningLuck.tsx:LightningLuck:alive",() => Array(n).fill(true));
+  const [cur, setCur] = useGameHistoryState("app/src/components/LightningLuck.tsx:LightningLuck:cur",0);
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/LightningLuck.tsx:LightningLuck:phase",'ready');
+  const [runId, setRunId] = useGameHistoryState("app/src/components/LightningLuck.tsx:LightningLuck:runId",0);
+  const [reading, setReading] = useGameHistoryState("app/src/components/LightningLuck.tsx:LightningLuck:reading",false);
+  const [snapshot, setSnapshot] = useGameHistoryState<Snapshot | null>("app/src/components/LightningLuck.tsx:LightningLuck:snapshot",null);
   // 타이머 안에서 최신 읽는 사람을 알기 위한 ref
-  const curRef = useRef(0);
+  const curRef = useGameHistoryRef("app/src/components/LightningLuck.tsx:LightningLuck:curRef",0);
   curRef.current = cur;
-  const timers = useRef<number[]>([]);
+  const timers = useGameHistoryRef<number[]>("app/src/components/LightningLuck.tsx:LightningLuck:timers",[]);
   const later = (fn: () => void, ms: number) => {
-    timers.current.push(gameClock.setTimeout(fn, ms));
+    timers.current.push(historyClock.setTimeout(fn, ms));
   };
   const clearTimers = () => {
-    timers.current.forEach((id) => gameClock.clearTimeout(id));
+    timers.current.forEach((id) => historyClock.clearTimeout(id));
     timers.current = [];
   };
-  useEffect(() => clearTimers, []);
+  useGameHistoryEffect(() => clearTimers, [], false, "app/src/components/LightningLuck.tsx:effect1");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     clearTimers();
     setOrder(shuffle(items.map((_, i) => i)));
     setPos(0);
@@ -112,7 +117,7 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
     setReading(false);
     setSnapshot(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [n, itemKey]);
+  }, [n, itemKey], false, "app/src/components/LightningLuck.tsx:effect2");
 
   const current = items.length > 0 && order.length > 0 ? parseItem(items[order[pos % order.length]]?.label ?? '') : { text: '', ko: '' };
   const aliveCount = alive.filter(Boolean).length;
@@ -183,7 +188,7 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
   }
 
   // 번개로 남은 학생이 한 명이면 바로 승리 화면으로
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (phase === 'struck' && aliveCount <= 1) {
       later(() => {
         setPhase('won');
@@ -191,7 +196,7 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
       }, 1800);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, aliveCount]);
+  }, [phase, aliveCount], false, "app/src/components/LightningLuck.tsx:effect3");
 
   function pickReader(i: number) {
     if (phase === 'won' || phase === 'struck') return;
@@ -213,7 +218,7 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
   }));
 
   // 스페이스·엔터: 구름 보내기 → 다음 사람 → 다음 문제 (PPT의 스페이스바 진행과 같다)
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (!gameKeyboardAllowed(e)) return;
       const el = e.target as HTMLElement | null;
@@ -227,7 +232,7 @@ const LightningLuck = forwardRef<UndoHandle, Props>(function LightningLuck({ ite
     }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  });
+  }, undefined, true, "app/src/components/LightningLuck.tsx:effect4");
 
   useRemoteActions(
     phase === 'ready'

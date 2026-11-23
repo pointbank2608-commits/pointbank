@@ -1,7 +1,8 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef,useGameHistoryMemo} from '../context/GameHistoryContext';
 import { usePictureWordDeck } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
-import { gameClock } from '../lib/gameClock';
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+
+import {forwardRef, useImperativeHandle, useMemo} from 'react';
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
@@ -107,6 +108,10 @@ const STYLE = `
 `;
 
 const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items: sourceItems, teams, mounds }, ref) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/TreasureDig.tsx:TreasureDig',()=>({state:{dug,scores,turn,layout,skipped,lastDug,round,phase,selected,order,cardPos,lastGain,wrongShake,scorePulse,snapshot,showKo},refs:{timers:captureGameRef(timers.current)}}),(snapshot,elapsed)=>{setDug(()=>snapshot.state.dug);setScores(()=>snapshot.state.scores);setTurn(()=>snapshot.state.turn);setLayout(()=>snapshot.state.layout);setSkipped(()=>snapshot.state.skipped);setLastDug(()=>snapshot.state.lastDug);setRound(()=>snapshot.state.round);setPhase(()=>snapshot.state.phase);setSelected(()=>snapshot.state.selected);setOrder(()=>snapshot.state.order);setCardPos(()=>snapshot.state.cardPos);setLastGain(()=>snapshot.state.lastGain);setWrongShake(()=>snapshot.state.wrongShake);setScorePulse(()=>snapshot.state.scorePulse);setSnapshot(()=>snapshot.state.snapshot);setShowKo(()=>snapshot.state.showKo);restoreGameRef(timers,snapshot.refs.timers,elapsed,false);});
+
   const deck = usePictureWordDeck();
   const items = useMemo(() => deck.length ? deck.map(row => ({ id: row.id, label: row.choices[row.correctIndex] })) : sourceItems, [deck, sourceItems]);
   const { t } = useTranslation();
@@ -116,33 +121,33 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items: 
   const cols = moundCount <= 12 ? 4 : moundCount <= 20 ? 5 : 6;
   const itemKey = items.map((i) => i.id).join(',');
 
-  const [dug, setDug] = useState<Record<number, Dug>>({});
-  const [scores, setScores] = useState<number[]>(() => Array(teamCount).fill(0));
-  const [turn, setTurn] = useState(0);
-  const [layout, setLayout] = useState<Layout>(() => makeLayout(moundCount, cols));
-  const [skipped, setSkipped] = useState<number[]>([]);
-  const [lastDug, setLastDug] = useState<Dug | null>(null);
+  const [dug, setDug] = useGameHistoryState<Record<number, Dug>>("app/src/components/TreasureDig.tsx:TreasureDig:dug",{});
+  const [scores, setScores] = useGameHistoryState<number[]>("app/src/components/TreasureDig.tsx:TreasureDig:scores",() => Array(teamCount).fill(0));
+  const [turn, setTurn] = useGameHistoryState("app/src/components/TreasureDig.tsx:TreasureDig:turn",0);
+  const [layout, setLayout] = useGameHistoryState<Layout>("app/src/components/TreasureDig.tsx:TreasureDig:layout",() => makeLayout(moundCount, cols));
+  const [skipped, setSkipped] = useGameHistoryState<number[]>("app/src/components/TreasureDig.tsx:TreasureDig:skipped",[]);
+  const [lastDug, setLastDug] = useGameHistoryState<Dug | null>("app/src/components/TreasureDig.tsx:TreasureDig:lastDug",null);
   const treasureAt = layout.treasure;
-  const [round, setRound] = useState(1);
-  const [phase, setPhase] = useState<Phase>('pick');
-  const [selected, setSelected] = useState<number | null>(null);
-  const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
-  const [cardPos, setCardPos] = useState(0);
-  const [lastGain, setLastGain] = useState(0);
-  const [wrongShake, setWrongShake] = useState<number | null>(null);
-  const [scorePulse, setScorePulse] = useState<number | null>(null);
-  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
-  const timers = useRef<number[]>([]);
+  const [round, setRound] = useGameHistoryState("app/src/components/TreasureDig.tsx:TreasureDig:round",1);
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/TreasureDig.tsx:TreasureDig:phase",'pick');
+  const [selected, setSelected] = useGameHistoryState<number | null>("app/src/components/TreasureDig.tsx:TreasureDig:selected",null);
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/TreasureDig.tsx:TreasureDig:order",() => shuffle(items.map((_, i) => i)));
+  const [cardPos, setCardPos] = useGameHistoryState("app/src/components/TreasureDig.tsx:TreasureDig:cardPos",0);
+  const [lastGain, setLastGain] = useGameHistoryState("app/src/components/TreasureDig.tsx:TreasureDig:lastGain",0);
+  const [wrongShake, setWrongShake] = useGameHistoryState<number | null>("app/src/components/TreasureDig.tsx:TreasureDig:wrongShake",null);
+  const [scorePulse, setScorePulse] = useGameHistoryState<number | null>("app/src/components/TreasureDig.tsx:TreasureDig:scorePulse",null);
+  const [snapshot, setSnapshot] = useGameHistoryState<Snapshot | null>("app/src/components/TreasureDig.tsx:TreasureDig:snapshot",null);
+  const timers = useGameHistoryRef<number[]>("app/src/components/TreasureDig.tsx:TreasureDig:timers",[]);
 
   function later(fn: () => void, ms: number) {
-    const id = gameClock.setTimeout(fn, ms);
+    const id = historyClock.setTimeout(fn, ms);
     timers.current.push(id);
   }
-  useEffect(() => () => timers.current.forEach((id) => gameClock.clearTimeout(id)), []);
+  useGameHistoryEffect(() => () => timers.current.forEach((id) => historyClock.clearTimeout(id)), [], false, "app/src/components/TreasureDig.tsx:effect1");
 
   // 팀·언덕 수·단어가 바뀌면 처음부터 다시 묻는다.
-  useEffect(() => {
-    timers.current.forEach((id) => gameClock.clearTimeout(id));
+  useGameHistoryEffect(() => {
+    timers.current.forEach((id) => historyClock.clearTimeout(id));
     timers.current = [];
     setDug({});
     setScores(Array(teamCount).fill(0));
@@ -157,7 +162,7 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items: 
     setCardPos(0);
     setSnapshot(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamCount, moundCount, itemKey]);
+  }, [teamCount, moundCount, itemKey], false, "app/src/components/TreasureDig.tsx:effect2");
 
   // 항목은 단어 또는 문장 — "영어 문장 | 해석" 꼴이면 해석은 눌러서 본다(문법 수업용)
   const { word, ko } = useMemo(() => {
@@ -167,10 +172,10 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items: 
     return cut >= 0 ? { word: raw.slice(0, cut).trim(), ko: raw.slice(cut + 3).trim() } : { word: raw.trim(), ko: '' };
   }, [items, order, cardPos]);
   const picture = order.length ? deck[order[cardPos % order.length]] : undefined;
-  const [showKo, setShowKo] = useState(false);
-  useEffect(() => setShowKo(false), [cardPos, selected]);
+  const [showKo, setShowKo] = useGameHistoryState("app/src/components/TreasureDig.tsx:TreasureDig:showKo",false);
+  useGameHistoryEffect(() => setShowKo(false), [cardPos, selected], false, "app/src/components/TreasureDig.tsx:effect3");
 
-  const finds = useMemo(() => shuffle(FINDS.filter((f) => f !== 'starfish' && f !== 'boot')), [round]);
+  const finds = useGameHistoryMemo("TreasureDig:finds",() => shuffle(FINDS.filter((f) => f !== 'starfish' && f !== 'boot')), [round]);
   const teamName = (i: number) => t('gameTreasureDig.teamName', { name: TEAM_NAMES_FALLBACK[i] });
   useNativeGameTurn({current:teamName(turn),next:teamName(phase==='roundEnd'?(turn+1)%teamCount:nextDigTurn(turn,skipped,teamCount).turn),index:turn,total:teamCount,enabled:items.length>0});
 
@@ -269,7 +274,7 @@ const TreasureDig = forwardRef<UndoHandle, Props>(function TreasureDig({ items: 
   useImperativeHandle(ref, () => ({
     undo() {
       if (!snapshot) return;
-      timers.current.forEach((id) => gameClock.clearTimeout(id));
+      timers.current.forEach((id) => historyClock.clearTimeout(id));
       timers.current = [];
       setDug(snapshot.dug);
       setScores(snapshot.scores);

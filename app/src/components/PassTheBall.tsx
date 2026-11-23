@@ -1,6 +1,7 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useRef, useState } from 'react';
+
+import {} from 'react';
 import { useTranslation } from 'react-i18next';
 import { playMusic } from '../lib/gameMusic';
 import { colorFor } from '../lib/wheel';
@@ -50,31 +51,35 @@ export default function PassTheBall({
   onAddItem,
   onRemoveItem,
 }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/PassTheBall.tsx:PassTheBall',()=>({state:{phase,missionWord,deck,shown},refs:{timerRef:captureGameRef(timerRef.current),stopMusicRef:captureGameRef(stopMusicRef.current)}}),(snapshot,elapsed)=>{setPhase(()=>snapshot.state.phase);setMissionWord(()=>snapshot.state.missionWord);setDeck(()=>snapshot.state.deck);setShown(()=>snapshot.state.shown);restoreGameRef(timerRef,snapshot.refs.timerRef,elapsed,false);stopMusicRef.current();restoreGameRef(stopMusicRef,snapshot.refs.stopMusicRef,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
-  const [phase, setPhase] = useState<Phase>('idle');
-  const [missionWord, setMissionWord] = useState<GameItem | null>(null);
-  const [deck, setDeck] = useState<GameItem[]>([]);
-  const [shown, setShown] = useState(0);
-  const timerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
-  const stopMusicRef = useRef<() => void>(() => {});
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/PassTheBall.tsx:PassTheBall:phase",'idle');
+  const [missionWord, setMissionWord] = useGameHistoryState<GameItem | null>("app/src/components/PassTheBall.tsx:PassTheBall:missionWord",null);
+  const [deck, setDeck] = useGameHistoryState<GameItem[]>("app/src/components/PassTheBall.tsx:PassTheBall:deck",[]);
+  const [shown, setShown] = useGameHistoryState("app/src/components/PassTheBall.tsx:PassTheBall:shown",0);
+  const timerRef = useGameHistoryRef<ReturnType<typeof historyClock.setTimeout> | null>("app/src/components/PassTheBall.tsx:PassTheBall:timerRef",null);
+  const stopMusicRef = useGameHistoryRef<() => void>("app/src/components/PassTheBall.tsx:PassTheBall:stopMusicRef",() => {});
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/PassTheBall.tsx:PassTheBall:itemDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/PassTheBall.tsx:PassTheBall:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/PassTheBall.tsx:PassTheBall:templateNameDraft",'');
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     return () => {
-      if (timerRef.current) gameClock.clearTimeout(timerRef.current);
+      if (timerRef.current) historyClock.clearTimeout(timerRef.current);
       stopMusicRef.current();
     };
-  }, []);
+  }, [], false, "app/src/components/PassTheBall.tsx:effect1");
 
   // 오른쪽 목록 입력창의 초안 텍스트를 실제 항목과 맞춰둔다 — 타이핑 중엔 이 draft를
   // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
-  }, [items]);
+  }, [items], false, "app/src/components/PassTheBall.tsx:effect2");
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -109,7 +114,7 @@ export default function PassTheBall({
 
   /** 음악을 틀고, 정해진 범위 안의 무작위 시각에 멈추면 다음 단어를 보여 준다. */
   function runMusic(nextDeck: GameItem[], nextShown: number) {
-    if (timerRef.current) gameClock.clearTimeout(timerRef.current);
+    if (timerRef.current) historyClock.clearTimeout(timerRef.current);
     stopMusicRef.current();
     setMissionWord(null);
     setPhase('active');
@@ -117,7 +122,7 @@ export default function PassTheBall({
     const lo = Math.min(minSec, maxSec);
     const span = Math.max(maxSec - lo, 0);
     const delaySec = lo + Math.random() * span;
-    timerRef.current = gameClock.setTimeout(() => {
+    timerRef.current = historyClock.setTimeout(() => {
       setMissionWord(nextDeck[nextShown]);
       setShown(nextShown + 1);
       setPhase('revealed');
@@ -141,7 +146,7 @@ export default function PassTheBall({
   }
 
   function reset() {
-    if (timerRef.current) gameClock.clearTimeout(timerRef.current);
+    if (timerRef.current) historyClock.clearTimeout(timerRef.current);
     stopMusicRef.current();
     setPhase('idle');
     setMissionWord(null);

@@ -1,5 +1,6 @@
+import {useGameHistorySnapshot, useGameHistoryEffect, useGameHistoryState} from '../context/GameHistoryContext';
 import {useNativeGameTurn} from '../context/GameTurnContext';
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import {forwardRef, useImperativeHandle} from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { QuizQuestion, UndoHandle } from '../lib/types';
@@ -53,21 +54,24 @@ const GameShowQuiz = forwardRef<UndoHandle, Props>(function GameShowQuiz(
   { questions, bonusEvery, lifelines, boardStyle = 'wood', onContinue, onHint, onSubmit },
   ref,
 ) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/GameShowQuiz.tsx:GameShowQuiz',()=>({state:{order,pos,turn,scores,selectedChoice,removedChoices,lifelinesLeft,prevScores},refs:{}}),(snapshot,elapsed)=>{setOrder(()=>snapshot.state.order);setPos(()=>snapshot.state.pos);setTurn(()=>snapshot.state.turn);setScores(()=>snapshot.state.scores);setSelectedChoice(()=>snapshot.state.selectedChoice);setRemovedChoices(()=>snapshot.state.removedChoices);setLifelinesLeft(()=>snapshot.state.lifelinesLeft);setPrevScores(()=>snapshot.state.prevScores);void elapsed;});
+
   const { t } = useTranslation();
   const solo = !!onContinue;
   const clay = boardStyle === 'clay';
-  const [order, setOrder] = useState<number[]>(() => shuffle(questions.map((_, i) => i)));
-  const [pos, setPos] = useState(0);
-  const [turn, setTurn] = useState<Team>('blue');
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/GameShowQuiz.tsx:GameShowQuiz:order",() => shuffle(questions.map((_, i) => i)));
+  const [pos, setPos] = useGameHistoryState("app/src/components/GameShowQuiz.tsx:GameShowQuiz:pos",0);
+  const [turn, setTurn] = useGameHistoryState<Team>("app/src/components/GameShowQuiz.tsx:GameShowQuiz:turn",'blue');
   useNativeGameTurn({current:t('gameGameShowQuiz.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gameGameShowQuiz.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:!solo&&questions.length>0&&pos<questions.length});
-  const [scores, setScores] = useState<Record<Team, number>>({ blue: 0, red: 0 });
-  const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
-  const [removedChoices, setRemovedChoices] = useState<Set<number>>(new Set());
-  const [lifelinesLeft, setLifelinesLeft] = useState<Record<Team, number>>({ blue: lifelines, red: lifelines });
-  const [prevScores, setPrevScores] = useState<Record<Team, number> | null>(null);
+  const [scores, setScores] = useGameHistoryState<Record<Team, number>>("app/src/components/GameShowQuiz.tsx:GameShowQuiz:scores",{ blue: 0, red: 0 });
+  const [selectedChoice, setSelectedChoice] = useGameHistoryState<number | null>("app/src/components/GameShowQuiz.tsx:GameShowQuiz:selectedChoice",null);
+  const [removedChoices, setRemovedChoices] = useGameHistoryState<Set<number>>("app/src/components/GameShowQuiz.tsx:GameShowQuiz:removedChoices",new Set());
+  const [lifelinesLeft, setLifelinesLeft] = useGameHistoryState<Record<Team, number>>("app/src/components/GameShowQuiz.tsx:GameShowQuiz:lifelinesLeft",{ blue: lifelines, red: lifelines });
+  const [prevScores, setPrevScores] = useGameHistoryState<Record<Team, number> | null>("app/src/components/GameShowQuiz.tsx:GameShowQuiz:prevScores",null);
 
   const questionIdsKey = questions.map((q) => q.id).join('|');
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setOrder(shuffle(questions.map((_, i) => i)));
     setPos(0);
     setTurn('blue');
@@ -77,7 +81,7 @@ const GameShowQuiz = forwardRef<UndoHandle, Props>(function GameShowQuiz(
     setLifelinesLeft({ blue: lifelines, red: lifelines });
     setPrevScores(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [questionIdsKey]);
+  }, [questionIdsKey], false, "app/src/components/GameShowQuiz.tsx:effect1");
 
   useImperativeHandle(ref, () => ({
     undo() {

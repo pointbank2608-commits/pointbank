@@ -1,7 +1,8 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef,useGameHistoryMemo} from '../context/GameHistoryContext';
 import { usePictureWordDeck } from './PictureWordTurn';
 import { gameKeyboardAllowed } from '../lib/gameKeyboard';
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
+
+import {useMemo, type PointerEvent} from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import { useGamePlay } from './GameThemeFrame';
@@ -443,6 +444,10 @@ export default function MazeChase({
   onAddItem,
   onRemoveItem,
 }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/MazeChase.tsx:MazeChase',()=>({state:{order,pos,score,caughtFlash,wrongFlash},refs:{moveSfxAt:captureGameRef(moveSfxAt.current),playerRef:captureGameRef(playerRef.current),enemyRef:captureGameRef(enemyRef.current),startRef:captureGameRef(startRef.current),enemySpawnRef:captureGameRef(enemySpawnRef.current),keysRef:captureGameRef(keysRef.current),wallRef:captureGameRef(wallRef.current),bubblesRef:captureGameRef(bubblesRef.current),roundOverRef:captureGameRef(roundOverRef.current),playingRef:captureGameRef(playingRef.current),immuneUntilRef:captureGameRef(immuneUntilRef.current),flashTimers:captureGameRef(flashTimers.current),layoutSync:captureGameRef(layoutSync.current)}}),(snapshot,elapsed)=>{setOrder(()=>snapshot.state.order);setPos(()=>snapshot.state.pos);setScore(()=>snapshot.state.score);setCaughtFlash(()=>snapshot.state.caughtFlash);setWrongFlash(()=>snapshot.state.wrongFlash);restoreGameRef(moveSfxAt,snapshot.refs.moveSfxAt,elapsed,false);restoreGameRef(playerRef,snapshot.refs.playerRef,elapsed,false);restoreGameRef(enemyRef,snapshot.refs.enemyRef,elapsed,false);restoreGameRef(startRef,snapshot.refs.startRef,elapsed,false);restoreGameRef(enemySpawnRef,snapshot.refs.enemySpawnRef,elapsed,false);restoreGameRef(keysRef,snapshot.refs.keysRef,elapsed,false);restoreGameRef(wallRef,snapshot.refs.wallRef,elapsed,false);restoreGameRef(bubblesRef,snapshot.refs.bubblesRef,elapsed,false);restoreGameRef(roundOverRef,snapshot.refs.roundOverRef,elapsed,false);restoreGameRef(playingRef,snapshot.refs.playingRef,elapsed,false);restoreGameRef(immuneUntilRef,snapshot.refs.immuneUntilRef,elapsed,false);restoreGameRef(flashTimers,snapshot.refs.flashTimers,elapsed,false);restoreGameRef(layoutSync,snapshot.refs.layoutSync,elapsed,false);});
+
   const { t } = useTranslation();
   const deck = usePictureWordDeck();
   const items = useMemo(() => deck.length ? deck.map(row => ({ id: row.id, label: row.choices[row.correctIndex] })) : sourceItems, [deck, sourceItems]);
@@ -450,24 +455,24 @@ export default function MazeChase({
   const enoughItems = items.length >= (deck.length ? 1 : 2);
   const { itemsHidden } = useGamePlay();
   const garden = boardStyle === 'garden';
-  const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
-  const [pos, setPos] = useState(0);
-  const [score, setScore] = useState(0);
-  const [, setTick] = useState(0);
-  const [caughtFlash, setCaughtFlash] = useState(false);
-  const [wrongFlash, setWrongFlash] = useState(false);
-  const moveSfxAt = useRef(0);
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/MazeChase.tsx:MazeChase:order",() => shuffle(items.map((_, i) => i)));
+  const [pos, setPos] = useGameHistoryState("app/src/components/MazeChase.tsx:MazeChase:pos",0);
+  const [score, setScore] = useGameHistoryState("app/src/components/MazeChase.tsx:MazeChase:score",0);
+  const [, setTick] = useGameHistoryState("app/src/components/MazeChase.tsx:MazeChase:undefined",0);
+  const [caughtFlash, setCaughtFlash] = useGameHistoryState("app/src/components/MazeChase.tsx:MazeChase:caughtFlash",false);
+  const [wrongFlash, setWrongFlash] = useGameHistoryState("app/src/components/MazeChase.tsx:MazeChase:wrongFlash",false);
+  const moveSfxAt = useGameHistoryRef("app/src/components/MazeChase.tsx:MazeChase:moveSfxAt",0);
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/MazeChase.tsx:MazeChase:itemDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/MazeChase.tsx:MazeChase:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/MazeChase.tsx:MazeChase:templateNameDraft",'');
   const itemKey = items.map((it) => it.id).join(',');
   const count = items.length;
 
   // 오른쪽 목록 입력창의 초안 텍스트를 실제 항목과 맞춰둔다 — 타이핑 중엔 이 draft를
   // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
-  }, [items]);
+  }, [items], false, "app/src/components/MazeChase.tsx:effect1");
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -489,19 +494,19 @@ export default function MazeChase({
     if (trimmed && trimmed !== templateName) onRenameTemplate?.(trimmed);
   }
 
-  const playerRef = useRef<Vec>({ x: 1.5, y: 5.5 });
-  const enemyRef = useRef<Vec>({ x: 13.5, y: 1.5 });
-  const startRef = useRef<Vec>({ x: 1.5, y: 5.5 });
-  const enemySpawnRef = useRef<Vec>({ x: 13.5, y: 1.5 });
-  const keysRef = useRef({ up: false, down: false, left: false, right: false });
-  const wallRef = useRef<WallGrid>([]);
-  const bubblesRef = useRef<Bubble[]>([]);
-  const roundOverRef = useRef(false);
-  const playingRef = useRef(false);
-  const immuneUntilRef = useRef(0);
-  const flashTimers = useRef<number[]>([]);
+  const playerRef = useGameHistoryRef<Vec>("app/src/components/MazeChase.tsx:MazeChase:playerRef",{ x: 1.5, y: 5.5 });
+  const enemyRef = useGameHistoryRef<Vec>("app/src/components/MazeChase.tsx:MazeChase:enemyRef",{ x: 13.5, y: 1.5 });
+  const startRef = useGameHistoryRef<Vec>("app/src/components/MazeChase.tsx:MazeChase:startRef",{ x: 1.5, y: 5.5 });
+  const enemySpawnRef = useGameHistoryRef<Vec>("app/src/components/MazeChase.tsx:MazeChase:enemySpawnRef",{ x: 13.5, y: 1.5 });
+  const keysRef = useGameHistoryRef("app/src/components/MazeChase.tsx:MazeChase:keysRef",{ up: false, down: false, left: false, right: false });
+  const wallRef = useGameHistoryRef<WallGrid>("app/src/components/MazeChase.tsx:MazeChase:wallRef",[]);
+  const bubblesRef = useGameHistoryRef<Bubble[]>("app/src/components/MazeChase.tsx:MazeChase:bubblesRef",[]);
+  const roundOverRef = useGameHistoryRef("app/src/components/MazeChase.tsx:MazeChase:roundOverRef",false);
+  const playingRef = useGameHistoryRef("app/src/components/MazeChase.tsx:MazeChase:playingRef",false);
+  const immuneUntilRef = useGameHistoryRef("app/src/components/MazeChase.tsx:MazeChase:immuneUntilRef",0);
+  const flashTimers = useGameHistoryRef<number[]>("app/src/components/MazeChase.tsx:MazeChase:flashTimers",[]);
 
-  const layout = useMemo(() => {
+  const layout = useGameHistoryMemo("MazeChase:layout",() => {
     if (!enoughItems || pos >= order.length) return null;
     const target = items[order[pos]];
     if (!target) return null;
@@ -512,22 +517,22 @@ export default function MazeChase({
   }, [itemKey, pos, order]);
 
   function clearFlashes() {
-    flashTimers.current.forEach((id) => gameClock.clearTimeout(id));
+    flashTimers.current.forEach((id) => historyClock.clearTimeout(id));
     flashTimers.current = [];
     setCaughtFlash(false);
     setWrongFlash(false);
   }
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     clearFlashes();
     setOrder(shuffle(items.map((_, i) => i)));
     setPos(0);
     setScore(0);
     return clearFlashes;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemKey]);
+  }, [itemKey], false, "app/src/components/MazeChase.tsx:effect2");
 
-  const layoutSync = useRef<RoundLayout | null>(null);
+  const layoutSync = useGameHistoryRef<RoundLayout | null>("app/src/components/MazeChase.tsx:MazeChase:layoutSync",null);
   if (layout !== layoutSync.current) {
     layoutSync.current = layout;
     if (layout) {
@@ -539,13 +544,13 @@ export default function MazeChase({
       enemyRef.current = { ...layout.enemy };
       roundOverRef.current = false;
       playingRef.current = true;
-      immuneUntilRef.current = gameClock.now() + 700;
+      immuneUntilRef.current = historyClock.now() + 700;
     } else {
       playingRef.current = false;
     }
   }
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (!gameKeyboardAllowed(e)) return;
       if (isEditorTarget(e.target)) return;
@@ -585,15 +590,15 @@ export default function MazeChase({
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', clearKeys);
     };
-  }, []);
+  }, [], true, "app/src/components/MazeChase.tsx:effect3");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (!enoughItems) return;
     let raf = 0;
-    let lastTime = gameClock.now();
+    let lastTime = historyClock.now();
 
     function loop(now: number) {
-      const dt = Math.min(0.05, (now - lastTime) / 1000);
+      const dt = Math.max(0, Math.min(0.05, (now - lastTime) / 1000));
       lastTime = now;
       const wall = wallRef.current;
 
@@ -617,7 +622,7 @@ export default function MazeChase({
         }
 
         const waypoint =
-          gameClock.now() > immuneUntilRef.current
+          historyClock.now() > immuneUntilRef.current
             ? bfsNext(wall, enemyRef.current, playerRef.current)
             : null;
         if (waypoint) {
@@ -634,7 +639,7 @@ export default function MazeChase({
         }
 
         if (
-          gameClock.now() > immuneUntilRef.current &&
+          historyClock.now() > immuneUntilRef.current &&
           circlesOverlap(
             playerRef.current.x,
             playerRef.current.y,
@@ -646,10 +651,10 @@ export default function MazeChase({
         ) {
           playerRef.current = { ...startRef.current };
           enemyRef.current = { ...enemySpawnRef.current };
-          immuneUntilRef.current = gameClock.now() + 900;
+          immuneUntilRef.current = historyClock.now() + 900;
           playSfx(GAME_SFX.mazechase.wall);
           setCaughtFlash(true);
-          flashTimers.current.push(gameClock.setTimeout(() => setCaughtFlash(false), 350));
+          flashTimers.current.push(historyClock.setTimeout(() => setCaughtFlash(false), 350));
         }
 
         for (const b of bubblesRef.current) {
@@ -659,7 +664,7 @@ export default function MazeChase({
               playSfx(GAME_SFX.mazechase.goal);
               setScore((s) => s + 1);
               flashTimers.current.push(
-                gameClock.setTimeout(() => {
+                historyClock.setTimeout(() => {
                   setPos((p) => p + 1);
                 }, 450),
               );
@@ -667,7 +672,7 @@ export default function MazeChase({
               escapeChip(playerRef.current, b, wall);
               playSfx(GAME_SFX.mazechase.wrong);
               setWrongFlash(true);
-              flashTimers.current.push(gameClock.setTimeout(() => setWrongFlash(false), 250));
+              flashTimers.current.push(historyClock.setTimeout(() => setWrongFlash(false), 250));
             }
             break;
           }
@@ -675,12 +680,12 @@ export default function MazeChase({
       }
 
       setTick((n) => n + 1);
-      raf = gameClock.requestAnimationFrame(loop);
+      raf = historyClock.requestAnimationFrame(loop);
     }
 
-    raf = gameClock.requestAnimationFrame(loop);
-    return () => gameClock.cancelAnimationFrame(raf);
-  }, [enoughItems]);
+    raf = historyClock.requestAnimationFrame(loop);
+    return () => historyClock.cancelAnimationFrame(raf);
+  }, [enoughItems], false, "app/src/components/MazeChase.tsx:effect4");
 
   useStepSounds(0, enoughItems && order.length > 0 && pos >= order.length, undefined, GAME_SFX.mazechase.finish);
 

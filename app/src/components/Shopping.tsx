@@ -1,6 +1,7 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+
+import {useMemo, useRef, type CSSProperties, type ReactNode} from 'react';
 import { useTranslation } from 'react-i18next';
 import { isGameSoundOn, playSfx, setGameSoundOn, useGameSoundOn, useGameSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
@@ -105,6 +106,10 @@ function layoutShelves(shelf: ImageQuizItem[]) {
  * list: 목록을 잠깐 보고 외운 뒤 그대로 담기 · dish/event: 상황 카드를 보고 필요한 것을 자유롭게 담기.
  */
 export default function Shopping({ items, mode, listSize, memorizeSeconds, scene = null }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/Shopping.tsx:Shopping',()=>({state:{phase,list,shelf,cart,missionIndex,secondsLeft,peeking,peeks,misses,wrongId,spoken,flyers,arriving,round},refs:{peekTimer:captureGameRef(peekTimer.current),flyerKey:captureGameRef(flyerKey.current)}}),(snapshot,elapsed)=>{setPhase(()=>snapshot.state.phase);setList(()=>snapshot.state.list);setShelf(()=>snapshot.state.shelf);setCart(()=>snapshot.state.cart);setMissionIndex(()=>snapshot.state.missionIndex);setSecondsLeft(()=>snapshot.state.secondsLeft);setPeeking(()=>snapshot.state.peeking);setPeeks(()=>snapshot.state.peeks);setMisses(()=>snapshot.state.misses);setWrongId(()=>snapshot.state.wrongId);setSpoken(()=>snapshot.state.spoken);setFlyers(()=>snapshot.state.flyers);setArriving(()=>snapshot.state.arriving);setRound(()=>snapshot.state.round);restoreGameRef(peekTimer,snapshot.refs.peekTimer,elapsed,false);restoreGameRef(flyerKey,snapshot.refs.flyerKey,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const sfx = useGameSfx('shopping');
@@ -114,28 +119,28 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
     if (!soundOn) playSfx(sfx.reveal);
     else window.speechSynthesis?.cancel();
   }
-  useEffect(() => () => { window.speechSynthesis?.cancel(); }, []);
+  useGameHistoryEffect(() => () => { window.speechSynthesis?.cancel(); }, [], false, "app/src/components/Shopping.tsx:effect1");
   const goods: ShopGood[] = useMemo(() => (scene ? sceneGoods(scene) : uniqueShopItems(items)), [items, scene]);
   const missions = missionsFor(mode, scene?.id);
 
-  const [phase, setPhase] = useState<Phase>('ready');
-  const [list, setList] = useState<ShoppingListEntry[]>([]);
-  const [shelf, setShelf] = useState<ImageQuizItem[]>(() => buildShelf(uniqueShopItems(items), [], SHELF_MAX));
-  const [cart, setCart] = useState<string[]>([]);
-  const [missionIndex, setMissionIndex] = useState(0);
-  const [secondsLeft, setSecondsLeft] = useState(0);
-  const [peeking, setPeeking] = useState(false);
-  const [peeks, setPeeks] = useState(0);
-  const [misses, setMisses] = useState(0);
-  const [wrongId, setWrongId] = useState<string | null>(null);
-  const [spoken, setSpoken] = useState('');
-  const [flyers, setFlyers] = useState<Flyer[]>([]);
-  const [arriving, setArriving] = useState<string[]>([]);
-  const [round, setRound] = useState(0);
-  const peekTimer = useRef<number | null>(null);
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/Shopping.tsx:Shopping:phase",'ready');
+  const [list, setList] = useGameHistoryState<ShoppingListEntry[]>("app/src/components/Shopping.tsx:Shopping:list",[]);
+  const [shelf, setShelf] = useGameHistoryState<ImageQuizItem[]>("app/src/components/Shopping.tsx:Shopping:shelf",() => buildShelf(uniqueShopItems(items), [], SHELF_MAX));
+  const [cart, setCart] = useGameHistoryState<string[]>("app/src/components/Shopping.tsx:Shopping:cart",[]);
+  const [missionIndex, setMissionIndex] = useGameHistoryState("app/src/components/Shopping.tsx:Shopping:missionIndex",0);
+  const [secondsLeft, setSecondsLeft] = useGameHistoryState("app/src/components/Shopping.tsx:Shopping:secondsLeft",0);
+  const [peeking, setPeeking] = useGameHistoryState("app/src/components/Shopping.tsx:Shopping:peeking",false);
+  const [peeks, setPeeks] = useGameHistoryState("app/src/components/Shopping.tsx:Shopping:peeks",0);
+  const [misses, setMisses] = useGameHistoryState("app/src/components/Shopping.tsx:Shopping:misses",0);
+  const [wrongId, setWrongId] = useGameHistoryState<string | null>("app/src/components/Shopping.tsx:Shopping:wrongId",null);
+  const [spoken, setSpoken] = useGameHistoryState("app/src/components/Shopping.tsx:Shopping:spoken",'');
+  const [flyers, setFlyers] = useGameHistoryState<Flyer[]>("app/src/components/Shopping.tsx:Shopping:flyers",[]);
+  const [arriving, setArriving] = useGameHistoryState<string[]>("app/src/components/Shopping.tsx:Shopping:arriving",[]);
+  const [round, setRound] = useGameHistoryState("app/src/components/Shopping.tsx:Shopping:round",0);
+  const peekTimer = useGameHistoryRef<number | null>("app/src/components/Shopping.tsx:Shopping:peekTimer",null);
   const sceneRef = useRef<HTMLDivElement>(null);
   const basketRef = useRef<HTMLDivElement>(null);
-  const flyerKey = useRef(0);
+  const flyerKey = useGameHistoryRef("app/src/components/Shopping.tsx:Shopping:flyerKey",0);
 
   const mission = missions.length ? missions[missionIndex % missions.length] : null;
   const frame = mission ? mission.frame : LIST_FRAME;
@@ -147,20 +152,20 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
   const fullOf = (id: string) => countOf(id) >= needOf(id);
   const listTotal = list.reduce((n, e) => n + e.quantity, 0);
 
-  useEffect(() => () => {
-    if (peekTimer.current) gameClock.clearTimeout(peekTimer.current);
-  }, []);
+  useGameHistoryEffect(() => () => {
+    if (peekTimer.current) historyClock.clearTimeout(peekTimer.current);
+  }, [], false, "app/src/components/Shopping.tsx:effect2");
 
   // 목록 외우는 시간
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (phase !== 'memorize' || memorizeSeconds == null) return;
     if (secondsLeft <= 0) {
       setPhase('shop');
       return;
     }
-    const id = gameClock.setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
-    return () => gameClock.clearTimeout(id);
-  }, [phase, secondsLeft, memorizeSeconds]);
+    const id = historyClock.setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => historyClock.clearTimeout(id);
+  }, [phase, secondsLeft, memorizeSeconds], false, "app/src/components/Shopping.tsx:effect3");
 
   function startRound(nextMission = missionIndex) {
     window.speechSynthesis?.cancel();
@@ -189,7 +194,7 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
     if (peeking) return;
     setPeeking(true);
     setPeeks((n) => n + 1);
-    peekTimer.current = gameClock.setTimeout(() => setPeeking(false), 3000);
+    peekTimer.current = historyClock.setTimeout(() => setPeeking(false), 3000);
   }
 
   /** 누른 물건 그림이 진열대에서 카트로 날아가는 연출 */
@@ -219,15 +224,15 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
         step: 0,
       };
       const setStep = (step: 1 | 2) => setFlyers((list) => list.map((f) => (f.key === key ? { ...f, step } : f)));
-      gameClock.setTimeout(() => setFlyers((list) => [...list, flyer]), delay);
-      gameClock.setTimeout(() => setStep(1), delay + 30);
-      gameClock.setTimeout(() => setStep(2), delay + 290);
-      gameClock.setTimeout(() => {
+      historyClock.setTimeout(() => setFlyers((list) => [...list, flyer]), delay);
+      historyClock.setTimeout(() => setStep(1), delay + 30);
+      historyClock.setTimeout(() => setStep(2), delay + 290);
+      historyClock.setTimeout(() => {
         setFlyers((list) => list.filter((f) => f.key !== key));
         if (n > 0) playSfx(sfx.pick, 0.5);
       }, delay + 820);
     }
-    gameClock.setTimeout(() => {
+    historyClock.setTimeout(() => {
       setArriving((ids) => {
         const k = ids.indexOf(item.id);
         return k < 0 ? ids : [...ids.slice(0, k), ...ids.slice(k + 1)];
@@ -242,7 +247,7 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
       if (!entry) {
         setMisses((n) => n + 1);
         setWrongId(item.id);
-        gameClock.setTimeout(() => setWrongId(null), 500);
+        historyClock.setTimeout(() => setWrongId(null), 500);
         playSfx(sfx.wrong);
         return;
       }
@@ -263,7 +268,7 @@ export default function Shopping({ items, mode, listSize, memorizeSeconds, scene
       playSfx(sfx.correct);
       say(sentence);
       if (list.every((e) => next.filter((x) => x === e.item.id).length >= e.quantity)) {
-        gameClock.setTimeout(() => {
+        historyClock.setTimeout(() => {
           setPhase('done');
           playSfx(sfx.finish);
         }, 1100);

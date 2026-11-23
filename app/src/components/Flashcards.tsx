@@ -1,5 +1,6 @@
+import {useGameHistorySnapshot, useGameHistoryEffect, captureGameRef, restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordDeck } from './PictureWordTurn';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {useMemo} from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { MatchPair } from '../lib/types';
@@ -37,6 +38,9 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export default function Flashcards({ cards: sourceCards, boardStyle = 'wood', showPos = false, showExample = false }: Props) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/Flashcards.tsx:Flashcards',()=>({state:{wrongChoice,order,pos,autoRead,flipped,bank},refs:{firstRead:captureGameRef(firstRead.current)}}),(snapshot,elapsed)=>{setWrongChoice(()=>snapshot.state.wrongChoice);setOrder(()=>snapshot.state.order);setPos(()=>snapshot.state.pos);setAutoRead(()=>snapshot.state.autoRead);setFlipped(()=>snapshot.state.flipped);setBank(()=>snapshot.state.bank);restoreGameRef(firstRead,snapshot.refs.firstRead,elapsed,false);});
+
   const { t } = useTranslation();
   const deck = usePictureWordDeck();
   const cards = useMemo(() => deck.length ? deck.map(row => {
@@ -44,38 +48,38 @@ export default function Flashcards({ cards: sourceCards, boardStyle = 'wood', sh
     const match = sourceCards.find(card => card.left.trim().toLowerCase() === word.toLowerCase());
     return { id: row.id, left: word, right: match?.right ?? word };
   }) : sourceCards, [deck, sourceCards]);
-  const [wrongChoice, setWrongChoice] = useState('');
-  const [order, setOrder] = useState<number[]>(() => shuffle(cards.map((_, i) => i)));
-  const [pos, setPos] = useState(0);
-  const [autoRead, setAutoRead] = useState(loadAutoRead);
-  const firstRead = useRef(true);
-  const [flipped, setFlipped] = useState(false);
+  const [wrongChoice, setWrongChoice] = useGameHistoryState("app/src/components/Flashcards.tsx:Flashcards:wrongChoice",'');
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/Flashcards.tsx:Flashcards:order",() => shuffle(cards.map((_, i) => i)));
+  const [pos, setPos] = useGameHistoryState("app/src/components/Flashcards.tsx:Flashcards:pos",0);
+  const [autoRead, setAutoRead] = useGameHistoryState("app/src/components/Flashcards.tsx:Flashcards:autoRead",loadAutoRead);
+  const firstRead = useGameHistoryRef("app/src/components/Flashcards.tsx:Flashcards:firstRead",true);
+  const [flipped, setFlipped] = useGameHistoryState("app/src/components/Flashcards.tsx:Flashcards:flipped",false);
   const cardKey = cards.map((c) => c.id).join(',');
   const clay = boardStyle === 'clay';
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setOrder(shuffle(cards.map((_, i) => i)));
     setPos(0);
     setFlipped(false);
-  }, [cardKey]);
+  }, [cardKey], false, "app/src/components/Flashcards.tsx:effect1");
 
   const needsBank = showPos || showExample;
-  const [bank, setBank] = useState<WordBankEntry[] | null>(null);
-  useEffect(() => {
+  const [bank, setBank] = useGameHistoryState<WordBankEntry[] | null>("app/src/components/Flashcards.tsx:Flashcards:bank",null);
+  useGameHistoryEffect(() => {
     if (!needsBank) return;
     let alive = true;
     void loadWordBank().then((b) => alive && setBank(b));
     return () => { alive = false; };
-  }, [needsBank]);
+  }, [needsBank], false, "app/src/components/Flashcards.tsx:effect2");
 
   // 자동 읽기: 카드가 바뀔 때(처음 화면 제외) 앞면 단어·문장을 읽어 준다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (firstRead.current) { firstRead.current = false; return; }
     if (!autoRead || deck.length) return;
     const text = cards[order[pos]]?.left;
     if (text) speak(text);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pos]);
+  }, [pos], false, "app/src/components/Flashcards.tsx:effect3");
 
   if (cards.length === 0) {
     return (

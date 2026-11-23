@@ -1,6 +1,7 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+
+import {type PointerEvent as ReactPointerEvent} from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import { useGamePlay } from './GameThemeFrame';
@@ -150,48 +151,52 @@ export default function WordSearch({
   onRemoveItem,
   onComplete,
 }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/WordSearch.tsx:WordSearch',()=>({state:{puzzle,selectedStart,foundIds,foundLines,wrongCells,hoverCell,justFound,alreadyFound},refs:{dragging:captureGameRef(dragging.current),justFoundTimer:captureGameRef(justFoundTimer.current),wrongTimer:captureGameRef(wrongTimer.current),doneRef:captureGameRef(doneRef.current)}}),(snapshot,elapsed)=>{setPuzzle(()=>snapshot.state.puzzle);setSelectedStart(()=>snapshot.state.selectedStart);setFoundIds(()=>snapshot.state.foundIds);setFoundLines(()=>snapshot.state.foundLines);setWrongCells(()=>snapshot.state.wrongCells);setHoverCell(()=>snapshot.state.hoverCell);setJustFound(()=>snapshot.state.justFound);setAlreadyFound(()=>snapshot.state.alreadyFound);restoreGameRef(dragging,snapshot.refs.dragging,elapsed,false);restoreGameRef(justFoundTimer,snapshot.refs.justFoundTimer,elapsed,false);restoreGameRef(wrongTimer,snapshot.refs.wrongTimer,elapsed,false);restoreGameRef(doneRef,snapshot.refs.doneRef,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const tiles = boardStyle === 'tiles';
-  const [puzzle, setPuzzle] = useState<Puzzle>(() => buildPuzzle(items));
-  const [selectedStart, setSelectedStart] = useState<Cell | null>(null);
-  const [foundIds, setFoundIds] = useState<Set<string>>(new Set());
+  const [puzzle, setPuzzle] = useGameHistoryState<Puzzle>("app/src/components/WordSearch.tsx:WordSearch:puzzle",() => buildPuzzle(items));
+  const [selectedStart, setSelectedStart] = useGameHistoryState<Cell | null>("app/src/components/WordSearch.tsx:WordSearch:selectedStart",null);
+  const [foundIds, setFoundIds] = useGameHistoryState<Set<string>>("app/src/components/WordSearch.tsx:WordSearch:foundIds",new Set());
   /** 단어별로 실제로 고른 줄(숨긴 자리와 다를 수 있다) */
-  const [foundLines, setFoundLines] = useState<Record<string, Cell[]>>({});
-  const [wrongCells, setWrongCells] = useState<Set<string> | null>(null);
+  const [foundLines, setFoundLines] = useGameHistoryState<Record<string, Cell[]>>("app/src/components/WordSearch.tsx:WordSearch:foundLines",{});
+  const [wrongCells, setWrongCells] = useGameHistoryState<Set<string> | null>("app/src/components/WordSearch.tsx:WordSearch:wrongCells",null);
   // 첫 글자를 고른 뒤 손가락·마우스가 가리키는 칸 — 첫 글자부터 여기까지 줄을 미리 보여 준다
-  const [hoverCell, setHoverCell] = useState<Cell | null>(null);
-  const [justFound, setJustFound] = useState<string | null>(null);
-  const [alreadyFound, setAlreadyFound] = useState<string | null>(null);
-  const dragging = useRef(false);
-  const justFoundTimer = useRef<number | null>(null);
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
-  const wrongTimer = useRef<number | null>(null);
+  const [hoverCell, setHoverCell] = useGameHistoryState<Cell | null>("app/src/components/WordSearch.tsx:WordSearch:hoverCell",null);
+  const [justFound, setJustFound] = useGameHistoryState<string | null>("app/src/components/WordSearch.tsx:WordSearch:justFound",null);
+  const [alreadyFound, setAlreadyFound] = useGameHistoryState<string | null>("app/src/components/WordSearch.tsx:WordSearch:alreadyFound",null);
+  const dragging = useGameHistoryRef("app/src/components/WordSearch.tsx:WordSearch:dragging",false);
+  const justFoundTimer = useGameHistoryRef<number | null>("app/src/components/WordSearch.tsx:WordSearch:justFoundTimer",null);
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/WordSearch.tsx:WordSearch:itemDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/WordSearch.tsx:WordSearch:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/WordSearch.tsx:WordSearch:templateNameDraft",'');
+  const wrongTimer = useGameHistoryRef<number | null>("app/src/components/WordSearch.tsx:WordSearch:wrongTimer",null);
   // 라벨(단어)까지 키에 포함시켜야 이름을 바꿨을 때도 퍼즐이 새로 만들어진다 — id만
   // 키로 쓰면 rename(같은 id, 다른 label)이 재생성을 트리거하지 못했다.
   const itemKey = items.map((it) => `${it.id}:${it.label}`).join(',');
 
-  useEffect(() => {
-    if (wrongTimer.current !== null) gameClock.clearTimeout(wrongTimer.current);
+  useGameHistoryEffect(() => {
+    if (wrongTimer.current !== null) historyClock.clearTimeout(wrongTimer.current);
     setPuzzle(buildPuzzle(items));
     setSelectedStart(null);
     setFoundIds(new Set());
     setFoundLines({});
     setWrongCells(null);
     return () => {
-      if (wrongTimer.current !== null) gameClock.clearTimeout(wrongTimer.current);
+      if (wrongTimer.current !== null) historyClock.clearTimeout(wrongTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemKey]);
+  }, [itemKey], false, "app/src/components/WordSearch.tsx:effect1");
 
   // 오른쪽 목록 입력창의 초안 텍스트를 실제 단어와 맞춰둔다 — 타이핑 중엔 이 draft를
   // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
-  }, [items]);
+  }, [items], false, "app/src/components/WordSearch.tsx:effect2");
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -218,13 +223,13 @@ export default function WordSearch({
   useStepSounds(0, placements.length > 0 && foundIds.size === placements.length, undefined, sfx.finish);
 
   const finished = placements.length > 0 && foundIds.size === placements.length;
-  const doneRef = useRef(false);
-  useEffect(() => {
+  const doneRef = useGameHistoryRef("app/src/components/WordSearch.tsx:WordSearch:doneRef",false);
+  useGameHistoryEffect(() => {
     if (!onComplete) return;
     if (finished) {
       if (!doneRef.current) { doneRef.current = true; onComplete(); }
     } else doneRef.current = false;
-  }, [finished, placements.length, onComplete]);
+  }, [finished, placements.length, onComplete], false, "app/src/components/WordSearch.tsx:effect3");
 
   if (placements.length === 0) {
     return (
@@ -250,7 +255,7 @@ export default function WordSearch({
   }
 
   function restart() {
-    if (wrongTimer.current !== null) gameClock.clearTimeout(wrongTimer.current);
+    if (wrongTimer.current !== null) historyClock.clearTimeout(wrongTimer.current);
     setHoverCell(null);
     setJustFound(null);
     setAlreadyFound(null);
@@ -286,8 +291,8 @@ export default function WordSearch({
         // 마지막 단어면 끝 소리만(겹치지 않게)
         if (foundIds.size + 1 < placements.length) playSfx(sfx.found);
         setJustFound(match.id);
-        if (justFoundTimer.current !== null) gameClock.clearTimeout(justFoundTimer.current);
-        justFoundTimer.current = gameClock.setTimeout(() => setJustFound(null), 1200);
+        if (justFoundTimer.current !== null) historyClock.clearTimeout(justFoundTimer.current);
+        justFoundTimer.current = historyClock.setTimeout(() => setJustFound(null), 1200);
       }, match.word);
     } else if (
       line &&
@@ -304,15 +309,15 @@ export default function WordSearch({
       setWrongCells(null);
       setJustFound(null);
       setAlreadyFound(again.id);
-      if (justFoundTimer.current !== null) gameClock.clearTimeout(justFoundTimer.current);
-      justFoundTimer.current = gameClock.setTimeout(() => setAlreadyFound(null), 1500);
+      if (justFoundTimer.current !== null) historyClock.clearTimeout(justFoundTimer.current);
+      justFoundTimer.current = historyClock.setTimeout(() => setAlreadyFound(null), 1500);
     } else {
       // 한 줄이 아니면(대각선이 아닌 비스듬한 두 칸) 두 칸만 흔든다
       const keys = new Set((line ?? [start, end]).map((c) => cellKey(c.row, c.col)));
       playSfx(sfx.wrong);
       setWrongCells(keys);
-      if (wrongTimer.current !== null) gameClock.clearTimeout(wrongTimer.current);
-      wrongTimer.current = gameClock.setTimeout(() => setWrongCells(null), 600);
+      if (wrongTimer.current !== null) historyClock.clearTimeout(wrongTimer.current);
+      wrongTimer.current = historyClock.setTimeout(() => setWrongCells(null), 600);
     }
   }
 

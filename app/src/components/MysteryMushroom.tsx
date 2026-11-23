@@ -1,7 +1,8 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
-import { gameClock } from '../lib/gameClock';
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+
+import {forwardRef, useImperativeHandle, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
@@ -68,6 +69,10 @@ const STYLE = `
 `;
 
 const MysteryMushroom = forwardRef<UndoHandle, Props>(function MysteryMushroom({ items, teams, blocks }, ref) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/MysteryMushroom.tsx:MysteryMushroom',()=>({state:{opened,scores,turn,phase,sel,order,cardPos,words,values,choice,flipped,pulse,gains,snapshot},refs:{timers:captureGameRef(timers.current)}}),(snapshot,elapsed)=>{setOpened(()=>snapshot.state.opened);setScores(()=>snapshot.state.scores);setTurn(()=>snapshot.state.turn);setPhase(()=>snapshot.state.phase);setSel(()=>snapshot.state.sel);setOrder(()=>snapshot.state.order);setCardPos(()=>snapshot.state.cardPos);setWords(()=>snapshot.state.words);setValues(()=>snapshot.state.values);setChoice(()=>snapshot.state.choice);setFlipped(()=>snapshot.state.flipped);setPulse(()=>snapshot.state.pulse);setGains(()=>snapshot.state.gains);setSnapshot(()=>snapshot.state.snapshot);restoreGameRef(timers,snapshot.refs.timers,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const teamCount = Math.min(8, Math.max(2, teams));
@@ -93,15 +98,15 @@ const MysteryMushroom = forwardRef<UndoHandle, Props>(function MysteryMushroom({
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const timers = useRef<number[]>([]);
   const later = (fn: () => void, ms: number) => {
-    timers.current.push(gameClock.setTimeout(fn, ms));
+    timers.current.push(historyClock.setTimeout(fn, ms));
   };
   const clearTimers = () => {
-    timers.current.forEach((id) => gameClock.clearTimeout(id));
+    timers.current.forEach((id) => historyClock.clearTimeout(id));
     timers.current = [];
   };
-  useEffect(() => clearTimers, []);
+  useGameHistoryEffect(() => clearTimers, [], false, "app/src/components/MysteryMushroom.tsx:effect1");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     clearTimers();
     setOpened([]);
     setScores(Array(teamCount).fill(0));
@@ -115,7 +120,7 @@ const MysteryMushroom = forwardRef<UndoHandle, Props>(function MysteryMushroom({
     setSnapshot(null);
     setGains({});
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamCount, blockCount, itemKey]);
+  }, [teamCount, blockCount, itemKey], false, "app/src/components/MysteryMushroom.tsx:effect2");
 
   const teamName = (i: number) => t('gameMysteryBox.teamName', { name: TEAM_NAMES[i] });
   useNativeGameTurn({current:teamName(turn),next:teamName((turn+1)%teamCount),index:turn,total:teamCount,enabled:items.length>0&&phase!=='final'});

@@ -1,7 +1,8 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
-import { gameClock } from '../lib/gameClock';
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type CSSProperties } from 'react';
+
+import {forwardRef, useImperativeHandle, type CSSProperties} from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import { useGamePlay } from './GameThemeFrame';
@@ -116,38 +117,42 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
   { items, onMove, editable, onEditItem, templateName, onRenameTemplate, onAddItem, onRemoveItem },
   ref,
 ) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/Connect4.tsx:Connect4',()=>({state:{columns,marks,turn,dropping,prevSnapshot},refs:{dropTimer:captureGameRef(dropTimer.current)}}),(snapshot,elapsed)=>{setColumns(()=>snapshot.state.columns);setMarks(()=>snapshot.state.marks);setTurn(()=>snapshot.state.turn);setDropping(()=>snapshot.state.dropping);setPrevSnapshot(()=>snapshot.state.prevSnapshot);restoreGameRef(dropTimer,snapshot.refs.dropTimer,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { fullscreen, itemsHidden } = useGamePlay();
   const labelH = fullscreen ? 96 : 58;
-  const [columns, setColumns] = useState<GameItem[]>(() => pickColumnItems(items));
-  const [marks, setMarks] = useState<Mark[]>(() => Array(ROWS * COLS).fill(null));
-  const [turn, setTurn] = useState<Team>('blue');
-  const [dropping, setDropping] = useState<Dropping | null>(null);
-  const [prevSnapshot, setPrevSnapshot] = useState<{ marks: Mark[]; turn: Team } | null>(null);
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
-  const dropTimer = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
+  const [columns, setColumns] = useGameHistoryState<GameItem[]>("app/src/components/Connect4.tsx:Connect4:columns",() => pickColumnItems(items));
+  const [marks, setMarks] = useGameHistoryState<Mark[]>("app/src/components/Connect4.tsx:Connect4:marks",() => Array(ROWS * COLS).fill(null));
+  const [turn, setTurn] = useGameHistoryState<Team>("app/src/components/Connect4.tsx:Connect4:turn",'blue');
+  const [dropping, setDropping] = useGameHistoryState<Dropping | null>("app/src/components/Connect4.tsx:Connect4:dropping",null);
+  const [prevSnapshot, setPrevSnapshot] = useGameHistoryState<{ marks: Mark[]; turn: Team } | null>("app/src/components/Connect4.tsx:Connect4:prevSnapshot",null);
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/Connect4.tsx:Connect4:itemDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/Connect4.tsx:Connect4:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/Connect4.tsx:Connect4:templateNameDraft",'');
+  const dropTimer = useGameHistoryRef<ReturnType<typeof historyClock.setTimeout> | null>("app/src/components/Connect4.tsx:Connect4:dropTimer",null);
   const win = findWin(marks);
   const winner = win?.team ?? null;
   const isDraw = !winner && marks.every((m) => m !== null);
   useNativeGameTurn({current:t('gameConnect4.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gameConnect4.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:items.length>0&&!winner&&!isDraw});
   const busy = dropping !== null;
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     return () => {
-      if (dropTimer.current) gameClock.clearTimeout(dropTimer.current);
+      if (dropTimer.current) historyClock.clearTimeout(dropTimer.current);
     };
-  }, []);
+  }, [], false, "app/src/components/Connect4.tsx:effect1");
 
   // 4개 연결·무승부가 되는 순간 한 번
   useStepSounds(0, !!winner, undefined, GAME_SFX.connect4.win, false);
   useStepSounds(0, isDraw, undefined, GAME_SFX.connect4.tie, false);
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
-  }, [items]);
+  }, [items], false, "app/src/components/Connect4.tsx:effect2");
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -170,7 +175,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
   }
 
   function newRound() {
-    if (dropTimer.current) gameClock.clearTimeout(dropTimer.current);
+    if (dropTimer.current) historyClock.clearTimeout(dropTimer.current);
     setDropping(null);
     setColumns(pickColumnItems(items));
     setMarks(Array(ROWS * COLS).fill(null));
@@ -191,7 +196,7 @@ const Connect4 = forwardRef<UndoHandle, Props>(function Connect4(
     const team = turn;
     setPrevSnapshot({ marks, turn });
     setDropping({ col: c, row: targetRow, team });
-    dropTimer.current = gameClock.setTimeout(() => {
+    dropTimer.current = historyClock.setTimeout(() => {
       playSfx(GAME_SFX.connect4.drop);
       setMarks((prev) => {
         const next = [...prev];

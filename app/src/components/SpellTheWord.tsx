@@ -1,6 +1,7 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useRef, useState } from 'react';
+
+import {} from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import { useGamePlay } from './GameThemeFrame';
@@ -62,20 +63,24 @@ export default function SpellTheWord({
   onAddItem,
   onRemoveItem,
 }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/SpellTheWord.tsx:SpellTheWord',()=>({state:{order,pos,phase,inputValue,status,score},refs:{timerRef:captureGameRef(timerRef.current),playRef:captureGameRef(playRef.current)}}),(snapshot,elapsed)=>{setOrder(()=>snapshot.state.order);setPos(()=>snapshot.state.pos);setPhase(()=>snapshot.state.phase);setInputValue(()=>snapshot.state.inputValue);setStatus(()=>snapshot.state.status);setScore(()=>snapshot.state.score);restoreGameRef(timerRef,snapshot.refs.timerRef,elapsed,false);restoreGameRef(playRef,snapshot.refs.playRef,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const stamps = boardStyle === 'stamps';
-  const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
-  const [pos, setPos] = useState(0);
-  const [phase, setPhase] = useState<Phase>('preview');
-  const [inputValue, setInputValue] = useState('');
-  const [status, setStatus] = useState<Status>('playing');
-  const [score, setScore] = useState(0);
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
-  const timerRef = useRef<number | null>(null);
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/SpellTheWord.tsx:SpellTheWord:order",() => shuffle(items.map((_, i) => i)));
+  const [pos, setPos] = useGameHistoryState("app/src/components/SpellTheWord.tsx:SpellTheWord:pos",0);
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/SpellTheWord.tsx:SpellTheWord:phase",'preview');
+  const [inputValue, setInputValue] = useGameHistoryState("app/src/components/SpellTheWord.tsx:SpellTheWord:inputValue",'');
+  const [status, setStatus] = useGameHistoryState<Status>("app/src/components/SpellTheWord.tsx:SpellTheWord:status",'playing');
+  const [score, setScore] = useGameHistoryState("app/src/components/SpellTheWord.tsx:SpellTheWord:score",0);
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/SpellTheWord.tsx:SpellTheWord:itemDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/SpellTheWord.tsx:SpellTheWord:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/SpellTheWord.tsx:SpellTheWord:templateNameDraft",'');
+  const timerRef = useGameHistoryRef<number | null>("app/src/components/SpellTheWord.tsx:SpellTheWord:timerRef",null);
   const previewMs = Math.max(500, previewSeconds * 1000);
   const itemKey = items.map((it) => it.id).join(',');
   // 항목을 지운 직후 한 프레임은 order[pos] 가 줄어든 items 범위를 벗어날 수 있다(itemKey 가
@@ -83,12 +88,12 @@ export default function SpellTheWord({
   // 그대로 터지던 걸 막는다.
   const currentLabel =
     items.length > 0 && order.length > 0 && pos < order.length ? (items[order[pos]]?.label ?? '') : '';
-  const playRef = useRef({ phase, status, inputValue, target: currentLabel });
+  const playRef = useGameHistoryRef("app/src/components/SpellTheWord.tsx:SpellTheWord:playRef",{ phase, status, inputValue, target: currentLabel });
   playRef.current = { phase, status, inputValue, target: currentLabel };
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
-  }, [items]);
+  }, [items], false, "app/src/components/SpellTheWord.tsx:effect1");
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -112,7 +117,7 @@ export default function SpellTheWord({
 
   function clearTimer() {
     if (timerRef.current !== null) {
-      gameClock.clearTimeout(timerRef.current);
+      historyClock.clearTimeout(timerRef.current);
       timerRef.current = null;
     }
   }
@@ -120,7 +125,7 @@ export default function SpellTheWord({
   function startPreview() {
     clearTimer();
     setPhase('preview');
-    timerRef.current = gameClock.setTimeout(() => setPhase('input'), previewMs);
+    timerRef.current = historyClock.setTimeout(() => setPhase('input'), previewMs);
   }
 
   function typeChar(ch: string) {
@@ -143,7 +148,7 @@ export default function SpellTheWord({
     if (ok) setScore((s) => s + 1);
   }
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     const nextOrder = shuffle(items.map((_, i) => i));
     setOrder(nextOrder);
     setPos(0);
@@ -154,9 +159,9 @@ export default function SpellTheWord({
     else clearTimer();
     return clearTimer;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemKey, previewSeconds]);
+  }, [itemKey, previewSeconds], false, "app/src/components/SpellTheWord.tsx:effect2");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (isEditorTarget(e.target)) return;
       const snap = playRef.current;
@@ -183,7 +188,7 @@ export default function SpellTheWord({
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [], true, "app/src/components/SpellTheWord.tsx:effect3");
 
   useStepSounds(pos, items.length > 0 && order.length > 0 && pos >= order.length, undefined, GAME_SFX.spellword.finish);
 

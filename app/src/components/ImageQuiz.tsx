@@ -1,6 +1,7 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordDeck } from './PictureWordTurn';
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useMemo, useRef, useState } from 'react';
+
+import {useMemo} from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import type { ImageQuizItem } from '../lib/types';
@@ -36,19 +37,23 @@ export function ImageQuizEmptyMotif() {
 }
 
 export default function ImageQuiz({ items: sourceItems, revealSeconds, boardStyle = 'wood' }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/ImageQuiz.tsx:ImageQuiz',()=>({state:{order,pos,phase,score,pictureResult,blurred},refs:{posRef:captureGameRef(posRef.current)}}),(snapshot,elapsed)=>{setOrder(()=>snapshot.state.order);setPos(()=>snapshot.state.pos);setPhase(()=>snapshot.state.phase);setScore(()=>snapshot.state.score);setPictureResult(()=>snapshot.state.pictureResult);setBlurred(()=>snapshot.state.blurred);restoreGameRef(posRef,snapshot.refs.posRef,elapsed,false);});
+
   const { t } = useTranslation();
   const deck = usePictureWordDeck();
   const items = useMemo(() => deck.length ? deck.map(row => ({ id: row.id, imageUrl: row.imageUrl!, answer: row.choices[row.correctIndex] })) : sourceItems, [deck, sourceItems]);
   const clay = boardStyle === 'clay';
-  const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
-  const [pos, setPos] = useState(0);
-  const [phase, setPhase] = useState<'revealing' | 'revealed'>('revealing');
-  const [score, setScore] = useState(0);
-  const [pictureResult, setPictureResult] = useState<boolean | null>(null);
-  const [blurred, setBlurred] = useState(true);
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/ImageQuiz.tsx:ImageQuiz:order",() => shuffle(items.map((_, i) => i)));
+  const [pos, setPos] = useGameHistoryState("app/src/components/ImageQuiz.tsx:ImageQuiz:pos",0);
+  const [phase, setPhase] = useGameHistoryState<'revealing' | 'revealed'>("app/src/components/ImageQuiz.tsx:ImageQuiz:phase",'revealing');
+  const [score, setScore] = useGameHistoryState("app/src/components/ImageQuiz.tsx:ImageQuiz:score",0);
+  const [pictureResult, setPictureResult] = useGameHistoryState<boolean | null>("app/src/components/ImageQuiz.tsx:ImageQuiz:pictureResult",null);
+  const [blurred, setBlurred] = useGameHistoryState("app/src/components/ImageQuiz.tsx:ImageQuiz:blurred",true);
 
   const itemIdsKey = items.map((it) => it.id).join('|');
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setOrder(shuffle(items.map((_, i) => i)));
     setPos(0);
     setScore(0);
@@ -56,7 +61,7 @@ export default function ImageQuiz({ items: sourceItems, revealSeconds, boardStyl
     setPhase('revealing');
     setBlurred(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemIdsKey]);
+  }, [itemIdsKey], false, "app/src/components/ImageQuiz.tsx:effect1");
 
   // 새 문제로 넘어갈 때 흐림을 "같은 렌더"에서 다시 켜야 한다 — 예전엔 useEffect 로 나중에 켜서, 이전
   // 문제의 선명한 <img>가 그대로 재사용된 채 0→28px로 흐려지다 곧바로 다시 선명해지는 전환이
@@ -71,12 +76,12 @@ export default function ImageQuiz({ items: sourceItems, revealSeconds, boardStyl
 
   // 사진이 불러와진 시점엔 이미 blur(28px) 로 그려져 있으니, 잠깐 뒤 흐림을 풀면 거기서부터 서서히
   // 선명해진다. 그 사이 다음 문제로 넘어갔으면(늦게 도착한 타이머) 새 사진을 건드리지 않는다.
-  const posRef = useRef(pos);
+  const posRef = useGameHistoryRef("app/src/components/ImageQuiz.tsx:ImageQuiz:posRef",pos);
   posRef.current = pos;
   const sfx = useGameSfx('imagequiz');
   useStepSounds(pos, items.length > 0 && pos >= order.length, undefined, sfx.finish);
   function startUnblur(forPos: number) {
-    gameClock.setTimeout(() => {
+    historyClock.setTimeout(() => {
       if (posRef.current === forPos) {
         setBlurred(false);
         playSfx(sfx.reveal, 0.6);

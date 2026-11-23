@@ -1,8 +1,9 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {useMemo} from 'react';
 import { useTranslation } from 'react-i18next';
-import { gameClock } from '../lib/gameClock';
+
 import { gameKeyboardAllowed } from '../lib/gameKeyboard';
 import { GAME_SFX, playSfx } from '../lib/gameSfx';
 import { useRemoteActions } from '../lib/remote';
@@ -45,6 +46,10 @@ const STYLE = `
 const TEAM_COLORS = ['#ef5b5b', '#3b82f6', '#22a559', '#f59e0b'];
 
 export default function ShuffleFind({ items, teams, cups: wantCups, speed, rounds, mode = teams === 1 ? 'solo' : 'team', players: givenPlayers }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/ShuffleFind.tsx:ShuffleFind',()=>({state:{phase,round,rd,cupAtSlot,lifted,dy,picked,found,showAnswer,score,turnPlayed},refs:{shuffleOrder:captureGameRef(shuffleOrder.current),deck:captureGameRef(deck.current),prevAnimal:captureGameRef(prevAnimal.current),timers:captureGameRef(timers.current)}}),(snapshot,elapsed)=>{restoreGameRef(shuffleOrder,snapshot.refs.shuffleOrder);setPhase(()=>snapshot.state.phase);setRound(()=>snapshot.state.round);setRd(()=>snapshot.state.rd);setCupAtSlot(()=>snapshot.state.cupAtSlot);setLifted(()=>snapshot.state.lifted);setDy(()=>snapshot.state.dy);setPicked(()=>snapshot.state.picked);setFound(()=>snapshot.state.found);setShowAnswer(()=>snapshot.state.showAnswer);setScore(()=>snapshot.state.score);setTurnPlayed(()=>snapshot.state.turnPlayed);restoreGameRef(deck,snapshot.refs.deck,elapsed,false);restoreGameRef(prevAnimal,snapshot.refs.prevAnimal,elapsed,false);restoreGameRef(timers,snapshot.refs.timers,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const players = givenPlayers ?? (mode === 'none' ? [] : mode === 'solo' ? [{id:'solo',label:t('gameTelepathy.me')}] : Array.from({length:teams},(_,i)=>({id:`team-${i}`,label:t('gameShuffle.teamLabel',{n:i+1})})));
@@ -58,28 +63,28 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
   const cupH = cw * 1.04;
   const ms = SHUFFLE_SPEED[speed].ms;
 
-  const [phase, setPhase] = useState<Phase>('ready');
-  const [round, setRound] = useState(0);
-  const [rd, setRd] = useState<ShuffleRound | null>(null);
-  const [cupAtSlot, setCupAtSlot] = useState<number[]>(() => Array.from({ length: cups }, (_, i) => i));
-  const [lifted, setLifted] = useState<number[]>([]);
-  const [dy, setDy] = useState<Record<number, number>>({});
-  const [picked, setPicked] = useState<number | null>(null);
-  const [found, setFound] = useState<boolean | null>(null);
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [score, setScore] = useState<ShuffleScore>({ scores: Array(playerCount).fill(0), turn: 0 });
-  const [turnPlayed, setTurnPlayed] = useState(0);
-  const deck = useRef<number[]>([]);
-  const prevAnimal = useRef<string | undefined>(undefined);
-  const timers = useRef<number[]>([]);
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/ShuffleFind.tsx:ShuffleFind:phase",'ready');
+  const [round, setRound] = useGameHistoryState("app/src/components/ShuffleFind.tsx:ShuffleFind:round",0);
+  const [rd, setRd] = useGameHistoryState<ShuffleRound | null>("app/src/components/ShuffleFind.tsx:ShuffleFind:rd",null);
+  const [cupAtSlot, setCupAtSlot] = useGameHistoryState<number[]>("app/src/components/ShuffleFind.tsx:ShuffleFind:cupAtSlot",() => Array.from({ length: cups }, (_, i) => i));
+  const [lifted, setLifted] = useGameHistoryState<number[]>("app/src/components/ShuffleFind.tsx:ShuffleFind:lifted",[]);
+  const [dy, setDy] = useGameHistoryState<Record<number, number>>("app/src/components/ShuffleFind.tsx:ShuffleFind:dy",{});
+  const [picked, setPicked] = useGameHistoryState<number | null>("app/src/components/ShuffleFind.tsx:ShuffleFind:picked",null);
+  const [found, setFound] = useGameHistoryState<boolean | null>("app/src/components/ShuffleFind.tsx:ShuffleFind:found",null);
+  const [showAnswer, setShowAnswer] = useGameHistoryState("app/src/components/ShuffleFind.tsx:ShuffleFind:showAnswer",false);
+  const [score, setScore] = useGameHistoryState<ShuffleScore>("app/src/components/ShuffleFind.tsx:ShuffleFind:score",{ scores: Array(playerCount).fill(0), turn: 0 });
+  const [turnPlayed, setTurnPlayed] = useGameHistoryState("app/src/components/ShuffleFind.tsx:ShuffleFind:turnPlayed",0);
+  const deck = useGameHistoryRef<number[]>("app/src/components/ShuffleFind.tsx:ShuffleFind:deck",[]);
+  const prevAnimal = useGameHistoryRef<string | undefined>("app/src/components/ShuffleFind.tsx:ShuffleFind:prevAnimal",undefined);
+  const timers = useGameHistoryRef<number[]>("app/src/components/ShuffleFind.tsx:ShuffleFind:timers",[]);
   const later = (fn: () => void, wait: number) => {
-    timers.current.push(gameClock.setTimeout(fn, wait));
+    timers.current.push(historyClock.setTimeout(fn, wait));
   };
   const clearTimers = () => {
-    timers.current.forEach((id) => gameClock.clearTimeout(id));
+    timers.current.forEach((id) => historyClock.clearTimeout(id));
     timers.current = [];
   };
-  useEffect(() => clearTimers, []);
+  useGameHistoryEffect(() => clearTimers, [], false, "app/src/components/ShuffleFind.tsx:effect1");
 
   function resetAll() {
     clearTimers();
@@ -97,11 +102,12 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
     setScore({ scores: Array(playerCount).fill(0), turn: 0 });
     setTurnPlayed(0);
   }
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     resetAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemKey, cups, playerKey, mode, rounds]);
+  }, [itemKey, cups, playerKey, mode, rounds], false, "app/src/components/ShuffleFind.tsx:effect2");
 
+  const shuffleOrder=useGameHistoryRef<number[]>('shuffle-find:shuffle-order',[]);
   const slotOfCup = (cup: number) => cupAtSlot.indexOf(cup);
 
   function startRound() {
@@ -136,15 +142,15 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
       setPhase('hide');
     }, SHOW);
     // 3) 섞는다
-    let cur = identity;
+    shuffleOrder.current = identity;
     const gap = Math.round(ms * 0.2);
     next.swaps.forEach(([a, b], k) => {
       later(() => {
-        const arr = [...cur];
+        const arr = [...shuffleOrder.current];
         const ca = arr[a];
         const cb = arr[b];
         [arr[a], arr[b]] = [arr[b], arr[a]];
-        cur = arr;
+        shuffleOrder.current = arr;
         setPhase('shuffle');
         setCupAtSlot(arr);
         setDy({ [ca]: -3.2, [cb]: 3.2 });
@@ -183,7 +189,7 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
   };
 
   // 스페이스·엔터: 시작 / 다음 판, 숫자 키: 컵 고르기
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (!gameKeyboardAllowed(e)) return;
       if (e.key === ' ' || e.key === 'Enter') {
@@ -200,7 +206,7 @@ export default function ShuffleFind({ items, teams, cups: wantCups, speed, round
     }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  });
+  }, undefined, true, "app/src/components/ShuffleFind.tsx:effect3");
 
   useRemoteActions(
     phase === 'ready'

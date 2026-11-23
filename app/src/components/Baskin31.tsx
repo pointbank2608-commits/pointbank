@@ -1,7 +1,8 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
 import { gameClock } from '../lib/gameClock';
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import {forwardRef, useImperativeHandle} from 'react';
 import { useTranslation } from 'react-i18next';
 import GameFitText from './GameFitText';
 import { useGamePlay } from './GameThemeFrame';
@@ -89,39 +90,43 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
   { items, targetCount, editable, templateName, onRenameTemplate, onEditItem, onAddItem, onRemoveItem },
   ref,
 ) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/Baskin31.tsx:Baskin31',()=>({state:{count,turn,head,loser,prevSnapshot,cups,busy,countTick},refs:{moveGen:captureGameRef(moveGen.current),cupsRef:captureGameRef(cupsRef.current),headRef:captureGameRef(headRef.current)}}),(snapshot,elapsed)=>{setCount(()=>snapshot.state.count);setTurn(()=>snapshot.state.turn);setHead(()=>snapshot.state.head);setLoser(()=>snapshot.state.loser);setPrevSnapshot(()=>snapshot.state.prevSnapshot);setCups(()=>snapshot.state.cups);setBusy(()=>snapshot.state.busy);setCountTick(()=>snapshot.state.countTick);restoreGameRef(moveGen,snapshot.refs.moveGen,elapsed,false);restoreGameRef(cupsRef,snapshot.refs.cupsRef,elapsed,false);restoreGameRef(headRef,snapshot.refs.headRef,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
-  const [count, setCount] = useState(0);
-  const [turn, setTurn] = useState<Team>('blue');
-  const [head, setHead] = useState(0);
-  const [loser, setLoser] = useState<Team | null>(null);
+  const [count, setCount] = useGameHistoryState("app/src/components/Baskin31.tsx:Baskin31:count",0);
+  const [turn, setTurn] = useGameHistoryState<Team>("app/src/components/Baskin31.tsx:Baskin31:turn",'blue');
+  const [head, setHead] = useGameHistoryState("app/src/components/Baskin31.tsx:Baskin31:head",0);
+  const [loser, setLoser] = useGameHistoryState<Team | null>("app/src/components/Baskin31.tsx:Baskin31:loser",null);
   useNativeGameTurn({current:t('gameBaskin31.'+(turn==='blue'?'teamBlue':'teamRed')),next:t('gameBaskin31.'+(turn==='blue'?'teamRed':'teamBlue')),index:turn==='blue'?0:1,total:2,enabled:items.length>0&&!loser});
-  const [prevSnapshot, setPrevSnapshot] = useState<Snapshot | null>(null);
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
-  const [cups, setCups] = useState<Cup[]>(() => windowCups(0, items));
-  const [busy, setBusy] = useState(false);
-  const [countTick, setCountTick] = useState(0);
-  const moveGen = useRef(0);
-  const cupsRef = useRef(cups);
-  const headRef = useRef(head);
+  const [prevSnapshot, setPrevSnapshot] = useGameHistoryState<Snapshot | null>("app/src/components/Baskin31.tsx:Baskin31:prevSnapshot",null);
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/Baskin31.tsx:Baskin31:itemDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/Baskin31.tsx:Baskin31:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/Baskin31.tsx:Baskin31:templateNameDraft",'');
+  const [cups, setCups] = useGameHistoryState<Cup[]>("app/src/components/Baskin31.tsx:Baskin31:cups",() => windowCups(0, items));
+  const [busy, setBusy] = useGameHistoryState("app/src/components/Baskin31.tsx:Baskin31:busy",false);
+  const [countTick, setCountTick] = useGameHistoryState("app/src/components/Baskin31.tsx:Baskin31:countTick",0);
+  const moveGen = useGameHistoryRef("app/src/components/Baskin31.tsx:Baskin31:moveGen",0);
+  const cupsRef = useGameHistoryRef("app/src/components/Baskin31.tsx:Baskin31:cupsRef",cups);
+  const headRef = useGameHistoryRef("app/src/components/Baskin31.tsx:Baskin31:headRef",head);
   cupsRef.current = cups;
   headRef.current = head;
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     CUP_SRCS.forEach((src) => {
       const img = new Image();
       img.src = src;
     });
-  }, []);
+  }, [], false, "app/src/components/Baskin31.tsx:effect1");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
-  }, [items]);
+  }, [items], false, "app/src/components/Baskin31.tsx:effect2");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (items.length === 0) {
       setCups([]);
       return;
@@ -133,7 +138,7 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
         word: items[c.absIndex % items.length]?.label ?? c.word,
       }));
     });
-  }, [items]);
+  }, [items], false, "app/src/components/Baskin31.tsx:effect3");
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -163,9 +168,9 @@ const Baskin31 = forwardRef<UndoHandle, Props>(function Baskin31(
     const nextCount = count + n;
     // 부른 숫자 개수만큼 톡톡, 31을 부르면 벌칙 소리
     const taps = Math.min(n, targetCount - count);
-    for (let i = 0; i < taps; i++) gameClock.setTimeout(() => playSfx(GAME_SFX.baskin31.count, 0.8), i * 110);
-    if (nextCount >= targetCount) gameClock.setTimeout(() => playSfx(GAME_SFX.baskin31.penalty), taps * 110);
-    else gameClock.setTimeout(() => playSfx(COMMON_SFX.yourTurn, 0.7), taps * 110 + 250);
+    for (let i = 0; i < taps; i++) historyClock.setTimeout(() => playSfx(GAME_SFX.baskin31.count, 0.8), i * 110);
+    if (nextCount >= targetCount) historyClock.setTimeout(() => playSfx(GAME_SFX.baskin31.penalty), taps * 110);
+    else historyClock.setTimeout(() => playSfx(COMMON_SFX.yourTurn, 0.7), taps * 110 + 250);
     setHead(head + n);
     setCountTick((k) => k + 1);
     if (nextCount >= targetCount) {

@@ -1,5 +1,6 @@
+import {useGameHistorySnapshot, useGameHistoryEffect, captureGameRef, restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
-import { useEffect, useRef, useState } from 'react';
+import {} from 'react';
 import { useTranslation } from 'react-i18next';
 import { colorFor } from '../lib/wheel';
 import GameFitText from './GameFitText';
@@ -57,28 +58,31 @@ export default function RankOrder({
   onAddItem,
   onRemoveItem,
 }: Props) {
+ /* game-history-adapter */
+ useGameHistorySnapshot('src/components/RankOrder.tsx:RankOrder',()=>({state:{order,moveCount},refs:{prevInPlace:captureGameRef(prevInPlace.current)}}),(snapshot,elapsed)=>{setOrder(()=>snapshot.state.order);setMoveCount(()=>snapshot.state.moveCount);restoreGameRef(prevInPlace,snapshot.refs.prevInPlace,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
   const plates = boardStyle === 'plates';
-  const [order, setOrder] = useState<GameItem[]>(() => shuffleUntilDifferent(items));
-  const [moveCount, setMoveCount] = useState(0);
+  const [order, setOrder] = useGameHistoryState<GameItem[]>("app/src/components/RankOrder.tsx:RankOrder:order",() => shuffleUntilDifferent(items));
+  const [moveCount, setMoveCount] = useGameHistoryState("app/src/components/RankOrder.tsx:RankOrder:moveCount",0);
   const itemKey = items.map((it) => it.id).join(',');
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const [editingTemplateName, setEditingTemplateName] = useState(false);
-  const [templateNameDraft, setTemplateNameDraft] = useState('');
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/RankOrder.tsx:RankOrder:itemDrafts",{});
+  const [editingTemplateName, setEditingTemplateName] = useGameHistoryState("app/src/components/RankOrder.tsx:RankOrder:editingTemplateName",false);
+  const [templateNameDraft, setTemplateNameDraft] = useGameHistoryState("app/src/components/RankOrder.tsx:RankOrder:templateNameDraft",'');
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setOrder(shuffleUntilDifferent(items));
     setMoveCount(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemKey]);
+  }, [itemKey], false, "app/src/components/RankOrder.tsx:effect1");
 
   // 오른쪽 목록 입력창의 초안 텍스트를 실제 항목과 맞춰둔다 — 타이핑 중엔 이 draft를
   // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
-  }, [items]);
+  }, [items], false, "app/src/components/RankOrder.tsx:effect2");
 
   function handleItemDraftChange(id: string, value: string) {
     setItemDrafts((prev) => ({ ...prev, [id]: value }));
@@ -105,11 +109,11 @@ export default function RankOrder({
   useStepSounds(0, solvedNow, undefined, sfx.finish);
   // 옮긴 뒤 제자리에 들어간 항목이 늘면 딩(다 맞춘 순간은 끝 소리만), 아니면 옮기는 소리
   const inPlace = order.filter((it, i) => it.id === items[i]?.id).length;
-  const prevInPlace = useRef(inPlace);
-  useEffect(() => {
+  const prevInPlace = useGameHistoryRef("app/src/components/RankOrder.tsx:RankOrder:prevInPlace",inPlace);
+  useGameHistoryEffect(() => {
     if (inPlace > prevInPlace.current && !solvedNow) playSfx(sfx.correct, 0.7);
     prevInPlace.current = inPlace;
-  }, [inPlace, solvedNow, sfx.correct]);
+  }, [inPlace, solvedNow, sfx.correct], false, "app/src/components/RankOrder.tsx:effect3");
 
   if (items.length < 2) {
     return (

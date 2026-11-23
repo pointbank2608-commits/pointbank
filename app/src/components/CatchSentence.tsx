@@ -1,8 +1,9 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef,useGameHistoryMemo} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
 import CatchSentenceSettings, {type CatchLevel} from './CatchSentenceSettings';
 export {CATCH_DEFAULT_SECONDS, type CatchLevel} from './CatchSentenceSettings';
-import { gameClock } from '../lib/gameClock';
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+
+import {forwardRef, useImperativeHandle, useMemo} from 'react';
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
@@ -86,37 +87,41 @@ const STYLE = `
 `;
 
 const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ items, teams, level: levelProp, seconds: secondsProp, onChange: onChangeProp, onContinue, onSubmit, onHint, onReveal }, ref) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/CatchSentence.tsx:CatchSentence',()=>({state:{answer,tryAgain,demo,order,pos,round,scores,phase,runId,pulse,snapshot},refs:{timers:captureGameRef(timers.current)}}),(snapshot,elapsed)=>{setAnswer(()=>snapshot.state.answer);setTryAgain(()=>snapshot.state.tryAgain);setDemo(()=>snapshot.state.demo);setOrder(()=>snapshot.state.order);setPos(()=>snapshot.state.pos);setRound(()=>snapshot.state.round);setScores(()=>snapshot.state.scores);setPhase(()=>snapshot.state.phase);setRunId(()=>snapshot.state.runId);setPulse(()=>snapshot.state.pulse);setSnapshot(()=>snapshot.state.snapshot);restoreGameRef(timers,snapshot.refs.timers,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const solo = !!onContinue;
-  const [answer, setAnswer] = useState('');
-  const [tryAgain, setTryAgain] = useState(false);
+  const [answer, setAnswer] = useGameHistoryState("app/src/components/CatchSentence.tsx:CatchSentence:answer",'');
+  const [tryAgain, setTryAgain] = useGameHistoryState("app/src/components/CatchSentence.tsx:CatchSentence:tryAgain",false);
   // 저장할 곳이 없는 시범 화면(템플릿 만들기 전)에서도 단계·시간 칩이 보이고, 그 자리에서만 바뀐다
-  const [demo, setDemo] = useState<{ level?: CatchLevel; seconds?: number }>({});
+  const [demo, setDemo] = useGameHistoryState<{ level?: CatchLevel; seconds?: number }>("app/src/components/CatchSentence.tsx:CatchSentence:demo",{});
   const level = onChangeProp ? levelProp : (demo.level ?? levelProp);
   const seconds = onChangeProp ? secondsProp : (demo.seconds ?? secondsProp);
   const onChange = onChangeProp ?? ((patch: { level?: CatchLevel; seconds?: number }) => setDemo((d) => ({ ...d, ...patch })));
   const teamCount = Math.min(8, Math.max(2, teams));
   const itemKey = items.map((i) => i.id).join(',');
-  const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
-  const [pos, setPos] = useState(0);
-  const [round, setRound] = useState(1);
-  const [scores, setScores] = useState<number[]>(() => Array(teamCount).fill(0));
-  const [phase, setPhase] = useState<Phase>('ready');
-  const [runId, setRunId] = useState(0);
-  const [pulse, setPulse] = useState<number | null>(null);
-  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
-  const timers = useRef<number[]>([]);
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/CatchSentence.tsx:CatchSentence:order",() => shuffle(items.map((_, i) => i)));
+  const [pos, setPos] = useGameHistoryState("app/src/components/CatchSentence.tsx:CatchSentence:pos",0);
+  const [round, setRound] = useGameHistoryState("app/src/components/CatchSentence.tsx:CatchSentence:round",1);
+  const [scores, setScores] = useGameHistoryState<number[]>("app/src/components/CatchSentence.tsx:CatchSentence:scores",() => Array(teamCount).fill(0));
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/CatchSentence.tsx:CatchSentence:phase",'ready');
+  const [runId, setRunId] = useGameHistoryState("app/src/components/CatchSentence.tsx:CatchSentence:runId",0);
+  const [pulse, setPulse] = useGameHistoryState<number | null>("app/src/components/CatchSentence.tsx:CatchSentence:pulse",null);
+  const [snapshot, setSnapshot] = useGameHistoryState<Snapshot | null>("app/src/components/CatchSentence.tsx:CatchSentence:snapshot",null);
+  const timers = useGameHistoryRef<number[]>("app/src/components/CatchSentence.tsx:CatchSentence:timers",[]);
   const later = (fn: () => void, ms: number) => {
-    timers.current.push(gameClock.setTimeout(fn, ms));
+    timers.current.push(historyClock.setTimeout(fn, ms));
   };
   const clearTimers = () => {
-    timers.current.forEach((id) => gameClock.clearTimeout(id));
+    timers.current.forEach((id) => historyClock.clearTimeout(id));
     timers.current = [];
   };
-  useEffect(() => clearTimers, []);
+  useGameHistoryEffect(() => clearTimers, [], false, "app/src/components/CatchSentence.tsx:effect1");
 
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     clearTimers();
     setOrder(shuffle(items.map((_, i) => i)));
     setPos(0);
@@ -127,18 +132,18 @@ const CatchSentence = forwardRef<UndoHandle, Props>(function CatchSentence({ ite
     setTryAgain(false);
     setSnapshot(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamCount, itemKey]);
-  useEffect(()=>{clearTimers();setPhase('ready');setSnapshot(null);},[level,seconds]);
+  }, [teamCount, itemKey], false, "app/src/components/CatchSentence.tsx:effect2");
+  useGameHistoryEffect(()=>{clearTimers();setPhase('ready');setSnapshot(null);}, [level,seconds], false, "app/src/components/CatchSentence.tsx:effect3");
 
 
   const current = items.length > 0 && order.length > 0 ? parseItem(items[order[pos % order.length]]?.label ?? '') : { text: '', ko: '' };
   const words = useMemo(() => current.text.split(/\s+/).filter(Boolean), [current.text]);
   // 섞은 순서는 문장이 바뀌거나 다시 보기를 누를 때 새로 만든다
-  const scrambled = useMemo(() => scramble(words), [words, runId]);
+  const scrambled = useGameHistoryMemo("CatchSentence:scrambled",() => scramble(words), [words, runId]);
   const teamName = (i: number) => t('gameCatchSentence.teamName', { name: TEAM_NAMES[i] });
 
   /** 낱말 칸의 위치·경로 값 — 한 번 보여 줄 때마다 새로(runId) */
-  const paths = useMemo(() => {
+  const paths = useGameHistoryMemo("CatchSentence:paths",() => {
     const n = scrambled.length;
     const rnd = (a: number, b: number) => a + Math.random() * (b - a);
     return scrambled.map((_, i) => {

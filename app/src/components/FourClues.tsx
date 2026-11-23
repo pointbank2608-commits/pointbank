@@ -1,7 +1,8 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordDeck } from './PictureWordTurn';
 import {useNativeGameTurn} from '../context/GameTurnContext';
-import { gameClock } from '../lib/gameClock';
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+
+import {forwardRef, useImperativeHandle, useMemo} from 'react';
 import { useTranslation } from 'react-i18next';
 import { COMMON_SFX, GAME_SFX, playSfx } from '../lib/gameSfx';
 import { speak } from '../lib/speech';
@@ -119,44 +120,48 @@ const STYLE = `
 const FOUR = [0, 1, 2, 3];
 
 const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items: sourceItems, teams, info }, ref) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/FourClues.tsx:FourClues',()=>({state:{order,pos,round,scores,turn,openCount,locked,phase,guesser,boxOpen,shakeIdx,pulse,snapshot,peek,firstShown},refs:{timers:captureGameRef(timers.current)}}),(snapshot,elapsed)=>{setOrder(()=>snapshot.state.order);setPos(()=>snapshot.state.pos);setRound(()=>snapshot.state.round);setScores(()=>snapshot.state.scores);setTurn(()=>snapshot.state.turn);setOpenCount(()=>snapshot.state.openCount);setLocked(()=>snapshot.state.locked);setPhase(()=>snapshot.state.phase);setGuesser(()=>snapshot.state.guesser);setBoxOpen(()=>snapshot.state.boxOpen);setShakeIdx(()=>snapshot.state.shakeIdx);setPulse(()=>snapshot.state.pulse);setSnapshot(()=>snapshot.state.snapshot);setPeek(()=>snapshot.state.peek);setFirstShown(()=>snapshot.state.firstShown);restoreGameRef(timers,snapshot.refs.timers,elapsed,false);});
+
   const deck = usePictureWordDeck();
   const items = useMemo(() => deck.length ? deck.map(row => ({ id: row.id, label: row.choices[row.correctIndex] })) : sourceItems, [deck, sourceItems]);
   const { t } = useTranslation();
   const teamCount = Math.min(8, Math.max(2, teams));
   const itemKey = items.map((i) => i.id).join(',');
-  const [order, setOrder] = useState<number[]>(() => shuffle(items.map((_, i) => i)));
-  const [pos, setPos] = useState(0);
-  const [round, setRound] = useState(1);
-  const [scores, setScores] = useState<number[]>(() => Array(teamCount).fill(0));
-  const [turn, setTurn] = useState(0);
-  const [openCount, setOpenCount] = useState(1);
-  const [locked, setLocked] = useState<number[]>([]);
-  const [phase, setPhase] = useState<Phase>('play');
-  const [guesser, setGuesser] = useState<number | null>(null);
-  const [boxOpen, setBoxOpen] = useState(false);
-  const [shakeIdx, setShakeIdx] = useState<number | null>(null);
-  const [pulse, setPulse] = useState<number | null>(null);
-  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
-  const [peek, setPeek] = useState(false);
+  const [order, setOrder] = useGameHistoryState<number[]>("app/src/components/FourClues.tsx:FourClues:order",() => shuffle(items.map((_, i) => i)));
+  const [pos, setPos] = useGameHistoryState("app/src/components/FourClues.tsx:FourClues:pos",0);
+  const [round, setRound] = useGameHistoryState("app/src/components/FourClues.tsx:FourClues:round",1);
+  const [scores, setScores] = useGameHistoryState<number[]>("app/src/components/FourClues.tsx:FourClues:scores",() => Array(teamCount).fill(0));
+  const [turn, setTurn] = useGameHistoryState("app/src/components/FourClues.tsx:FourClues:turn",0);
+  const [openCount, setOpenCount] = useGameHistoryState("app/src/components/FourClues.tsx:FourClues:openCount",1);
+  const [locked, setLocked] = useGameHistoryState<number[]>("app/src/components/FourClues.tsx:FourClues:locked",[]);
+  const [phase, setPhase] = useGameHistoryState<Phase>("app/src/components/FourClues.tsx:FourClues:phase",'play');
+  const [guesser, setGuesser] = useGameHistoryState<number | null>("app/src/components/FourClues.tsx:FourClues:guesser",null);
+  const [boxOpen, setBoxOpen] = useGameHistoryState("app/src/components/FourClues.tsx:FourClues:boxOpen",false);
+  const [shakeIdx, setShakeIdx] = useGameHistoryState<number | null>("app/src/components/FourClues.tsx:FourClues:shakeIdx",null);
+  const [pulse, setPulse] = useGameHistoryState<number | null>("app/src/components/FourClues.tsx:FourClues:pulse",null);
+  const [snapshot, setSnapshot] = useGameHistoryState<Snapshot | null>("app/src/components/FourClues.tsx:FourClues:snapshot",null);
+  const [peek, setPeek] = useGameHistoryState("app/src/components/FourClues.tsx:FourClues:peek",false);
   // 새 낱말은 첫 카드도 물음표로 시작해 잠깐 뒤 뒤집어 보여 준다(선생님 제안 2026-10-16)
-  const [firstShown, setFirstShown] = useState(false);
-  useEffect(() => {
+  const [firstShown, setFirstShown] = useGameHistoryState("app/src/components/FourClues.tsx:FourClues:firstShown",false);
+  useGameHistoryEffect(() => {
     setFirstShown(false);
-    const id = gameClock.setTimeout(() => {
+    const id = historyClock.setTimeout(() => {
       setFirstShown(true);
       playSfx(GAME_SFX.fourclues.flip);
     }, 800);
-    return () => gameClock.clearTimeout(id);
+    return () => historyClock.clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pos, round, itemKey]);
-  const timers = useRef<number[]>([]);
+  }, [pos, round, itemKey], false, "app/src/components/FourClues.tsx:effect1");
+  const timers = useGameHistoryRef<number[]>("app/src/components/FourClues.tsx:FourClues:timers",[]);
   const later = (fn: () => void, ms: number) => {
-    timers.current.push(gameClock.setTimeout(fn, ms));
+    timers.current.push(historyClock.setTimeout(fn, ms));
   };
-  useEffect(() => () => timers.current.forEach((id) => gameClock.clearTimeout(id)), []);
+  useGameHistoryEffect(() => () => timers.current.forEach((id) => historyClock.clearTimeout(id)), [], false, "app/src/components/FourClues.tsx:effect2");
 
-  useEffect(() => {
-    timers.current.forEach((id) => gameClock.clearTimeout(id));
+  useGameHistoryEffect(() => {
+    timers.current.forEach((id) => historyClock.clearTimeout(id));
     timers.current = [];
     setOrder(shuffle(items.map((_, i) => i)));
     setPos(0);
@@ -170,13 +175,13 @@ const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items: sour
     setBoxOpen(false);
     setSnapshot(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamCount, itemKey]);
+  }, [teamCount, itemKey], false, "app/src/components/FourClues.tsx:effect3");
 
   const word = items.length > 0 && order.length > 0 ? (items[order[pos % order.length]]?.label ?? '') : '';
   const picture = order.length ? deck[order[pos % order.length]] : undefined;
   const wordInfo = info[word.trim().toLowerCase()];
   const clues = useMemo(() => (word ? buildClues(word, wordInfo, t as never) : []), [word, wordInfo, t]);
-  useEffect(() => setPeek(false), [pos, round, phase]);
+  useGameHistoryEffect(() => setPeek(false), [pos, round, phase], false, "app/src/components/FourClues.tsx:effect4");
   const teamName = (i: number) => t('gameFourClues.teamName', { name: TEAM_NAMES[i] });
   useNativeGameTurn({current:teamName(turn),next:teamName(nextFree(turn,locked)),index:turn,total:teamCount,enabled:items.length>0&&phase==='play'});
   // 선생님 폰 리모컨에는 지금 낱말(정답)을 알려 준다 — 칠판에는 안 보이고 폰에서만 눌러서 본다
@@ -285,7 +290,7 @@ const FourClues = forwardRef<UndoHandle, Props>(function FourClues({ items: sour
   useImperativeHandle(ref, () => ({
     undo() {
       if (!snapshot) return;
-      timers.current.forEach((id) => gameClock.clearTimeout(id));
+      timers.current.forEach((id) => historyClock.clearTimeout(id));
       timers.current = [];
       setScores(snapshot.scores);
       setTurn(snapshot.turn);

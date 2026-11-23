@@ -28,15 +28,17 @@ import GameReportButton from './GameReportButton';
 import { ABSENT_EVENT, loadAbsent, saveAbsent } from '../lib/absent';
 import { instantStart, isDirectGameEntry } from '../lib/gamePreparation';
 import type { WordList } from '../lib/types';
+import {GameHistoryProvider,useGameHistory,useGameHistorySnapshot} from '../context/GameHistoryContext';
 
 const EMPTY_ROSTER: import('../lib/types').GameItem[] = [];
 const btn = 'min-h-11 rounded-xl border border-outline-variant bg-white px-4 py-2 text-base font-bold text-deep-navy focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40';
 export default function GameWorkspace({ children }: { children: ReactNode }) {
   const { isStaff } = useAuth();
   // Student play retains its existing read-only game route.
-  return isStaff ? <TeacherGameWorkspace>{children}</TeacherGameWorkspace> : <>{children}</>;
+  return isStaff ? <GameHistoryProvider><TeacherGameWorkspace>{children}</TeacherGameWorkspace></GameHistoryProvider> : <>{children}</>;
 }
 function TeacherGameWorkspace({ children }: { children: ReactNode }) {
+  const history=useGameHistory();
   const { t, i18n } = useTranslation();
   const {notify}=useToast();
   const { hasFullAccess, session, academy } = useAuth();
@@ -239,7 +241,10 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   }, [playing, presenting, lessonEditor]);
   const allRoster = useMemo(() => participantText.trim() ? participantText.split(/\r?\n/).map(name=>name.trim()).filter(Boolean).map((label,index)=>({id:`temporary:${scope}:${index}`,label})) : info?.roster.length ? info.roster : [t('flow.participant',{n:1}),t('flow.participant',{n:2})].map((label,index)=>({id:`temporary:${scope}:${index}`,label})), [info?.roster, participantText, scope, t]);
   const roster = useMemo(() => allRoster.filter(row => !absent.includes(row.id)), [allRoster, absent]);
+  const rosterKey=roster.map(row=>row.id).join(',');
+  useEffect(()=>{history?.clear();},[history,rosterKey]);
   const order = useMemo(() => { void revision; return loadTeamOrder(roster, scope); }, [roster, scope, revision]);
+  useGameHistorySnapshot('class-turn',()=>({turn:loadTeamOrder(roster,scope).turn}),snapshot=>saveTeamOrder(roster,{...loadTeamOrder(roster,scope),turn:snapshot.turn},scope));
   const turnClick = useRef(0);
   const advance = useCallback(() => {
     const now = Date.now(); if (now - turnClick.current < 250 || order.order.length < 2) return false;
@@ -401,7 +406,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
           </div>
       </dialog>
       {addLesson && info?.selected && <AddActivityToLesson activity={info.selected} onClose={()=>setAddLesson(false)} />}
-      {teams && <TeamOrderPanel key={`${scope}:${roster.map(row=>row.id).join(',')}`} scope={scope} roster={roster} fixedMode={participationFixed?.mode} fixedTeams={participationFixed?.teams} onClose={async()=>{const next=loadTeamOrder(roster,scope);if(next.mode==='team'&&info?.teamCount!==undefined&&next.teamCount!==info.teamCount){if(!await action(()=>bridge.current!.configureTeams(next.teamCount),false))return;}setTeams(false);}}>
+      {teams && <TeamOrderPanel key={`${scope}:${roster.map(row=>row.id).join(',')}`} scope={scope} roster={roster} fixedMode={participationFixed?.mode} fixedTeams={participationFixed?.teams} onClose={async()=>{const next=loadTeamOrder(roster,scope);if(next.mode==='team'&&info?.teamCount!==undefined&&next.teamCount!==info.teamCount){if(!await action(()=>bridge.current!.configureTeams(next.teamCount),false))return;}setTeams(false);history?.clear();}}>
         <label className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={ordered} onChange={event=>setOrdered(event.target.checked)} />{t('flow.showTurns')}</label>
         {!info?.roster.length && <label className="block">{t('flow.temporaryParticipants')}<textarea className="mt-2 min-h-24 w-full rounded-xl border p-3" value={participantText} onChange={event=>{setParticipantText(event.target.value);setAbsent([]);try{sessionStorage.setItem(participantKey,event.target.value);}catch{/* tab only */}}} /></label>}
         <p>{t('flow.excludeParticipants')}</p>{allRoster.map(row=><label key={row.id} className="mr-3 inline-flex min-h-11 items-center gap-2"><input type="checkbox" checked={absent.includes(row.id)} onChange={event=>setAbsent(old=>event.target.checked?[...old,row.id]:old.filter(id=>id!==row.id))}/>{row.label}</label>)}

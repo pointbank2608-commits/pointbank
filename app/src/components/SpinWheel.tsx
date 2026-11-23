@@ -1,6 +1,7 @@
+import {useGameHistorySnapshot,useGameHistoryEffect,useGameHistoryClock,captureGameRef,restoreGameRef,useGameHistoryState,useGameHistoryRef} from '../context/GameHistoryContext';
 import { usePictureWordDeck, usePictureWordTurn } from './PictureWordTurn';
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useMemo, useRef, useState } from 'react';
+
+import {useMemo, useRef} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGamePlay } from './GameThemeFrame';
 import { playMusic, playWheelSpinTicks, playWheelTickOnce } from '../lib/gameMusic';
@@ -61,43 +62,47 @@ export default function SpinWheel({
   onAddItem,
   onRemoveItem,
 }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/SpinWheel.tsx:SpinWheel',()=>({state:{rotation,spinning,useCssTransition,result,liveIndex,spinMs},refs:{momentum:captureGameRef(momentum.current),timerRef:captureGameRef(timerRef.current),stopMusicRef:captureGameRef(stopMusicRef.current),uploadDurationsRef:captureGameRef(uploadDurationsRef.current),rotationRef:captureGameRef(rotationRef.current),draggingRef:captureGameRef(draggingRef.current),didDragRef:captureGameRef(didDragRef.current),activePointerIdRef:captureGameRef(activePointerIdRef.current),lastAngleRef:captureGameRef(lastAngleRef.current),velocitySamplesRef:captureGameRef(velocitySamplesRef.current),momentumRafRef:captureGameRef(momentumRafRef.current),tickAccumRef:captureGameRef(tickAccumRef.current)}}),(snapshot,elapsed)=>{restoreGameRef(momentum,snapshot.refs.momentum);setRotation(()=>snapshot.state.rotation);setSpinning(()=>snapshot.state.spinning);setUseCssTransition(()=>snapshot.state.useCssTransition);setResult(()=>snapshot.state.result);setLiveIndex(()=>snapshot.state.liveIndex);setSpinMs(()=>snapshot.state.spinMs);restoreGameRef(timerRef,snapshot.refs.timerRef,elapsed,false);stopMusicRef.current();restoreGameRef(stopMusicRef,snapshot.refs.stopMusicRef,elapsed,false);restoreGameRef(uploadDurationsRef,snapshot.refs.uploadDurationsRef,elapsed,false);restoreGameRef(rotationRef,snapshot.refs.rotationRef,elapsed,false);restoreGameRef(draggingRef,snapshot.refs.draggingRef,elapsed,false);restoreGameRef(didDragRef,snapshot.refs.didDragRef,elapsed,false);restoreGameRef(activePointerIdRef,snapshot.refs.activePointerIdRef,elapsed,false);restoreGameRef(lastAngleRef,snapshot.refs.lastAngleRef,elapsed,false);restoreGameRef(velocitySamplesRef,snapshot.refs.velocitySamplesRef,elapsed,false);restoreGameRef(momentumRafRef,snapshot.refs.momentumRafRef,elapsed,false);restoreGameRef(tickAccumRef,snapshot.refs.tickAccumRef,elapsed,false);});
+
   const pictureTurn = usePictureWordTurn();
   const pictureMode = usePictureWordDeck().length > 0;
   const { t } = useTranslation();
   const { itemsHidden } = useGamePlay();
-  const [rotation, setRotation] = useState(0);
-  const [spinning, setSpinning] = useState(false);
-  const [useCssTransition, setUseCssTransition] = useState(false);
-  const [result, setResult] = useState<GameItem | null>(null);
+  const [rotation, setRotation] = useGameHistoryState("app/src/components/SpinWheel.tsx:SpinWheel:rotation",0);
+  const [spinning, setSpinning] = useGameHistoryState("app/src/components/SpinWheel.tsx:SpinWheel:spinning",false);
+  const [useCssTransition, setUseCssTransition] = useGameHistoryState("app/src/components/SpinWheel.tsx:SpinWheel:useCssTransition",false);
+  const [result, setResult] = useGameHistoryState<GameItem | null>("app/src/components/SpinWheel.tsx:SpinWheel:result",null);
   /** 돌아가는 동안 화살표 아래를 지나가는 항목(위쪽 당첨 칸이 계속 따라 바뀐다) */
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [liveIndex, setLiveIndex] = useState<number | null>(null);
+  const [editingId, setEditingId] = useGameHistoryState<string | null>("app/src/components/SpinWheel.tsx:SpinWheel:editingId",null);
+  const [liveIndex, setLiveIndex] = useGameHistoryState<number | null>("app/src/components/SpinWheel.tsx:SpinWheel:liveIndex",null);
   const spinLayerRef = useRef<HTMLDivElement>(null);
-  const [spinMs, setSpinMs] = useState(DEFAULT_SPIN_MS);
-  const [itemDrafts, setItemDrafts] = useState<Record<string, string>>({});
-  const timerRef = useRef<ReturnType<typeof gameClock.setTimeout> | null>(null);
-  const stopMusicRef = useRef<() => void>(() => {});
+  const [spinMs, setSpinMs] = useGameHistoryState("app/src/components/SpinWheel.tsx:SpinWheel:spinMs",DEFAULT_SPIN_MS);
+  const [itemDrafts, setItemDrafts] = useGameHistoryState<Record<string, string>>("app/src/components/SpinWheel.tsx:SpinWheel:itemDrafts",{});
+  const timerRef = useGameHistoryRef<ReturnType<typeof historyClock.setTimeout> | null>("app/src/components/SpinWheel.tsx:SpinWheel:timerRef",null);
+  const stopMusicRef = useGameHistoryRef<() => void>("app/src/components/SpinWheel.tsx:SpinWheel:stopMusicRef",() => {});
   /** 업로드한 회전음의 실제 길이(초). 한 번 읽어두면 재사용 — url별로 캐싱. */
-  const uploadDurationsRef = useRef<Record<string, number>>({});
+  const uploadDurationsRef = useGameHistoryRef<Record<string, number>>("app/src/components/SpinWheel.tsx:SpinWheel:uploadDurationsRef",{});
 
   /* ---------------- 손으로 직접 돌리기(드래그+관성) ---------------- */
   const wheelBoxRef = useRef<HTMLDivElement>(null);
-  const rotationRef = useRef(0);
-  const draggingRef = useRef(false);
-  const didDragRef = useRef(false);
-  const activePointerIdRef = useRef<number | null>(null);
-  const lastAngleRef = useRef(0);
-  const velocitySamplesRef = useRef<{ t: number; angle: number }[]>([]);
-  const momentumRafRef = useRef<number | null>(null);
-  const tickAccumRef = useRef(0);
+  const rotationRef = useGameHistoryRef("app/src/components/SpinWheel.tsx:SpinWheel:rotationRef",0);
+  const draggingRef = useGameHistoryRef("app/src/components/SpinWheel.tsx:SpinWheel:draggingRef",false);
+  const didDragRef = useGameHistoryRef("app/src/components/SpinWheel.tsx:SpinWheel:didDragRef",false);
+  const activePointerIdRef = useGameHistoryRef<number | null>("app/src/components/SpinWheel.tsx:SpinWheel:activePointerIdRef",null);
+  const lastAngleRef = useGameHistoryRef("app/src/components/SpinWheel.tsx:SpinWheel:lastAngleRef",0);
+  const velocitySamplesRef = useGameHistoryRef<{ t: number; angle: number }[]>("app/src/components/SpinWheel.tsx:SpinWheel:velocitySamplesRef",[]);
+  const momentumRafRef = useGameHistoryRef<number | null>("app/src/components/SpinWheel.tsx:SpinWheel:momentumRafRef",null);
+  const tickAccumRef = useGameHistoryRef("app/src/components/SpinWheel.tsx:SpinWheel:tickAccumRef",0);
 
-  useEffect(() => () => {
-    if (momentumRafRef.current !== null) gameClock.cancelAnimationFrame(momentumRafRef.current);
-  }, []);
+  useGameHistoryEffect(() => () => {
+    if (momentumRafRef.current !== null) historyClock.cancelAnimationFrame(momentumRafRef.current);
+  }, [], false, "app/src/components/SpinWheel.tsx:effect1");
 
   // 선생님이 회전음으로 파일을 업로드해뒀으면, 실제로 돌리기 전에 미리 길이를 읽어둔다
   // (스핀 시작 시점엔 즉시 값이 필요해서 미리 로드해두는 것 — 매번 새로 읽지 않도록 캐싱).
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (!music || music.kind !== 'upload') return;
     const url = music.url;
     if (url in uploadDurationsRef.current) return;
@@ -109,7 +114,7 @@ export default function SpinWheel({
     };
     probe.addEventListener('loadedmetadata', onLoaded);
     return () => probe.removeEventListener('loadedmetadata', onLoaded);
-  }, [music]);
+  }, [music], true, "app/src/components/SpinWheel.tsx:effect2");
 
   const count = items.length;
   const slice = count > 0 ? 360 / count : 0;
@@ -120,7 +125,7 @@ export default function SpinWheel({
 
   // 돌림판이 돌아가는 동안 화살표 아래 항목을 읽어 위쪽 당첨 칸을 계속 바꾼다.
   // CSS 감속 회전은 JS 가 각도를 모르므로 실제로 그려진 transform 에서 각도를 읽는다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     if (!spinning || count === 0) return;
     let raf = 0;
     let last = -1;
@@ -133,17 +138,17 @@ export default function SpinWheel({
         const idx = Math.min(count - 1, Math.floor(theta / slice));
         if (idx !== last) { last = idx; setLiveIndex(idx); }
       }
-      raf = requestAnimationFrame(read);
+      raf = historyClock.requestAnimationFrame(read);
     };
-    raf = requestAnimationFrame(read);
-    return () => cancelAnimationFrame(raf);
-  }, [spinning, count, slice]);
+    raf = historyClock.requestAnimationFrame(read);
+    return () => historyClock.cancelAnimationFrame(raf);
+  }, [spinning, count, slice], false, "app/src/components/SpinWheel.tsx:effect3");
 
   // 오른쪽 목록 입력창의 초안 텍스트를 실제 항목과 맞춰둔다 — 타이핑 중엔 이 draft를
   // 보여주다가(반응성), blur/Enter 시점에 onEditItem으로 실제 반영한다.
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setItemDrafts(Object.fromEntries(items.map((i) => [i.id, i.label])));
-  }, [items]);
+  }, [items], false, "app/src/components/SpinWheel.tsx:effect4");
 
   const slices = useMemo(() => {
     return items.map((item, i) => {
@@ -187,7 +192,7 @@ export default function SpinWheel({
 
   function stopMomentum() {
     if (momentumRafRef.current !== null) {
-      gameClock.cancelAnimationFrame(momentumRafRef.current);
+      historyClock.cancelAnimationFrame(momentumRafRef.current);
       momentumRafRef.current = null;
     }
   }
@@ -206,26 +211,27 @@ export default function SpinWheel({
     playMusic(resultSound);
   }
 
+  const momentum=useGameHistoryRef('wheel:momentum',{speed:0,last:0});
   function startMomentum(v0: number) {
     const sign = v0 >= 0 ? 1 : -1;
-    let speed = Math.abs(v0);
-    let last = gameClock.now();
+    momentum.current.speed = Math.abs(v0);
+    momentum.current.last = historyClock.now();
     function step(now: number) {
-      const dt = Math.min(0.05, (now - last) / 1000);
-      last = now;
-      speed = Math.max(0, speed - DECEL_DEG_PER_S2 * dt);
-      const delta = speed * sign * dt;
+      const dt = Math.max(0, Math.min(0.05, (now - momentum.current.last) / 1000));
+      momentum.current.last = now;
+      momentum.current.speed = Math.max(0, momentum.current.speed - DECEL_DEG_PER_S2 * dt);
+      const delta = momentum.current.speed * sign * dt;
       rotationRef.current += delta;
       setRotation(rotationRef.current);
       emitTicksForDelta(delta);
-      if (speed <= MIN_MOMENTUM_VELOCITY) {
+      if (momentum.current.speed <= MIN_MOMENTUM_VELOCITY) {
         momentumRafRef.current = null;
         finalizeSpin();
         return;
       }
-      momentumRafRef.current = gameClock.requestAnimationFrame(step);
+      momentumRafRef.current = historyClock.requestAnimationFrame(step);
     }
-    momentumRafRef.current = gameClock.requestAnimationFrame(step);
+    momentumRafRef.current = historyClock.requestAnimationFrame(step);
   }
 
   function handleWheelPointerDown(e: React.PointerEvent) {
@@ -240,7 +246,7 @@ export default function SpinWheel({
     draggingRef.current = true;
     didDragRef.current = false;
     lastAngleRef.current = angleFromPoint(e.clientX, e.clientY);
-    velocitySamplesRef.current = [{ t: gameClock.now(), angle: rotationRef.current }];
+    velocitySamplesRef.current = [{ t: historyClock.now(), angle: rotationRef.current }];
     tickAccumRef.current = 0;
     setResult(null);
     setUseCssTransition(false);
@@ -258,7 +264,7 @@ export default function SpinWheel({
     rotationRef.current += delta;
     setRotation(rotationRef.current);
     emitTicksForDelta(delta);
-    const now = gameClock.now();
+    const now = historyClock.now();
     const samples = velocitySamplesRef.current;
     samples.push({ t: now, angle: rotationRef.current });
     while (samples.length > 2 && now - samples[0].t > 120) samples.shift();
@@ -310,7 +316,7 @@ export default function SpinWheel({
 
   function performSpin() {
     if (spinning || count === 0) return;
-    if (timerRef.current) gameClock.clearTimeout(timerRef.current);
+    if (timerRef.current) historyClock.clearTimeout(timerRef.current);
     stopMomentum();
     stopMusicRef.current();
 
@@ -343,7 +349,7 @@ export default function SpinWheel({
       stopMusicRef.current = playMusic(music, { loop: music.kind !== 'upload', pauseWithGame: true });
     }
 
-    timerRef.current = gameClock.setTimeout(() => {
+    timerRef.current = historyClock.setTimeout(() => {
       setSpinning(false);
       setUseCssTransition(false);
       const picked = items[targetIndex];

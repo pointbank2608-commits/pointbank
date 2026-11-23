@@ -1,6 +1,7 @@
+import {useGameHistorySnapshot, useGameHistoryEffect, useGameHistoryClock, useGameHistoryState} from '../context/GameHistoryContext';
 import { usePictureWordTurn } from './PictureWordTurn';
-import { gameClock } from '../lib/gameClock';
-import { useEffect, useState } from 'react';
+
+import {} from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DiagramPin } from '../lib/types';
 import { playSfx, useGameSfx, useStepSounds } from '../lib/gameSfx';
@@ -48,22 +49,26 @@ export function LabeledDiagramEmptyMotif() {
 }
 
 export default function LabeledDiagram({ imageUrl, pins, boardStyle = 'wood' }: Props) {
+ /* game-history-adapter */
+ const historyClock=useGameHistoryClock();
+ useGameHistorySnapshot('src/components/LabeledDiagram.tsx:LabeledDiagram',()=>({state:{wordBank,filledIds,selectedWordId,wrongPinId},refs:{}}),(snapshot,elapsed)=>{setWordBank(()=>snapshot.state.wordBank);setFilledIds(()=>snapshot.state.filledIds);setSelectedWordId(()=>snapshot.state.selectedWordId);setWrongPinId(()=>snapshot.state.wrongPinId);void elapsed;});
+
   const pictureTurn = usePictureWordTurn();
   const { t } = useTranslation();
   const clay = boardStyle === 'clay';
-  const [wordBank, setWordBank] = useState<DiagramPin[]>(() => shuffle(pins));
-  const [filledIds, setFilledIds] = useState<Set<string>>(new Set());
-  const [selectedWordId, setSelectedWordId] = useState<string | null>(null);
-  const [wrongPinId, setWrongPinId] = useState<string | null>(null);
+  const [wordBank, setWordBank] = useGameHistoryState<DiagramPin[]>("app/src/components/LabeledDiagram.tsx:LabeledDiagram:wordBank",() => shuffle(pins));
+  const [filledIds, setFilledIds] = useGameHistoryState<Set<string>>("app/src/components/LabeledDiagram.tsx:LabeledDiagram:filledIds",new Set());
+  const [selectedWordId, setSelectedWordId] = useGameHistoryState<string | null>("app/src/components/LabeledDiagram.tsx:LabeledDiagram:selectedWordId",null);
+  const [wrongPinId, setWrongPinId] = useGameHistoryState<string | null>("app/src/components/LabeledDiagram.tsx:LabeledDiagram:wrongPinId",null);
 
   const pinIdsKey = pins.map((p) => p.id).join('|');
-  useEffect(() => {
+  useGameHistoryEffect(() => {
     setWordBank(shuffle(pins));
     setFilledIds(new Set());
     setSelectedWordId(null);
     setWrongPinId(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pinIdsKey]);
+  }, [pinIdsKey], false, "app/src/components/LabeledDiagram.tsx:effect1");
 
   const sfx = useGameSfx('labeleddiagram');
   useStepSounds(0, !!imageUrl && pins.length > 0 && filledIds.size === pins.length, undefined, sfx.finish);
@@ -104,7 +109,7 @@ export default function LabeledDiagram({ imageUrl, pins, boardStyle = 'wood' }: 
     } else {
       playSfx(sfx.wrong);
       setWrongPinId(pin.id);
-      gameClock.setTimeout(() => setWrongPinId(null), 400);
+      historyClock.setTimeout(() => setWrongPinId(null), 400);
     }
   }
 

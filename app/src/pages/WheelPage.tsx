@@ -9,6 +9,7 @@ import GameThemeFrame, { useGamePlay, GameManagement } from '../components/GameT
 import ImportFromClass from '../components/ImportFromClass';
 import OpenInOtherGame from '../components/OpenInOtherGame';
 import SpinWheel from '../components/SpinWheel';
+import {useGameHistorySnapshot} from '../context/GameHistoryContext';
 import { announceRoundDone } from '../lib/teamOrder';
 import StudentRosterPicker from '../components/StudentRosterPicker';
 import WordListPicker from '../components/WordListPicker';
@@ -120,6 +121,7 @@ export default function WheelPage() {
     try{await updateGameTemplate(selected.id,{config});}catch(err){notify(err instanceof Error?err.message:String(err),'error');await reload();}
   }
   const [recent, setRecent] = useState<{ id: string; label: string; at: number }[]>([]);
+  useGameHistorySnapshot('wheel-results',()=>({playItems,recent}),snapshot=>{setPlayItems(snapshot.playItems);setRecent(snapshot.recent);});
   const [editorOpen, setEditorOpen] = useState(true);
   const [roundKey, setRoundKey] = useState(0);
   const demoItems = useMemo(defaultItems, []);
