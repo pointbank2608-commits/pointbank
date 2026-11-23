@@ -29,6 +29,7 @@ export interface WmStageCounts {
 }
 
 export interface WmAssignInput {
+  gameItems?: import('../homework/types').HwItemDraft[];
   newWordLimit?: number;
   requestId: string;
   classId: string;
@@ -106,6 +107,7 @@ export interface WmToday {
 }
 
 export interface WmOpen {
+  game_access?: string | null;
   project?: WmProjectStatus;
   title: string;
   student_name: string;

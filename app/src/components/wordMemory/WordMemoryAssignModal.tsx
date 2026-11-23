@@ -6,9 +6,11 @@ import { fetchClasses, fetchStudentsOfClass } from '../../lib/api';
 import { useFeature } from '../../lib/features';
 import type { ClassRow, FullCardItem, Student } from '../../lib/types';
 import { toWmError, wmAssign, wmPlanLinks, wmStudentUrl } from '../../lib/wordMemory/api';
-import { analyzeCards, dailyBudget, defaultStudyDays, estimateMinutes, initialProjectBudget, toWmCards, WM_MIN_WORDS, WM_PROJECT_MAX_DAYS } from '../../lib/wordMemory/plan';
+import { analyzeCards, cardKey, dailyBudget, defaultStudyDays, estimateMinutes, initialProjectBudget, toWmCards, WM_MIN_WORDS, WM_PROJECT_MAX_DAYS } from '../../lib/wordMemory/plan';
 import type { WmAssignResult, WmDailyMode } from '../../lib/wordMemory/types';
 import AccessibleDialog from '../AccessibleDialog';
+import HomeworkGamePicker, { WORD_HOMEWORK_GAMES } from '../homework/teacher/HomeworkGamePicker';
+import { gameItemFromCards, SOLO_GAME_NAMES, type SoloGame } from '../../lib/homework/blocks';
 import { GoalSchedule, RangeSummary } from '../wordMemoryProject/ProjectPlan';
 import { addDays, kstToday, projectSchedule } from '../wordMemoryProject/model';
 
@@ -23,7 +25,7 @@ export interface WmSource {
  * 배정 전에는 아무것도 만들지 않는다. 요청 번호(requestId)는 창을 열 때 한 번 정해 두 번 눌러도 한 번만 배정된다.
  */
 export default function WordMemoryAssignModal({ source, cards, defaultClassId, onClose, onAssigned }: { source: WmSource; cards: FullCardItem[]; defaultClassId?: string | null; onClose: () => void; onAssigned?: () => void }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { academy } = useAuth();
   const navigate = useNavigate();
   const homeworkOpen = useFeature('homework');
@@ -37,6 +39,22 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
   const [mode, setMode] = useState<WmDailyMode>('light');
   const [customLimit, setCustomLimit] = useState('');
   const [title, setTitle] = useState(source.name);
+  const [gamePicker, setGamePicker] = useState(false);
+  const [games, setGames] = useState<SoloGame[]>([]);
+  const prepareGames = gamePicker || games.length > 0;
+  const lang = i18n.language.startsWith('en') ? 1 : 0;
+  const gameItems = useMemo(() => {
+    const items = new Map<SoloGame, NonNullable<ReturnType<typeof gameItemFromCards>>>();
+    if (!prepareGames) return items;
+    const assignedKeys = new Set(wmCards.map(card => cardKey(card.word, card.meaning)));
+    const pool = cards.filter(card => assignedKeys.delete(cardKey(card.word ?? '', card.meaning ?? '')));
+    for (const game of WORD_HOMEWORK_GAMES) {
+      const item = gameItemFromCards(pool, game, SOLO_GAME_NAMES[game][lang]);
+      if (item) items.set(game, item);
+    }
+    return items;
+  }, [cards, wmCards, lang, prepareGames]);
+  const selectedGames = games.filter(game => gameItems.has(game));
   // 목표일(예상). 비워 두면 소개에 걸리는 일수 + 여유로 정한 기본값. 서버의 목표일 = 시작일 + 공부 기간 + 복습 기간
   const [goal, setGoal] = useState<string | null>(null);
   const today = useMemo(() => kstToday(), []); // 서버 wm_today()와 같은 한국 날짜(배정 전 미리보기용). 실제 시작일은 서버가 정한다
@@ -98,7 +116,8 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
     try {
       const studentIds = [...picked].sort();
       const approvedTitle = title.trim() || source.name;
-      const key = JSON.stringify([classId, approvedTitle, source, studentIds, mode, study, reviewDays, newWordLimit]);
+      const bonusItems = selectedGames.map(game => gameItems.get(game)!);
+      const key = JSON.stringify([classId, approvedTitle, source, studentIds, mode, study, reviewDays, newWordLimit, bonusItems]);
       if (lastRequest.current?.key !== key || lastRequest.current.cards !== wmCards) {
         lastRequest.current = { key, id: crypto.randomUUID(), cards: wmCards };
       }
@@ -107,6 +126,7 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
         classId,
         title: approvedTitle,
         cards: wmCards,
+        gameItems: bonusItems,
         source: { type: source.type, id: source.id, name: source.name },
         studentIds,
         mode,
@@ -309,6 +329,14 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
                   <input className={`${field} mt-1 w-full text-deep-navy`} value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} />
                 </label>
               </div>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <button type="button" disabled={busy} className="min-h-11 rounded-xl border border-primary px-4 font-bold text-primary"
+                  onClick={() => setGamePicker(true)}>{t('wordMemory.chooseGames')}</button>
+                {selectedGames.length > 0 && <span>{selectedGames.map(game => SOLO_GAME_NAMES[game][lang]).join(' · ')}</span>}
+              </div>
+              <p className="mt-1 text-sm text-on-surface-variant">{t('wordMemory.gamesHelp')}</p>
+              {gamePicker && <HomeworkGamePicker available={[...gameItems.keys()]} initial={selectedGames}
+                onPick={next => { setGames(next); setGamePicker(false); }} onClose={() => setGamePicker(false)} />}
             </details>
 
             {error && (

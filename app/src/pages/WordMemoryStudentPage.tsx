@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import QuestionCard from '../components/homework/QuestionCard';
 import WordMemoryCollection from '../components/wordMemory/WordMemoryCollection';
 import StudentToday from '../components/wordMemoryProject/StudentToday';
+import { personalHomeworkUrl } from '../lib/homework';
 import type { HwQuestion } from '../lib/homework/types';
 import { speak } from '../lib/speech';
 import { useLearningActivity } from '../lib/learningSensors/useLearningActivity';
@@ -215,7 +216,11 @@ export default function WordMemoryStudentPage() {
   if (today?.project && info && (view === 'home' || view === 'done' || view === 'ended')) {
     return (
       <div className="flex min-h-dvh flex-col bg-[#f8f1e3] text-[#1c2742]" data-wm-view={view}>
-        <StudentToday today={today} studentName={info.student_name} title={info.title || t('wordMemory.title')} onStart={() => setView('run')} onCollection={() => void openCollection()} />
+        <StudentToday today={today} studentName={info.student_name} title={info.title || t('wordMemory.title')} onStart={() => setView('run')} onCollection={() => void openCollection()}>
+          {info.game_access && <a href={personalHomeworkUrl(info.game_access)} className="block rounded-xl border border-primary bg-white px-4 py-3 text-center font-bold text-primary">
+            {t('wordMemory.playGames')}
+          </a>}
+        </StudentToday>
       </div>
     );
   }

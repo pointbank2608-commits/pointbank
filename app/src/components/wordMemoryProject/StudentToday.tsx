@@ -12,7 +12,8 @@ const dateText = (iso: string, today: string, en: boolean) => (en ? new Date(`${
  * 입력은 서버의 wm_today_state 응답 그대로다(project 가 있는 새 계획만 이 화면을 쓴다).
  * 날짜는 서버가 준 한국 날짜(today.day, next_due, goal_date)만 쓴다.
  */
-export default function StudentToday({ today, studentName, title, onStart, onCollection }: {
+export default function StudentToday({ today, studentName, title, onStart, onCollection, children }: {
+  children?: ReactNode;
   today: WmToday; studentName: string; title: string; onStart: () => void; onCollection?: () => void;
 }) {
   const { l, en } = useL();
@@ -31,6 +32,7 @@ export default function StudentToday({ today, studentName, title, onStart, onCol
         {v.mode === 'nothing' && <Nothing l={l} date={date} v={v} onCollection={onCollection} />}
         {v.mode === 'completed' && <Completed l={l} v={v} onCollection={onCollection} />}
         {v.mode === 'ended' && <Ended l={l} onCollection={onCollection} />}
+        {children}
       </div>
     </StudioCard>
   );

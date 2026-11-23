@@ -30,16 +30,19 @@ const SENTENCE_GAMES: GameDef[] = [
   { game: 'splash', catalog: 'sentencesplash', note: ['섞인 낱말을 순서대로 눌러 문장을 완성해요(6개)', 'Tap words in order to finish a sentence (6)'] },
   { game: 'detective', catalog: 'grammardetective', note: ['낱말 순서가 틀린 문장을 바르게 고쳐 써요(6개)', 'Fix the wrong word order by typing (6)'] },
 ];
+export const WORD_HOMEWORK_GAMES = WORD_GAMES.map(({ game }) => game);
 const SECTIONS: { id: string; title: [string, string]; help: [string, string]; games: GameDef[] }[] = [
   { id: 'word', title: ['단어 암기 게임', 'Word games'], help: ['낱말·뜻·철자를 외우는 게임이에요', 'Words, meanings and spelling'], games: WORD_GAMES },
   { id: 'sentence', title: ['문장 암기 게임', 'Sentence games'], help: ['문장 목록(또는 예문이 있는 낱말)으로 만들어져요. 낱말 순서와 문장 틀을 익혀요', 'Made from sentence lists (or words with examples)'], games: SENTENCE_GAMES },
 ];
 
 /** 숙제에 넣을 수 있는 게임을 그림 카드로 보여 주고 고르게 하는 창 */
-export default function HomeworkGamePicker({ onPick, onClose }: { onPick: (games: SoloGame[]) => void; onClose: () => void }) {
+export default function HomeworkGamePicker({ onPick, onClose, available, initial }: {
+  onPick: (games: SoloGame[]) => void; onClose: () => void; available?: SoloGame[]; initial?: SoloGame[];
+}) {
   const { t, i18n } = useTranslation();
   const en = i18n.language.startsWith('en');
-  const [sel, setSel] = useState<SoloGame[]>([]);
+  const [sel, setSel] = useState<SoloGame[]>(initial ?? []);
   const toggle = (g: SoloGame) => setSel((cur) => (cur.includes(g) ? cur.filter((x) => x !== g) : [...cur, g]));
   return (
     <AccessibleDialog label={en ? 'Choose a game' : '게임 고르기'} onClose={onClose}>
@@ -53,7 +56,8 @@ export default function HomeworkGamePicker({ onPick, onClose }: { onPick: (games
         <p className="mb-4 text-sm text-on-surface-variant">
           {en ? 'Only games a child can do alone at home are listed. Tap to select several, then add.' : '집에서 혼자 할 수 있는 게임만 있어요. 여러 개를 눌러 고른 뒤 한꺼번에 추가할 수 있어요. 정답은 서버가 채점하고 기록해요.'}
         </p>
-        {SECTIONS.map((sec) => (
+        {SECTIONS.map(sec => ({ ...sec, games: sec.games.filter(({game}) => !available || available.includes(game)) }))
+          .filter(sec => sec.games.length > 0).map((sec) => (
           <section key={sec.id} className="mb-6" aria-labelledby={`hw-games-${sec.id}`}>
             <h3 id={`hw-games-${sec.id}`} className="text-lg font-extrabold">{sec.title[en ? 1 : 0]}</h3>
             <p className="mb-3 text-sm text-on-surface-variant">{sec.help[en ? 1 : 0]}</p>
@@ -81,7 +85,7 @@ export default function HomeworkGamePicker({ onPick, onClose }: { onPick: (games
           <span className="text-base font-bold">{en ? `${sel.length} selected` : `${sel.length}개 선택됨`}</span>
           <span className="flex gap-2">
             <button type="button" disabled={sel.length === 0} onClick={() => setSel([])} className="min-h-11 rounded-full border border-outline-variant px-4 font-bold disabled:opacity-40">{en ? 'Clear' : '선택 해제'}</button>
-            <button type="button" disabled={sel.length === 0} onClick={() => onPick(sel)} className="min-h-11 rounded-full bg-primary px-6 font-bold text-on-primary disabled:opacity-40">{en ? 'Add selected' : '선택한 것 추가'}</button>
+            <button type="button" disabled={!initial && sel.length === 0} onClick={() => onPick(sel)} className="min-h-11 rounded-full bg-primary px-6 font-bold text-on-primary disabled:opacity-40">{initial ? t('wordMemory.applyGames') : en ? 'Add selected' : '선택한 것 추가'}</button>
           </span>
         </div>
       </div>
