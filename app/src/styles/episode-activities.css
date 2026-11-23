@@ -1,0 +1,49 @@
+.animation-activity-window>header h2 { margin-right:auto; line-height:1.2 }
+.animation-activity-window .episode-list-back { border:0; min-width:32px; padding:0; min-height:32px }
+.episode-progress { white-space:nowrap; font-size:.8em; color:#506d91; font-variant-numeric:tabular-nums }
+.episode-activity-footer { flex:none; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 14px; border-top:1px solid #d9e4f1 }
+.episode-activity-footer button:disabled,.episode-choice-row button:disabled { opacity:.38 }
+.episode-activity-menu { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px }
+.episode-activity-menu button { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:9px; text-align:left; border-color:#c4d6eb; color:#173456; padding:10px; line-height:1.25 }
+.episode-activity-menu button:last-child:nth-child(odd) { grid-column:1/-1 }
+.episode-activity-menu button span:first-child { display:grid; place-items:center; width:clamp(28px,3.6cqw,43px); aspect-ratio:1; border-radius:9px; background:#edf3fc; color:#215fc2; font-size:21px }
+.episode-activity-menu button span:last-child { color:#6c88a8 }
+.episode-practice-content,.episode-scramble { display:grid; justify-items:center; gap:12px; text-align:center }
+.episode-practice-content h3,.episode-student-question .vq-sentence { font-weight:750; font-size:clamp(25px,3.5cqw,46px); line-height:1.2; overflow-wrap:anywhere }
+.episode-practice-content p,.episode-activity-footer small { font-size:clamp(14px,1.6cqw,19px); color:#4c6583 }
+.episode-sentence-board,.episode-answer-slots { width:100%; background:#edf3fb; border-radius:12px; padding:clamp(10px,2cqw,24px) }
+.episode-sentence-board em,.episode-sentence-board small { color:#195fc0; font-style:normal }
+.episode-sentence-board p { margin-top:6px }
+.episode-choice-row,.episode-answer-slots { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; align-items:center }
+.episode-answer-slots span { border:1px dashed #99b5d7; min-width:32px; border-radius:6px; color:#54718e }
+.episode-scramble[data-result=correct] .episode-answer-slots { background:#e1f5e9; color:#13643a }
+.episode-scramble[data-result=wrong] .episode-answer-slots { background:#ffebe8; color:#96332a }
+.episode-practice-content button[aria-pressed=true],.episode-missing-settings button[aria-pressed=true] { color:#1059bd; background:#e4efff; border-color:#2879fa }
+.vq-classroom .tv-video .episode-student-question { top:50%; left:50%; right:auto; transform:translate(-50%,-50%); width:min(74%,720px); max-height:calc(100% - 16px); overscroll-behavior:contain }
+.episode-student-question .vq-question h3 { font-size:clamp(26px,3.5cqw,44px) }
+.episode-student-question .vq-question:is([data-question-kind=cloze],[data-question-kind=scramble]) h3,.episode-student-question .vq-actions button { font-size:clamp(14px,1.5cqw,19px) }
+.episode-missing { display:grid; gap:10px; justify-items:center }
+.episode-missing-settings { display:flex; justify-content:center; flex-wrap:wrap; gap:5px 20px; font-size:.85em }
+.episode-missing-settings button { margin:0 2px; min-height:32px; padding:4px 8px }
+.animation-window-anchor:has(.episode-missing) { container-type:size }
+.episode-missing-grid { --cols:3; display:grid; grid-template-columns:repeat(var(--cols),minmax(0,1fr)); width:min(100%,calc(var(--cols) * clamp(54px,18cqh,124px))); gap:6px }
+.episode-missing-grid[data-columns="4"] { --cols:4 }
+.episode-missing-grid:not([data-phase=setup]) { width:min(100%,calc(var(--cols) * clamp(62px,27cqh,152px))) }
+.episode-missing-grid[data-columns="1"] { --cols:1 }
+.episode-missing-grid[aria-busy=true] { visibility:hidden }
+.episode-card-back,.episode-picture-card { aspect-ratio:1; min-width:0; border:1px solid #d1e0f2; border-radius:10px }
+.episode-card-back { background:repeating-linear-gradient(45deg,#edf4fc 0 8px,#dfeaf7 8px 15px) }
+.episode-picture-card { background:#edf3fb; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:4px; text-align:center; line-height:1.1; overflow:hidden }
+.episode-picture-card img { width:100%; flex:1; min-height:0; object-fit:contain }
+.episode-picture-card strong { max-width:100%; overflow-wrap:anywhere; font-size:clamp(14px,2cqw,24px) }
+.episode-missing-prompt { display:grid; place-items:center; font-size:26px; font-weight:750 }
+.episode-missing-prompt strong { font-size:64px }
+.episode-activity-footer .episode-primary { background:#146ad5; color:white }
+@container(max-width:560px) {
+ .episode-activity-menu { gap:5px }
+ .episode-activity-menu button { font-size:15px; gap:4px; padding:6px }
+ .episode-activity-footer { padding:4px 8px; gap:4px }
+ .episode-activity-footer button { padding:4px 7px; font-size:15px; min-height:34px }
+ .animation-activity-window>header { gap:5px }
+ .animation-activity-window>header h2 { font-size:18px }
+}

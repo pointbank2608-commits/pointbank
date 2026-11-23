@@ -1,8 +1,18 @@
+import '../styles/episode-activities.css';
 import type {ReactNode} from 'react';
+import {useTranslation} from 'react-i18next';
 
-export default function AnimationActivityWindow({title,label,onClose,children}:{title:string;label:string;onClose:()=>void;children:ReactNode}){
+type Props={
+  title:string; label:string; onClose:()=>void; children:ReactNode;
+  progress?:string; onList?:()=>void; footer?:ReactNode;
+};
+export default function AnimationActivityWindow({title,label,onClose,children,progress,onList,footer}:Props){
+ const {t}=useTranslation();
  return <div className="animation-window-anchor"><section className="animation-activity-window" aria-label={label}>
-  <header><h2>{title}</h2><button className="animation-close" onClick={onClose}>× 닫기</button></header>
+  <header>{onList&&<button className="episode-list-back" onClick={onList} aria-label={t('episodeActivities.list')} title={t('episodeActivities.list')}>←</button>}
+   <h2>{title}</h2>{progress&&<span className="episode-progress" aria-live="polite">{progress}</span>}
+   <button className="animation-close" onClick={onClose}>× {t('episodeActivities.close')}</button></header>
   <div className="animation-window-body">{children}</div>
+  {footer&&<footer className="episode-activity-footer">{footer}</footer>}
  </section></div>;
 }

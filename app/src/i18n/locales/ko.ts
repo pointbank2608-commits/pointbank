@@ -21,6 +21,7 @@ import { workbookKo } from '../workbookLocales';
 import { grammarSheetsKo } from '../grammarSheetsLocales';
 import { phonicsCourseKo } from '../phonicsCourseLocales';
 const ko = {
+  episodeActivities: {"words":"수업 단어","close":"닫기","sound":"영어 발음 듣기","previous":"이전","next":"다음","scene":"어떤 장면일까?","showScene":"장면 보기","nextScene":"다음 장면","list":"활동 목록","pass":"빠르게 읽기","review":"복습 활동","practice":"문장 연습 활동 선택","follow":"듣고 따라 말하기","cloze":"빈칸 듣기","scramble":"문장 순서 맞추기","expression":"표현 바꿔 말하기","role":"역할 나누기","gap":"사라진 단어로 문장 완성","missing":"사라진 카드 찾기","cards":"카드 수","cardCount":"{{count}}장","memory":"기억 시간","seconds":"{{count}}초","round":"{{number}} / {{total}}라운드","start":"시작","nextRound":"다음 라운드","myRole":"내 역할","myTurn":"내가 말할 차례","listen":"이 문장 듣기","repeat":"다시 듣기","orderHint":"카드를 순서대로 눌러 보세요.","changeHint":"표현을 골라 바꿔 말해 보세요.","blankHint":"대사를 듣고 빠진 말을 말해 보세요.","retry":"다시 풀기","correct":"맞았어요!","wrong":"순서를 바꾸어 다시 해 보세요.","missingHint":"카드 수와 기억 시간을 골라 주세요.","few":"단어를 두 개 이상 선택해 주세요.","remember":"카드를 기억해 보세요.","guess":"사라진 카드를 찾아보세요."},
   animationPass: {fast:'빠르게',normal:'보통',slow:'느리게',speed:'단어 이동 속도',track:'단어 이동 영역',waiting:'속도 버튼을 누르면 단어가 지나가요.',previous:'이전 단어',next:'다음 단어',answer:'정답 보기',empty:'선택한 단어가 없어요. 수업 준비에서 단어를 선택해 주세요.'},
   prelaunchUx: { script: '스크립트 보기·수정', viewLesson: '수업 보기', wheelLegend: '전체 {{count}}개 · 목록을 내려 확인하세요' },
   stem:stemKo,
