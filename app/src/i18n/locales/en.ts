@@ -23,6 +23,7 @@ import { phonicsCourseEn } from '../phonicsCourseLocales';
 import type { Ko } from './ko';
 
 const en: Ko = {
+  animationPass: {fast:'Fast',normal:'Normal',slow:'Slow',speed:'Word speed',track:'Word movement area',waiting:'Press a speed button to send the word.',previous:'Previous word',next:'Next word',answer:'Show answer',empty:'No words selected. Choose words in lesson preparation.'},
   prelaunchUx: { script: 'View / edit script', viewLesson: 'View lesson', wheelLegend: '{{count}} items · Scroll to see all' },
   stem:stemEn,
   videoUi:videoUiEn,

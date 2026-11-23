@@ -1,0 +1,13 @@
+.animation-window-body:has(>.animation-pass-word){display:flex;flex-direction:column}
+.animation-window-body:has(>.animation-pass-word)>button{align-self:flex-start}
+.animation-pass-word{display:grid;grid-template-rows:44px minmax(35px,1fr) 44px;gap:12px;margin-top:12px;min-width:0;height:232px;min-height:147px;flex:1 1 auto}
+.animation-pass-word .animation-pass-speeds{display:flex;justify-content:center;gap:8px}
+.animation-pass-word .animation-pass-speeds button[aria-pressed=true]{background:#0866ff;color:white}
+.animation-pass-word .animation-pass-track{position:relative;overflow:hidden;min-width:0;min-height:0;contain:paint}
+.animation-pass-word .animation-pass-track>p{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;font-size:18px}
+.animation-pass-word .animation-pass-moving{position:absolute;left:0;top:50%;display:block;white-space:nowrap;font:700 clamp(38px,5cqw,64px)/1.2 Andika,sans-serif;visibility:hidden;transform:translate(-100%,-50%)}
+.animation-pass-word[data-phase=running] .animation-pass-moving{visibility:visible}
+.animation-pass-word[data-phase=answer] .animation-pass-moving{visibility:visible;left:50%;transform:translate(-50%,-50%);max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:center}
+.animation-pass-word .animation-pass-footer{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.animation-pass-word .animation-pass-navigation{display:flex;align-items:center;gap:8px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.animation-pass-word button:disabled{opacity:.4;cursor:default}

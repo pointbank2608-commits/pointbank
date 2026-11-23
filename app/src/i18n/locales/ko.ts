@@ -21,6 +21,7 @@ import { workbookKo } from '../workbookLocales';
 import { grammarSheetsKo } from '../grammarSheetsLocales';
 import { phonicsCourseKo } from '../phonicsCourseLocales';
 const ko = {
+  animationPass: {fast:'빠르게',normal:'보통',slow:'느리게',speed:'단어 이동 속도',track:'단어 이동 영역',waiting:'속도 버튼을 누르면 단어가 지나가요.',previous:'이전 단어',next:'다음 단어',answer:'정답 보기',empty:'선택한 단어가 없어요. 수업 준비에서 단어를 선택해 주세요.'},
   prelaunchUx: { script: '스크립트 보기·수정', viewLesson: '수업 보기', wheelLegend: '전체 {{count}}개 · 목록을 내려 확인하세요' },
   stem:stemKo,
   videoUi:videoUiKo,
