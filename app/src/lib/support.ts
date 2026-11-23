@@ -80,7 +80,7 @@ export async function fetchMyTickets(): Promise<SupportTicket[]> {
 }
 
 export async function fetchTicketMessages(ticketId: string): Promise<SupportMessage[]> {
-  const { data, error } = await supabase.from('support_messages').select('*').eq('ticket_id', ticketId).order('created_at');
+  const { data, error } = await supabase.from('support_messages').select('*').eq('ticket_id', ticketId).order('created_at').order('id');
   if (error) throw error;
   return (data ?? []) as SupportMessage[];
 }

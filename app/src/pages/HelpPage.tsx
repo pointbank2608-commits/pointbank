@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useNotices } from '../components/NoticeCenter';
+import { AdminAiReplyDraft } from '../components/admin/AdminAi';
 import { FAQ, FAQ_CATEGORIES, type FaqCategory, type FaqItem } from '../data/faq';
 import { suggestFaq } from '../lib/ticketMatch';
 import {
@@ -321,12 +322,15 @@ function TicketForm({ onDone, faqs }: { onDone: (tk: SupportTicket | null) => vo
 
 /** 문의 한 건의 대화(선생님·관리자 화면이 같이 쓴다) */
 export function TicketThread({ ticket, onBack, side = 'user' }: { ticket: SupportTicket; onBack: () => void; side?: 'user' | 'admin' }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [messages, setMessages] = useState<SupportMessage[] | null>(null);
   const [reply, setReply] = useState('');
+  const [aiRevision, setAiRevision] = useState<string | null>(null);
+  const [replyError, setReplyError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState(ticket.status);
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const latest = messages?.at(-1);
 
   const load = () =>
     fetchTicketMessages(ticket.id).then(async (list) => {
@@ -350,11 +354,24 @@ export function TicketThread({ ticket, onBack, side = 'user' }: { ticket: Suppor
   async function send() {
     if (!reply.trim()) return;
     setBusy(true);
+    setReplyError(null);
     try {
+      if (aiRevision) {
+        const current = await fetchTicketMessages(ticket.id);
+        if (current.at(-1)?.id !== aiRevision) {
+          await load();
+          setAiRevision(null);
+          setReplyError(i18n.language.startsWith('en') ? 'The conversation changed. Review the new message before sending.' : '새 메시지가 있어요. 대화를 확인한 뒤 답변을 다시 검토해 주세요.');
+          return;
+        }
+      }
       await sendTicketMessage(ticket.id, side, reply.trim());
       setReply('');
+      setAiRevision(null);
       setStatus(side === 'admin' ? 'answered' : 'open');
       await load();
+    } catch {
+      setReplyError(i18n.language.startsWith('en') ? 'Could not complete the reply request. Check the conversation before retrying.' : '답변 처리를 완료하지 못했어요. 다시 시도하기 전에 대화를 확인해 주세요.');
     } finally {
       setBusy(false);
     }
@@ -403,6 +420,14 @@ export function TicketThread({ ticket, onBack, side = 'user' }: { ticket: Suppor
       </div>
       {status !== 'closed' || side === 'user' ? (
         <div className="space-y-2">
+          {side === 'admin' && latest?.sender === 'user' && (
+            <AdminAiReplyDraft ticketId={ticket.id} latestUserMessageId={latest.id}
+              canApply={!reply.trim() && !busy} onApply={(text) => {
+                setReply(text);
+                setAiRevision(latest.id);
+                setReplyError(null);
+              }} />
+          )}
           <textarea
             value={reply}
             onChange={(e) => setReply(e.target.value.slice(0, 4000))}
@@ -410,6 +435,7 @@ export function TicketThread({ ticket, onBack, side = 'user' }: { ticket: Suppor
             placeholder={side === 'admin' ? t('help.replyPlaceholderAdmin') : t('help.replyPlaceholder')}
             className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm outline-none focus:border-primary"
           />
+          {replyError && <p role="alert" className="text-sm text-error">{replyError}</p>}
           <button type="button" disabled={busy || !reply.trim()} onClick={() => void send()} className="rounded-full bg-primary px-5 py-2 font-label-md text-label-md text-on-primary disabled:opacity-40">
             {busy ? t('common.loading') : t('help.sendReply')}
           </button>

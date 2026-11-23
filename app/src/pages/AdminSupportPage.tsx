@@ -28,7 +28,7 @@ export default function AdminSupportPage() {
   const openId = params.get('ticket');
   const view = params.get('view') === 'review' ? 'review' : 'list';
 
-  if (openId) return <TicketDetail id={openId} onBack={() => setParams({})} />;
+  if (openId) return <TicketDetail key={openId} id={openId} onBack={() => setParams({})} />;
 
   return (
     <div className="space-y-5">

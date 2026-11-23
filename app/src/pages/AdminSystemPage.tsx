@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { Badge, DataState, PageHead, ReasonDialog } from '../components/admin/AdminUi';
 import { IssueStatusBadge, JobHealthBadge } from '../components/admin/labels';
+import { AdminAiErrorAnalysis, useAdminAiJobs } from '../components/admin/AdminAi';
 import {
   adminErrorGroups, adminIssueSet, adminJobSet, adminJobsStatus, adminLifecyclePreview, adminLifecycleRetry, adminLifecycleRun,
   adminLifecycleStop, errorText, fmtKst, fmtWait, useAdminQuery,
@@ -36,6 +37,8 @@ function ErrorsSection() {
   const [open, setOpen] = useState<string | null>(null);
   const [resolving, setResolving] = useState<ErrorGroup | null>(null);
   const groups = useAdminQuery(() => adminErrorGroups(hours), [hours]);
+  const ai = useAdminAiJobs('error');
+  const analyses = new Map(ai?.jobs.map((job) => [job.source_id, job]));
 
   return (
     <section id="errors" aria-labelledby="err-h" className="scroll-mt-4 space-y-3">
@@ -50,6 +53,7 @@ function ErrorsSection() {
         </div>
       </div>
       <p className="font-caption text-[13px] text-on-surface-variant">{t('adminV2.system.errorsDesc')}</p>
+      {ai?.unavailable && <p className="text-sm text-on-surface-variant">{lang.startsWith('en') ? 'AI analysis is unavailable.' : 'AI 분석을 불러올 수 없어요.'}</p>}
       <DataState state={groups} empty={t('adminV2.system.errorsEmpty')}>
         {(rows) => (
           <ul className="space-y-2">
@@ -84,6 +88,7 @@ function ErrorsSection() {
                       </div>
                     </div>
                   </div>
+                  <AdminAiErrorAnalysis job={analyses.get(g.fingerprint)} />
                   {open === g.fingerprint && <pre className="mt-3 max-h-56 overflow-auto rounded-lg bg-surface-container-low p-3 text-[12px]">{g.sample_stack ?? t('adminV2.system.noStack')}</pre>}
                 </li>
               );
