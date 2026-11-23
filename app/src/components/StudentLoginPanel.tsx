@@ -80,18 +80,6 @@ export default function StudentLoginPanel({ students }: { students: Student[] })
       {open && (
         <div className="space-y-4 border-t border-outline-variant/30 p-4">
           <div className="flex flex-wrap items-center gap-3">
-            <div>
-              <div className="font-caption text-caption text-on-surface-variant">{t('studentLogin.codeLabel')}</div>
-              <div className="font-mono text-2xl font-bold tracking-[0.2em] text-deep-navy">{code ?? '······'}</div>
-            </div>
-            <button
-              type="button"
-              disabled={!code}
-              onClick={() => void copy(code ?? '')}
-              className="rounded-full border border-primary px-3 py-1.5 font-label-md text-label-md text-primary hover:bg-primary/10 disabled:opacity-40"
-            >
-              {t('studentLogin.copyCode')}
-            </button>
             <button
               type="button"
               onClick={() => void copy(link)}
