@@ -12,7 +12,7 @@ import AccessibleDialog from '../AccessibleDialog';
 import HomeworkGamePicker, { WORD_HOMEWORK_GAMES } from '../homework/teacher/HomeworkGamePicker';
 import { gameItemFromCards, newDraft, SOLO_GAME_NAMES, validateItems, type HomeworkDraft, type SoloGame } from '../../lib/homework/blocks';
 import { assignDraft } from '../../lib/homework/blockApi';
-import { buildGuidedPractice } from '../../lib/homework/guided';
+import { buildGuidedPractice, CHECK_TYPES, type CheckType, type FinalCheck } from '../../lib/homework/guided';
 import { formatHomeworkDeadline, guidedDeadline } from '../../lib/homework/deadline';
 import { GoalSchedule, RangeSummary } from '../wordMemoryProject/ProjectPlan';
 import { addDays, kstToday, projectSchedule } from '../wordMemoryProject/model';
@@ -34,6 +34,11 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, a
   const homeworkOpen = useFeature('homework');
   const wmCards = useMemo(() => toWmCards(cards), [cards]);
   const [shortTerm, setShortTerm] = useState(allowShortTerm && wmCards.length < WM_MIN_WORDS);
+  const [minimum, setMinimum] = useState('1');
+  const [threshold, setThreshold] = useState('');
+  const [checkTypes, setCheckTypes] = useState<CheckType[]>([]);
+  const [checkCount, setCheckCount] = useState<FinalCheck['count']>(0);
+  const validRepeat = /^[1-9]\d{0,2}$/.test(minimum) && (threshold === '' || /^\d{1,2}$/.test(threshold));
   const shortRequest = useRef<{ key: string; id: string; draft: HomeworkDraft } | null>(null);
   const [shortReceipt, setShortReceipt] = useState<{ count: number; date: string } | null>(null);
   const analysis = useMemo(() => analyzeCards(wmCards, Infinity), [wmCards]);
@@ -55,7 +60,8 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, a
   }, [cards, wmCards]);
   const shortPlan = useMemo(() => shortTerm ? buildGuidedPractice(usableCards.map(card => ({
     id: card.id, kind: 'word', card: { ...card, word: card.word.trim(), meaning: card.meaning.trim() }, origins: [source.name],
-  })), [], 'memory', lang === 1) : null, [shortTerm, usableCards, source.name, lang]);
+  })), [], 'memory', lang === 1, checkTypes.length ? { types: checkTypes, count: checkCount } : null) : null,
+  [shortTerm, usableCards, source.name, lang, checkTypes, checkCount]);
   const gameItems = useMemo(() => {
     const items = new Map<SoloGame, NonNullable<ReturnType<typeof gameItemFromCards>>>();
     if (!prepareGames) return items;
@@ -126,7 +132,7 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, a
     ? [...new Set([...shortPlan.issues, ...validateItems([...shortPlan.items, ...bonusItems])])]
     : shortPlan?.issues ?? [];
   const canAssign = homeworkOpen && !busy && !result && !shortReceipt && classId && picked.size > 0 && (shortTerm
-    ? wmCards.length > 0 && !!dueDay && dueDay >= today && shortIssues.length === 0
+    ? wmCards.length > 0 && !!dueDay && dueDay >= today && shortIssues.length === 0 && validRepeat
     : analysis.issues.length === 0 && schedule.valid && validLimit);
 
   async function assign() {
@@ -137,10 +143,12 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, a
       const studentIds = [...picked].sort();
       const approvedTitle = title.trim() || source.name;
       if (shortPlan) {
-        const key = JSON.stringify([classId, approvedTitle, wmCards, studentIds, dueDay, selectedGames, lang]);
+        const shortRepeat = Number(minimum) > 1 || threshold !== ''
+          ? { minimum: Number(minimum), threshold: threshold === '' ? null : Number(threshold) } : undefined;
+        const key = JSON.stringify([classId, approvedTitle, wmCards, studentIds, dueDay, selectedGames, lang, shortRepeat, checkTypes, checkCount]);
         if (shortRequest.current?.key !== key) {
           shortRequest.current = { key, id: crypto.randomUUID(), draft: {
-            ...newDraft(), title: t('wordMemory.shortTerm') + ' · ' + approvedTitle, items: [...shortPlan.items, ...bonusItems],
+            ...newDraft(), shortRepeat, title: t('wordMemory.shortTerm') + ' · ' + approvedTitle, items: [...shortPlan.items, ...bonusItems],
           } };
         }
         const due = guidedDeadline(dueDay);
@@ -324,6 +332,36 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, a
                   <button type="button" className={field} onClick={() => setDueDay(sunday)}>{t('wordMemory.thisSunday')}</button>
                 </div>
                 <p>{t('wordMemory.shortPreview', { count: wmCards.length })}</p>
+                <fieldset className="space-y-2 rounded-xl border border-outline-variant p-4">
+                  <legend className="px-1 font-bold">{t('wordMemory.checkTypes')}</legend>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {(Object.keys(CHECK_TYPES) as CheckType[]).filter(type => type !== 'sentenceOrder').map(type => (
+                      <label key={type} className="flex min-h-10 items-center gap-2">
+                        <input type="checkbox" checked={checkTypes.includes(type)} onChange={e => setCheckTypes(e.target.checked
+                          ? [...checkTypes, type] : checkTypes.filter(selected => selected !== type))} />
+                        {CHECK_TYPES[type][lang]}
+                      </label>
+                    ))}
+                  </div>
+                  {checkTypes.length > 0 && <label>{t('wordMemory.checkCount')}
+                    <select className={field + ' ml-2'} value={checkCount} onChange={e => setCheckCount(Number(e.target.value) as FinalCheck['count'])}>
+                      {([5,10,15,0] as const).map(n => <option key={n} value={n}>{n || t('wordMemory.allQuestions')}</option>)}
+                    </select>
+                  </label>}
+                </fieldset>
+                <fieldset className="space-y-2 rounded-xl border border-outline-variant p-4">
+                  <legend className="px-1 font-bold">{t('wordMemory.repeatRules')}</legend>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label>{t('wordMemory.minimumRounds')}
+                      <input className={field + ' mt-1 block w-full'} type="number" min={1} max={999} step={1} value={minimum} onChange={e => setMinimum(e.target.value)} />
+                    </label>
+                    <label>{t('wordMemory.repeatThreshold')}
+                      <input className={field + ' mt-1 block w-full'} type="number" min={0} max={99} step={1} placeholder={t('wordMemory.noThreshold')} value={threshold} onChange={e => setThreshold(e.target.value)} />
+                    </label>
+                  </div>
+                  <p className="text-sm text-on-surface-variant">{t('wordMemory.repeatHelp')}</p>
+                  {!validRepeat && <p role="alert" className="text-error">{t('wordMemory.invalidRepeat')}</p>}
+                </fieldset>
                 {shortIssues.map(issue => <p key={issue} role="alert" className="text-error">{issue}</p>)}
               </section>
             ) : <>
@@ -374,7 +412,7 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, a
             </section>
 
             </>}
-            <details className="rounded-xl border border-outline-variant p-4">
+            <details key={shortTerm ? 'short' : 'project'} open={shortTerm || undefined} className="rounded-xl border border-outline-variant p-4">
               <summary className="cursor-pointer font-bold text-primary">{t('wordMemory.optional')}</summary>
               {!shortTerm && <p className="mt-2 text-sm text-on-surface-variant">{t('wordMemory.projectGoalNote')}</p>}
               <div className="mt-3 grid gap-3 sm:grid-cols-3">

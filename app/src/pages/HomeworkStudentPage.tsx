@@ -14,6 +14,8 @@ import {
   forgetToken,
   HwError,
   hwFinish,
+  hwShortResume,
+  saveToken,
   hwOpenPersonal,
   hwOpenFromPortal,
   hwState,
@@ -76,7 +78,15 @@ export default function HomeworkStudentPage() {
     const saved = readToken(code);
     if (saved) {
       try {
-        await enter(saved);
+        try {
+          await enter(saved);
+        } catch (e) {
+          if (kindOf(e) !== 'not_found') throw e;
+          const next = await hwShortResume(saved);
+          if (!next) throw e;
+          saveToken(code, next);
+          await enter(next);
+        }
         return;
       } catch (e) {
         const k = kindOf(e);
@@ -120,6 +130,7 @@ export default function HomeworkStudentPage() {
       key={screen.token}
       token={screen.token}
       state={screen.state}
+      onNextRound={async next => { saveToken(code, next); await enter(next); }}
       onFatal={(kind) => setScreen({ k: 'error', kind, retry: kind === 'network' ? () => void start() : undefined })}
       onHome={savedToken() ? () => navigate('/s') : undefined}
     />
@@ -161,7 +172,8 @@ function ErrorScreen({ kind, onRetry, onHome }: { kind: HwErrorKind; onRetry?: (
 
 /* ---------- 푸는 화면 ---------- */
 
-function PlayScreen({ token, state, onFatal, onHome }: { token: string; state: HwStudentState; onFatal: (k: HwErrorKind) => void; onHome?: () => void }) {
+function PlayScreen({ token, state, onFatal, onHome, onNextRound }: { token: string; state: HwStudentState; onFatal: (k: HwErrorKind) => void; onHome?: () => void; onNextRound: (token: string) => Promise<void> }) {
+  const { t } = useTranslation();
   const [saveState, setSaveState] = useState<SaveState>(() => (pendingCount(token) ? 'offline' : 'saved'));
   const finishedRef = useRef(state.finished);
 
@@ -240,7 +252,11 @@ function PlayScreen({ token, state, onFatal, onHome }: { token: string; state: H
       finish: async () => {
         setSaveState('saving');
         try {
-          const r = await hwFinish(token);
+          const r = await hwFinish(token, !!state.shortRepeat);
+          if ('next_token' in r) {
+            await onNextRound(r.next_token);
+            return { nextRound: true };
+          }
           finishedRef.current = true;
           setSaveState('saved');
           const s = await hwState(token).catch(() => null);
@@ -254,7 +270,7 @@ function PlayScreen({ token, state, onFatal, onHome }: { token: string; state: H
         }
       },
     }),
-    [token, run, onFatal, state.sensor_runs],
+    [token, run, onFatal, onNextRound, state.shortRepeat, state.sensor_runs],
   );
 
   return (
@@ -262,6 +278,11 @@ function PlayScreen({ token, state, onFatal, onHome }: { token: string; state: H
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
         <div className="px-4 pt-3">
           <ClassNoticeBanner load={() => hwNotice(token)} />
+          {state.shortRepeat && <aside className="rounded-xl bg-white p-3 text-center">
+            <strong>{t('wordMemory.roundStatus', state.shortRepeat)}</strong>
+            {state.shortRepeat.threshold !== null && <p>{t('wordMemory.passAbove', { threshold: state.shortRepeat.threshold })}</p>}
+            {state.shortRepeat.lastScore !== null && <p>{t('wordMemory.lastRoundScore', { score: state.shortRepeat.lastScore, total: state.shortRepeat.lastTotal })}</p>}
+          </aside>}
         </div>
         <HomeworkRunner
           title={state.title}

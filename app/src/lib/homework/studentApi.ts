@@ -190,8 +190,10 @@ export const pendingCount = (token: string) => readQueue(token).length;
 /** 아직 못 보낸 답(이어 풀기 때 "이미 낸 답"으로 친다) */
 export const pendingOps = (token: string) => readQueue(token);
 
-export async function hwFinish(token: string): Promise<{ score: number; total: number }> {
+export const hwShortResume = (token: string) => rpc<string | null>('hw_short_resume', { p_token: token });
+
+export async function hwFinish(token: string, shortRepeat = false) {
   const f = await flush(token);
   if (!f.ok) throw f.error ?? new HwError('network');
-  return rpc<{ score: number; total: number }>('hw_finish', { p_token: token });
+  return rpc<{ score: number; total: number } | { next_token: string }>(shortRepeat ? 'hw_short_finish' : 'hw_finish', { p_token: token });
 }

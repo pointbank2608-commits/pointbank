@@ -135,6 +135,7 @@ export interface HwServerItemAttempt {
 }
 
 export interface HwStudentState {
+  shortRepeat?: { round: number; minimum: number; threshold: number | null; lastScore: number | null; lastTotal: number | null };
   sensor_runs?: Record<string, string>;
   title: string;
   name: string;

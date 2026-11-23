@@ -427,6 +427,49 @@ try {
       lesson.updated_at,
     );
   });
+  await test("short memory persists rounds, enforces minimum and inclusive accuracy, and finishes once", async () => {
+    await db.exec(readFileSync(resolve(sqlRoot, "144_short_memory_rounds.sql"), "utf8"));
+    const recall = blocks.newBlock('recall');
+    recall.content.questions = Array.from({length:5}, (_,i) => ({
+      id:String(i), qtype:'text', style:'spell', prompt:'뜻 '+i, correct:'road', word:'road',
+    }));
+    const make = (minimum, threshold) => `select hw_assign_short('${c}',${json({...blocks.newDraft(),title:'Rounds',items:[recall],shortRepeat:{minimum,threshold}})},array['${student}'::uuid],null,'${crypto.randomUUID()}') v`;
+    await rejects(make(2,100), /invalid_repeat_policy/);
+    const create = make(2,80);
+    const assigned = await value(create);
+    assert.deepEqual(await value(create), assigned);
+    const item = await value(`select id v from homework_items where assignment_id='${assigned.id}'`);
+    let key = await value(`insert into homework_attempts(assignment_id,student_id) values('${assigned.id}','${student}') returning token v`);
+    const firstKey = key;
+    for (const [index,hits] of [5,4,5].entries()) {
+      const state = await value(`select hw_state('${key}') v`);
+      assert.equal(state.shortRepeat.round,index+1);
+      assert.equal(state.shortRepeat.lastScore,[null,5,4][index]);
+      assert.equal(state.finished,false);
+      assert.deepEqual(state.answers,[]);
+      await rejects(`select hw_finish('${key}')`,/incomplete/);
+      await rejects(`select hw_short_finish('${key}')`,/incomplete/);
+      for (let question=0; question<5; question++) {
+        await db.query(`select hw_submit('${key}','${item}',${question},'${question<hits?'road':'no'}','${crypto.randomUUID()}',1)`);
+        if(question===0) assert.equal((await value(`select hw_state('${key}') v`)).answers.length,1);
+      }
+      await db.query(`select hw_progress('${key}','${item}','item_complete','{}','${crypto.randomUUID()}')`);
+      const finish = `select hw_short_finish('${key}') v`;
+      const receipt = await value(finish);
+      assert.deepEqual(await value(finish),receipt);
+      if (index<2) {
+        assert.equal(await value(`select hw_short_resume('${key}') v`),receipt.next_token);
+        await rejects(`select hw_submit('${key}','${item}',0,'road','${crypto.randomUUID()}',1)`,/not_found/);
+        key=receipt.next_token;
+      } else assert.deepEqual(receipt,{score:5,total:5});
+    }
+    assert.equal(await value(`select hw_short_resume('${firstKey}') v`),key);
+    assert.equal((await value(`select hw_state('${key}') v`)).finished,true);
+    const count = type => value(`select count(*)::int v from learning_events where assignment_id='${assigned.id}' and event_type='${type}'`);
+    assert.equal(await count('answer'),5);
+    assert.equal(await count('retry_answer'),10);
+    assert.equal(await count('assignment_complete'),1);
+  });
   await test("manual rollback compiles and retains draft/submission data", async () => {
     await db.exec(
       readFileSync(

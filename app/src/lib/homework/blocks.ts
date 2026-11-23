@@ -68,6 +68,7 @@ export interface HomeworkBlock {
   };
 }
 export interface HomeworkDraft {
+  shortRepeat?: { minimum: number; threshold: number | null };
   assignment?: { students: string[] | null; due: string };
   id: string;
   revision: number;

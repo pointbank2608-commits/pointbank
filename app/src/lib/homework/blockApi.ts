@@ -19,7 +19,7 @@ export const assignDraft = (
   due: string,
   request: string,
 ) =>
-  rpc<{ id: string; code: string }>("hw_assign_draft", {
+  rpc<{ id: string; code: string }>(draft.shortRepeat ? "hw_assign_short" : "hw_assign_draft", {
     p_class: classId,
     p_draft: draft,
     p_students: studentIds,

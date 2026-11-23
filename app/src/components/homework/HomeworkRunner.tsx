@@ -125,6 +125,7 @@ export default function HomeworkRunner({
     setPhase({ k: 'finishing' });
     try {
       const r = await api.finish();
+      if ('nextRound' in r) return;
       if (r.answers) setAnswers(r.answers);
       playSfx(SFX_FINISH);
       setPhase({ k: 'done', score: r.score, total: r.total });

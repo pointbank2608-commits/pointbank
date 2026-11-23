@@ -25,7 +25,7 @@ export interface RunnerApi {
   /** 철자 힌트 요청(안내형 철자 문제). level 0=현재 상태 조회 */
   spellingHint?: (itemId: string, qIndex: number, level: HintLevel) => Promise<SpellingHint>;
   /** 끝내기. answers 가 오면(서버가 다시 채점한 결과) 결과 화면이 그걸 쓴다 */
-  finish: () => Promise<{ score: number; total: number; answers?: Map<string, AnswerResult> }>;
+  finish: () => Promise<{ score: number; total: number; answers?: Map<string, AnswerResult> } | { nextRound: true }>;
 }
 
 export type SaveState = 'saved' | 'saving' | 'offline' | 'error';
