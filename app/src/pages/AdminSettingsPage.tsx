@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { changeMyPassword } from '../lib/api';
 import { errorText, useAdminQuery, type TicketPriority } from '../lib/adminOps';
 import AdminBrandPage from './AdminBrandPage';
+import AdminAuthActivity from '../components/admin/AdminAuthActivity';
 import { loadSla, saveSla, type SlaHours } from './AdminSupportPage';
 
 const DEFAULT_SLA: SlaHours = { urgent: 2, high: 8, normal: 24, low: 72 };
@@ -18,6 +19,7 @@ export default function AdminSettingsPage() {
     <div className="space-y-8">
       <PageHead title={t('adminV2.settings.title')} desc={t('adminV2.settings.desc')} />
       <AccountSection />
+      <AdminAuthActivity />
       <SlaSection />
       <section aria-labelledby="set-test" className="space-y-2 rounded-xl border border-outline-variant bg-white p-5 shadow-card">
         <h2 id="set-test" className="font-title-md text-[18px] font-extrabold text-deep-navy">{t('adminV2.settings.testTitle')}</h2>
