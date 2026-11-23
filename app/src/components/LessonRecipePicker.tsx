@@ -7,7 +7,7 @@ import { LESSON_RECIPES, type LessonRecipe, type RecipeContext } from '../lib/le
 import { findSetClip, LESSON_SETS, lessonSetDesc, lessonSetName, pickSetWords, type LessonSet } from '../lib/lessonSets';
 import { loadWordBank } from '../lib/wordBankCache';
 import type { LessonSlide } from '../lib/types';
-import { GrammarPickerPanel } from './LessonSlideSorter';
+import GrammarPickerPanel from './GrammarPickerPanel';
 import CurriculumGrammarSets from './CurriculumGrammarSets';
 import CurriculumWordSets from './CurriculumWordSets';
 import { setToCards } from '../lib/curriculumWords';

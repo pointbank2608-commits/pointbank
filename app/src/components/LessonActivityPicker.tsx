@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import GrammarPickerPanel from './GrammarPickerPanel';
 import AccessibleDialog from './AccessibleDialog';
 import { GROUP_ACTIVITIES, activityCategory, readRecentActivities, type ActivityCategory } from '../lib/lessonActivities';
 import { BoardThemeChips } from './CanvasSlideEditor';
@@ -21,8 +22,8 @@ import LessonWorksheetChooser from './worksheets/LessonWorksheetChooser';
 import type { BlockDef } from '../lib/blocks/types';
 import '../styles/lesson-activity-picker.css';
 
-const CATEGORIES:ActivityCategory[]=['recent','learn','games','media','print','free'];
-const ICONS=['history','menu_book','sports_esports','perm_media','description','edit_square'];
+const CATEGORIES:ActivityCategory[]=['recent','learn','grammar','games','media','print','free'];
+const ICONS=['history','menu_book','rule','sports_esports','perm_media','description','edit_square'];
 const INFO:Record<string,string>={'helper.textbox':'infoTextbox','helper.picture':'infoPicture','helper.annotation':'infoAnnotation','helper.points':'infoPoints'};
 const ALIASES:Record<string,string>={
  'learn.shadow':'따라 말하기 쉐도잉 shadowing speak repeat', 'media.video':'유튜브 링크 youtube video 영상',
@@ -57,7 +58,8 @@ function isWorkbook(block: BlockDef) {
   return !!materialId && !!(workbookOfMaterial(materialId) || workbookStep(materialId));
 }
 
-export default function LessonActivityPicker({onPick,onVideo,onPdf,onPowerPoint,onStem,onBundle,onClose,canAttachHelper,storageKey,cards,gameSources,slides,replaceTargetId,insertAfterId,selected,sourceName,entries,lessonName,academyId}:{
+export default function LessonActivityPicker({onPick,onGrammarPick,onVideo,onPdf,onPowerPoint,onStem,onBundle,onClose,canAttachHelper,storageKey,cards,gameSources,slides,replaceTargetId,insertAfterId,selected,sourceName,entries,lessonName,academyId}:{
+ onGrammarPick:(grammarId:string)=>void;
  onPick:(b:BlockDef,layout?:CanvasExample,theme?:string|null, worksheet?:ActivityWorksheetOptions)=>void;onBundle:()=>void;onClose:()=>void;canAttachHelper:boolean;storageKey:string;
  cards:FullCardItem[];gameSources:ReturnType<typeof lessonGameSources>;slides:LessonSlide[];replaceTargetId:string|null;insertAfterId?:string|null;
  selected:LessonSlide|null;sourceName:string;entries:PhonicsBankEntry[];lessonName:string;
@@ -116,6 +118,8 @@ export default function LessonActivityPicker({onPick,onVideo,onPdf,onPowerPoint,
  useEffect(()=>{if(listRef.current)listRef.current.scrollTop=0;},[cat,query,previewId]);
  const recent=useMemo(()=>readRecentActivities(storageKey).filter(id=>id==='wordset'||activities.some(b=>b.id===id)),[storageKey]);
  const name=(b:BlockDef)=>b.id==='learn.shadow'?t('lessonUx.shadow'):b.nameKey?t(b.nameKey):b.name?.[ko?'ko':'en']??b.id;
+ const grammarOpen = cat === 'grammar';
+ const searchLabel = t(grammarOpen ? 'grammar.searchPlaceholder' : 'lessonUx.search');
  const q=query.trim().toLocaleLowerCase();
  const defaults=['learn.wordShow','learn.study','learn.shadow','practice.quiz','game.matchup','media.video','free.canvas','learn.stem'];
  const ids=recent.length?recent:defaults;
@@ -124,7 +128,7 @@ export default function LessonActivityPicker({onPick,onVideo,onPdf,onPowerPoint,
   cat==='games'?gameCards.filter(block=>gameGroup==='all'||belongsToGameGroup(block,gameGroup)):
   cat==='print'?printSections.flatMap(section=>section.blocks):activities.filter(b=>activityCategory(b)===cat);
  const bundleShown=!q||`${t('lessonUx.bundle')} 단어장으로 단어 수업 word lesson set bundle`.toLocaleLowerCase().includes(q);
- const choose=(b:BlockDef,layout?:CanvasExample)=>{if(locked.current)return;if(b.id==='media.ppt'){onPowerPoint?.();return;}if(b.id==='media.pdf'){pdfInput.current?.click();return;}if(b.slide?.kind==='stem'){setStemOpen(true);return;}if(b.slide?.materialId==='library'||(b.slide?.materialId==='worksheet'&&!b.id.startsWith('worksheet.'))){setWorksheetBlock(b);return;}locked.current=true;onPick(b,layout,theme);};
+ const choose=(b:BlockDef,layout?:CanvasExample)=>{if(locked.current)return;if(b.slide?.kind==='grammar'){setCat('grammar');setQuery('');setPreview(null);return;}if(b.id==='media.ppt'){onPowerPoint?.();return;}if(b.id==='media.pdf'){pdfInput.current?.click();return;}if(b.slide?.kind==='stem'){setStemOpen(true);return;}if(b.slide?.materialId==='library'||(b.slide?.materialId==='worksheet'&&!b.id.startsWith('worksheet.'))){setWorksheetBlock(b);return;}locked.current=true;onPick(b,layout,theme);};
  const canvasTitle = lessonName.trim() || t('lessonUx.sampleTitle');
  const selectedName = sourceName || t('lessonUx.linked');
  const after = insertAfterId ? slides.findIndex(slide => slide.id === insertAfterId) : -1;
@@ -172,12 +176,20 @@ export default function LessonActivityPicker({onPick,onVideo,onPdf,onPowerPoint,
  return <AccessibleDialog label={t('lessonUx.add')} onClose={pdfBusy ? () => {} : worksheetBlock ? ()=>setWorksheetBlock(null) : stemPreview ? ()=>setStemPreview(null) : stemOpen ? ()=>setStemOpen(false) : preview ? closePreview : onClose}>
   <div className="lesson-activity-picker">
    <header><div><h2>{t('lessonUx.add')}</h2><button type="button" disabled={pdfBusy} onClick={onClose} aria-label={t('lessonUx.close')}><span className="material-symbols-outlined" aria-hidden>close</span></button></div>
-    <label className="activity-search"><span className="material-symbols-outlined" aria-hidden>search</span><input autoFocus value={query} onChange={e=>{setQuery(e.target.value);setPreview(null);setStemOpen(false);setStemPreview(null);}} placeholder={t('lessonUx.search')} aria-label={t('lessonUx.search')}/></label>
+    <label className="activity-search"><span className="material-symbols-outlined" aria-hidden>search</span><input autoFocus value={query} onChange={e=>{setQuery(e.target.value);setPreview(null);setStemOpen(false);setStemPreview(null);}} placeholder={searchLabel} aria-label={searchLabel}/></label>
     {cards.length > 0 && <p className="activity-source"><span className="material-symbols-outlined" aria-hidden>menu_book</span>{selectedName} · {t(gameSources.kind === 'sentence' ? 'lessonUx.sentenceCount' : 'curriculum.slides.previewWordCount', { count: cards.length })}</p>}
    </header>
    <div className="activity-body">
-    <nav aria-label={t('lessonUx.add')}>{CATEGORIES.map((c,i)=><button key={c} type="button" aria-pressed={cat===c&&!q} onClick={()=>{if(cat!==c)setGameGroup('all');setCat(c);setQuery('');setPreview(null);setStemOpen(false);setStemPreview(null);}}><span className="material-symbols-outlined" aria-hidden>{ICONS[i]}</span>{t('lessonUx.'+c)}</button>)}</nav>
+    <nav aria-label={t('lessonUx.add')}>{CATEGORIES.map((c,i)=><button key={c} type="button" aria-pressed={cat===c&&(!q||grammarOpen)} onClick={()=>{if(cat!==c)setGameGroup('all');setCat(c);setQuery('');setPreview(null);setStemOpen(false);setStemPreview(null);}}><span className="material-symbols-outlined" aria-hidden>{ICONS[i]}</span>{t('lessonUx.'+c)}</button>)}</nav>
     <section ref={listRef} className="activity-list" tabIndex={0} aria-label={t('lessonUx.chooseActivity')}>
+     {grammarOpen ? <>
+       <h3>{t('lessonUx.grammar')}</h3>
+       <GrammarPickerPanel searchQuery={query} onPick={grammarId => {
+         if (locked.current) return;
+         locked.current = true;
+         onGrammarPick(grammarId);
+       }} />
+     </> : <>
      <h3>{t('lessonUx.'+(q?'results':cat==='recent'&&!recent.length?'defaults':cat))}</h3>
      <p className="activity-caption">{t(q?'lessonUx.allSearch':'lessonUx.chooseActivity')}</p>
      {pdfBusy && <p role="status">{t('lessonUx.pdfUploading')}</p>}
@@ -275,9 +287,10 @@ export default function LessonActivityPicker({onPick,onVideo,onPdf,onPowerPoint,
          : selected)}
      </div>}
      {!preview&&!stemOpen&&!worksheetBlock&&((q&&bundleShown)||(!q&&cat==='recent'&&recent.includes('wordset')))&&<button type="button" className="activity-bundle" onClick={()=>{if(!locked.current){locked.current=true;onBundle();}}}>{t('lessonUx.bundle')} · {t('lessonUx.bundleCount')}</button>}
+     </>}
     </section>
    </div>
-   <footer><span className="material-symbols-outlined" aria-hidden>stacks</span><div><strong>{t('lessonUx.bundle')}</strong><small>{t('lessonUx.bundleFlow')}</small></div><span>{t('lessonUx.bundleCount')}</span><button type="button" onClick={()=>{if(!locked.current){locked.current=true;onBundle();}}}>{t('lessonUx.configure')}</button></footer>
+   {!grammarOpen && <footer><span className="material-symbols-outlined" aria-hidden>stacks</span><div><strong>{t('lessonUx.bundle')}</strong><small>{t('lessonUx.bundleFlow')}</small></div><span>{t('lessonUx.bundleCount')}</span><button type="button" onClick={()=>{if(!locked.current){locked.current=true;onBundle();}}}>{t('lessonUx.configure')}</button></footer>}
   </div>
  </AccessibleDialog>;
 }

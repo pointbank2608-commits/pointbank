@@ -1,7 +1,7 @@
 import { BLOCKS } from './blocks/registry';
 import type { BlockDef } from './blocks/types';
 
-export type ActivityCategory = 'recent'|'learn'|'games'|'media'|'print'|'free';
+export type ActivityCategory = 'recent'|'learn'|'grammar'|'games'|'media'|'print'|'free';
 const LEARN_ORDER=['learn.wordShow','learn.study','learn.shadow','learn.reading.cloze','learn.qna','learn.reading.lines','learn.grammar','learn.drill','learn.rainbow.speak','learn.rainbow.structure','learn.stem','learn.attendance'];
 export const GROUP_ACTIVITIES=BLOCKS.filter(b=>b.uses.includes('group')&&b.status==='ready').sort((a,b)=>a.category==='learn'&&b.category==='learn'?LEARN_ORDER.indexOf(a.id)-LEARN_ORDER.indexOf(b.id):0);
 export const activityCategory=(b:BlockDef):ActivityCategory=>['learn.shadow','learn.reading.cloze'].includes(b.id)?'media':b.category==='game'||b.category==='practice'?'games':b.category==='helper'?'free':b.category as ActivityCategory;

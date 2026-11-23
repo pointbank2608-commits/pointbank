@@ -40,6 +40,7 @@ import { isSentenceList, prepareClassroomGame } from '../lib/gameWorkspace';
 import { enrichCards, loadWordBank, useWordBankEnriched } from '../lib/wordBankCache';
 import SlideHelpersEditor from './SlideHelpersEditor';
 import BlockOptionsPanel from './BlockOptionsPanel';
+import GrammarPickerPanel from './GrammarPickerPanel';
 import LessonActivityPicker, { printSections, worksheetCards, type ActivityWorksheetOptions } from './LessonActivityPicker';
 import GameWorkspace from './GameWorkspace';
 import { rememberActivity } from '../lib/lessonActivities';
@@ -87,7 +88,7 @@ import { generateShadowScript } from '../lib/api';
 import ReadingBoard from './ReadingBoard';
 import { parseReadingText, transcriptClozeSource } from '../lib/readingLines';
 import GrammarExplainCard from './GrammarExplainCard';
-import { buildWordListSentences, GRAMMAR_LEVELS_BY_STAGE, GRAMMAR_POINTS, GRAMMAR_STAGES, grammarLevelTag, grammarPoint, sentencesForUnscramble, useGrammarCards, type GrammarStage } from '../lib/grammar';
+import { buildWordListSentences, GRAMMAR_LEVELS_BY_STAGE, GRAMMAR_POINTS, GRAMMAR_STAGES, grammarPoint, sentencesForUnscramble, useGrammarCards } from '../lib/grammar';
 import { GAME_PAGES } from '../lib/gamePages';
 import CanvasSlideEditor, { BoardThemeChips } from './CanvasSlideEditor';
 import CanvasSlideView from './CanvasSlideView';
@@ -541,7 +542,11 @@ export default function LessonSlideSorter({
       onPowerPoint={()=>{setPickerOpen(false);setAddMode(null);setPowerPoint({afterId:insertAfterId??selected?.id??null});}}
       onPdf={asset=>{if(!inputSession.active)return;pendingActivity.current='media.pdf';addSlide({id:uid(),kind:'pdf',...asset});setPickerOpen(false);setAddMode(null);}}
       onVideo={(block,source)=>{pendingActivity.current=block.id;setPickerOpen(false);setVideoActivity({block,source});}}
-      onPick={pickBlock} onBundle={()=>{pendingActivity.current='wordset';setPickerOpen(false);setAddMode('wordset');}}/>}
+      onPick={pickBlock} onGrammarPick={grammarId => {
+        setPickerOpen(false);
+        pendingActivity.current = 'learn.grammar';
+        addSlide({ id: uid(), kind: 'grammar', grammarId, useWordList: cards.length > 0, boardTheme: 'green' });
+      }} onBundle={()=>{pendingActivity.current='wordset';setPickerOpen(false);setAddMode('wordset');}}/>}
 
     {videoActivity&&<VideoActivitySetup shadow={videoActivity.block.id==='learn.shadow'} source={videoActivity.source} onClose={()=>{setVideoActivity(null);setInsertAfterId(null);pendingActivity.current=null;}} onAdd={draft=>{if(!inputSession.active)return;if(placeSlides([{...draft,id:uid()}])){setVideoActivity(null);setAddMode(null);}}}/>}
     {powerPoint && <LessonPowerPointImport academyId={academyId} onClose={() => setPowerPoint(null)} onInsert={made => {
@@ -2160,79 +2165,6 @@ function ShadowSlideForm({ initial, onAdd, onChange }: { initial?: ShadowDraft; 
           {t('curriculum.study.addButton')}
         </button>
       )}
-    </div>
-  );
-}
-
-/** 문법 고르기(슬라이드 추가 패널) — 레벨 칩 + 목록, 누르면 바로 슬라이드가 된다. */
-export function GrammarPickerPanel({ onPick }: { onPick: (grammarId: string) => void }) {
-  const { t } = useTranslation();
-  const [stage, setStage] = useState<GrammarStage>('elementary');
-  const [level, setLevel] = useState<number>(1);
-  const [query, setQuery] = useState('');
-  const q = query.trim().toLowerCase();
-  // 검색어가 있으면 과정·레벨과 상관없이 전체 127개에서 찾는다.
-  const list = q
-    ? GRAMMAR_POINTS.filter((g) => g.name.toLowerCase().includes(q) || g.pattern.toLowerCase().includes(q) || g.explain.includes(q))
-    : GRAMMAR_POINTS.filter((g) => g.level === level);
-  return (
-    <div className="space-y-3">
-      <p className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.grammarSlide.addIntro')}</p>
-      <input
-        type="search"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder={t('grammar.searchPlaceholder')}
-        className="w-full max-w-sm rounded-full border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-      />
-      <div className={`flex flex-wrap gap-1.5 ${q ? 'hidden' : ''}`}>
-        {GRAMMAR_STAGES.map((st) => (
-          <button
-            key={st}
-            type="button"
-            onClick={() => {
-              setStage(st);
-              setLevel(GRAMMAR_LEVELS_BY_STAGE[st][0]);
-            }}
-            className={`rounded-lg border px-3 py-1.5 font-label-md text-label-md ${
-              stage === st ? 'border-primary bg-primary-fixed text-primary' : 'border-outline-variant text-on-surface-variant'
-            }`}
-          >
-            {t(`grammar.stage_${st}`)}
-          </button>
-        ))}
-      </div>
-      <div className={`flex flex-wrap gap-1.5 ${!q && GRAMMAR_LEVELS_BY_STAGE[stage].length > 1 ? '' : 'hidden'}`}>
-        {GRAMMAR_LEVELS_BY_STAGE[stage].map((lv) => (
-          <button
-            key={lv}
-            type="button"
-            onClick={() => setLevel(lv)}
-            className={`rounded-full px-3 py-1.5 font-label-md text-label-md transition-colors ${
-              level === lv ? 'bg-primary text-on-primary' : 'bg-surface-container-low text-on-surface-variant'
-            }`}
-          >
-            {stage === 'elementary' ? `Lv.${lv} ${t(`grammar.level${lv}`)}` : t(`grammar.level${lv}`)}
-          </button>
-        ))}
-      </div>
-      <div className="grid max-h-[360px] grid-cols-1 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
-        {list.length === 0 && <p className="font-caption text-caption text-on-surface-variant">{t('grammar.noResults')}</p>}
-        {list.map((g) => (
-          <button
-            key={g.id}
-            type="button"
-            onClick={() => onPick(g.id)}
-            className="rounded-lg border border-outline-variant/60 bg-surface-container-lowest px-3 py-2 text-left transition-colors hover:border-primary hover:bg-secondary-container/30"
-          >
-            <div className="font-label-md text-label-md text-on-surface">{g.name}</div>
-            <div className="font-caption text-caption text-on-surface-variant">
-              {q ? `${t(`grammar.stage_${g.stage}`)} · ` : ''}
-              {grammarLevelTag(g)} · {g.pattern.replace(/\*\*/g, '')}
-            </div>
-          </button>
-        ))}
-      </div>
     </div>
   );
 }
