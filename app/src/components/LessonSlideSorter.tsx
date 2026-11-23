@@ -44,7 +44,7 @@ import GrammarPickerPanel from './GrammarPickerPanel';
 import LessonActivityPicker, { printSections, worksheetCards, type ActivityWorksheetOptions } from './LessonActivityPicker';
 import GameWorkspace from './GameWorkspace';
 import GrammarContentEditor from './GrammarContentEditor';
-import { saveMyGrammar } from '../lib/myGrammar';
+import { saveMyGrammar, type GrammarPreset } from '../lib/myGrammar';
 import LessonSlidePreview from './LessonSlidePreview';
 import { rememberActivity } from '../lib/lessonActivities';
 import { blockOfSlide } from '../lib/blocks/registry';
@@ -2221,6 +2221,13 @@ function GrammarSlideDetail({
   );
   const possible = useMemo(() => buildWordListSentences(point, cards, 1, 0).length > 0, [point, cards]);
 
+  async function saveGrammarCopy(content: GrammarPreset['content']) {
+    if (!profile) throw new Error('Missing account');
+    const { grammarId, useWordList, words, seed, boardTheme, showKo, revealAll } = slide;
+    await saveMyGrammar(academyId, profile.id, { grammarId, useWordList, words, seed, boardTheme, showKo, revealAll, content });
+    notify(t('myGrammar.saved'));
+  }
+
   async function addUnscrambleSlide() {
     if (!profile || creating) return;
     const sentences = sentencesForUnscramble(point, generated);
@@ -2266,13 +2273,11 @@ function GrammarSlideDetail({
         </div>
       </>}
       {contentMode && <GrammarContentEditor inline={contentMode === 'edit'} point={point} themeId={slide.boardTheme} onClose={() => setContentMode(null)}
+        onSaveCopy={contentMode === 'edit' ? saveGrammarCopy : undefined}
         saveLabel={t(contentMode === 'edit' ? 'myGrammar.apply' : 'myGrammar.save')}
         onSave={async content => {
           if (contentMode === 'library') {
-            if (!profile) throw new Error('Missing account');
-            const { grammarId, useWordList, words, seed, boardTheme, showKo, revealAll } = slide;
-            await saveMyGrammar(academyId, profile.id, { grammarId, useWordList, words, seed, boardTheme, showKo, revealAll, content });
-            notify(t('myGrammar.saved'));
+            await saveGrammarCopy(content);
           }
           onUpdate({ content });
         }} />}

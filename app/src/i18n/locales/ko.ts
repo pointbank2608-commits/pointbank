@@ -4053,6 +4053,7 @@ const ko = {
     formatHint: '한 줄에 카드 하나: 단서 | 정답 문장 | 해석(선택) — 지금 {{count}}장',
   },
   myGrammar: {
+    copyName: '저장할 이름', restoreOriginal: '원본으로 돌아가기',
     editHint: '한 번 눌러 범위를 선택하고, 두 번 누르거나 Enter를 눌러 글을 수정하세요.',
     title: '내 문법', catalog: '기본 문법', import: '내 문법에서 불러오기', base: '바탕이 될 문법',
     create: '문법 블록 만들기', edit: '문법 내용 수정', saveCopy: '내 문법에 사본 저장', save: '내 문법에 저장', apply: '이 슬라이드에 적용',

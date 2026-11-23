@@ -4056,6 +4056,7 @@ const en: Ko = {
     formatHint: 'One card per line: cue | answer sentence | Korean (optional). {{count}} cards now.',
   },
   myGrammar: {
+    copyName: 'Save as', restoreOriginal: 'Restore original',
     editHint: 'Click to select a text box. Double-click or press Enter to edit it.',
     title: 'My grammar', catalog: 'Grammar catalog', import: 'Load from My grammar', base: 'Starting grammar topic',
     create: 'Create grammar block', edit: 'Edit grammar content', saveCopy: 'Save a copy to My grammar', save: 'Save to My grammar', apply: 'Apply to this slide',
