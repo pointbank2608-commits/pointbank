@@ -7,7 +7,7 @@ import StemFrameView from './stem/StemFrameView';
 import { useTranslation } from 'react-i18next';
 import { lessonPhonicsTopic, phonicsSlideState } from '../lib/phonicsLessonGame';
 import { lessonSlideWords, ownLessonSlideWords } from '../lib/gameFromWords';
-import { buildWordListSentences, grammarPoint, useGrammarCards } from '../lib/grammar';
+import { buildWordListSentences, grammarSlidePoint, useGrammarCards } from '../lib/grammar';
 import { usePhonicsFilled } from '../lib/phonicsFill';
 import { useClipPack, useClipTakenDown, withFreshQuestionTimes } from '../lib/videoClips';
 import { extractYoutubeId } from '../lib/youtube';
@@ -45,6 +45,8 @@ export default function LessonSlideContent({
   grammarWordObservation,
   lessonSlides = [],
   phonicsObservation,
+  onCanvasAudio,
+  preview = false,
 }: {
   slide: LessonSlide;
   /** 수업 단어(카드로 외우기·단어 소개·문법 "우리 단어장 예문") */
@@ -58,6 +60,8 @@ export default function LessonSlideContent({
   grammarWordObservation?: { lessonId: string; position: number };
   lessonSlides?: LessonSlide[];
   phonicsObservation?: { lessonId: string; position: number };
+  onCanvasAudio?: () => void;
+  preview?: boolean;
 }) {
   const { t } = useTranslation();
   const runner=useOptionalLessonRunner()?.runner;
@@ -159,7 +163,7 @@ export default function LessonSlideContent({
       <div className={fill?boardBox:"h-[560px] w-full max-w-5xl"}>
         <ShadowBoard
           key={slide.id}
-          rememberKey={`lesson:${slide.id}`}
+          rememberKey={preview ? undefined : `lesson:${slide.id}`}
           source={slide.source}
           title={slide.title}
           videoUrl={student ? undefined : slide.videoUrl}
@@ -189,7 +193,7 @@ export default function LessonSlideContent({
   }
 
   if (slide.kind === 'grammar') {
-    const point = grammarPoint(slide.grammarId);
+    const point = grammarSlidePoint(slide);
     if (!point) return <div className="font-body-md text-body-md text-on-surface-variant">{t('curriculum.play.notFound')}</div>;
     const extra = slide.useWordList ? buildWordListSentences(point, grammarCards, 6, slide.seed ?? 0) : [];
     return (
@@ -261,7 +265,7 @@ export default function LessonSlideContent({
   if (slide.kind === 'canvas') {
     return (
       <div className={boardBox}>
-        <CanvasSlideView key={slide.id} slide={slide} play className="[&>div]:rounded-xl" />
+        <CanvasSlideView key={slide.id} slide={slide} play onAudio={onCanvasAudio} className="[&>div]:rounded-xl" />
       </div>
     );
   }
@@ -292,8 +296,8 @@ export default function LessonSlideContent({
     if (fill) {
       return (
         <div className="absolute inset-0 p-2 md:p-3">
-          <YoutubeShadowingPlayer source={slide.source??animationClip?.script} title={slide.title} rememberKey={`lesson:${slide.id}`} videoUrl={slide.videoUrl} fit start={slide.startSec} end={slide.endSec} />
-          {animationClip&&<div className="absolute right-4 top-16 z-10 rounded-lg bg-white px-3 py-2 text-deep-navy"><AnimationRecordingHomework clip={animationClip} classId={attendance?.classId}/></div>}
+          <YoutubeShadowingPlayer source={slide.source??animationClip?.script} title={slide.title} rememberKey={`${preview ? 'preview' : 'lesson'}:${slide.id}`} videoUrl={slide.videoUrl} fit start={slide.startSec} end={slide.endSec} />
+          {!preview && animationClip&&<div className="absolute right-4 top-16 z-10 rounded-lg bg-white px-3 py-2 text-deep-navy"><AnimationRecordingHomework clip={animationClip} classId={attendance?.classId}/></div>}
         </div>
       );
     }

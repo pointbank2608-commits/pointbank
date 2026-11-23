@@ -1,7 +1,7 @@
 import { buildGameContent, type GameContent } from './gameFromWords';
 import { guideProblem } from './gameGuide';
 import { classroomGameRequirement, isSentenceList, prepareClassroomGame } from './gameWorkspace';
-import { grammarPoint, sentencesForUnscramble } from './grammar';
+import { grammarSlidePoint, sentencesForUnscramble } from './grammar';
 import { grammarRuleContent, isGrammarRuleGame, lessonGrammarTopic } from './lessonGrammarGame';
 import { parseReadingText } from './readingLines';
 import { parseShadowText } from './shadowLines';
@@ -15,7 +15,7 @@ function slideSentences(slide: LessonSlide): Sentence[] {
   if (slide.kind === 'shadow') return parseShadowText(slide.source);
   if (slide.kind === 'drill') return [{ en: slide.sentence, ko: slide.sentenceKo }, ...slide.drills.map(d => ({ en: d.answer, ko: d.answerKo }))];
   if (slide.kind === 'grammar') {
-    const point = grammarPoint(slide.grammarId);
+    const point = grammarSlidePoint(slide);
     return point ? sentencesForUnscramble(point).map(en => ({ en })) : [];
   }
   return [];

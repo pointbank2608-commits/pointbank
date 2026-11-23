@@ -43,6 +43,9 @@ import BlockOptionsPanel from './BlockOptionsPanel';
 import GrammarPickerPanel from './GrammarPickerPanel';
 import LessonActivityPicker, { printSections, worksheetCards, type ActivityWorksheetOptions } from './LessonActivityPicker';
 import GameWorkspace from './GameWorkspace';
+import GrammarContentEditor from './GrammarContentEditor';
+import { saveMyGrammar } from '../lib/myGrammar';
+import LessonSlidePreview from './LessonSlidePreview';
 import { rememberActivity } from '../lib/lessonActivities';
 import { blockOfSlide } from '../lib/blocks/registry';
 import type { BlockDef } from '../lib/blocks/types';
@@ -88,7 +91,7 @@ import { generateShadowScript } from '../lib/api';
 import ReadingBoard from './ReadingBoard';
 import { parseReadingText, transcriptClozeSource } from '../lib/readingLines';
 import GrammarExplainCard from './GrammarExplainCard';
-import { buildWordListSentences, GRAMMAR_LEVELS_BY_STAGE, GRAMMAR_POINTS, GRAMMAR_STAGES, grammarPoint, sentencesForUnscramble, useGrammarCards } from '../lib/grammar';
+import { buildWordListSentences, GRAMMAR_LEVELS_BY_STAGE, GRAMMAR_POINTS, GRAMMAR_STAGES, grammarBoardContent, grammarSlidePoint, sentencesForUnscramble, useGrammarCards } from '../lib/grammar';
 import { GAME_PAGES } from '../lib/gamePages';
 import CanvasSlideEditor, { BoardThemeChips } from './CanvasSlideEditor';
 import CanvasSlideView from './CanvasSlideView';
@@ -166,6 +169,7 @@ function uid(): string {
 }
 
 interface Props {
+  sentenceList?: WordList;
   academyId: string;
   /** 이 수업을 하는 반 — 게임 내용(game_templates)을 이 반 기준으로 고르고 만든다. */
   classId: string | null;
@@ -189,6 +193,7 @@ type AddMode = 'library' | 'wordset' | null;
 /** 캔바 프레젠테이션 편집 화면처럼 — 왼쪽 세로 슬라이드 썸네일 레일(드래그로 순서 변경) +
  * 오른쪽 선택된 슬라이드 상세 패널. 이미지·유튜브·게임·수업 자료실 4종을 자유 순서로 섞어 배치한다. */
 export default function LessonSlideSorter({
+  sentenceList,
   academyId,
   classId,
   lessonName,
@@ -212,6 +217,7 @@ export default function LessonSlideSorter({
   const gameSources = useMemo(() => lessonGameSources(slides, wordList, gameCards), [slides, wordList, gameCards]);
   const gameMatches = useMemo(() => new Map(slides.flatMap(slide => slide.kind === 'game'
     ? [[slide.id, resolveLessonGame(slide, slides, gameSources)] as const] : [])), [slides, gameSources]);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(
     initialSelectedId && slides.some((s) => s.id === initialSelectedId) ? initialSelectedId : slides[0]?.id ?? null,
   );
@@ -542,10 +548,10 @@ export default function LessonSlideSorter({
       onPowerPoint={()=>{setPickerOpen(false);setAddMode(null);setPowerPoint({afterId:insertAfterId??selected?.id??null});}}
       onPdf={asset=>{if(!inputSession.active)return;pendingActivity.current='media.pdf';addSlide({id:uid(),kind:'pdf',...asset});setPickerOpen(false);setAddMode(null);}}
       onVideo={(block,source)=>{pendingActivity.current=block.id;setPickerOpen(false);setVideoActivity({block,source});}}
-      onPick={pickBlock} onGrammarPick={grammarId => {
+      onPick={pickBlock} onGrammarPick={(grammarId, preset) => {
         setPickerOpen(false);
         pendingActivity.current = 'learn.grammar';
-        addSlide({ id: uid(), kind: 'grammar', grammarId, useWordList: cards.length > 0, boardTheme: 'green' });
+        addSlide({ useWordList: preset ? !!preset.useWordList : cards.length > 0, boardTheme: 'green', ...preset, id: uid(), kind: 'grammar', grammarId });
       }} onBundle={()=>{pendingActivity.current='wordset';setPickerOpen(false);setAddMode('wordset');}}/>}
 
     {videoActivity&&<VideoActivitySetup shadow={videoActivity.block.id==='learn.shadow'} source={videoActivity.source} onClose={()=>{setVideoActivity(null);setInsertAfterId(null);pendingActivity.current=null;}} onAdd={draft=>{if(!inputSession.active)return;if(placeSlides([{...draft,id:uid()}])){setVideoActivity(null);setAddMode(null);}}}/>}
@@ -717,6 +723,11 @@ export default function LessonSlideSorter({
                 <span className="material-symbols-outlined text-[18px]">swap_horiz</span>
                 {t('curriculum.slides.replaceKind')}
               </button>
+              <button type="button" aria-haspopup="dialog" onClick={() => setPreviewOpen(true)}
+                className="flex items-center gap-1 rounded-full border border-primary px-4 py-1.5 font-label-md text-label-md text-primary hover:bg-primary-fixed">
+                <span aria-hidden="true" className="material-symbols-outlined text-[18px]">visibility</span>
+                {t('lessonUx.preview')}
+              </button>
               {onPresentFrom && (
                 <button
                   type="button"
@@ -729,7 +740,12 @@ export default function LessonSlideSorter({
                 </button>
               )}
             </div>
+            {previewOpen && <LessonSlidePreview key={`preview-${selected.id}`} slide={selected} lessonSlides={slides} title={slideThumbLabel(selected, t).label}
+              cards={cards} entries={phonicsEntries} gameMatch={gameMatches.get(selected.id)}
+              phonicsTopic={selected.kind === 'phonicsGame' ? lessonPhonicsTopic(slides, selected) : undefined}
+              academyId={academyId} classId={classId} onClose={() => setPreviewOpen(false)} />}
             <SlideDetail
+              sentenceList={sentenceList}
               key={selected.id}
               slide={selected}
               phonicsEntries={phonicsEntries}
@@ -798,7 +814,7 @@ function slideThumbLabel(slide: LessonSlide, t: TFunction): { icon: string; labe
   if (slide.kind === 'shadow') return { icon: 'record_voice_over', label: t(slide.roleTeams ? 'mediaV2.rolesLabel' : 'curriculum.slides.kindVideo') };
   if (slide.kind === 'reading')
     return { icon: slide.mode === 'cloze' ? 'hearing' : 'lyrics', label: t(slide.mode === 'cloze' ? 'curriculum.reading.mode_cloze' : 'curriculum.reading.defaultTitle') };
-  if (slide.kind === 'grammar') return { icon: 'rule', label: grammarPoint(slide.grammarId)?.name ?? t('curriculum.slides.kindGrammar') };
+  if (slide.kind === 'grammar') return { icon: 'rule', label: grammarSlidePoint(slide)?.name ?? t('curriculum.slides.kindGrammar') };
   if (slide.kind === 'canvas') {
     const firstText = slide.elements.find((el) => el.type === 'text' && el.text.trim());
     return {
@@ -913,9 +929,9 @@ function SlideThumb({
           : word ? <LessonWordThumbnail card={word} study={slide.kind === 'study'} />
           : slide.kind === 'stem' ? <StemFrameView frame={slide.frame} meta={slide.stemMeta} interactive={false}/> : slide.kind === 'canvas' ? (
           <CanvasSlideView slide={slide} className="pointer-events-none" />
-        ) : slide.kind === 'grammar' && grammarPoint(slide.grammarId) ? (
+        ) : slide.kind === 'grammar' && grammarSlidePoint(slide) ? (
           <GrammarBoard
-            point={grammarPoint(slide.grammarId)!}
+            point={grammarSlidePoint(slide)!}
             themeId={slide.boardTheme ?? 'green'}
             interactive={false}
             className="pointer-events-none"
@@ -972,6 +988,7 @@ function SlideThumb({
 }
 
 function SlideDetail({
+  sentenceList,
   phonicsEntries,
   slide,
   academyId,
@@ -992,6 +1009,7 @@ function SlideDetail({
 }: {
   phonicsEntries: PhonicsBankEntry[];
   slide: LessonSlide;
+  sentenceList?: WordList;
   academyId: string;
   classId: string | null;
   lessonName: string;
@@ -1181,6 +1199,7 @@ function SlideDetail({
   if (slide.kind === 'canvas') {
     return (
       <CanvasSlideEditor
+        sentenceList={sentenceList}
         slide={slide}
         academyId={academyId}
         cards={cards}
@@ -2194,7 +2213,8 @@ function GrammarSlideDetail({
   const { notify } = useToast();
   const [creating, setCreating] = useState(false);
   const cards = useGrammarCards(slide.words ?? rawCards);
-  const point = grammarPoint(slide.grammarId) ?? GRAMMAR_POINTS[0];
+  const point = useMemo(() => grammarSlidePoint(slide) ?? GRAMMAR_POINTS[0], [slide.grammarId, slide.content]);
+  const [contentMode, setContentMode] = useState<'edit' | 'library' | null>(null);
   const generated = useMemo(
     () => (slide.useWordList ? buildWordListSentences(point, cards, 6, slide.seed ?? 0) : []),
     [point, cards, slide.useWordList, slide.seed],
@@ -2234,11 +2254,26 @@ function GrammarSlideDetail({
           point={point}
           extra={generated}
           themeId={slide.boardTheme ?? 'green'}
-          interactive={false}
+          keyboard={false}
+          initialRevealAll={!!slide.revealAll}
           initialShowKo={!!slide.showKo}
         />
       </div>
-      <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.grammarSlide.previewHint')}</p>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className="rounded-lg border border-primary px-3 py-2 font-bold text-primary" onClick={() => setContentMode('edit')}>{t('myGrammar.edit')}</button>
+        <button type="button" className="rounded-lg border px-3 py-2 font-bold" onClick={() => setContentMode('library')}>{t('myGrammar.saveCopy')}</button>
+      </div>
+      {contentMode && <GrammarContentEditor initial={grammarBoardContent(point)} onClose={() => setContentMode(null)}
+        saveLabel={t(contentMode === 'edit' ? 'myGrammar.apply' : 'myGrammar.save')}
+        onSave={async content => {
+          if (contentMode === 'library') {
+            if (!profile) throw new Error('Missing account');
+            const { grammarId, useWordList, words, seed, boardTheme, showKo, revealAll } = slide;
+            await saveMyGrammar(academyId, profile.id, { grammarId, useWordList, words, seed, boardTheme, showKo, revealAll, content });
+            notify(t('myGrammar.saved'));
+          }
+          onUpdate({ content });
+        }} />}
       <div className="flex flex-wrap gap-x-5 gap-y-2 rounded-xl border border-outline-variant/50 bg-surface-container-low p-3">
         <div className="w-full font-label-md text-label-md text-on-surface">{t('curriculum.grammarSlide.startTitle')}</div>
         <label className="flex items-center gap-1.5 font-label-md text-label-md text-on-surface">
@@ -2261,7 +2296,7 @@ function GrammarSlideDetail({
       <div className="flex flex-wrap items-center gap-2">
         <select
           value={point.id}
-          onChange={(e) => onUpdate({ grammarId: e.target.value })}
+          onChange={(e) => onUpdate({ grammarId: e.target.value, content: undefined })}
           className="w-80 max-w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary"
         >
           {GRAMMAR_STAGES.flatMap((st) => GRAMMAR_LEVELS_BY_STAGE[st].map((lv) => ({ st, lv }))).map(({ st, lv }) => (

@@ -6,6 +6,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import WordListGameLauncher from '../components/WordListGameLauncher';
 import TextbookLibrary from '../components/TextbookLibrary';
 import AiMaterialsDialog, { type SavedAiMaterials } from '../components/AiMaterialsDialog';
+import MyGrammarLibrary from '../components/MyGrammarLibrary';
 import SentenceListEditor from '../components/SentenceListEditor';
 import { isFreeTierGame, GAME_CATALOG } from '../lib/gameCatalog';
 import { prepareClassroomGame } from '../lib/gameWorkspace';
@@ -508,6 +509,7 @@ export default function WordListsPage() {
   const location = useLocation();
   const [params, setParams] = useSearchParams();
   const textbooks = params.get('tab') === 'textbooks';
+  const myGrammar = params.get('tab') === 'grammar';
   const linkedList = params.get('list');
   const [materialFilter, setMaterialFilter] = useState<'all' | 'word' | 'sentence'>('all');
   const [aiDialog, setAiDialog] = useState<{ scope: string; mode: 'source' | 'topic' } | null>(null);
@@ -722,7 +724,7 @@ export default function WordListsPage() {
         {t('textbook.materials')}
       </h2>
             <div className="flex flex-wrap gap-2">
-              {!textbooks && academy?.id && profile?.id && <>
+              {!textbooks && !myGrammar && academy?.id && profile?.id && <>
                 <button type="button" onClick={() => setAiDialog({ scope: accountScope.current, mode: 'source' })}
                   className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 font-label-md text-label-md text-on-primary transition-colors hover:brightness-95">
                   <span className="material-symbols-outlined text-[18px]" aria-hidden="true">auto_awesome</span>
@@ -731,7 +733,7 @@ export default function WordListsPage() {
                 <button type="button" className="textbook-button"
                   onClick={() => setAiDialog({ scope: accountScope.current, mode: 'topic' })}>{t('aiMaterials.title')}</button>
               </>}
-              {!textbooks && (['word', 'sentence'] as const).map((kind) => (
+              {!textbooks && !myGrammar && (['word', 'sentence'] as const).map((kind) => (
                 <button
                   key={kind}
                   type="button"
@@ -765,10 +767,11 @@ export default function WordListsPage() {
         {savedTeaching.workbookPath && <Link className="textbook-button" to={savedTeaching.workbookPath}>{t('aiMaterials.workbook')}</Link>}
       </nav>}
       <div className="flex flex-wrap gap-2" aria-label={t('flow.materialFilter')}>
-        {(['all','word','sentence'] as const).map(kind => <button type="button" key={kind} className={`min-h-11 rounded-xl border px-4 font-bold ${!textbooks && materialFilter===kind?'bg-primary text-white':'bg-white text-deep-navy'}`} aria-pressed={!textbooks && materialFilter===kind} onClick={() => { setMaterialFilter(kind); if (textbooks || linkedList) setParams({}); }}>{t(kind==='all'?'flow.allMaterials':kind==='word'?'flow.words':'flow.sentences')}</button>)}
+        {(['all','word','sentence'] as const).map(kind => <button type="button" key={kind} className={`min-h-11 rounded-xl border px-4 font-bold ${!textbooks && !myGrammar && materialFilter===kind?'bg-primary text-white':'bg-white text-deep-navy'}`} aria-pressed={!textbooks && !myGrammar && materialFilter===kind} onClick={() => { setMaterialFilter(kind); if (textbooks || myGrammar || linkedList) setParams({}); }}>{t(kind==='all'?'flow.allMaterials':kind==='word'?'flow.words':'flow.sentences')}</button>)}
+        <button type="button" className={`min-h-11 rounded-xl border px-4 font-bold ${myGrammar?'bg-primary text-white':'bg-white text-deep-navy'}`} aria-pressed={myGrammar} onClick={() => setParams({ tab: 'grammar' })}>{t('myGrammar.title')}</button>
         <button type="button" className={`min-h-11 rounded-xl border px-4 font-bold ${textbooks?'bg-primary text-white':'bg-white text-deep-navy'}`} aria-pressed={textbooks} onClick={() => { if (!textbooks) setParams({ tab: 'textbooks' }); }}>{t('textbook.tab')}</button>
       </div>
-      {textbooks ? academy?.id && profile?.id && <TextbookLibrary key={accountScope.current} academy={academy.id} owner={profile.id} onSaved={() => void load()} /> : <>
+      {myGrammar ? <MyGrammarLibrary key={accountScope.current} /> : textbooks ? academy?.id && profile?.id && <TextbookLibrary key={accountScope.current} academy={academy.id} owner={profile.id} onSaved={() => void load()} /> : <>
       {showCreateForm && (
             <div className="bg-surface-container-lowest rounded-xl p-4 shadow-card flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-secondary-container px-3 py-1 font-label-md text-label-md text-on-secondary-container">

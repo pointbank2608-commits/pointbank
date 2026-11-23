@@ -14,7 +14,7 @@ import { lessonSlideWords, ownLessonSlideWords, wordListToCards } from '../lib/g
 import { effectiveSlides } from '../lib/lessonSlides';
 import { lessonGameRequirement, lessonGameSources, resolveLessonGame } from '../lib/lessonGameContent';
 import { MATERIALS_CATALOG } from '../lib/materialsCatalog';
-import { grammarPoint } from '../lib/grammar';
+import { grammarSlidePoint } from '../lib/grammar';
 import { GRAMMAR_WORD_SHEET } from '../lib/grammarCoreWords';
 import type { CurriculumLesson, GameType, SlideHelper, WordList } from '../lib/types';
 
@@ -61,6 +61,7 @@ interface RunnerState {
 }
 
 interface RunnerValue {
+  recordSlideAudio: () => void;
   replaceGame: (type: GameType, templateId: string, state: Record<string, unknown>) => void;
   runner: RunnerState | null;
   preparingCollectionGame: boolean;
@@ -130,7 +131,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
   }, [runner]);
 
   // Teacher-side presentation flow only; never a per-student learning result.
-  useLearningActivity(runner ? { source: 'group', credential: '', resource: runner.lessonId } : undefined, runner?.stepIndex ?? null);
+  const recordActivity = useLearningActivity(runner ? { source: 'group', credential: '', resource: runner.lessonId } : undefined, runner?.stepIndex ?? null);
 
   const [zoom, setZoom] = useState<PresentZoom>(PRESENT_ZOOM_IDENTITY);
   // 다음/이전 슬라이드로 가거나 수업을 새로 시작·마치면 확대는 풀고 100%로.
@@ -235,7 +236,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
             icon: slide.mode === 'cloze' ? 'hearing' : 'lyrics',
           });
         } else if (slide.kind === 'grammar') {
-          const point = grammarPoint(slide.grammarId);
+          const point = grammarSlidePoint(slide);
           push({
             kind: 'grammar',
             path: `/curriculum/${lesson.id}/slide/${slide.id}`,
@@ -530,7 +531,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
 
   return (
     <LessonRunnerContext.Provider
-      value={{ runner, preparingCollectionGame, start, next, prev, goTo, replaceGame, exit, isFullscreen, toggleFullscreen, zoom, setZoom, startView, stopView }}
+      value={{ runner, preparingCollectionGame, start, next, prev, goTo, replaceGame, exit, isFullscreen, toggleFullscreen, zoom, setZoom, startView, stopView, recordSlideAudio: () => recordActivity('audio') }}
     >
       <PresentSyncContext.Provider value={teacherSync}>
       {children}

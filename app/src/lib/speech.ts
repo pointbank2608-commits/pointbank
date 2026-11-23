@@ -1,5 +1,21 @@
 let voices: SpeechSynthesisVoice[] = [];
 
+export const canvasVoiceTones = {
+  adultMale: { pitch: 0.92, rate: 0.85, female: false },
+  adultFemale: { pitch: 1.08, rate: 0.85, female: true },
+  childMale: { pitch: 1.22, rate: 0.94, female: false },
+  childFemale: { pitch: 1.38, rate: 0.94, female: true },
+  seniorMale: { pitch: 0.82, rate: 0.75, female: false },
+  seniorFemale: { pitch: 1.01, rate: 0.75, female: true },
+} as const;
+export type CanvasVoiceTone = keyof typeof canvasVoiceTones;
+
+/** A teacher's text box may include a Korean gloss alongside its English example. */
+export function canvasEnglishText(text: string): string {
+  if (!/\p{Script=Latin}/u.test(text)) return '';
+  return text.replace(/[^\p{Script=Latin}\d\s'’".,!?;:$%&+\-/]+/gu, ' ').replace(/\s+/g, ' ').trim();
+}
+
 if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   voices = window.speechSynthesis.getVoices();
   window.speechSynthesis.onvoiceschanged = () => {
@@ -54,6 +70,21 @@ export function speak(text: string, rate = 0.85) {
   if (!text.trim() || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
   const utter = makeUtter(text);
   utter.rate = rate;
+  start([utter]);
+}
+
+/** Voice names are platform-specific. Pitch and rate also work with a single installed voice. */
+export function speakCanvasText(text: string, tone?: CanvasVoiceTone) {
+  if (!tone || !Object.hasOwn(canvasVoiceTones, tone)) return speak(text);
+  if (!text.trim() || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  const preset = canvasVoiceTones[tone];
+  const utter = makeUtter(text);
+  const name = preset.female ? /\b(female|zira|samantha|jenny|aria|sonia|victoria)\b/i
+    : /\b(male|david|mark|guy|george|daniel|alex)\b/i;
+  const voice = voices.find(v => /^en(?:[-_]|$)/i.test(v.lang) && name.test(v.name));
+  if (voice) { utter.voice = voice; utter.lang = voice.lang; }
+  utter.pitch = preset.pitch;
+  utter.rate = preset.rate;
   start([utter]);
 }
 

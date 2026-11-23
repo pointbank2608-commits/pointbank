@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GrammarPickerPanel from './GrammarPickerPanel';
+import MyGrammarLibrary from './MyGrammarLibrary';
+import type { GrammarPreset } from '../lib/myGrammar';
 import AccessibleDialog from './AccessibleDialog';
 import { GROUP_ACTIVITIES, activityCategory, readRecentActivities, type ActivityCategory } from '../lib/lessonActivities';
 import { BoardThemeChips } from './CanvasSlideEditor';
@@ -59,7 +61,7 @@ function isWorkbook(block: BlockDef) {
 }
 
 export default function LessonActivityPicker({onPick,onGrammarPick,onVideo,onPdf,onPowerPoint,onStem,onBundle,onClose,canAttachHelper,storageKey,cards,gameSources,slides,replaceTargetId,insertAfterId,selected,sourceName,entries,lessonName,academyId}:{
- onGrammarPick:(grammarId:string)=>void;
+ onGrammarPick:(grammarId:string, preset?: GrammarPreset)=>void;
  onPick:(b:BlockDef,layout?:CanvasExample,theme?:string|null, worksheet?:ActivityWorksheetOptions)=>void;onBundle:()=>void;onClose:()=>void;canAttachHelper:boolean;storageKey:string;
  cards:FullCardItem[];gameSources:ReturnType<typeof lessonGameSources>;slides:LessonSlide[];replaceTargetId:string|null;insertAfterId?:string|null;
  selected:LessonSlide|null;sourceName:string;entries:PhonicsBankEntry[];lessonName:string;
@@ -101,6 +103,7 @@ export default function LessonActivityPicker({onPick,onGrammarPick,onVideo,onPdf
    }
  }
  const [theme, setTheme] = useState<string | null>('green');
+ const [myGrammar, setMyGrammar] = useState(false);
  const [preview, setPreview] = useState<{ block: BlockDef; layout?: CanvasExample; workbook?: MaterialSlide } | null>(null);
  const previewOrigin = useRef<HTMLButtonElement | null>(null);
  const back = useRef<HTMLButtonElement>(null);
@@ -184,11 +187,20 @@ export default function LessonActivityPicker({onPick,onGrammarPick,onVideo,onPdf
     <section ref={listRef} className="activity-list" tabIndex={0} aria-label={t('lessonUx.chooseActivity')}>
      {grammarOpen ? <>
        <h3>{t('lessonUx.grammar')}</h3>
-       <GrammarPickerPanel searchQuery={query} onPick={grammarId => {
+       <div className="mb-3 flex flex-wrap gap-2">
+         {([false,true] as const).map(mine => <button key={String(mine)} type="button" aria-pressed={myGrammar === mine}
+           className={`min-h-10 rounded-lg border px-3 font-bold ${myGrammar === mine ? 'bg-primary text-white' : 'bg-white text-primary'}`}
+           onClick={() => setMyGrammar(mine)}>{t(mine ? 'myGrammar.import' : 'myGrammar.catalog')}</button>)}
+       </div>
+       {myGrammar ? <MyGrammarLibrary query={query} onPick={preset => {
+         if (locked.current) return;
+         locked.current = true;
+         onGrammarPick(preset.grammarId, preset);
+       }} /> : <GrammarPickerPanel searchQuery={query} onPick={grammarId => {
          if (locked.current) return;
          locked.current = true;
          onGrammarPick(grammarId);
-       }} />
+       }} />}
      </> : <>
      <h3>{t('lessonUx.'+(q?'results':cat==='recent'&&!recent.length?'defaults':cat))}</h3>
      <p className="activity-caption">{t(q?'lessonUx.allSearch':'lessonUx.chooseActivity')}</p>

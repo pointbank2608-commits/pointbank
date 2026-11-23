@@ -963,6 +963,9 @@ export interface CanvasMotion {
 export interface CanvasTextElement extends CanvasElementBase {
   type: 'text';
   text: string;
+  listen?: boolean;
+  voiceTone?: import('./speech').CanvasVoiceTone;
+  sentenceSource?: { listId: string; itemId: string };
   /** 무대 높이 대비 % */
   fontSize: number;
   /** 자동 생성한 글상자는 이 크기를 상한으로 두고 칸 안에 맞춘다. */
@@ -1053,6 +1056,7 @@ export interface GrammarSlide {
   id: string;
   kind: 'grammar';
   grammarId: string;
+  content?: import('./grammar').GrammarBoardContent;
   /** 수업 단어장 낱말로 만든 예문도 같이 보여줄지 */
   useWordList?: boolean;
   words?: FullCardItem[];

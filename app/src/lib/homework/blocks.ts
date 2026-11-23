@@ -9,7 +9,7 @@ import { parseShadowText } from "../shadowLines";
 import { extractYoutubeId } from "../youtube";
 import { effectiveSlides } from "../lessonSlides";
 import { SPEAKING_ITEMS } from "../rainbow";
-import { grammarPoint, sentencesForUnscramble } from "../grammar";
+import { grammarSlidePoint, sentencesForUnscramble } from "../grammar";
 import {
   balloonQ,
   clawQ,
@@ -544,7 +544,7 @@ export function lessonCandidates(
         break;
       }
       case "grammar": {
-        const point = grammarPoint(slide.grammarId);
+        const point = grammarSlidePoint(slide);
         if (point)
           items = sentencesForUnscramble(point).flatMap((sentence) =>
             blocksFromCards(

@@ -167,6 +167,7 @@ export default function CurriculumPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [wordListId, setWordListId] = useState('');
+  const [sentenceListId, setSentenceListId] = useState('');
   // 수업 화면 안에서 단어장 만들기·고치기(LessonWordListModal). listId 가 있으면 그 단어장 편집.
   const [wordListModal, setWordListModal] = useState<{ listId: string | null } | null>(null);
   function openWordListModal(mode: 'new' | 'edit') {
@@ -200,6 +201,7 @@ export default function CurriculumPage() {
   const [formTarget,setFormTarget]=useState<{id:string|null}|null>(null);
   const formClassId = formTarget ? formTarget.id : staffClassId ?? null;
   const classWordLists = wordLists.filter(list => !list.class_id || list.class_id === formClassId || list.id === wordListId);
+  const sentenceLists = wordLists.filter(list => list.kind === 'sentence' && (!list.class_id || list.class_id === formClassId));
   const [playlist, setPlaylist] = useState<LessonSlide[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const saveLock = useRef(false);
@@ -266,6 +268,7 @@ export default function CurriculumPage() {
     classId: string | null;
     name: string;
     wordListId: string;
+    sentenceListId?: string;
     level: string;
     videoUrl: string;
     playlist: LessonSlide[];
@@ -303,7 +306,7 @@ export default function CurriculumPage() {
       return;
     }
     const timer = window.setTimeout(() => {
-      const data: LessonDraft = { editingId, classId: formClassId, name, wordListId, level, videoUrl, playlist, savedAt: Date.now() };
+      const data: LessonDraft = { editingId, classId: formClassId, name, wordListId, sentenceListId, level, videoUrl, playlist, savedAt: Date.now() };
       try {
         localStorage.setItem(draftKey, JSON.stringify(data));
       } catch {
@@ -312,7 +315,7 @@ export default function CurriculumPage() {
     }, 400);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draftKey, showForm, dirty, name, wordListId, level, videoUrl, playlist, editingId]);
+  }, [draftKey, showForm, dirty, name, wordListId, sentenceListId, level, videoUrl, playlist, editingId]);
 
   // 편집 화면이 닫혀 있을 때 남은 초안이 있으면 알려 준다.
   useEffect(() => {
@@ -343,6 +346,7 @@ export default function CurriculumPage() {
     setFormTarget({id:d.classId});
     setName(d.name);
     setWordListId(d.wordListId);
+    setSentenceListId(d.sentenceListId ?? '');
     setLevel(d.level);
     setVideoUrl(d.videoUrl);
     setPlaylist(d.playlist);
@@ -383,6 +387,7 @@ export default function CurriculumPage() {
     setEditingId(null);
     setName('');
     setWordListId('');
+    setSentenceListId('');
     setVideoUrl('');
     setLevel('');
     setPlaylist([]);
@@ -413,6 +418,9 @@ export default function CurriculumPage() {
     setVideoUrl('');
     setLevel(lesson.level ?? '');
     const initialSlides=effectiveSlides(lesson);
+    const source = initialSlides.flatMap(slide => slide.kind === 'canvas' ? slide.elements : [])
+      .find(el => el.type === 'text' && el.sentenceSource && wordLists.some(list => list.id === el.sentenceSource?.listId));
+    setSentenceListId(source?.type === 'text' ? source.sentenceSource?.listId ?? '' : '');
     setPlaylist(initialSlides);
     setSavedSnapshot(
       JSON.stringify({ name: lesson.name, wordListId: lesson.word_list_id ?? '', level: lesson.level ?? '', playlist: initialSlides }),
@@ -985,7 +993,7 @@ export default function CurriculumPage() {
                 className="w-56 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               >
                 <option value="">{t('curriculum.wordListPlaceholder')}</option>
-                {classWordLists.map((wl) => (
+                {classWordLists.filter(wl => wl.kind !== 'sentence' || wl.id === wordListId).map((wl) => (
                   <option key={wl.id} value={wl.id}>
                     {wl.name} ({wl.items.length})
                   </option>
@@ -1024,6 +1032,14 @@ export default function CurriculumPage() {
               </div>
             </div>
 
+            <div>
+              <label htmlFor="lesson-sentence-list" className="mb-1 block font-caption text-caption text-on-surface-variant">{t('curriculum.canvas.sentenceList')}</label>
+              <select id="lesson-sentence-list" value={sentenceListId} onChange={event => setSentenceListId(event.target.value)}
+                className="w-56 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface focus:border-primary">
+                <option value="">{t('curriculum.canvas.chooseSentenceList')}</option>
+                {sentenceLists.map(list => <option key={list.id} value={list.id}>{list.name} ({list.items.length})</option>)}
+              </select>
+            </div>
             <div>
               <label className="mb-1 block font-caption text-caption text-on-surface-variant">{t('curriculum.levelLabel')}</label>
               <input
@@ -1159,6 +1175,7 @@ export default function CurriculumPage() {
                 lessonName={name}
                 slides={playlist}
                 onChange={setPlaylist}
+                sentenceList={sentenceLists.find(list => list.id === sentenceListId)}
                 wordListId={wordListId}
                 wordLists={classWordLists}
                 onSaveWordsAsList={(words, listName) => saveWordsAsList(words, listName, false)}

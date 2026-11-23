@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import grammarData from '../data/grammarPoints.json';
 import { fetchWordBank } from './api';
-import type { FullCardItem, WordBankEntry } from './types';
+import type { FullCardItem, GrammarSlide, WordBankEntry } from './types';
 
 /**
  * 초등 영문법 43개(2026-09-26) — 문법 페이지(/grammar)·커리큘럼 "문법" 슬라이드의 데이터와 예문 도구.
@@ -58,6 +58,17 @@ export interface GrammarPoint {
 }
 
 export const GRAMMAR_POINTS = grammarData as GrammarPoint[];
+
+export type GrammarBoardContent = Pick<GrammarPoint, 'name' | 'pattern' | 'explain' | 'examples' | 'translations' | 'rule' | 'usage' | 'detail' | 'pitfalls' | 'tip'>;
+
+export function grammarBoardContent({ name, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip }: GrammarPoint): GrammarBoardContent {
+  return { name, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip };
+}
+
+export function grammarSlidePoint(slide: GrammarSlide): GrammarPoint | null {
+  const base = grammarPoint(slide.grammarId);
+  return base && slide.content ? { ...base, ...slide.content } : base;
+}
 
 export function grammarPoint(id: string | null | undefined): GrammarPoint | null {
   return GRAMMAR_POINTS.find((g) => g.id === id) ?? null;

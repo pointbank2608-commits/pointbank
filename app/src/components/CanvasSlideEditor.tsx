@@ -7,7 +7,8 @@ import { BOARD_THEMES, boardTheme, preloadBoardFonts, type BoardTheme } from '..
 import { isLineShape, MARK_SHAPES, newCoverElement, newMarkElement, newShapeElement, PAIRED_CHARS, SHAPE_KINDS, SPECIAL_CHAR_GROUPS } from '../lib/canvasMarks';
 import { buildMotionPlan, DEFAULT_MOTION, effectIcon, effectsFor, type MotionPlan } from '../lib/canvasMotion';
 import { STICKER_GROUPS } from '../lib/canvasStickers';
-import type { CanvasElement, CanvasImageElement, CanvasMarkElement, CanvasMotion, CanvasShapeElement, CanvasSlide, CanvasTextElement, FullCardItem } from '../lib/types';
+import type { CanvasElement, CanvasImageElement, CanvasMarkElement, CanvasMotion, CanvasShapeElement, CanvasSlide, CanvasTextElement, FullCardItem, WordList } from '../lib/types';
+import { canvasEnglishText, canvasVoiceTones, speakCanvasText, type CanvasVoiceTone } from '../lib/speech';
 import {
   CANVAS_FONTS,
   CanvasBackground,
@@ -171,12 +172,14 @@ interface DragState {
 type AlignKind = 'left' | 'hcenter' | 'right' | 'top' | 'vmiddle' | 'bottom';
 
 export default function CanvasSlideEditor({
+  sentenceList,
   slide,
   academyId,
   cards,
   onUpdate,
 }: {
   slide: CanvasSlide;
+  sentenceList?: WordList;
   academyId: string;
   cards: FullCardItem[];
   onUpdate: (patch: Partial<CanvasSlide>) => void;
@@ -191,7 +194,7 @@ export default function CanvasSlideEditor({
   const [multiIds, setMultiIds] = useState<string[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [wordsOpen, setWordsOpen] = useState(false);
+  const [insertSource, setInsertSource] = useState<'words' | 'sentences' | null>(null);
   // 특수 문자 · 그려지는 표시 패널(2026-10-05)
   const [panel, setPanel] = useState<'chars' | 'shapes' | 'stickers' | 'layers' | null>(null);
   // 효과 창 · 효과 미리 보기(숫자가 바뀌면 다시 재생)
@@ -372,6 +375,7 @@ export default function CanvasSlideEditor({
     const offset = (slideRef.current.elements.length % 5) * 2;
     const placed = { ...el, x: clamp(el.x + offset, 0, 100 - el.w), y: clamp(el.y + offset, 0, 100 - el.h) };
     setElements([...slideRef.current.elements, placed]);
+    setMultiIds([]);
     setSelectedId(placed.id);
     return placed;
   }
@@ -604,6 +608,7 @@ export default function CanvasSlideEditor({
       const img: CanvasImageElement = { id: uid(), type: 'image', x: 32, y: 8, w: 36, h: 62, url: card.imageUrl, fit: 'contain' };
       const text = newTextElement({ x: 15, y: 72, w: 70, h: 18, text: card.word, ...themeTextDefaults(slide.theme, 'title'), fontSize: 11 });
       setElements([...slideRef.current.elements, img, text]);
+      setMultiIds([]);
       setSelectedId(text.id);
     } else {
       addElement(newTextElement({ x: 15, y: 35, w: 70, h: 24, text: card.word, ...themeTextDefaults(slide.theme, 'title') }));
@@ -892,10 +897,17 @@ export default function CanvasSlideEditor({
           className={btnIdle}
           disabled={cards.length === 0}
           title={cards.length === 0 ? t('curriculum.canvas.noWords') : undefined}
-          onClick={() => setWordsOpen((o) => !o)}
+          aria-expanded={insertSource === 'words'}
+          onClick={() => setInsertSource(open => open === 'words' ? null : 'words')}
         >
           <span className="material-symbols-outlined text-[18px]">style</span>
           {t('curriculum.canvas.addWord')}
+        </button>
+        <button type="button" className={btnIdle} disabled={!sentenceList?.items.length}
+          title={t('curriculum.canvas.chooseSentenceList')} aria-expanded={insertSource === 'sentences'}
+          onClick={() => setInsertSource(open => open === 'sentences' ? null : 'sentences')}>
+          <span className="material-symbols-outlined text-[18px]">short_text</span>
+          {t('curriculum.canvas.addSentence')}
         </button>
         <button
           type="button"
@@ -966,7 +978,21 @@ export default function CanvasSlideEditor({
         />
       </div>
 
-      {wordsOpen && cards.length > 0 && (
+      {insertSource === 'sentences' && sentenceList && (
+        <div className="flex max-h-40 flex-wrap gap-1.5 overflow-y-auto rounded-lg bg-surface-container-lowest p-2 shadow-sm">
+          {sentenceList.items.filter(item => item.word.trim()).map(item => (
+            <button key={item.id} type="button" title={item.meaning}
+              className="max-w-full rounded-xl border border-outline-variant/60 px-3 py-1 text-left text-on-surface hover:border-primary"
+              onClick={() => addElement(newTextElement({
+                ...themeTextDefaults(slide.theme), x: 8, w: 84, h: 28, fitText: true, text: item.word,
+                sentenceSource: { listId: sentenceList.id, itemId: item.id },
+              }))}>
+              {item.word}
+            </button>
+          ))}
+        </div>
+      )}
+      {insertSource === 'words' && cards.length > 0 && (
         <div className="flex max-h-40 flex-wrap gap-1.5 overflow-y-auto rounded-lg bg-surface-container-lowest p-2 shadow-sm">
           {cards.map((card) => (
             <button
@@ -1360,6 +1386,27 @@ export default function CanvasSlideEditor({
             {t('curriculum.canvas.motion')}
             {primary.motion && <span className="rounded-full bg-deep-navy px-1.5 text-[11px] text-white">{t(primary.motion.out ? 'curriculum.canvas.motionOut' : 'curriculum.canvas.motionIn')}</span>}
           </button>
+          {!isMulti && primary.type === 'text' && (
+            <>
+            <button type="button" className={btnIdle} aria-pressed={!!primary.listen}
+              disabled={primary.locked || (!primary.listen && !editingId && !canvasEnglishText(primary.text))}
+              onClick={() => updateEl(primary.id, { listen: !primary.listen })}>
+              <span aria-hidden="true" className="material-symbols-outlined text-[18px]">volume_up</span>
+              {t(primary.listen ? 'curriculum.canvas.removeListen' : 'curriculum.canvas.addListen')}
+            </button>
+            {primary.listen && (
+              <label className="flex items-center gap-1.5 text-sm text-on-surface">
+                {t('curriculum.canvas.voiceTone')}
+                <select value={primary.voiceTone ?? ''} disabled={primary.locked}
+                  className="rounded-lg border border-outline-variant bg-surface-container-lowest px-2 py-1"
+                  onChange={event => updateEl(primary.id, { voiceTone: (event.target.value || undefined) as CanvasVoiceTone | undefined })}>
+                  <option value="">{t('curriculum.canvas.voices.default')}</option>
+                  {Object.keys(canvasVoiceTones).map(tone => <option key={tone} value={tone}>{t(`curriculum.canvas.voices.${tone}`)}</option>)}
+                </select>
+              </label>
+            )}
+            </>
+          )}
           {(primary.type === 'shape' || primary.type === 'mark') && (
             <ElementActions onFront={() => reorder('front')} onBack={() => reorder('back')} onDuplicate={duplicateSelected} onDelete={removeSelected} iconBtn={iconBtn} />
           )}
@@ -1481,11 +1528,11 @@ export default function CanvasSlideEditor({
                   <CanvasMarkContent key={preview!.n} el={el} draw duration={el.motion.duration} delay={el.motion.delay} />
                 ) : (
                   <MotionLayer key={preview!.n} motion={el.motion} el={el} animate delay={el.motion.delay}>
-                    <CanvasElementContent el={el} />
+                    <CanvasElementContent el={el} onListen={speakCanvasText} />
                   </MotionLayer>
                 )
               ) : (
-                <CanvasElementContent el={el} placeholder={t('curriculum.canvas.placeholder')} />
+                <CanvasElementContent el={el} onListen={speakCanvasText} placeholder={t('curriculum.canvas.placeholder')} />
               )}
               {info && (
                 <span className="pointer-events-none absolute -left-1 -top-1 z-10 flex items-center gap-0.5 whitespace-nowrap rounded-full bg-deep-navy px-1.5 text-[10px] font-bold leading-4 text-white">

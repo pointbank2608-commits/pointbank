@@ -191,7 +191,7 @@ export default function WordShowBoard({
             {recall === 'sentence' && card.example?.toLowerCase().includes(card.word.toLowerCase()) &&
               <span className="mt-1 block">{card.example.replace(new RegExp(card.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '_____')}</span>}
           </p>}
-          <div className={`flex min-h-0 flex-1 items-center gap-[5cqh] ${withImage ? '' : 'justify-center text-center'}`}>
+          <div key={card.id} className={`flex min-h-0 flex-1 items-center gap-[5cqh] ${withImage ? '' : 'justify-center text-center'}`}>
             {card.imageUrl && (
               <div
                 className="flex h-[62cqh] w-[62cqh] shrink-0 items-center justify-center overflow-hidden rounded-[3cqh] transition-all duration-500"
@@ -207,7 +207,7 @@ export default function WordShowBoard({
                 </span>
                 {has('word') && speakBtn(card.word, '8cqh')}
               </div>
-              <div className="flex flex-wrap items-baseline gap-[1.5cqh] transition-opacity duration-300" style={{ opacity: has('meaning') ? 1 : 0 }}>
+              <div aria-hidden={!has('meaning')} className="flex flex-wrap items-baseline gap-[1.5cqh] transition-opacity duration-300" style={{ opacity: has('meaning') ? 1 : 0 }}>
                 {card.partOfSpeech && (
                   <span className="rounded-full px-[1.6cqh] py-[0.4cqh]" style={{ fontSize: '3cqh', background: th.chip, color: th.muted }}>
                     {card.partOfSpeech}
@@ -216,7 +216,7 @@ export default function WordShowBoard({
                 <span style={{ fontSize: '7cqh', color: th.accent }}>{card.meaning}</span>
               </div>
               {card.example && (
-                <div className="flex items-start gap-[1.5cqh] transition-opacity duration-300" style={{ opacity: has('example') ? 1 : 0 }}>
+                <div aria-hidden={!has('example')} className="flex items-start gap-[1.5cqh] transition-opacity duration-300" style={{ opacity: has('example') ? 1 : 0 }}>
                   <span className="min-w-0">
                     <span className="block" style={{ fontSize: '4.6cqh', lineHeight: 1.35 }}>{card.example}</span>
                     {card.exampleKo && (

@@ -4,6 +4,8 @@ import { BOARD_FONTS, boardSlideStyle, boardTheme } from '../lib/boardThemes';
 import { MARK_PATHS } from '../lib/canvasMarks';
 import { buildMotionPlan } from '../lib/canvasMotion';
 import { useSyncedSubState } from '../lib/presentSync';
+import { useTranslation } from 'react-i18next';
+import { canvasEnglishText, speakCanvasText } from '../lib/speech';
 import type { CanvasElement, CanvasImageElement, CanvasMarkElement, CanvasMotion, CanvasShapeElement, CanvasSlide, CanvasTextElement } from '../lib/types';
 
 /** "직접 만들기" 슬라이드를 그리는 공용 렌더러 — 썸네일·편집 미리보기·발표 화면이 전부 이걸 쓴다.
@@ -75,13 +77,16 @@ export function fitCanvasText(node: HTMLElement, maxSize: number, fits: () => bo
   node.style.fontSize = `${low}cqh`;
 }
 
-function CanvasTextContent({ el, placeholder }: { el: CanvasTextElement; placeholder?: string }) {
+function CanvasTextContent({ el, placeholder, onListen }: { el: CanvasTextElement; placeholder?: string; onListen?: typeof speakCanvasText }) {
+  const { t } = useTranslation();
+  const pronunciation = el.listen ? canvasEnglishText(el.text) : '';
+  const fitText = el.fitText || !!pronunciation;
   const boxRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const box = boxRef.current;
     const body = bodyRef.current;
-    if (!el.fitText || !box || !body) return;
+    if (!fitText || !box || !body) return;
     const fit = () => {
       const style = getComputedStyle(box);
       const height = box.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
@@ -96,19 +101,29 @@ function CanvasTextContent({ el, placeholder }: { el: CanvasTextElement; placeho
       document.fonts?.removeEventListener('loadingdone', fit);
       box.style.fontSize = `${el.fontSize}cqh`;
     };
-  }, [el, placeholder]);
+  }, [el, placeholder, fitText]);
 
   const empty = !el.text.trim();
   return (
     <div
       ref={boxRef}
-      className={`flex h-full w-full flex-col justify-center ${el.fitText ? 'overflow-hidden' : ''}`}
+      className={`flex h-full w-full flex-col justify-center ${fitText ? 'overflow-hidden' : ''}`}
       style={{ ...canvasTextStyle(el), ...(empty && placeholder ? { color: '#9ca3af' } : {}) }}
     >
-      <div ref={bodyRef} data-text-body className={el.fitText ? 'shrink-0' : undefined}>
+      <div ref={bodyRef} data-text-body className={fitText ? 'shrink-0' : undefined}>
         {empty
           ? placeholder ?? ''
           : runSegments(el.text, el.runs).map((seg, i) => (seg.run ? <span key={i} style={runStyle(seg.run)}>{seg.text}</span> : seg.text))}
+        {pronunciation && <>{'\u2060'}{onListen ? (
+          <button type="button" data-canvas-listen aria-label={t('dictionary.playWord', { word: pronunciation })}
+            className="ml-[0.15em] inline-flex items-center justify-center rounded-full p-[0.14em] align-middle hover:bg-current/10 focus-visible:outline"
+            style={{ fontSize: '0.65em', lineHeight: 1 }}
+            onPointerDown={event => event.stopPropagation()} onDoubleClick={event => event.stopPropagation()}
+            onKeyDown={event => { if (event.key === ' ' || event.key === 'Enter') event.stopPropagation(); }}
+            onClick={event => { event.stopPropagation(); onListen(pronunciation, el.voiceTone); }}>
+            <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '1em' }}>volume_up</span>
+          </button>
+        ) : <span aria-hidden="true" className="material-symbols-outlined ml-[0.15em] align-middle" style={{ fontSize: '0.65em' }}>volume_up</span>}</>}
       </div>
     </div>
   );
@@ -272,14 +287,14 @@ function ShapeBody({ el }: { el: CanvasShapeElement }) {
 }
 
 /** 요소 하나의 "내용"만 — 위치 박스는 바깥에서 잡는다(편집기는 그 박스에 핸들을 붙인다). */
-export function CanvasElementContent({ el, placeholder }: { el: CanvasElement; placeholder?: string }) {
+export function CanvasElementContent({ el, placeholder, onListen }: { el: CanvasElement; placeholder?: string; onListen?: typeof speakCanvasText }) {
   const opacity = el.opacity !== undefined && el.opacity < 1 ? el.opacity : undefined;
   let body: ReactNode;
   if (el.type === 'mark') body = <CanvasMarkContent el={el} />;
   else if (el.type === 'shape') body = <CanvasShapeContent el={el} />;
   else if (el.type === 'image') {
     body = <img src={el.url} alt="" draggable={false} className="pointer-events-none h-full w-full select-none" style={{ objectFit: el.fit, ...imageEffectStyle(el) }} />;
-  } else body = <CanvasTextContent el={el} placeholder={placeholder} />;
+  } else body = <CanvasTextContent el={el} placeholder={placeholder} onListen={onListen} />;
   // 글상자 자동 늘리기가 첫 자식에서 [data-text-body]를 찾으므로, 투명도가 있을 때만 한 겹 더 싼다.
   return opacity === undefined ? <>{body}</> : <div className="h-full w-full" style={{ opacity }}>{body}</div>;
 }
@@ -326,7 +341,7 @@ export function CanvasBackground({ slide }: { slide: CanvasSlide }) {
  * 클릭 단계는 클리커·Space·→·화면 클릭으로 하나씩 넘기고, 다 나오면 다음 슬라이드로 흘려보낸다(문법 슬라이드와 같은
  * capture 패턴). ←·PageUp 은 한 단계 거둔다. 썸네일·편집기(play 아님)에서는 효과 없이 처음 모습(다 보임)으로 그린다.
  */
-export default function CanvasSlideView({ slide, className = '', play = false }: { slide: CanvasSlide; className?: string; play?: boolean }) {
+export default function CanvasSlideView({ slide, className = '', play = false, onAudio }: { slide: CanvasSlide; className?: string; play?: boolean; onAudio?: () => void }) {
   const plan = useMemo(() => buildMotionPlan(slide), [slide]);
   const total = play ? plan.clickSteps : 0;
   const [shown, setShown] = useState(0);
@@ -343,10 +358,16 @@ export default function CanvasSlideView({ slide, className = '', play = false }:
     setAnimatedStep(n > prev ? n : -1);
   }
   const follower = useSyncedSubState({ shown }, (s) => goTo(Number(s.shown) || 0));
+  const listen: typeof speakCanvasText = (text, tone) => {
+    if (!('speechSynthesis' in window)) return;
+    speakCanvasText(text, tone);
+    onAudio?.();
+  };
 
   useEffect(() => {
     if (!play || follower || total === 0) return;
     function onKey(e: KeyboardEvent) {
+      if (e.key === ' ' && (e.target as HTMLElement | null)?.closest('[data-canvas-listen]')) return;
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       const fwd = e.key === 'PageDown' || e.key === 'ArrowRight' || e.key === ' ';
@@ -373,7 +394,7 @@ export default function CanvasSlideView({ slide, className = '', play = false }:
           if (!info) {
             return (
               <div key={el.id} style={canvasElementBoxStyle(el)}>
-                <CanvasElementContent el={el} />
+                <CanvasElementContent el={el} onListen={play ? listen : undefined} />
               </div>
             );
           }
@@ -390,7 +411,7 @@ export default function CanvasSlideView({ slide, className = '', play = false }:
                 <CanvasMarkContent el={el} draw={animating} delay={delay} duration={m.duration} />
               ) : (
                 <MotionLayer motion={m} el={el} animate={animating} delay={delay}>
-                  <CanvasElementContent el={el} />
+                  <CanvasElementContent el={el} onListen={play && !(out && info.step === shown) ? listen : undefined} />
                 </MotionLayer>
               )}
             </div>

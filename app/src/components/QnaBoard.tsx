@@ -1,17 +1,45 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BOARD_FONTS, boardSlideStyle, boardTheme, textOnAccent } from '../lib/boardThemes';
 import { useSyncedSubState } from '../lib/presentSync';
 import type { QnaItem } from '../lib/qnaLines';
-import { speak } from '../lib/speech';
 import { extractYoutubeId } from '../lib/youtube';
 import { CanvasStageBox } from './CanvasSlideView';
 import SceneOverlay from './SceneOverlay';
 import { useLearningActivity } from '../lib/learningSensors/useLearningActivity';
+import { speak } from '../lib/speech';
+
+function PronounceableText({ text }: { text: string }) {
+  const { t } = useTranslation();
+  // Keep commas inside complete examples ("Yes, I can."), but separate vocabulary lists.
+  const english = /([A-Za-z0-9]+(?:(?:['’-]|,?[ \t]+)[A-Za-z0-9]+)*[.!?]?)/g;
+  const parts = text.split(english).flatMap((part, i) =>
+    i % 2 === 1 && !/[.!?]$/.test(part) ? part.split(/(,[ \t]+)/) : [part]
+  );
+  return parts.map((part, i) => {
+    if (!/[A-Za-z]/.test(part)) return part;
+    const label = t('dictionary.playWord', { word: part });
+    const lastSpace = Math.max(part.lastIndexOf(' '), part.lastIndexOf('\t')) + 1;
+    return (
+      <Fragment key={i}>
+        {part.slice(0, lastSpace)}
+        <span className="whitespace-nowrap">
+          {part.slice(lastSpace)}
+          <button type="button" data-qna-pronounce aria-label={label} title={label}
+            className="ml-[0.15em] inline-flex min-h-6 min-w-6 items-center justify-center rounded-full align-middle opacity-80 hover:opacity-100 focus-visible:outline"
+            style={{ fontSize: '0.58em' }}
+            onClick={(event) => { event.stopPropagation(); speak(part); }}>
+            <span aria-hidden="true" className="material-symbols-outlined" style={{ fontSize: '1em' }}>volume_up</span>
+          </button>
+        </span>
+      </Fragment>
+    );
+  });
+}
 
 /**
  * Q&A 슬라이드 칠판(2026-10-03, 클래스5 무비 수업 "Q & A" 참고) — 영상 내용 질문을 하나씩.
- * 질문(읽어 주기) → 정답 공개(읽어 주기) → 다음 질문. 클리커·Space·→ 로 넘기고 마지막 정답 뒤에는 다음 슬라이드로
+ * 질문 → 정답 공개 → 다음 질문. 클리커·Space·→ 로 넘기고 마지막 정답 뒤에는 다음 슬라이드로
  * 흘려보낸다(단어 소개와 같은 capture 패턴). "장면 보기"는 답이 나오는 부분만 틀어 준다. 학생 따라보기와 단계가 맞춰진다.
  */
 export default function QnaBoard({
@@ -21,7 +49,6 @@ export default function QnaBoard({
   themeId,
   interactive,
   initialShowKo = false,
-  autoSpeak = true,
   observation,
 }: {
   questions: QnaItem[];
@@ -31,7 +58,6 @@ export default function QnaBoard({
   /** false: 편집 화면 미리보기 — 첫 질문의 정답까지 연 상태 */
   interactive: boolean;
   initialShowKo?: boolean;
-  autoSpeak?: boolean;
   observation?: { lessonId: string; position: number };
 }) {
   const { t } = useTranslation();
@@ -66,14 +92,6 @@ export default function QnaBoard({
   const stateRef = useRef({ idx, step, total: questions.length });
   stateRef.current = { idx, step, total: questions.length };
 
-  const spokenRef = useRef('');
-  useEffect(() => {
-    if (!interactive || follower || !autoSpeak || !item) return;
-    const key = `${idx}:${step}`;
-    if (spokenRef.current === key) return;
-    spokenRef.current = key;
-    speak(step === 0 ? item.q : item.a);
-  });
 
   function forward(): boolean {
     const s = stateRef.current;
@@ -107,6 +125,10 @@ export default function QnaBoard({
   useEffect(() => {
     if (!interactive || follower) return;
     function onKey(e: KeyboardEvent) {
+      if ((e.key === ' ' || e.key === 'Enter') && (e.target as HTMLElement | null)?.closest('[data-qna-pronounce]')) {
+        e.stopPropagation();
+        return;
+      }
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       const isFwd = e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown';
@@ -142,6 +164,7 @@ export default function QnaBoard({
     </button>
   );
   const long = item.q.length > 60 || item.a.length > 70;
+  const canListen = interactive && !follower;
 
   return (
     <div className="flex h-full w-full items-center justify-center" style={{ containerType: 'size' }}>
@@ -165,14 +188,14 @@ export default function QnaBoard({
               </span>
               <div className="min-w-0">
                 <div className="font-bold leading-tight" style={{ fontSize: long ? '6cqh' : '8.4cqh' }}>
-                  {item.q}
+                  {canListen ? <PronounceableText text={item.q} /> : item.q}
                 </div>
                 {ko && item.qKo && (
                   <div className="mt-[1cqh]" style={{ fontSize: '3.6cqh', color: th.muted }}>
-                    {item.qKo}
+                    {canListen ? <PronounceableText text={item.qKo} /> : item.qKo}
                   </div>
                 )}
-                {item.choices?.length ? <ol className="mt-2 list-[upper-alpha] space-y-1 pl-8 text-[3.5cqh]">{item.choices.map(choice=><li key={choice}>{choice}</li>)}</ol> : null}
+                {item.choices?.length ? <ol className="mt-2 list-[upper-alpha] space-y-1 pl-8 text-[3.5cqh]">{item.choices.map(choice=><li key={choice}>{canListen ? <PronounceableText text={choice} /> : choice}</li>)}</ol> : null}
               </div>
             </div>
             <div className="flex items-start gap-[2cqh] transition-opacity duration-300" aria-hidden={shownStep===0} style={{ opacity: shownStep >= 1 ? 1 : 0 }}>
@@ -181,11 +204,11 @@ export default function QnaBoard({
               </span>
               <div className="min-w-0">
                 <div className="leading-tight" style={{ fontSize: long ? '5.4cqh' : '7.2cqh', color: th.accent }}>
-                  {item.a}
+                  {canListen && shownStep >= 1 ? <PronounceableText text={item.a} /> : item.a}
                 </div>
                 {ko && item.aKo && (
                   <div className="mt-[1cqh]" style={{ fontSize: '3.4cqh', color: th.muted }}>
-                    {item.aKo}
+                    {canListen && shownStep >= 1 ? <PronounceableText text={item.aKo} /> : item.aKo}
                   </div>
                 )}
               </div>
@@ -195,7 +218,6 @@ export default function QnaBoard({
           {interactive && !follower && (
             <div className="flex flex-wrap items-center justify-center gap-[1.5cqh]">
               {idx > 0 && btn('chevron_left', t('qna.prevQuestion'), () => {setIdx(idx - 1);setStep(0);setScene(null);})}
-              {btn('volume_up', t('qna.listen'), () => speak(step === 0 ? item.q : item.a))}
               {shownStep === 0 ? btn('visibility', t('qna.showAnswer'), () => setStep(1)) : btn('visibility_off', t('qna.hideAnswer'), () => setStep(0))}
               {(item.qKo || item.aKo) && btn('translate', t('qna.korean'), () => setKo((k) => !k), ko)}
               {videoId && item.time !== undefined && btn('movie', t('qna.scene'), () => setScene(item.time ?? 0))}

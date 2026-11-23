@@ -18,6 +18,7 @@ export default function GrammarBoard({
   extra = [],
   themeId,
   interactive = true,
+  keyboard = interactive,
   className = '',
   initialShowKo = false,
   initialRevealAll = false,
@@ -28,6 +29,7 @@ export default function GrammarBoard({
   themeId?: string | null;
   /** false 면 미리보기(버튼·키보드 없이 예문 전부 표시) */
   interactive?: boolean;
+  keyboard?: boolean;
   className?: string;
   /** 슬라이드 설정: 해석을 켠 채로 시작 */
   initialShowKo?: boolean;
@@ -63,12 +65,12 @@ export default function GrammarBoard({
     setView('examples');
     setShowKo(initialShowKo);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [point.id, interactive, extra.length, initialRevealAll, initialShowKo]);
+  }, [point.id, point.examples.length, interactive, extra.length, initialRevealAll, initialShowKo]);
 
   // → · Space · PageDown(클리커): 예문을 하나씩 꺼낸다. 다 꺼냈으면 그냥 흘려보내서 발표 진행바가
   // 다음 슬라이드로 넘긴다. ← · PageUp 은 반대. capture 단계에서 먼저 받아 처리한 키만 전파를 막는다.
   useEffect(() => {
-    if (!interactive || follower) return;
+    if (!keyboard || follower) return;
     function onKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
@@ -89,7 +91,7 @@ export default function GrammarBoard({
     }
     document.addEventListener('keydown', onKey, true);
     return () => document.removeEventListener('keydown', onKey, true);
-  }, [interactive, lines.length, follower]);
+  }, [keyboard, lines.length, follower]);
 
   const visible = lines.slice(0, shown);
   const firstMine = lines.findIndex((l) => l.mine);

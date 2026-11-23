@@ -27,7 +27,7 @@ export default function LessonSlideViewerPage() {
   const isPresenting = usePresenting();
   const location = useLocation();
   const { academy, profile } = useAuth();
-  const { runner } = useLessonRunner();
+  const { runner, recordSlideAudio } = useLessonRunner();
   const runnerClassId = runner?.classId ?? null;
   // 카드로 외우기·단어 소개·문법 슬라이드의 단어 — 발표 러너가 수업 단어장을 navigation state 로 넘겨준다.
   const stateWords = useMemo(() => wordsFromLocationState(location.state), [location.state]);
@@ -90,6 +90,7 @@ export default function LessonSlideViewerPage() {
       lessonSlides={slides}
       fill={isPresenting}
       lessonName={lesson.name}
+      onCanvasAudio={runner?.lessonId === lesson.id && runner.steps[runner.stepIndex]?.slideId === slide.id ? recordSlideAudio : undefined}
       grammarWordObservation={slide.kind === 'qna' && slide.grammarWordSource && runner?.lessonId === lesson.id
         && runner.steps[runner.stepIndex]?.slideId === slide.id
         ? { lessonId: lesson.id, position: runner.stepIndex } : undefined}
