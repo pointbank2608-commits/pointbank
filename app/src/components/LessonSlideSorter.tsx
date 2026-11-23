@@ -91,7 +91,7 @@ import { generateShadowScript } from '../lib/api';
 import ReadingBoard from './ReadingBoard';
 import { parseReadingText, transcriptClozeSource } from '../lib/readingLines';
 import GrammarExplainCard from './GrammarExplainCard';
-import { buildWordListSentences, GRAMMAR_LEVELS_BY_STAGE, GRAMMAR_POINTS, GRAMMAR_STAGES, grammarBoardContent, grammarSlidePoint, sentencesForUnscramble, useGrammarCards } from '../lib/grammar';
+import { buildWordListSentences, GRAMMAR_LEVELS_BY_STAGE, GRAMMAR_POINTS, GRAMMAR_STAGES, grammarSlidePoint, sentencesForUnscramble, useGrammarCards } from '../lib/grammar';
 import { GAME_PAGES } from '../lib/gamePages';
 import CanvasSlideEditor, { BoardThemeChips } from './CanvasSlideEditor';
 import CanvasSlideView from './CanvasSlideView';
@@ -2249,21 +2249,23 @@ function GrammarSlideDetail({
 
   return (
     <div className="space-y-3">
-      <div className="aspect-video w-full max-w-3xl">
-        <GrammarBoard
-          point={point}
-          extra={generated}
-          themeId={slide.boardTheme ?? 'green'}
-          keyboard={false}
-          initialRevealAll={!!slide.revealAll}
-          initialShowKo={!!slide.showKo}
-        />
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <button type="button" className="rounded-lg border border-primary px-3 py-2 font-bold text-primary" onClick={() => setContentMode('edit')}>{t('myGrammar.edit')}</button>
-        <button type="button" className="rounded-lg border px-3 py-2 font-bold" onClick={() => setContentMode('library')}>{t('myGrammar.saveCopy')}</button>
-      </div>
-      {contentMode && <GrammarContentEditor initial={grammarBoardContent(point)} onClose={() => setContentMode(null)}
+      {contentMode !== 'edit' && <>
+        <div className="aspect-video w-full max-w-3xl">
+          <GrammarBoard
+            point={point}
+            extra={generated}
+            themeId={slide.boardTheme ?? 'green'}
+            keyboard={false}
+            initialRevealAll={!!slide.revealAll}
+            initialShowKo={!!slide.showKo}
+          />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="rounded-lg border border-primary px-3 py-2 font-bold text-primary" onClick={() => setContentMode('edit')}>{t('myGrammar.edit')}</button>
+          <button type="button" className="rounded-lg border px-3 py-2 font-bold" onClick={() => setContentMode('library')}>{t('myGrammar.saveCopy')}</button>
+        </div>
+      </>}
+      {contentMode && <GrammarContentEditor inline={contentMode === 'edit'} point={point} themeId={slide.boardTheme} onClose={() => setContentMode(null)}
         saveLabel={t(contentMode === 'edit' ? 'myGrammar.apply' : 'myGrammar.save')}
         onSave={async content => {
           if (contentMode === 'library') {

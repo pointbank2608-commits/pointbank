@@ -1,73 +1,137 @@
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type GrammarBoardContent } from '../lib/grammar';
+import { grammarBoardContent, type GrammarBoardContent, type GrammarPoint } from '../lib/grammar';
+import { PresentSyncContext } from '../lib/presentSync';
 import AccessibleDialog from './AccessibleDialog';
+import GrammarBoard, { type GrammarBoardEditor, type GrammarField } from './GrammarBoard';
+import './GrammarContentEditor.css';
 
-export default function GrammarContentEditor({ initial, onClose, onSave, saveLabel }: {
-  initial: GrammarBoardContent;
+type TextRange = { key: GrammarField; index?: number };
+
+export default function GrammarContentEditor({ point, themeId, inline, onClose, onSave, saveLabel }: {
+  point: GrammarPoint;
+  themeId?: string | null;
+  inline?: boolean;
   onClose: () => void;
   onSave: (content: GrammarBoardContent) => Promise<void> | void;
   saveLabel: string;
 }) {
   const { t } = useTranslation();
-  const [draft, setDraft] = useState(() => structuredClone(initial));
-  const [examples, setExamples] = useState(() => initial.examples.map((en, i) => ({ en, ko: initial.translations?.[i] ?? '' })));
+  const [draft, setDraft] = useState(() => structuredClone(grammarBoardContent(point)));
+  const [selected, setSelected] = useState<TextRange | null>(null);
+  const [editing, setEditing] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const saving = useRef(false);
-  const input = 'block min-h-10 w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-on-surface';
-  const label = 'grid gap-1 text-sm font-semibold text-on-surface';
+  const original = useRef('');
+  const focusInput = useCallback((node: HTMLTextAreaElement | null) => {
+    if (!node) return;
+    node.focus();
+    node.setSelectionRange(node.value.length, node.value.length);
+  }, []);
+  const fieldButton = useRef<HTMLButtonElement>(null);
+  function change(key: GrammarField, value: string, index = 0) {
+    setDraft(prev => {
+      if (key === 'rule' || key === 'detail' || key === 'usage') return { ...prev, [key]: value.split('\n') };
+      if (key === 'en' || key === 'ko') {
+        const prop = key === 'en' ? 'examples' : 'translations';
+        const rows = prev.examples.map((_, i) => i === index ? value : prev[prop]?.[i] ?? '');
+        return { ...prev, [prop]: rows };
+      }
+      if (key === 'wrong' || key === 'right' || key === 'why') {
+        return { ...prev, pitfalls: prev.pitfalls?.map((row, i) => i === index ? { ...row, [key]: value } : row) };
+      }
+      return { ...prev, [key]: value };
+    });
+    setError('');
+  }
+  function begin(key: GrammarField, value: string, index?: number) {
+    original.current = value;
+    setSelected({ key, index });
+    setEditing(true);
+  }
+  function finishField() {
+    setEditing(false);
+    requestAnimationFrame(() => fieldButton.current?.focus());
+  }
+  function field(key: GrammarField, value: string, display: ReactNode, index?: number) {
+    const label = (index === undefined ? '' : (index + 1) + '. ') + t('myGrammar.' + key);
+    const active = selected?.key === key && selected.index === index;
+    if (active && editing) return <textarea aria-label={label} className="grammar-inline-input"
+      rows={Math.max(1, value.split('\n').length)} value={value} ref={focusInput}
+      onBlur={e => { original.current = e.currentTarget.value; setEditing(false); }} onChange={e => change(key, e.target.value, index)}
+      onKeyDown={e => {
+        e.stopPropagation();
+        if (e.nativeEvent.isComposing || e.keyCode === 229) return;
+        if (e.key === 'Escape') { e.preventDefault(); change(key, original.current, index); finishField(); }
+        if (e.key === 'Enter' && !e.shiftKey && (e.ctrlKey || e.metaKey || !['rule','detail','usage'].includes(key))) {
+          e.preventDefault(); finishField();
+        }
+      }} />;
+    return <button type="button" ref={active ? fieldButton : undefined} aria-label={label} aria-pressed={active}
+      className="grammar-field" onClick={() => { original.current = value; setSelected({ key, index }); }}
+      onDoubleClick={() => begin(key, value, index)}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === 'F2') { e.preventDefault(); begin(key, value, index); }
+      }}>{value.trim() ? display : <span className="opacity-75">{label}</span>}</button>;
+  }
+  const editor: GrammarBoardEditor = {
+    field,
+    addExample() {
+      begin('en', '', draft.examples.length);
+      setDraft(prev => ({ ...prev, examples: [...prev.examples, ''] }));
+    },
+    addPitfall() {
+      begin('wrong', '', draft.pitfalls?.length ?? 0);
+      setDraft(prev => ({ ...prev, pitfalls: [...(prev.pitfalls ?? []), { wrong: '', right: '', why: '' }] }));
+    },
+  };
+  function remove() {
+    const i = selected?.index;
+    if (i === undefined) return;
+    setDraft(prev => selected?.key === 'en' || selected?.key === 'ko'
+      ? { ...prev, examples: prev.examples.filter((_, j) => j !== i), translations: prev.translations?.filter((_, j) => j !== i) }
+      : { ...prev, pitfalls: prev.pitfalls?.filter((_, j) => j !== i) });
+    setSelected(null);
+    setEditing(false);
+  }
   async function save() {
     if (saving.current) return;
-    if (!draft.name.trim() || !draft.pattern.trim() || !examples.length || examples.some(row => !row.en.trim())) {
+    if (!draft.name.trim() || !draft.pattern.trim() || !draft.examples.length || draft.examples.some(en => !en.trim())) {
       setError(t('myGrammar.required')); return;
     }
     saving.current = true;
     setBusy(true);
     try {
       const clean = (rows?: string[]) => (rows ?? []).map(row => row.trim()).filter(Boolean);
-      await onSave({ ...draft, name: draft.name.trim(), pattern: draft.pattern.trim(),
-        examples: examples.map(row => row.en.trim()), translations: examples.some(row => row.ko.trim()) ? examples.map(row => row.ko.trim()) : [],
+      await onSave({ ...draft, name: draft.name.trim(), pattern: draft.pattern.trim(), examples: draft.examples.map(en => en.trim()),
+        translations: draft.translations?.some(ko => ko.trim()) ? draft.examples.map((_, i) => draft.translations?.[i]?.trim() ?? '') : [],
         rule: clean(draft.rule), usage: clean(draft.usage), detail: clean(draft.detail),
-        pitfalls: (draft.pitfalls ?? []).filter(row => row.wrong.trim() || row.right.trim() || row.why.trim()) });
+        pitfalls: draft.pitfalls?.filter(row => row.wrong.trim() || row.right.trim() || row.why.trim()) ?? [] });
       onClose();
     } catch { setError(t('myGrammar.saveFailed')); }
     finally { saving.current = false; setBusy(false); }
   }
-  return <AccessibleDialog label={t('myGrammar.edit')} onClose={() => { if (!saving.current) onClose(); }}>
-    <div className="space-y-4 p-5">
-      <h2 className="text-xl font-bold">{t('myGrammar.edit')}</h2>
-      {(['name','pattern','explain'] as const).map(key => <label className={label} key={key}>{t('myGrammar.' + key)}
-        <input className={input} value={draft[key]} onChange={e => setDraft({ ...draft, [key]: e.target.value })} />
-      </label>)}
-      <label className={label}>{t('myGrammar.rule')}<textarea className={input} value={draft.rule?.join('\n') ?? ''} onChange={e => setDraft({ ...draft, rule: e.target.value.split('\n') })} /></label>
-      <fieldset className="space-y-2"><legend className="font-bold">{t('myGrammar.examples')}</legend>
-        {examples.map((row, i) => <div key={i} className="grid gap-2 rounded-lg bg-surface-container-low p-2 sm:grid-cols-[1fr_1fr_auto]">
-          {(['en','ko'] as const).map(key => <label key={key} className={label}>{i+1}. {t('myGrammar.' + key)}
-            <input className={input} value={row[key]} onChange={e => setExamples(examples.map((r, j) => j === i ? { ...r, [key]: e.target.value } : r))} />
-          </label>)}
-          <button type="button" className="self-end p-2" onClick={() => setExamples(examples.filter((_, j) => i !== j))}>{t('myGrammar.remove')}</button>
-        </div>)}
-        <button type="button" className="font-bold text-primary" onClick={() => setExamples([...examples, { en:'', ko:'' }])}>{t('myGrammar.addExample')}</button>
-      </fieldset>
-      <details className="space-y-3"><summary className="cursor-pointer font-bold">{t('myGrammar.more')}</summary>
-        {(['usage','detail'] as const).map(key => <label key={key} className={label}>{t('myGrammar.'+key)}
-          <textarea className={input} value={draft[key]?.join('\n') ?? ''} onChange={e => setDraft({ ...draft, [key]: e.target.value.split('\n') })} />
-        </label>)}
-        <label className={label}>{t('myGrammar.tip')}<input className={input} value={draft.tip ?? ''} onChange={e => setDraft({ ...draft, tip: e.target.value })} /></label>
-        {(draft.pitfalls ?? []).map((row, i) => <div key={i} className="space-y-1 rounded-lg border p-2">
-          {(['wrong','right','why'] as const).map(key => <label key={key} className={label}>{t('myGrammar.' + key)}
-            <input className={input} value={row[key]} onChange={e => setDraft({ ...draft, pitfalls: draft.pitfalls?.map((r,j) => j === i ? { ...r, [key]: e.target.value } : r) })} />
-          </label>)}
-          <button type="button" onClick={() => setDraft({ ...draft, pitfalls: draft.pitfalls?.filter((_, j) => j !== i) })}>{t('myGrammar.remove')}</button>
-        </div>)}
-        <button type="button" className="font-bold text-primary" onClick={() => setDraft({ ...draft, pitfalls: [...(draft.pitfalls ?? []), { wrong:'', right:'', why:'' }] })}>{t('myGrammar.addPitfall')}</button>
-      </details>
-      {error && <p role="alert" className="text-error">{error}</p>}
-      <footer className="sticky bottom-0 flex justify-end gap-3 bg-white py-2">
-        <button type="button" disabled={busy} onClick={onClose}>{t('common.cancel')}</button>
-        <button type="button" disabled={busy} className="rounded-lg bg-primary px-4 py-2 text-white" onClick={() => void save()}>{saveLabel}</button>
-      </footer>
+  const body = <section aria-label={t('myGrammar.edit')} className="grammar-visual-editor space-y-2">
+    <p className="text-sm text-on-surface-variant">{t('myGrammar.editHint')}</p>
+    <div className="aspect-video w-full" onClickCapture={e => {
+      if ((e.target as Element).closest('button:not(.grammar-field)')) setSelected(null);
+    }}>
+      <PresentSyncContext.Provider value={null}>
+        <GrammarBoard point={{ ...point, ...draft }} themeId={themeId} keyboard={false} editor={editor} />
+      </PresentSyncContext.Provider>
     </div>
+    {error && <p role="alert" className="text-error">{error}</p>}
+    <footer className="flex flex-wrap items-center gap-2">
+      {selected && <><span className="text-sm">{selected.index !== undefined && (selected.index + 1) + '. '}{t('myGrammar.' + selected.key)}</span>
+        {!editing && <button type="button" className="rounded-lg border px-2 py-1" onClick={() => setEditing(true)}>{t('common.edit')}</button>}
+        {selected.index !== undefined && <button type="button" className="rounded-lg border px-2 py-1" onClick={remove}>{t('myGrammar.remove')}</button>}
+      </>}
+      <button type="button" className="ml-auto px-2 py-2" disabled={busy} onClick={onClose}>{t('common.cancel')}</button>
+      <button type="button" disabled={busy} className="rounded-lg bg-primary px-4 py-2 text-white" onClick={() => void save()}>{saveLabel}</button>
+    </footer>
+  </section>;
+  return inline ? body : <AccessibleDialog label={t('myGrammar.edit')} onClose={() => { if (!saving.current) onClose(); }}>
+    <div className="p-4">{body}</div>
   </AccessibleDialog>;
 }

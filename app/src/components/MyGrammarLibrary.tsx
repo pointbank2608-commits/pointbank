@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { grammarBoardContent, GRAMMAR_POINTS } from '../lib/grammar';
+import { grammarBoardContent, grammarPoint, GRAMMAR_POINTS } from '../lib/grammar';
 import { listMyGrammar, saveMyGrammar, type GrammarPreset, type SavedGrammar } from '../lib/myGrammar';
 import GrammarContentEditor from './GrammarContentEditor';
 
@@ -45,7 +45,7 @@ export default function MyGrammarLibrary({ onPick, query = '' }: { onPick?: (blo
       onClick={() => onPick ? onPick(structuredClone(row.block)) : setEditor({ block:row.block, previous:row })}>
       <strong className="block">{row.block.content.name}</strong><span className="text-sm">{row.block.content.pattern.replaceAll('**','')}</span>
     </button>)}</div>
-    {editor && <GrammarContentEditor initial={editor.block.content} saveLabel={t('myGrammar.save')} onClose={() => setEditor(null)}
+    {editor && <GrammarContentEditor point={{ ...(grammarPoint(editor.block.grammarId) ?? {id: editor.block.grammarId, stage: 'middle', level: 0, grade: '', band: 'entry', slots: null}), ...editor.block.content }} themeId={editor.block.boardTheme} saveLabel={t('myGrammar.save')} onClose={() => setEditor(null)}
       onSave={async content => {
         if (!academy || !profile) throw new Error('Missing account');
         await saveMyGrammar(academy.id, profile.id, { ...editor.block, content }, editor.previous);

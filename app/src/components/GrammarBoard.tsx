@@ -1,10 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useSyncedSubState } from '../lib/presentSync';
 import { useTranslation } from 'react-i18next';
 import { BOARD_FONTS, boardSlideStyle, boardTheme } from '../lib/boardThemes';
 import { grammarLevelTag, parseMarked, plainText, type GeneratedSentence, type GrammarPoint } from '../lib/grammar';
 import { speak, speakSequence } from '../lib/speech';
 import { CanvasStageBox } from './CanvasSlideView';
+
+export type GrammarField = 'name' | 'pattern' | 'explain' | 'rule' | 'en' | 'ko' | 'usage' | 'detail' | 'tip' | 'wrong' | 'right' | 'why';
+export interface GrammarBoardEditor {
+  field: (key: GrammarField, value: string, display: ReactNode, index?: number) => ReactNode;
+  addExample: () => void;
+  addPitfall: () => void;
+}
 
 /**
  * 문법 한 가지를 칠판·화이트보드에 띄우는 화면 — 커리큘럼 "문법" 슬라이드와 문법 페이지의
@@ -22,6 +29,7 @@ export default function GrammarBoard({
   className = '',
   initialShowKo = false,
   initialRevealAll = false,
+  editor,
 }: {
   point: GrammarPoint;
   /** 우리 단어장으로 만든 예문 */
@@ -35,6 +43,7 @@ export default function GrammarBoard({
   initialShowKo?: boolean;
   /** 슬라이드 설정: 예문을 처음부터 모두 보여주기(하나씩 꺼내지 않음) */
   initialRevealAll?: boolean;
+  editor?: GrammarBoardEditor;
 }) {
   const { t } = useTranslation();
   const th = boardTheme(themeId ?? 'green') ?? boardTheme('green')!;
@@ -60,12 +69,13 @@ export default function GrammarBoard({
     setShowKo(!!s.showKo);
   });
 
+  const resetExampleCount = editor ? 0 : point.examples.length;
   useEffect(() => {
     setShown(startShown);
     setView('examples');
     setShowKo(initialShowKo);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [point.id, point.examples.length, interactive, extra.length, initialRevealAll, initialShowKo]);
+  }, [point.id, interactive, resetExampleCount, extra.length, initialRevealAll, initialShowKo]);
 
   // → · Space · PageDown(클리커): 예문을 하나씩 꺼낸다. 다 꺼냈으면 그냥 흘려보내서 발표 진행바가
   // 다음 슬라이드로 넘긴다. ← · PageUp 은 반대. capture 단계에서 먼저 받아 처리한 키만 전파를 막는다.
@@ -93,7 +103,10 @@ export default function GrammarBoard({
     return () => document.removeEventListener('keydown', onKey, true);
   }, [keyboard, lines.length, follower]);
 
-  const visible = lines.slice(0, shown);
+  const visible = editor ? lines : lines.slice(0, shown);
+  function field(key: GrammarField, value: string, display: ReactNode = value, index?: number) {
+    return editor ? editor.field(key, value, display, index) : display;
+  }
   const firstMine = lines.findIndex((l) => l.mine);
   const firstMineIdx = firstMine;
   // ── 글자 크기 맞추기 ──
@@ -186,33 +199,33 @@ export default function GrammarBoard({
       <CanvasStageBox fitParent className="rounded-xl shadow-[0_8px_28px_rgba(0,0,0,0.15)]">
         <div className="absolute inset-0" style={boardSlideStyle(th)} />
         <div
-          className="absolute inset-0 flex flex-col"
+          className={`absolute inset-0 flex flex-col ${editor ? 'grammar-edit-surface' : ''}`}
           style={{ padding: th.frame ? '5cqh 6cqh' : '4cqh 5cqh', color: th.text, fontFamily: font }}
         >
           <div className="flex items-center gap-[1.5cqh]" style={{ fontSize: '2.8cqh', color: th.muted }}>
             <span className="rounded-full px-[1.4cqh] py-[0.3cqh]" style={{ background: th.chip }}>
               {grammarLevelTag(point)}
             </span>
-            <span>{point.name}</span>
+            <span>{field('name', point.name)}</span>
           </div>
           <div className="mt-[2cqh] font-bold leading-tight" style={{ fontSize: '6.4cqh' }}>
-            <Pattern />
+            {field('pattern', point.pattern, <Pattern />)}
           </div>
           <div className="mt-[1.2cqh]" style={{ fontSize: '3.2cqh', color: th.muted, fontFamily: BOARD_FONTS.sans }}>
-            {point.explain}
+            {field('explain', point.explain)}
           </div>
-          {view !== 'explain' && point.rule && point.rule.length > 0 && (
-            <ul
+          {view !== 'explain' && (!!point.rule?.length || editor) && (
+            <div
               className="mt-[1.6cqh] space-y-[0.5cqh] rounded-[1.5cqh] px-[2cqh] py-[1.2cqh]"
               style={{ background: th.chip, fontSize: '2.6cqh', fontFamily: BOARD_FONTS.sans }}
             >
-              {point.rule.map((r, i) => (
-                <li key={i} className="flex gap-[1cqh]">
+              {field('rule', point.rule?.join('\n') ?? '', point.rule?.map((r, i) => (
+                <span key={i} className="flex gap-[1cqh]">
                   <span style={{ color: th.accent }}>▸</span>
                   <span>{r}</span>
-                </li>
-              ))}
-            </ul>
+                </span>
+              )))}
+            </div>
           )}
           <div className="mt-[2cqh] h-px w-full" style={{ background: th.line }} />
           {view === 'explain' ? (
@@ -220,27 +233,27 @@ export default function GrammarBoard({
               className="mt-[2cqh] grid min-h-0 flex-1 grid-cols-2 content-start gap-x-[4cqh] gap-y-[1.6cqh] overflow-y-auto pb-[6cqh]"
               style={{ fontSize: '2.8cqh', lineHeight: 1.45, fontFamily: BOARD_FONTS.sans }}
             >
-              {point.usage && point.usage.length > 0 && (
+              {(editor || !!point.usage?.length) && (
                 <div>
                   <div style={{ color: th.accent, fontWeight: 700 }}>💡 {t('grammar.usageTitle')}</div>
-                  {point.usage.map((u, i) => (
-                    <div key={i}>· {u}</div>
-                  ))}
+                  {field('usage', point.usage?.join('\n') ?? '', point.usage?.map((u, i) => (
+                    <span className="block" key={i}>· {u}</span>
+                  )))}
                 </div>
               )}
-              {point.detail && point.detail.length > 0 && (
+              {(editor || !!point.detail?.length) && (
                 <div>
                   <div style={{ color: th.accent, fontWeight: 700 }}>📘 {t('grammar.detailTitle')}</div>
-                  {point.detail.map((d, i) => (
-                    <div key={i}>
+                  {field('detail', point.detail?.join('\n') ?? '', point.detail?.map((d, i) => (
+                    <span className="block" key={i}>
                       {i + 1}. {d}
-                    </div>
-                  ))}
+                    </span>
+                  )))}
                 </div>
               )}
-              {point.tip && (
+              {(editor || point.tip) && (
                 <div className="col-span-2 rounded-[1.5cqh] px-[2cqh] py-[1cqh]" style={{ background: th.chip }}>
-                  ✨ {point.tip}
+                  ✨ {field('tip', point.tip ?? '')}
                 </div>
               )}
             </div>
@@ -249,12 +262,12 @@ export default function GrammarBoard({
               {pitfalls.map((pf, i) => (
                 <li key={i} className="space-y-[0.4cqh]">
                   <div style={{ color: wrongColor }}>
-                    ✗ <span className="line-through decoration-[0.3cqh]">{pf.wrong}</span>
+                    ✗ <span className="line-through decoration-[0.3cqh]">{field('wrong', pf.wrong, pf.wrong, i)}</span>
                   </div>
-                  <button type="button" onClick={() => speak(plainText(pf.right))} className="text-left">
+                  {editor ? <div>✓ {field('right', pf.right, <Marked text={pf.right} />, i)}</div> : <button type="button" onClick={() => speak(plainText(pf.right))} className="text-left">
                     ✓ <Marked text={pf.right} />
-                  </button>
-                  <div style={{ fontSize: '0.65em', color: th.muted, fontFamily: BOARD_FONTS.sans }}>{pf.why}</div>
+                  </button>}
+                  <div style={{ fontSize: '0.65em', color: th.muted, fontFamily: BOARD_FONTS.sans }}>{field('why', pf.why, pf.why, i)}</div>
                 </li>
               ))}
             </ul>
@@ -276,7 +289,15 @@ export default function GrammarBoard({
                     {t('grammar.fromWordList')}
                   </div>
                 )}
-                <button
+                {editor ? <div className="flex items-baseline gap-[1.2cqh]">
+                  <span style={{ color: th.muted, fontSize: '0.7em' }}>{i + 1}.</span>
+                  <div className="min-w-0 flex-1">
+                    {field('en', line.marked, <Marked text={line.marked} />, i)}
+                    {showKo && <div style={{ fontSize: '0.65em', color: th.muted, fontFamily: BOARD_FONTS.sans }}>
+                      {field('ko', line.ko ?? '', line.ko, i)}
+                    </div>}
+                  </div>
+                </div> : <button
                   type="button"
                   tabIndex={interactive ? 0 : -1}
                   onClick={() => interactive && speak(plainText(line.marked))}
@@ -297,7 +318,7 @@ export default function GrammarBoard({
                       volume_up
                     </span>
                   )}
-                </button>
+                </button>}
               </li>
             ))}
           </ul>
@@ -305,24 +326,26 @@ export default function GrammarBoard({
         </div>
         {interactive && (
           <div className="absolute bottom-[2.5cqh] right-[3cqh] flex items-center gap-[1cqh]" style={{ fontSize: '2.4cqh' }}>
-            {hasExplain && (
+            {(hasExplain || editor) && (
               <BoardButton
                 icon={view === 'explain' ? 'format_list_numbered' : 'menu_book'}
                 label={view === 'explain' ? t('grammar.backToExamples') : t('grammar.explainView')}
                 onClick={() => setView((v) => (v === 'explain' ? 'examples' : 'explain'))}
               />
             )}
-            {pitfalls.length > 0 && view !== 'explain' && (
+            {(pitfalls.length > 0 || editor) && view !== 'explain' && (
               <BoardButton
                 icon={view === 'pitfalls' ? 'format_list_numbered' : 'error'}
                 label={view === 'pitfalls' ? t('grammar.backToExamples') : t('grammar.pitfalls')}
                 onClick={() => setView((v) => (v === 'pitfalls' ? 'examples' : 'pitfalls'))}
               />
             )}
-            {view === 'examples' && translations.length > 0 && (
+            {view === 'examples' && (translations.length > 0 || editor) && (
               <BoardButton icon="translate" label={showKo ? t('grammar.hideKo') : t('grammar.showKo')} onClick={() => setShowKo((v) => !v)} />
             )}
-            {view === 'examples' && (
+            {editor && view === 'examples' && <BoardButton icon="add" label={t('myGrammar.addExample')} onClick={editor.addExample} />}
+            {editor && view === 'pitfalls' && <BoardButton icon="add" label={t('myGrammar.addPitfall')} onClick={editor.addPitfall} />}
+            {view === 'examples' && !editor && (
             <>
             <BoardButton
               icon="visibility"

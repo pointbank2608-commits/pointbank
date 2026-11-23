@@ -1,0 +1,62 @@
+.classroom-dialog:has(.grammar-visual-editor) {
+  width: min(1120px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+}
+
+.grammar-edit-surface {
+  bottom: 9cqh;
+  overflow-y: auto;
+}
+
+.grammar-edit-surface > * {
+  flex-shrink: 0;
+}
+
+.grammar-edit-surface > .overflow-y-auto {
+  flex: none;
+  overflow: visible;
+}
+
+.grammar-field,
+.grammar-inline-input {
+  max-width: 100%;
+  text-align: start;
+  overflow-wrap: anywhere;
+  border-radius: 3px;
+  font: inherit;
+  color: inherit;
+  line-height: inherit;
+}
+
+.grammar-field {
+  display: inline-block;
+  padding-inline: 0.15em;
+  white-space: pre-wrap;
+  vertical-align: baseline;
+}
+
+.grammar-field:hover {
+  outline: 1px dashed currentColor;
+}
+
+/* Highlighted words and pattern blanks belong to the same selectable text box. */
+.grammar-field * {
+  pointer-events: none;
+}
+
+.grammar-field[aria-pressed="true"],
+.grammar-field:focus-visible,
+.grammar-inline-input {
+  outline: 2px solid #2385ff;
+  box-shadow: 0 0 0 3px white;
+}
+
+.grammar-inline-input {
+  display: block;
+  width: 100%;
+  min-width: min(10em, 100%);
+  padding-inline: 0.15em;
+  background: transparent;
+  field-sizing: content;
+  resize: vertical;
+}
