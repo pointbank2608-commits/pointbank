@@ -927,7 +927,7 @@ export default function WordListsPage() {
                       {t('wordLists.studyButton')}
                     </button>
                   )}
-                  {homeworkOpen && wordListKindOf(list) === 'word' && list.items.length >= 4 && (
+                  {homeworkOpen && wordListKindOf(list) === 'word' && list.items.length > 0 && (
                     <button
                       type="button"
                       onClick={() => setMemoryList(list)}
@@ -1046,7 +1046,7 @@ export default function WordListsPage() {
         </div>
       )}
 
-      {memoryList && <WordMemoryAssignModal source={{ type: 'wordlist', id: memoryList.id, name: memoryList.name }} cards={wordListToCards(memoryList)} defaultClassId={memoryList.class_id} onClose={() => setMemoryList(null)} />}
+      {memoryList && <WordMemoryAssignModal allowShortTerm source={{ type: 'wordlist', id: memoryList.id, name: memoryList.name }} cards={wordListToCards(memoryList)} defaultClassId={memoryList.class_id} onClose={() => setMemoryList(null)} />}
       {historyList && (
         <WordListHistoryModal
           list={historyList}

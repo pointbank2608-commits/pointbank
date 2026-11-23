@@ -1,6 +1,15 @@
 /** 단어암기숙제 문구(선생님 배정·현황, 학생 화면). ko.ts/en.ts 의 `wordMemory` 로 들어간다. */
 export const wordMemoryKo = {
   title: '단어암기숙제',
+  assignmentMode: '암기 방식',
+  shortTerm: '단기 암기',
+  project: '프로젝트 암기',
+  shortDescription: '정해진 마감일까지 단어 전체의 뜻과 철자를 연습해요.',
+  shortDeadline: '마감일',
+  byTomorrow: '내일까지',
+  thisSunday: '이번 주 일요일까지',
+  shortPreview: '단어 {{count}}개 전체를 보고 들은 뒤, 기억을 확인하고 철자를 써 봐요.',
+  shortReceipt: '{{date}}까지 할 단기 암기 숙제를 학생 {{count}}명에게 보냈어요.',
   menu: '단어암기숙제',
   desc: '고른 단어를 여러 날에 나눠, 간격을 두고 다시 만나게 해요. 한 번 배정하면 매일 새 숙제를 만들지 않아도 돼요.',
   lead: '학생은 오늘 할 분량만 짧게 하고, 어제 틀린 단어는 다른 문제로 다시 만나요.',
@@ -163,12 +172,21 @@ export const wordMemoryKo = {
   portalLoadError: '단어암기숙제 목록을 불러오지 못했어요.',
   // 진입 단추
   assignButton: '단어암기숙제',
-  assignHintList: '이 단어장으로 여러 날 복습하는 숙제 만들기',
+  assignHintList: '이 단어장으로 단기 암기 또는 프로젝트 암기 숙제 만들기',
   assignHintElementary: '이 단어로 단어암기숙제 만들기',
 };
 
 export const wordMemoryEn = {
   title: 'Word memory homework',
+  assignmentMode: 'Memory mode',
+  shortTerm: 'Short-term memory',
+  project: 'Memory project',
+  shortDescription: 'Practice the meanings and spelling of all the words by a deadline.',
+  shortDeadline: 'Due date',
+  byTomorrow: 'By tomorrow',
+  thisSunday: 'By this Sunday',
+  shortPreview: 'Students look at and listen to all {{count}} words, then practice recall and spelling.',
+  shortReceipt: 'Assigned short-term practice to {{count}} students, due {{date}}.',
   menu: 'Word memory homework',
   desc: 'Spread the chosen words over several days and meet them again after a gap. Assign once — no need to create new homework every day.',
   lead: 'Students only do today’s share, and words they missed come back in different questions.',
@@ -327,6 +345,6 @@ export const wordMemoryEn = {
   portalLink: 'Word memory · {{title}}',
   portalLoadError: 'Could not load your word memory assignments.',
   assignButton: 'Word memory homework',
-  assignHintList: 'Make multi-day review homework from this list',
+  assignHintList: 'Assign short-term practice or a memory project from this list',
   assignHintElementary: 'Make word memory homework from these words',
 };

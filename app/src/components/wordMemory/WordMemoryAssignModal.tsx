@@ -10,7 +10,10 @@ import { analyzeCards, cardKey, dailyBudget, defaultStudyDays, estimateMinutes, 
 import type { WmAssignResult, WmDailyMode } from '../../lib/wordMemory/types';
 import AccessibleDialog from '../AccessibleDialog';
 import HomeworkGamePicker, { WORD_HOMEWORK_GAMES } from '../homework/teacher/HomeworkGamePicker';
-import { gameItemFromCards, SOLO_GAME_NAMES, type SoloGame } from '../../lib/homework/blocks';
+import { gameItemFromCards, newDraft, SOLO_GAME_NAMES, validateItems, type HomeworkDraft, type SoloGame } from '../../lib/homework/blocks';
+import { assignDraft } from '../../lib/homework/blockApi';
+import { buildGuidedPractice } from '../../lib/homework/guided';
+import { formatHomeworkDeadline, guidedDeadline } from '../../lib/homework/deadline';
 import { GoalSchedule, RangeSummary } from '../wordMemoryProject/ProjectPlan';
 import { addDays, kstToday, projectSchedule } from '../wordMemoryProject/model';
 
@@ -24,12 +27,15 @@ export interface WmSource {
  * 단어암기숙제 배정 창: 자료(단어장·초등 800) → 반·학생 → 하루 학습량 → 미리보기 → 명시적으로 "배정하기".
  * 배정 전에는 아무것도 만들지 않는다. 요청 번호(requestId)는 창을 열 때 한 번 정해 두 번 눌러도 한 번만 배정된다.
  */
-export default function WordMemoryAssignModal({ source, cards, defaultClassId, onClose, onAssigned }: { source: WmSource; cards: FullCardItem[]; defaultClassId?: string | null; onClose: () => void; onAssigned?: () => void }) {
+export default function WordMemoryAssignModal({ source, cards, defaultClassId, allowShortTerm = false, onClose, onAssigned }: { source: WmSource; cards: FullCardItem[]; defaultClassId?: string | null; allowShortTerm?: boolean; onClose: () => void; onAssigned?: () => void }) {
   const { t, i18n } = useTranslation();
   const { academy } = useAuth();
   const navigate = useNavigate();
   const homeworkOpen = useFeature('homework');
   const wmCards = useMemo(() => toWmCards(cards), [cards]);
+  const [shortTerm, setShortTerm] = useState(allowShortTerm && wmCards.length < WM_MIN_WORDS);
+  const shortRequest = useRef<{ key: string; id: string; draft: HomeworkDraft } | null>(null);
+  const [shortReceipt, setShortReceipt] = useState<{ count: number; date: string } | null>(null);
   const analysis = useMemo(() => analyzeCards(wmCards, Infinity), [wmCards]);
   const lastRequest = useRef<{ key: string; id: string; cards: typeof wmCards } | null>(null);
   const [classes, setClasses] = useState<ClassRow[]>([]);
@@ -43,21 +49,29 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
   const [games, setGames] = useState<SoloGame[]>([]);
   const prepareGames = gamePicker || games.length > 0;
   const lang = i18n.language.startsWith('en') ? 1 : 0;
+  const usableCards = useMemo(() => {
+    const keys = new Set(wmCards.map(card => cardKey(card.word, card.meaning)));
+    return cards.filter(card => keys.delete(cardKey(card.word ?? '', card.meaning ?? '')));
+  }, [cards, wmCards]);
+  const shortPlan = useMemo(() => shortTerm ? buildGuidedPractice(usableCards.map(card => ({
+    id: card.id, kind: 'word', card: { ...card, word: card.word.trim(), meaning: card.meaning.trim() }, origins: [source.name],
+  })), [], 'memory', lang === 1) : null, [shortTerm, usableCards, source.name, lang]);
   const gameItems = useMemo(() => {
     const items = new Map<SoloGame, NonNullable<ReturnType<typeof gameItemFromCards>>>();
     if (!prepareGames) return items;
-    const assignedKeys = new Set(wmCards.map(card => cardKey(card.word, card.meaning)));
-    const pool = cards.filter(card => assignedKeys.delete(cardKey(card.word ?? '', card.meaning ?? '')));
     for (const game of WORD_HOMEWORK_GAMES) {
-      const item = gameItemFromCards(pool, game, SOLO_GAME_NAMES[game][lang]);
+      const item = gameItemFromCards(usableCards, game, SOLO_GAME_NAMES[game][lang]);
       if (item) items.set(game, item);
     }
     return items;
-  }, [cards, wmCards, lang, prepareGames]);
+  }, [usableCards, lang, prepareGames]);
   const selectedGames = games.filter(game => gameItems.has(game));
   // 목표일(예상). 비워 두면 소개에 걸리는 일수 + 여유로 정한 기본값. 서버의 목표일 = 시작일 + 공부 기간 + 복습 기간
   const [goal, setGoal] = useState<string | null>(null);
   const today = useMemo(() => kstToday(), []); // 서버 wm_today()와 같은 한국 날짜(배정 전 미리보기용). 실제 시작일은 서버가 정한다
+  const tomorrow = addDays(today, 1);
+  const sunday = addDays(today, (7 - new Date(today + 'T00:00:00Z').getUTCDay()) % 7);
+  const [dueDay, setDueDay] = useState(tomorrow);
   const [reviewDays, setReviewDays] = useState(14);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -107,7 +121,13 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
   }, [classId]);
 
   const minutes = estimateMinutes(mode);
-  const canAssign = homeworkOpen && !busy && !result && classId && picked.size > 0 && analysis.issues.length === 0 && schedule.valid && validLimit;
+  const bonusItems = selectedGames.map(game => gameItems.get(game)!);
+  const shortIssues = shortPlan && bonusItems.length
+    ? [...new Set([...shortPlan.issues, ...validateItems([...shortPlan.items, ...bonusItems])])]
+    : shortPlan?.issues ?? [];
+  const canAssign = homeworkOpen && !busy && !result && !shortReceipt && classId && picked.size > 0 && (shortTerm
+    ? wmCards.length > 0 && !!dueDay && dueDay >= today && shortIssues.length === 0
+    : analysis.issues.length === 0 && schedule.valid && validLimit);
 
   async function assign() {
     if (!canAssign) return;
@@ -116,7 +136,19 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
     try {
       const studentIds = [...picked].sort();
       const approvedTitle = title.trim() || source.name;
-      const bonusItems = selectedGames.map(game => gameItems.get(game)!);
+      if (shortPlan) {
+        const key = JSON.stringify([classId, approvedTitle, wmCards, studentIds, dueDay, selectedGames, lang]);
+        if (shortRequest.current?.key !== key) {
+          shortRequest.current = { key, id: crypto.randomUUID(), draft: {
+            ...newDraft(), title: t('wordMemory.shortTerm') + ' · ' + approvedTitle, items: [...shortPlan.items, ...bonusItems],
+          } };
+        }
+        const due = guidedDeadline(dueDay);
+        await assignDraft(classId, shortRequest.current.draft, studentIds, due, shortRequest.current.id);
+        setShortReceipt({ count: studentIds.length, date: formatHomeworkDeadline(due, i18n.language) });
+        onAssigned?.();
+        return;
+      }
       const key = JSON.stringify([classId, approvedTitle, source, studentIds, mode, study, reviewDays, newWordLimit, bonusItems]);
       if (lastRequest.current?.key !== key || lastRequest.current.cards !== wmCards) {
         lastRequest.current = { key, id: crypto.randomUUID(), cards: wmCards };
@@ -160,14 +192,14 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
   const chip = (on: boolean) => `min-h-11 rounded-xl border-2 px-4 text-base font-bold ${on ? 'border-primary bg-primary text-white' : 'border-outline-variant bg-white text-deep-navy'}`;
 
   return (
-    <AccessibleDialog label={t('wordMemory.title')} onClose={onClose}>
+    <AccessibleDialog label={t('wordMemory.title')} onClose={() => { if (!busy) onClose(); }}>
       <div className="w-full break-keep space-y-5 p-5 sm:p-7" data-wm-assign>
         <header className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-2xl font-black text-deep-navy">{t('wordMemory.title')}</h2>
-            <p className="mt-1 text-on-surface-variant">{t('wordMemory.desc')}</p>
+            <p className="mt-1 text-on-surface-variant">{t(shortTerm ? 'wordMemory.shortDescription' : 'wordMemory.desc')}</p>
           </div>
-          <button type="button" className="min-h-11 shrink-0 rounded-xl border border-outline-variant bg-white px-4 font-bold" onClick={onClose}>
+          <button type="button" className="min-h-11 shrink-0 rounded-xl border border-outline-variant bg-white px-4 font-bold" disabled={busy} onClick={onClose}>
             {t('wordMemory.close')}
           </button>
         </header>
@@ -178,7 +210,9 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
           </p>
         )}
 
-        {result ? (
+        {shortReceipt ? (
+          <p role="status" className="rounded-xl bg-surface-container-low p-4 font-bold">{t('wordMemory.shortReceipt', shortReceipt)}</p>
+        ) : result ? (
           <section className="space-y-3" data-wm-result>
             <h3 className="text-xl font-bold text-deep-navy">{result.plan_id ? t('wordMemory.assignedTitle') : t('wordMemory.nothingNew')}</h3>
             {result.plan_id && <p>{t('wordMemory.assignedBody', { count: result.total })}</p>}
@@ -214,7 +248,13 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
             </div>
           </section>
         ) : (
-          <>
+          <fieldset className="min-w-0 space-y-5" disabled={busy}>
+            {allowShortTerm && (
+              <div role="group" aria-label={t('wordMemory.assignmentMode')} className="flex flex-wrap gap-2">
+                <button type="button" aria-pressed={shortTerm} className={chip(shortTerm)} onClick={() => setShortTerm(true)}>{t('wordMemory.shortTerm')}</button>
+                <button type="button" aria-pressed={!shortTerm} className={chip(!shortTerm)} onClick={() => setShortTerm(false)}>{t('wordMemory.project')}</button>
+              </div>
+            )}
             <section className="rounded-xl bg-surface-container-low p-4">
               <div className="text-sm font-bold text-on-surface-variant">{t('wordMemory.source')}</div>
               <div className="mt-1 text-lg font-bold" data-wm-source>
@@ -225,7 +265,7 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
             <section className="grid gap-4 sm:grid-cols-2">
               <label className="block text-sm font-bold text-on-surface-variant">
                 {t('wordMemory.pickClass')}
-                <select className={`${field} mt-1 w-full text-deep-navy`} value={classId} onChange={(e) => setClassId(e.target.value)} data-wm-class>
+                <select className={`${field} mt-1 w-full text-deep-navy`} value={classId} onChange={(e) => { setStudents([]); setPicked(new Set()); setClassId(e.target.value); }} data-wm-class>
                   {classes.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
@@ -274,6 +314,19 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
               </div>
             </section>
 
+            {shortTerm ? (
+              <section className="space-y-3">
+                <label className="block font-bold">{t('wordMemory.shortDeadline')}
+                  <input type="date" min={today} required value={dueDay} onChange={e => setDueDay(e.target.value)} className={`${field} mt-1 block`} />
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  <button type="button" className={field} onClick={() => setDueDay(tomorrow)}>{t('wordMemory.byTomorrow')}</button>
+                  <button type="button" className={field} onClick={() => setDueDay(sunday)}>{t('wordMemory.thisSunday')}</button>
+                </div>
+                <p>{t('wordMemory.shortPreview', { count: wmCards.length })}</p>
+                {shortIssues.map(issue => <p key={issue} role="alert" className="text-error">{issue}</p>)}
+              </section>
+            ) : <>
             <section>
               <div className="mb-2 text-sm font-bold text-on-surface-variant">{t('wordMemory.daily')}</div>
               <div className="flex flex-wrap gap-2" role="group" aria-label={t('wordMemory.daily')}>
@@ -320,9 +373,10 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
               )}
             </section>
 
+            </>}
             <details className="rounded-xl border border-outline-variant p-4">
               <summary className="cursor-pointer font-bold text-primary">{t('wordMemory.optional')}</summary>
-              <p className="mt-2 text-sm text-on-surface-variant">{t('wordMemory.projectGoalNote')}</p>
+              {!shortTerm && <p className="mt-2 text-sm text-on-surface-variant">{t('wordMemory.projectGoalNote')}</p>}
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
                 <label className="block text-sm font-bold text-on-surface-variant sm:col-span-3">
                   {t('wordMemory.planTitle')}
@@ -334,7 +388,7 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
                   onClick={() => setGamePicker(true)}>{t('wordMemory.chooseGames')}</button>
                 {selectedGames.length > 0 && <span>{selectedGames.map(game => SOLO_GAME_NAMES[game][lang]).join(' · ')}</span>}
               </div>
-              <p className="mt-1 text-sm text-on-surface-variant">{t('wordMemory.gamesHelp')}</p>
+              {!shortTerm && <p className="mt-1 text-sm text-on-surface-variant">{t('wordMemory.gamesHelp')}</p>}
               {gamePicker && <HomeworkGamePicker available={[...gameItems.keys()]} initial={selectedGames}
                 onPick={next => { setGames(next); setGamePicker(false); }} onClose={() => setGamePicker(false)} />}
             </details>
@@ -349,7 +403,7 @@ export default function WordMemoryAssignModal({ source, cards, defaultClassId, o
                 {busy ? t('wordMemory.assigning') : t('wordMemory.assign')}
               </button>
             </div>
-          </>
+          </fieldset>
         )}
       </div>
     </AccessibleDialog>
