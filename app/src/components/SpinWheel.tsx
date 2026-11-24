@@ -118,8 +118,7 @@ export default function SpinWheel({
 
   const count = items.length;
   const slice = count > 0 ? 360 / count : 0;
-  // A horizontal word must fit the chord at its label radius. Use a numbered
-  // legend instead of clipping words or shrinking below classroom reading size.
+  // Number crowded wedges and show the full item in the result above the wheel.
   const numbered = count > 12 || items.some(item => Array.from(item.label).length * fontSizeFor(count) * .62 > 2 * R * .58 * Math.sin(Math.PI / Math.max(2,count)) - 8);
   const fontSize = numbered ? wheelNumberFontSize(count,R*.7) : fontSizeFor(count);
 
@@ -159,7 +158,7 @@ export default function SpinWheel({
       const largeArc = a1 - a0 > 180 ? 1 : 0;
       const path = `M ${CX} ${CY} L ${p0.x.toFixed(2)} ${p0.y.toFixed(2)} A ${R} ${R} 0 ${largeArc} 1 ${p1.x.toFixed(2)} ${p1.y.toFixed(2)} Z`;
       const mid = a0 + slice / 2;
-      return { id: item.id, path, mid, color: colorFor(i), label: numbered ? String(i + 1) : item.label };
+      return { id: item.id, path, mid, color: colorFor(i), itemLabel: item.label, label: numbered ? String(i + 1) : item.label };
     });
   }, [items, slice, numbered]);
 
@@ -377,7 +376,7 @@ export default function SpinWheel({
   return (
     <div className="flex w-full flex-col items-center py-4 pb-2">
       <div
-        className={`flex w-full flex-col items-center gap-6 ${editable || numbered ? 'md:flex-row md:items-start md:justify-center' : ''}`}
+        className={`flex w-full flex-col items-center gap-6 ${editable && !itemsHidden ? 'md:flex-row md:items-start md:justify-center' : ''}`}
       >
         <div className="flex w-full max-w-[560px] flex-col items-center">
           {editable && !itemsHidden && (
@@ -425,7 +424,7 @@ export default function SpinWheel({
             >
               <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="absolute inset-0 h-full w-full">
                 {slices.map((s) => (
-                  <path key={s.id} d={s.path} fill={s.color} stroke="#fff8ea" strokeWidth={3} />
+                  <path key={s.id} d={s.path} fill={s.color} stroke="#fff8ea" strokeWidth={3}><title>{s.itemLabel}</title></path>
                 ))}
                 {slices.map((s) => (
                   <text
@@ -489,10 +488,6 @@ export default function SpinWheel({
 
         </div>
 
-        {numbered && !editable && <ol aria-label={t('gameAdmin.itemCountLabel', { count })} tabIndex={0} className="grid w-full min-w-0 max-h-[32vh] gap-2 overflow-y-auto overscroll-contain rounded-xl focus-visible:outline-4 focus-visible:outline-primary md:max-w-[320px] md:max-h-[560px] md:self-center">
-          <li className="sticky top-0 rounded-xl bg-white p-2 text-sm font-bold text-deep-navy">{t('prelaunchUx.wheelLegend',{count})}</li>
-          {items.map((item,i)=><li key={item.id} className="flex items-start gap-3 rounded-xl border border-outline-variant bg-white p-3 text-lg font-bold text-deep-navy"><span className="flex h-8 min-w-8 items-center justify-center rounded-full text-white" style={{background:colorFor(i)}}>{i+1}</span><span className="min-w-0 break-words [overflow-wrap:anywhere]">{item.label}</span></li>)}
-        </ol>}
         {editable && !itemsHidden && (
           <div className="w-full md:w-[260px] md:shrink-0 space-y-3">
             <div className="flex items-center justify-between gap-2 rounded-full bg-surface-container-lowest px-2 py-1.5 shadow-sm">
