@@ -89,7 +89,7 @@ export default function QuizShowPage() {
   const [mode, setMode] = useState<'edit' | 'play'>('play');
   const [listId, setListId] = useState('');
   const [rounds, setRounds] = useState<ContestRoundSetting[]>(() => normalizeContestRounds(selected?.config.liveContestRounds));
-  // 미리보기: 진짜 대회를 열지 않고(입장 번호·기록 없이) 칠판 + 학생 휴대폰 모형으로 연습
+  // 미리보기: 진짜 대회를 열지 않고(입장 번호·기록 없이) 선생님 칠판 화면만 확인
   const [preview, setPreview] = useState(false);
   const listCards = useMemo(() => wordListToCards(wordLists.find((w) => w.id === listId)), [wordLists, listId]);
   // 단어장엔 예문이 없어서 사전에서 예문·그림을 보충한다(빈칸 채우기·그림 라운드용)
@@ -301,7 +301,6 @@ export default function QuizShowPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          {!showCreateForm && isActivityDraft(selected.id) && <p className="rounded-xl bg-primary/5 p-4">{t('quick.onlinePreview')}</p>}
           {!showCreateForm && <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">{selected.name}</h2>}
 
           {isStaff && preview && playable.length > 0 && (
@@ -318,8 +317,6 @@ export default function QuizShowPage() {
                 questions={playable}
                 classId={hostClassId}
                 templateId={isActivityDraft(selected.id) ? null : selected.id}
-                preview={isActivityDraft(selected.id)}
-                autoPreview={directEntry && !!workspace?.running && isActivityDraft(selected.id) && !selected.config.editingTemplateId}
                 speedBonus={speedBonus}
               />
             </GameThemeFrame>

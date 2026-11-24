@@ -246,6 +246,11 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   }, []);
 
   const type = info?.gameType;
+  const quizPreviewQuestions = useMemo(() => {
+    if (type !== 'quizshow' || !info?.selected || !contentDraft) return undefined;
+    try { return gameEditContent(info.selected, contentDraft, nativeOptions).config.liveQuestions; }
+    catch { return []; }
+  }, [type, info?.selected, contentDraft, nativeOptions]);
   const savedParticipantMode = type === 'shufflefind' ? info?.selected?.config.shuffleMode : type === 'telepathy' ? info?.selected?.config.telepathyMode : undefined;
   const unified = usesUnifiedGameSettings(type);
   const hasRoundSettings = hasAdventureRoundSettings(type);
@@ -791,7 +796,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         <div className="flex flex-wrap gap-1 rounded-xl bg-surface-container-low p-1" role="group" aria-label={text('설정', 'Settings')}>
           {isLadder && <button className={`${tab(false)} cursor-not-allowed opacity-40`} disabled title={text('사다리는 참가자를 반 설정에서, 결과를 게임설정에서 정해요', 'Set players in Class and results in Settings')}>{text('내 단어/문장', 'My words')}</button>}
           {hasContentButton && !isLadder && <button ref={contentButton} className={tab(open === 'content')} disabled={!!info?.sharedView} aria-expanded={open==='content'} onClick={event => toggle('content',event.currentTarget)}>{isGrammar && !unified ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
-          <button className={tab(open === 'class')} disabled={!!info?.sharedView} aria-expanded={open === 'class'} onClick={event => toggle('class',event.currentTarget)}>{text('반 설정', 'Class')}</button>
+          <button className={`${tab(open === 'class')} disabled:cursor-not-allowed disabled:opacity-40`} disabled={!!info?.sharedView || type === 'quizshow'} title={type === 'quizshow' ? text('학생은 QR코드나 입장번호로 참여해요.', 'Students join using the QR code or entry code.') : undefined} aria-expanded={open === 'class'} onClick={event => toggle('class',event.currentTarget)}>{text('반 설정', 'Class')}</button>
           <button ref={settingsButton} className={tab(open === 'settings' || workspace.panel === 'settings')} disabled={!!info?.sharedView} aria-expanded={open === 'settings' || workspace.panel === 'settings'} onClick={event => (unified || pictureKind || isGrammar || itemSettings || splitGame || isPopcorn || isPassBall || simpleOpts.length > 0 ? toggle('settings',event.currentTarget) : (close(), workspace.open('settings',event.currentTarget)))}>{text('게임설정', 'Settings')}</button>
           <button className={tab(open === 'saves')} aria-expanded={open === 'saves'} onClick={event => toggle('saves',event.currentTarget)}>{text('저장/불러오기', 'Save / Load')}</button>
         </div>
@@ -1235,7 +1240,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
           <input type="checkbox" className="h-5 w-5" checked={pSound} onChange={(e) => setPSound(e.target.checked)} />
           {text('효과음 켜기', 'Sound effects')}
         </label>
-        {unified && info?.selected && <GameNativeOptions type={info.gameType} value={nativeOptions} onChange={next=>{
+        {unified && info?.selected && <GameNativeOptions type={info.gameType} value={nativeOptions} quizQuestions={quizPreviewQuestions} onChange={next=>{
           setNativeOptions(next);
           if(next.adventure?.cases!==nativeOptions.adventure?.cases && contentDraft) setContentDraft(gameEditDraft({...info.selected!,config:next}));
         }}/>}

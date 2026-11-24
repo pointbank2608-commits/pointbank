@@ -1,31 +1,22 @@
 import { useTranslation } from 'react-i18next';
 import { ADVENTURE_TYPES, MAX_ADVENTURE_QUESTIONS } from '../lib/adventureGames';
 import { DETECTIVE_RULES, defaultDetectiveRules, previewDetectiveDraft, builtInDetectiveQuestions, detectiveCaseFromVariant } from '../lib/detectiveSuggestion';
-import type { GameTemplateConfig, GameType } from '../lib/types';
+import type { GameTemplateConfig, GameType, LiveQuestion } from '../lib/types';
 import { SENTENCE_PATTERNS } from '../lib/sentencePatterns';
 import CatchSentenceSettings, { CATCH_DEFAULT_SECONDS, type CatchLevel } from './CatchSentenceSettings';
-import { normalizeContestRounds } from '../lib/liveQuiz';
+import QuizShowRoundSettings from './QuizShowRoundSettings';
 import AdventureMapEditor from './adventure/AdventureMapEditor';
 import GameImagePicker from './GameImagePicker';
 import { useGameWorkspace } from '../context/GameWorkspaceContext';
 
 const field='mt-1 min-h-11 w-full rounded-xl border border-outline-variant bg-white px-3 py-2';
 /** Options from the dedicated editors, with content selection owned by the toolbar. */
-export default function GameNativeOptions({type,value,onChange}:{type:GameType;value:GameTemplateConfig;onChange:(config:GameTemplateConfig)=>void}) {
-  const {i18n,t}=useTranslation(),en=i18n.language.startsWith('en'),text=(ko:string,en:string)=>i18n.language.startsWith('en')?en:ko;
+export default function GameNativeOptions({type,value,onChange,quizQuestions}:{type:GameType;value:GameTemplateConfig;quizQuestions?:LiveQuestion[];onChange:(config:GameTemplateConfig)=>void}) {
+  const {i18n}=useTranslation(),en=i18n.language.startsWith('en'),text=(ko:string,en:string)=>i18n.language.startsWith('en')?en:ko;
   const workspace=useGameWorkspace();
   const a=value.adventure,s=value.storybook;
   const patch=(p:Partial<GameTemplateConfig>)=>onChange({...value,...p});
-  if(type==='quizshow') {
-    const rounds=normalizeContestRounds(value.liveContestRounds);
-    return <fieldset className="space-y-3 rounded-xl bg-surface-container-low p-3"><legend className="font-bold">{text('라운드 설정','Round settings')}</legend>{rounds.map((round,i)=><div key={round.type} className="space-y-2 rounded-xl bg-white p-3">
-      <label className="flex min-h-10 items-center gap-2 font-bold"><input type="checkbox" checked={round.on} onChange={e=>patch({liveContestRounds:rounds.map((r,j)=>j===i?{...r,on:e.target.checked}:r)})}/>{t(`liveQuiz.roundName_${round.type}`)}</label>
-      <label className="block text-sm">{text('문제 수 (−1은 전체)','Questions (−1 = all)')}<input className={field} type="number" min={-1} value={round.count} onChange={e=>patch({liveContestRounds:rounds.map((r,j)=>j===i?{...r,count:e.target.valueAsNumber}:r)})}/></label>
-      <label className="block text-sm">{text('제한 시간(초)','Time limit (sec)')}<input className={field} type="number" min={5} max={120} value={round.seconds??20} onChange={e=>patch({liveContestRounds:rounds.map((r,j)=>j===i?{...r,seconds:e.target.valueAsNumber}:r)})}/></label>
-      <label className="block text-sm">{text('점수','Points')}<input className={field} type="number" min={0} value={round.points??1000} onChange={e=>patch({liveContestRounds:rounds.map((r,j)=>j===i?{...r,points:e.target.valueAsNumber}:r)})}/></label>
-      <div className="flex gap-2">{[-1,1].map(delta=><button key={delta} type="button" className="min-h-11 rounded-xl border px-3 font-bold disabled:opacity-40" disabled={i+delta<0||i+delta>=rounds.length} onClick={()=>{const next=[...rounds];[next[i],next[i+delta]]=[next[i+delta],next[i]];patch({liveContestRounds:next});}}>{delta===-1?text('위로','Up'):text('아래로','Down')}</button>)}</div>
-    </div>)}</fieldset>;
-  }
+  if(type==='quizshow') return <QuizShowRoundSettings value={value.liveContestRounds} questions={quizQuestions??value.liveQuestions??[]} onChange={liveContestRounds=>patch({liveContestRounds})}/>;
   if(type==='catchsentence') return <CatchSentenceSettings level={(value.catchLevel??1) as CatchLevel} seconds={value.catchSeconds??CATCH_DEFAULT_SECONDS[(value.catchLevel??1) as CatchLevel]} onChange={next=>patch({catchLevel:next.level??value.catchLevel,catchSeconds:next.seconds??value.catchSeconds})}/>;
   if(type==='watermelon') return <label className="block font-bold">{text('문장 틀','Sentence pattern')}<select className={field} value={value.watermelonPatternId??'svo'} onChange={e=>patch({watermelonPatternId:e.target.value})}>{SENTENCE_PATTERNS.filter(p=>p.playable).map(p=><option key={p.id} value={p.id}>{p.slots.join(' + ')}</option>)}</select></label>;
   if(type==='labeleddiagram') return <section className="space-y-2"><p className="font-bold">{text('문제 그림','Diagram image')}</p><GameImagePicker academyId={workspace?.info?.academyId??''} value={value.diagramImageUrl??null} onChange={url=>patch({diagramImageUrl:url??undefined})}/></section>;

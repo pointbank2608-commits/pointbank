@@ -50,14 +50,11 @@ interface Props {
   templateId: string | null;
   speedBonus: boolean;
   /**
-   * 미리보기(2026-09-28): 진짜 대회를 열지 않고(입장 번호·DB 기록 없이) 칠판 흐름을 그대로 넘겨 보며,
-   * 옆의 학생 휴대폰 모형에서 직접 답도 내 본다. 참가자는 "나(미리보기)" 한 명.
+   * 미리보기는 입장 번호·DB 기록 없이 선생님 칠판 화면만 확인한다.
    */
   preview?: boolean;
-  autoPreview?: boolean;
 }
 
-const PREVIEW_ME = 'preview-me';
 const liveClock = {
   setTimeout: (fn: () => void, ms: number) => window.setTimeout(fn, ms),
   clearTimeout: (id: number) => window.clearTimeout(id),
@@ -65,7 +62,7 @@ const liveClock = {
   clearInterval: (id: number) => window.clearInterval(id),
 };
 
-export default function QuizShowHost({ title, questions, classId, templateId, speedBonus, preview = false, autoPreview = false }: Props) {
+export default function QuizShowHost({ title, questions, classId, templateId, speedBonus, preview = false }: Props) {
  /* game-history-adapter */
  const historyClock=useGameHistoryClock();
  const history=useGameHistory();
@@ -114,19 +111,6 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   const [now, setNow] = useState(() => preview ? historyClock.dateNow() : Date.now());
   const clock = preview ? historyClock : liveClock;
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const previewStarted = useRef(false);
-  useGameHistoryEffect(() => {
-    if (!preview || !autoPreview || !questions.length || previewStarted.current) return;
-    previewStarted.current = true;
-    const now = Date.now();
-    const time = new Date(now).toISOString();
-    setSession({ id: 'preview', code: '------', title, questions, speed_bonus: speedBonus, phase: 'question', q_index: 0, q_started_at: time, created_at: time, ended_at: null });
-    setPlayers([{ id: PREVIEW_ME, session_id: 'preview', nickname: t('liveQuiz.previewMe'), joined_at: time }]);
-    const startedAt = historyClock.dateNow();
-    setStartLocal(startedAt);
-    setNow(startedAt);
-  }, [preview, autoPreview, questions, title, speedBonus, t], false, "app/src/components/QuizShowHost.tsx:effect1");
-
   const phase: LivePhase | null = session?.phase ?? null;
   const pauseLocked = !preview && (phase === 'question' || busy);
   useGameHistoryEffect(() => {
@@ -268,7 +252,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
     if (preview) {
       const now = new Date(historyClock.dateNow()).toISOString();
       setSession({ id: 'preview', code: '------', title, questions, speed_bonus: speedBonus, phase: 'lobby', q_index: -1, q_started_at: null, created_at: now, ended_at: null });
-      setPlayers([{ id: PREVIEW_ME, session_id: 'preview', nickname: t('liveQuiz.previewMe'), joined_at: now }]);
+      setPlayers([]);
       setAnswers([]);
       setRoundIntro(null);
       return;
@@ -408,58 +392,14 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
     void go('ended', qIndex);
   }
 
-  /** 미리보기 휴대폰 모형에서 낸 답 — 서버 채점과 같은 규칙(부저는 선생님 판정) */
-  function previewAnswer(choice: number | null, text: string | null) {
-    if (!current || phase !== 'question') return;
-    if (answers.some((a) => a.q_index === qIndex && a.player_id === PREVIEW_ME)) return;
-    const pts = current.points ?? 1000;
-    let correct: boolean | null = null;
-    if (current.kind === 'choice' || current.kind === 'ox') correct = choice === current.correctIndex;
-    if (current.kind === 'text') correct = (current.answer ?? '').split('/').some((a) => norm(a) === norm(text ?? ''));
-    setAnswers((prev) => [
-      ...prev,
-      {
-        id: `pv-${qIndex}`,
-        session_id: 'preview',
-        player_id: PREVIEW_ME,
-        q_index: qIndex,
-        choice,
-        answer: text,
-        correct,
-        potential: pts,
-        points: correct ? pts : 0,
-        answered_at: new Date().toISOString(),
-      },
-    ]);
-  }
-
   /* ---------- 화면 ---------- */
   const stage = 'relative flex min-h-[62vh] flex-col overflow-hidden rounded-[24px] bg-[#16213e] text-white [container-type:inline-size]';
   const bigBtn =
     'flex items-center gap-2 rounded-full bg-warm-yellow px-7 py-3 text-[clamp(16px,1.6cqw,26px)] font-bold text-deep-navy shadow-lg transition-transform hover:scale-[1.03] disabled:opacity-50';
 
-  const myAnswer = answers.find((a) => a.q_index === qIndex && a.player_id === PREVIEW_ME) ?? null;
-  const myScore = answers.filter((a) => a.player_id === PREVIEW_ME).reduce((sum, a) => sum + (a.points ?? 0), 0);
-  const wrap = (el: React.ReactElement) =>
-    preview ? (
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
-        {el}
-        <PreviewPhone
-          q={session ? current : null}
-          phase={session ? phase : null}
-          roundIntro={roundIntro != null}
-          myAnswer={myAnswer}
-          myScore={myScore}
-          onAnswer={previewAnswer}
-        />
-      </div>
-    ) : (
-      el
-    );
-
   if (!session) {
     const rounds = [...new Set(questions.map((q) => q.round?.trim()).filter(Boolean))];
-    return wrap(
+    return (
       <div className={stage}>
         <div className="flex flex-1 flex-col items-center justify-center gap-5 p-8 text-center">
           <span className="material-symbols-outlined text-warm-yellow" style={{ fontSize: 'clamp(48px,7cqw,110px)' }}>emoji_events</span>
@@ -512,7 +452,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
 
   // 대기실
   if (phase === 'lobby' && roundIntro == null) {
-    return wrap(
+    return (
       <div className={stage}>
         {header}
         <div className="grid flex-1 items-center gap-6 p-6 md:grid-cols-[auto_1fr]">
@@ -572,7 +512,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   // 라운드 소개
   if (roundIntro != null) {
     const q = qs[roundIntro];
-    return wrap(
+    return (
       <div className={stage}>
         {header}
         <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
@@ -589,7 +529,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   if (phase === 'leaderboard' || phase === 'final') {
     const top = ranking.slice(0, phase === 'final' ? 3 : 8);
     const max = Math.max(1, ...ranking.map((r) => r.score));
-    return wrap(
+    return (
       <div className={stage}>
         {header}
         <div className="flex flex-1 flex-col items-center gap-4 p-6">
@@ -663,7 +603,7 @@ export default function QuizShowHost({ title, questions, classId, templateId, sp
   const revealed = phase === 'reveal';
   const counts = (current.choices ?? ['O', 'X']).map((_, i) => currentAnswers.filter((a) => a.choice === i).length);
 
-  return wrap(
+  return (
     <div className={stage}>
       {header}
       <div className="flex flex-1 flex-col gap-4 p-5">
@@ -924,134 +864,6 @@ function TextAnswers({
             </div>
           );
         })}
-      </div>
-    </div>
-  );
-}
-
-/** 미리보기 전용: 학생 휴대폰 화면 모형(실제 /join 화면과 같은 답 방식). 답을 내면 칠판 집계에 "나(미리보기)"로 들어간다. */
-function PreviewPhone({
-  q,
-  phase,
-  roundIntro,
-  myAnswer,
-  myScore,
-  onAnswer,
-}: {
-  q: LiveQuestion | null;
-  phase: LivePhase | null;
-  roundIntro: boolean;
-  myAnswer: LiveAnswer | null;
-  myScore: number;
-  onAnswer: (choice: number | null, text: string | null) => void;
-}) {
- /* game-history-adapter */
- useGameHistorySnapshot('src/components/QuizShowHost.tsx:PreviewPhone',()=>({state:{text},refs:{}}),(snapshot,elapsed)=>{setText(()=>snapshot.state.text);void elapsed;});
-
-  const { t } = useTranslation();
-  const [text, setText] = useState('');
-  useGameHistoryEffect(() => setText(''), [q?.id], false, "app/src/components/QuizShowHost.tsx:effect14");
-  const open = phase === 'question' && !roundIntro && !!q;
-  const revealed = phase === 'reveal' && !!q;
-
-  let body: React.ReactNode;
-  if (!phase) body = <p className="text-center text-white/70">{t('liveQuiz.previewPhoneIdle')}</p>;
-  else if (phase === 'lobby' || roundIntro) body = <p className="text-center text-white/70">{t('liveQuiz.previewPhoneWait')}</p>;
-  else if (phase === 'leaderboard' || phase === 'final')
-    body = (
-      <div className="text-center">
-        <div className="text-white/70">{t('liveQuiz.previewMyScore')}</div>
-        <div className="text-4xl font-black tabular-nums text-warm-yellow">{myScore.toLocaleString()}</div>
-      </div>
-    );
-  else if (q) {
-    const answered = !!myAnswer;
-    body = (
-      <div className="flex flex-col gap-3">
-        <div className="text-center text-xl font-bold leading-snug">{q.prompt}</div>
-        {q.kind === 'choice' && (
-          <div className="grid grid-cols-2 gap-2">
-            {(q.choices ?? []).map((c, i) => {
-              const st = CHOICE_STYLES[i % CHOICE_STYLES.length];
-              const mine = myAnswer?.choice === i;
-              const right = revealed && i === q.correctIndex;
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  disabled={!open || answered}
-                  onClick={() => onAnswer(i, null)}
-                  className={`min-h-16 rounded-xl px-2 text-base font-bold ${mine ? 'ring-4 ring-white' : ''} ${answered && !mine && !right ? 'opacity-40' : ''} ${right ? 'ring-4 ring-warm-yellow' : ''}`}
-                  style={{ background: st.bg }}
-                >
-                  {c}
-                </button>
-              );
-            })}
-          </div>
-        )}
-        {q.kind === 'ox' && (
-          <div className="grid grid-cols-2 gap-2">
-            {['O', 'X'].map((m, i) => (
-              <button
-                key={m}
-                type="button"
-                disabled={!open || answered}
-                onClick={() => onAnswer(i, null)}
-                className={`h-24 rounded-2xl text-5xl font-black ${myAnswer?.choice === i ? 'ring-4 ring-white' : ''} ${answered && myAnswer?.choice !== i ? 'opacity-40' : ''}`}
-                style={{ background: i === 0 ? '#2f6fdb' : '#e5484d' }}
-              >
-                {m}
-              </button>
-            ))}
-          </div>
-        )}
-        {q.kind === 'text' && (
-          <form
-            className="flex gap-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (text.trim()) onAnswer(null, text.trim());
-            }}
-          >
-            <input
-              value={answered ? myAnswer?.answer ?? '' : text}
-              disabled={!open || answered}
-              onChange={(e) => setText(e.target.value)}
-              className="min-w-0 flex-1 rounded-lg px-3 py-2 text-lg text-deep-navy"
-              placeholder={t('liveQuiz.previewTypeHere')}
-            />
-            <button type="submit" disabled={!open || answered} className="rounded-lg bg-warm-yellow px-3 font-bold text-deep-navy disabled:opacity-40">
-              {t('liveQuiz.previewSubmit')}
-            </button>
-          </form>
-        )}
-        {q.kind === 'buzzer' && (
-          <button
-            type="button"
-            disabled={!open || answered}
-            onClick={() => onAnswer(null, null)}
-            className="mx-auto h-32 w-32 rounded-full bg-error text-2xl font-black text-on-error shadow-lg disabled:opacity-50"
-          >
-            {t('liveQuiz.previewBuzz')}
-          </button>
-        )}
-        {answered && !revealed && <p className="text-center text-white/70">{t('liveQuiz.previewAnswered')}</p>}
-        {revealed && (
-          <p className={`text-center text-lg font-bold ${myAnswer?.correct ? 'text-warm-yellow' : 'text-white/70'}`}>
-            {!myAnswer ? t('liveQuiz.previewNoAnswer') : myAnswer.correct ? t('liveQuiz.previewRight', { points: myAnswer.points }) : myAnswer.correct === false ? t('liveQuiz.previewWrong') : t('liveQuiz.previewJudging')}
-          </p>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div className="mx-auto w-full max-w-[300px]">
-      <div className="mb-1 text-center font-caption text-caption text-on-surface-variant">{t('liveQuiz.previewPhoneTitle')}</div>
-      <div className="rounded-[36px] border-[10px] border-[#1d1d1f] bg-[#16213e] p-4 text-white shadow-xl" style={{ minHeight: 480 }}>
-        <div className="mx-auto mb-4 h-1.5 w-16 rounded-full bg-white/20" />
-        {body}
       </div>
     </div>
   );

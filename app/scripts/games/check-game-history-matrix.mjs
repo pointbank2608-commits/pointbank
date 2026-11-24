@@ -7,6 +7,7 @@ process.env.VITE_SUPABASE_URL='http://127.0.0.1:5592';
 process.env.VITE_SUPABASE_ANON_KEY='local-fixture-key';
 process.env.VITE_LEARNING_SENSORS_ENABLED='false';
 const inspect={name:'history-test-inspector',enforce:'pre',transform(code,id){
+ if(id.replaceAll('\\','/').endsWith('/src/components/QuizShowHost.tsx'))return code.replace('preview = false','preview = true');
  if(id.replaceAll('\\','/').endsWith('/src/context/GameHistoryContext.tsx'))return code.replace('return <Context.Provider value={history.current}>','window.__gameHistory=history.current;return <Context.Provider value={history.current}>');
 }};
 const server=await createLessonUxServer(5592,false,[inspect]);
@@ -31,6 +32,11 @@ try{
    await page.waitForTimeout(250);
    const nodeCount=await page.evaluate(()=>window.__gameHistory.nodes.size);assert(nodeCount>=3,`${type}: missing gameplay snapshot`);
    const region=page.locator('[data-game-history-region]');
+   if(type==='quizshow'){
+    await region.getByRole('button',{name:/미리보기 시작/}).click();
+    await region.getByRole('button',{name:/첫 문제 시작/}).click();
+    const openQuestion=region.getByRole('button',{name:/문제 열기/});if(await openQuestion.isVisible())await openQuestion.click();
+   }
    const buttons=await region.locator('button:visible:not(:disabled)').allTextContents();
    if(process.env.HISTORY_DISCOVER){results.push({type,nodeCount,buttons:buttons.slice(0,24)});continue;}
    // Every route must support a real action followed by exact local state restoration.
