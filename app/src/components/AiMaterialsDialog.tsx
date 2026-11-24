@@ -163,7 +163,7 @@ export default function AiMaterialsDialog({ academy, owner, mode, preferredKind,
       </form>
     </header>
     {mode === 'source' && <div hidden={!!review}>
-      <StudyListSourceForm academy={academy} owner={owner} busy={!!status}
+      <StudyListSourceForm academy={academy} busy={!!status}
         onBusy={busy => setStatus(busy ? 'generating' : null)} onDraft={setSourceDraft} />
     </div>}
     {review && <form onSubmit={save}>
