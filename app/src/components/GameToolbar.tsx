@@ -41,7 +41,9 @@ import GameHistoryButtons from './GameHistoryButtons';
 import {useGameHistory} from '../context/GameHistoryContext';
 import { gameEditContent, gameEditDraft, materialForGame, usesUnifiedGameSettings, type GameEditDraft } from '../lib/unifiedGameSettings';
 import { guideProblem } from '../lib/gameGuide';
-import type { GameTemplateConfig } from '../lib/types';
+import type { GameTemplate, GameTemplateConfig } from '../lib/types';
+import LadderStudyEditor from './LadderStudyEditor';
+import { ladderStudyCards, ladderStudySettings } from '../lib/ladderStudy';
 
 const btn = 'min-h-11 rounded-xl border border-outline-variant bg-white px-4 py-2 text-base font-bold text-deep-navy focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40';
 const primaryBtn = 'min-h-11 rounded-xl bg-primary px-5 py-2 text-base font-bold text-white focus-visible:outline-4 focus-visible:outline-primary disabled:opacity-40';
@@ -158,6 +160,28 @@ function fitResults(results: { id: string; label: string }[], n: number): { id: 
   return Array.from({ length: n }, (_, i) => ({ id: results[i]?.id ?? crypto.randomUUID(), label: results[i]?.label?.trim() ? results[i].label : '꽝' }));
 }
 
+function ladderMaterial(template: GameTemplate, list: WordList) {
+  const content = preparePlayableList('ladder', list);
+  if (!content) return null;
+  const cards = wordListToCards(list);
+  const ladderStudy = {...ladderStudySettings(template.config), cards, listId:list.id, listName:list.name, listVersion:list.updated_at};
+  if (template.config.ladderMode === 'study') {
+    return ladderStudyCards(ladderStudy).length >= 2 ? {items:template.items, config:{...template.config, ladderStudy}} : null;
+  }
+  if (template.items.length < 2) return null;
+  const config = {
+    ...template.config,
+    ladderStudy: template.config.ladderStudy ?? ladderStudy,
+    results: fitResults(content.items, template.items.length),
+    classroomSource: undefined,
+    gameMaterialId: list.id,
+    gameMaterialName: list.name,
+    pictureWords: cards,
+    pictureWordListId: list.id,
+  };
+  return guideProblem({...template, config}) ? null : {items: template.items, config};
+}
+
 export default function GameToolbar({ workspace, onRestart, fullscreen, onFullscreen, onExitFullscreen, presenting = false }: {
   workspace: WorkspaceContextValue;
   onRestart?: () => void;
@@ -256,8 +280,8 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const unified = usesUnifiedGameSettings(type);
   const hasRoundSettings = hasAdventureRoundSettings(type);
   const isDetective = type === 'grammardetective';
-  const pictureKind = pictureWordModeKind(type);
-  const currentPictureMode = type !== 'telepathy' && !!info?.selected?.config.pictureWordMode;
+  const pictureKind = type === 'ladder' ? null : pictureWordModeKind(type);
+  const currentPictureMode = type !== 'telepathy' && type !== 'ladder' && !!info?.selected?.config.pictureWordMode;
   const pictureLists = pictureKind ? (info?.lists ?? []).filter(list => !isSentenceList(list)) : [];
   const pictureList = pictureLists.find(list => list.id === pPictureList);
   const pictureCards = pictureList ? wordListToCards(pictureList).map(({id, word, imageUrl}) => ({id, word, imageUrl})) : undefined;
@@ -324,6 +348,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const itemSettings = !!type && ITEM_SETTINGS_GAMES.has(type);
   const isLadder = type === 'ladder';
   const isTwoDice = type === 'twodice';
+  const usesMaterialCards = unified || itemSettings || isLadder || isTwoDice || type === 'lastbox';
   const diceTeams = info?.selected?.config.twoDiceTeams ?? 2;
   const isBomb = type === 'bomb';
   const isTimerMatch = type === 'timer';
@@ -355,6 +380,13 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     [isGrammar, type],
   );
   const usable = (list: WordList) => !!info && !!preparePlayableList(info.gameType, list);
+  function canSelectMaterial(list: WordList) {
+    if (!info?.selected) return false;
+    if (isDetective) return !!workspace.countDetectiveListQuestions?.(list);
+    if (isLadder) return !!ladderMaterial(info.selected, list);
+    const config = unified ? {...info.selected.config, pictureWordMode:false} : info.selected.config;
+    return !!materialForGame(info.gameType, list, config);
+  }
 
   // 패널을 열 때마다 지금 상태로 초기화
   useEffect(() => {
@@ -366,7 +398,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
     setPGrammar(current);
     const selection = selectedDetectiveList.current;
     const chosenListId = selection && selection.templateId === info?.selected?.id ? selection.listId : detectiveListId;
-    setPList(isDetective ? chosenListId : currentSourceId);
+    setPList(isDetective ? chosenListId : isLadder && info?.selected?.config.ladderMode==='study' ? info.selected.config.ladderStudy?.listId ?? '' : currentSourceId);
     setPPictureMode(currentPictureMode);
     setPAdventureCount(String(info?.selected?.config.adventure?.count ?? defaultAdventureQuestionCount(type)));
     setPPictureList('');
@@ -477,10 +509,10 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
 
   const applyContent = (reload = false) => run(async () => {
     if (!info) return;
-    if (unified && !isDetective) {
+    if (usesMaterialCards && !isDetective) {
       const list=info.lists.find(row=>row.id===pList);
       if (!list || !info.selected) throw new Error(text('사용할 자료를 선택해 주세요.','Choose a material.'));
-      const content=materialForGame(info.gameType,list,info.selected.config);
+      const content = isLadder ? ladderMaterial(info.selected, list) : materialForGame(info.gameType,list,info.selected.config);
       if(!content) throw new Error(text('이 게임에 사용할 수 없는 자료예요.','This material is unavailable for this game.'));
       if(isBomb) content.items=info.selected.items;
       await workspace.applyGuideAndPlay(content);
@@ -545,7 +577,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         await info.applyGuide({ items: info.selected.items, config: { ...info.selected.config, twoDiceTeams: teams, twoDiceMode: pMode } });
       }
     }
-    if (splitGame && pMode !== 'none' && info.selected) {
+    if (splitGame && (pMode !== 'none' || (isLadder && pClass)) && info.selected) {
       // 사다리의 참가자는 반 설정이 정한다: 개인 = 학생 이름, 팀 = 팀 이름. 결과 칸은 참가자 수에 자동으로 맞춘다(모자라면 꽝).
       const labels = pMode === 'team' ? Array.from({ length: pTeams }, (_, i) => t('teamOrder.teamLabel', { n: i + 1 })) : eff.map((row) => row.label);
       if (labels.length >= 2) {
@@ -697,6 +729,12 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       return;
     }
     if (info?.selected && isLadder) {
+      const ladderStudy = ladderStudySettings(nativeOptions);
+      if (nativeOptions.ladderMode === 'study') {
+        if (ladderStudyCards(ladderStudy).length < 2) throw new Error(text('서로 다른 출발·도착 짝을 두 개 이상 준비해 주세요.', 'Prepare at least two distinct matching pairs.'));
+        await workspace.applyGuideAndPlay({items:info.selected.items, config:{...info.selected.config, ladderMode:'study', ladderStudy, pictureWordMode:false}});
+        return;
+      }
       const parts = nonEmpty(pPartText);
       if (parts.length < 2) throw new Error(text('참가자가 2명 이상 있어야 해요. 반 설정에서 반을 고르거나 아래에 직접 입력해 주세요.', 'Need at least 2 players.'));
       const old = info.selected.items;
@@ -706,7 +744,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       else if (pResMode === 'one') labels = items.map((_, i) => (i < Math.min(pWin, Math.max(1, items.length - 1)) ? (pWinner.trim() || text('당첨!', 'Win!')) : '꽝'));
       else labels = nonEmpty(pResText);
       const results = fitResults(labels.map((label, i) => ({ id: info.selected!.config.results?.[i]?.id ?? crypto.randomUUID(), label })), items.length);
-      await info.applyGuide({ items, config: { ...info.selected.config, results, ladderResultOrder: pResMode === 'type' ? info.selected.config.ladderResultOrder : 'random' } });
+      await info.applyGuide({ items, config: { ...info.selected.config, results, ladderMode:'normal', ladderStudy:nativeOptions.ladderStudy, pictureWordMode:false, ladderResultOrder:'random' } });
       return;
     }
     if (!info || !itemSettings || !info.selected) return;
@@ -795,8 +833,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <p className="min-w-0 max-w-[14rem] truncate px-2 text-base font-extrabold text-deep-navy" role="status">{status}</p>
         <div className="flex flex-wrap gap-1 rounded-xl bg-surface-container-low p-1" role="group" aria-label={text('설정', 'Settings')}>
-          {isLadder && <button className={`${tab(false)} cursor-not-allowed opacity-40`} disabled title={text('사다리는 참가자를 반 설정에서, 결과를 게임설정에서 정해요', 'Set players in Class and results in Settings')}>{text('내 단어/문장', 'My words')}</button>}
-          {hasContentButton && !isLadder && <button ref={contentButton} className={tab(open === 'content')} disabled={!!info?.sharedView} aria-expanded={open==='content'} onClick={event => toggle('content',event.currentTarget)}>{isGrammar && !unified ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
+          {hasContentButton && <button ref={contentButton} className={tab(open === 'content')} disabled={!!info?.sharedView} aria-expanded={open==='content'} onClick={event => toggle('content',event.currentTarget)}>{isGrammar && !unified ? text('문법', 'Grammar') : text('내 단어/문장', 'My words')}</button>}
           <button className={`${tab(open === 'class')} disabled:cursor-not-allowed disabled:opacity-40`} disabled={!!info?.sharedView || type === 'quizshow'} title={type === 'quizshow' ? text('학생은 QR코드나 입장번호로 참여해요.', 'Students join using the QR code or entry code.') : undefined} aria-expanded={open === 'class'} onClick={event => toggle('class',event.currentTarget)}>{text('반 설정', 'Class')}</button>
           <button ref={settingsButton} className={tab(open === 'settings' || workspace.panel === 'settings')} disabled={!!info?.sharedView} aria-expanded={open === 'settings' || workspace.panel === 'settings'} onClick={event => (unified || pictureKind || isGrammar || itemSettings || splitGame || isPopcorn || isPassBall || simpleOpts.length > 0 ? toggle('settings',event.currentTarget) : (close(), workspace.open('settings',event.currentTarget)))}>{text('게임설정', 'Settings')}</button>
           <button className={tab(open === 'saves')} aria-expanded={open === 'saves'} onClick={event => toggle('saves',event.currentTarget)}>{text('저장/불러오기', 'Save / Load')}</button>
@@ -843,12 +880,15 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         );
       })()}
 
-      {open === 'content' && unified && panel(<>
+      {open === 'content' && usesMaterialCards && panel(<>
         <PanelHead title={text('내 단어/문장','My words / sentences')} onClose={close} text={text}/>
-        <p className="text-sm text-on-surface-variant">{text('저장한 자료를 선택하세요. 이번 게임의 목록은 게임설정에서 수정할 수 있어요.','Choose a saved material, then edit this game’s list in Game settings.')}</p>
-        <SavedGameMaterialList lists={info?.lists??[]} value={pList} onChange={setPList} loading={!!info?.loading} wordOnly={kinds.length===1&&kinds[0]==='word'} canUse={list=>isDetective?!!workspace.countDetectiveListQuestions?.(list):!!info?.selected&&!!materialForGame(info.gameType,list,{...info.selected.config,pictureWordMode:false})}/>
+        <p className="text-sm text-on-surface-variant">{isLadder && info?.selected?.config.ladderMode==='study'
+          ? text('단어장을 고르면 게임설정의 출발·도착 방식으로 짝을 만들어요.', 'Choose a word list to build pairs using the start and destination settings.') : isLadder
+          ? text('단어를 앞에서부터 참가자 수만큼 결과 칸에 넣어요. 남는 칸은 꽝으로 채워요.', 'Words fill the result slots in list order, one per player. Extra slots are misses.')
+          : text('저장한 자료를 선택하세요. 이번 게임의 목록은 게임설정에서 수정할 수 있어요.','Choose a saved material, then edit this game’s list in Game settings.')}</p>
+        <SavedGameMaterialList lists={info?.lists??[]} value={pList} onChange={setPList} loading={!!info?.loading} wordOnly={kinds.length===1&&kinds[0]==='word'} canUse={canSelectMaterial}/>
         {lessonMaterials}
-        {panelAction(()=>isDetective?void applyDetectiveList():void applyContent(),text('선택','Select'),!pList||!!info?.loading||!!info?.sharedView)}
+        {panelAction(()=>isDetective?void applyDetectiveList():void applyContent(),text('선택','Select'),!info?.lists.some(list=>list.id===pList && canSelectMaterial(list))||!!info?.loading||!!info?.sharedView)}
       </>)}
 
       {open === 'content' && !unified && isDetective && panel(<>
@@ -873,7 +913,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
         }}>{text('직접 입력 · 문제 편집','Enter text or edit questions')}</button>
         {panelAction(()=>void applyDetectiveList(), detectiveQuestionCount === 0 ? text('출제 문법 확인', 'Review grammar topics') : lesson?.slideId && pList && pList === detectiveListId ? t('curriculum.ownWords.reloadSource') : text('선택','Select'), !!info?.loading || !!info?.sharedView)}
       </>)}
-      {open === 'content' && !unified && !isDetective && panel(<>
+      {open === 'content' && !usesMaterialCards && !isDetective && panel(<>
         <PanelHead title={isGrammar ? text('문법', 'Grammar') : text('내 단어/문장', 'My words / sentences')} onClose={close} text={text} />
         {lesson?.slideId && <p className="text-sm text-on-surface-variant">{t('curriculum.ownWords.localHint')}</p>}
         {!isGrammar && (
@@ -954,6 +994,17 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
 
       {open === 'settings' && panel(<>
         <PanelHead title={text('게임설정', 'Game settings')} onClose={close} text={text} />
+        {isLadder && <fieldset className="space-y-2 rounded-xl bg-surface-container-low p-3">
+          <legend className="font-bold">{text('게임 모드','Game mode')}</legend>
+          <div className="flex gap-2">{(['normal','study'] as const).map(mode=>{
+            const active = (nativeOptions.ladderMode ?? 'normal') === mode;
+            return <button key={mode} type="button" aria-pressed={active} className={chip(active)} onClick={()=>{setPanelError(''); setNativeOptions(prev=>({...prev,ladderMode:mode}));}}>
+              {mode==='normal' ? text('일반 사다리','Classic ladder') : text('단어 공부','Word study')}
+            </button>;
+          })}</div>
+        </fieldset>}
+        {isLadder && nativeOptions.ladderMode==='study' && <LadderStudyEditor study={ladderStudySettings(nativeOptions)} lists={info?.lists??[]} academyId={info?.academyId??''}
+          onChange={ladderStudy=>setNativeOptions(prev=>({...prev,ladderStudy}))}/>}
         {hasRoundSettings && (
           <div className="space-y-2 rounded-xl bg-surface-container-low p-3">
             <label className="block text-sm font-bold">
@@ -1129,7 +1180,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             </details>
           </div>
         )}
-        {isLadder && (
+        {isLadder && nativeOptions.ladderMode!=='study' && (
           <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
             <p className="font-bold">{text('결과 설정', 'Results')}</p>
             <p className="text-sm text-on-surface-variant">{text(`참가자 ${nonEmpty(pPartText).length}명 · 결과도 같은 수만큼 만들어져요. 모자라면 "꽝"으로 채워요. 참가자는 반 설정에서 정해요.`, `${nonEmpty(pPartText).length} players. Missing results become "miss".`)}</p>
@@ -1177,6 +1228,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
             </details>
           </div>
         )}
+        {(isTwoDice || type === 'lastbox') && <button type="button" className={btn} onClick={() => { close(); workspace.open('guide', panelAnchor??undefined); }}>{text('직접 입력 · 목록 편집', 'Enter or edit items')}</button>}
         {itemSettings && (
           <div className="space-y-3 rounded-xl bg-surface-container-low p-3">
             <p className="font-bold">{text('항목 설정', 'Items')}</p>

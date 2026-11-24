@@ -6,6 +6,8 @@ import ClassChipRow from '../components/ClassChipRow';
 import GameInfoPanel from '../components/GameInfoPanel';
 import GameThemeFrame from '../components/GameThemeFrame';
 import LadderBoard from '../components/LadderBoard';
+import LadderStudyBoard from '../components/LadderStudyBoard';
+import { ladderStudySettings } from '../lib/ladderStudy';
 import { updateGameTemplate } from '../lib/api';
 import { DEFAULT_RESULT_SOUND } from '../lib/gameMusic';
 import i18n from '../i18n';
@@ -295,7 +297,10 @@ export default function LadderPage() {
             onRestart={() => setRoundKey((k) => k + 1)}
             className="bg-[#fffdf8] rounded-[28px] p-6 md:p-8 shadow-[0_8px_28px_rgba(0,107,93,0.08)]"
           >
-            <LadderBoard key={roundKey}
+            {selected.config.ladderMode === 'study' ? <LadderStudyBoard
+              key={selected.id + ':' + roundKey + ':' + JSON.stringify(selected.config.ladderStudy)}
+              study={ladderStudySettings(selected.config)}
+            /> : <LadderBoard key={selected.id + ':' + roundKey}
               participants={selected.items}
               results={results}
               resultOrder={selected.config.ladderResultOrder}
@@ -311,7 +316,7 @@ export default function LadderPage() {
               }}
               templateName={selected.name}
               onRenameTemplate={(name) => void handleRename(name)}
-            />
+            />}
           </GameThemeFrame>
 
           <div className="space-y-4">

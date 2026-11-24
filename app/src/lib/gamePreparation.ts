@@ -7,6 +7,7 @@ import { isLiveQuestionReady } from './liveQuiz';
 import { asSentenceSlot, DEFAULT_WATERMELON_PATTERN_ID, getSentencePattern } from './sentencePatterns';
 
 import { pictureWordModeKind, pictureWordQuestions } from './pictureWordQuestions';
+import { ladderStudyCards, ladderStudySettings } from './ladderStudy';
 /** UI capabilities, not game rules. Native scoring/turn engines retain ownership. */
 const BUILTIN = new Set<GameType>(['sentencerocket','grammardetective','treasurehunt','wordclaw','sentencebridge','sentencetower','timer','airport','restaurant','icecream','doctor','shopping','mathgen','labeleddiagram','watermelon']);
 const SENTENCES = new Set<GameType>(['wordtrain','unscramble','sentencesplash']);
@@ -38,6 +39,7 @@ export function gameReadyDetails(template: GameTemplate) {
 /** Validate the native config as well as converted sources before entering focus mode. */
 export function isNativeGameReady(template: Pick<GameTemplate, 'game_type' | 'config' | 'items'>): boolean {
   const { game_type: type, config: c, items } = template;
+  if (type === 'ladder' && c.ladderMode === 'study') return ladderStudyCards(ladderStudySettings(c)).length >= 2;
   if (isGrammarRuleGame(type)) return !!grammarRuleContent(type, c.grammarId);
   const pictureMode = c.pictureWordMode ? pictureWordModeKind(type) : null;
   if (pictureMode) {

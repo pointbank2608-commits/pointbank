@@ -221,6 +221,9 @@ html[data-game-focus] [data-app-main] { margin-left: 0; padding-top: 0; }
     transform: scale(1.08);
   }
 }
+.ladder-study-path { stroke-dasharray: 1; animation: ladder-study-trace 1s ease-out; }
+@keyframes ladder-study-trace { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .ladder-study-path { animation: none; } }
 .ladder-pulse {
   animation: ladder-pulse 0.55s ease-in-out infinite alternate;
 }

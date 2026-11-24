@@ -353,6 +353,8 @@ export interface GameTemplateConfig {
   results?: GameItem[];
   /** Ladder bottom labels: legacy configurations keep their input order. */
   ladderResultOrder?: 'input' | 'random';
+  ladderMode?: 'normal' | 'study';
+  ladderStudy?: LadderStudy;
   /** 시한폭탄 전용: 폭발까지 걸리는 시간(초)의 무작위 범위. */
   /** Bomb-only running sound. Undefined preserves the original clock audio. */
   bombSound?: import('./bombSound').BombSound;
@@ -643,6 +645,16 @@ export interface ImageQuizItem {
 }
 
 /** 단어+뜻+이미지를 한꺼번에 쓰는 인쇄물(메모리 카드 등) 전용. 이미지는 없을 수 있다. */
+export type LadderFace = 'word' | 'meaning' | 'imageUrl';
+export interface LadderStudy {
+  from: LadderFace;
+  to: LadderFace;
+  cards: FullCardItem[];
+  listId?: string;
+  listName?: string;
+  listVersion?: string;
+}
+
 export interface FullCardItem {
   /** Explicit shared or teacher-selected line art; separate from the colour picture. */
   lineartUrl?: string | null;

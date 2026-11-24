@@ -399,7 +399,9 @@ export function useGameTemplates(params: {
       const next = { ...selected, id: `${temporaryId}:${crypto.randomUUID()}`, name: title, items, config };
       chooseDraft(next);
       const detectiveSource = config.adventure?.detectiveSource;
-      const sourceId = config.classroomSource?.id ?? (detectiveSource?.kind !== 'default' ? detectiveSource?.listId : undefined) ?? selected.config.classroomSource?.id;
+      const sourceId = gameType === 'ladder' && config.ladderMode === 'study'
+        ? config.ladderStudy?.listId
+        : config.classroomSource?.id ?? (gameType === 'ladder' ? config.gameMaterialId : undefined) ?? (detectiveSource?.kind !== 'default' ? detectiveSource?.listId : undefined) ?? selected.config.classroomSource?.id;
       const sourceListId = allWordLists.find(list => list.id === sourceId)?.id;
       editing.onSelect(saved.id, { sourceListId });
       return next;

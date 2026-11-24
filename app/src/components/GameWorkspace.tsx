@@ -146,7 +146,8 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const reuseLabel = info?.selected?.config.setupKind==='names'||info?.selected?.config.setupKind==='numbers'?'teacherGame.moreContent':source || capabilities.kinds.length
     ? sourceKind === 'sentence' ? 'teacherGame.moreSentences' : 'teacherGame.moreWords'
     : 'teacherGame.moreContent';
-  const sourceReady = !!info?.selected?.config.pictureWordMode || !source || (!!info && !!prepareClassroomGame(info.gameType, source.cards, source.kind));
+  const studyLadder = info?.gameType === 'ladder' && info.selected?.config.ladderMode === 'study';
+  const sourceReady = studyLadder || !!info?.selected?.config.pictureWordMode || !source || (!!info && !!prepareClassroomGame(info.gameType, source.cards, source.kind));
   const requirement = source && info && !sourceReady ? classroomGameRequirement(info.gameType, source.kind) : { key:'quick.needFormat', count:0 };
   const canStart = !!info && info.academyId===academy?.id && !info.loading && !info.settingsPending && hasBoard && !!info.selected && isNativeGameReady(info.selected) && !guideProblem(info.selected) && sourceReady;
   const automaticEntry = !presenting && !lessonEditor && !!info?.temporary && isDirectGameEntry(location.state)
