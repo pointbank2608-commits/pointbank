@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import { chromium } from '../../node_modules/homework-test-tools/node_modules/@playwright/test/index.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -31,9 +33,9 @@ const api = `
   ${apiExports.map(name => `export const ${name} = (...args) => (mocks.${name} || (async () => []))(...args);`).join('\n')}
 `;
 const bundle = await build({
-  root, logLevel: 'error',
+  root, configFile: false, logLevel: 'error',
   build: { write: false, minify: false, copyPublicDir: false, rollupOptions: { input: resolve(root, 'scripts/games/focus.html') } },
-  plugins: [{ name: 'textbook-check', enforce: 'pre', load(id) {
+  plugins: [react(), tailwindcss(), { name: 'textbook-check', enforce: 'pre', load(id) {
     const path = id.replaceAll('\\', '/');
     if (path.endsWith('/scripts/games/focus.tsx')) return fixture;
     if (path.endsWith('/src/lib/api.ts')) return api;
@@ -98,29 +100,6 @@ try {
     if (pathname.endsWith('/extract-textbook')) {
       if (request.headers()['content-type']?.startsWith('application/json')) {
         const input = request.postDataJSON();
-        if (input.mode === 'worksheet') {
-          if (input.options?.teaching) {
-            assert.match(input.source, /We walk by the river\./);
-            assert.deepEqual(input.options, { outputs: ['words', 'lesson', 'workbook'], teaching: {
-              grade: 8, level: 'foundation', purpose: 'exam', minutes: 30, questionCount: 4,
-              exam: { scope: 'Unit 2', counts: { reading: 1, vocabulary: 1, grammar: 0, writing: 2 } },
-            } });
-            extractionRequests.push('teaching');
-            return respond({ words: [{ text: 'river', meaning: '강' }], sentences: [], objective: 'Describe where we walk.',
-              lesson: [{ title: 'Model', minutes: 10, content: 'Say: We walk by the river.' }, { title: 'Practice', minutes: 20, content: 'Describe a new place.' }],
-              practice: { instruction: 'Read and answer.', passage: 'We walk by the river.', questions: [
-                { category: 'reading', prompt: 'Where do we walk?', options: ['By the river', 'By the ocean'], answer: 'By the river', explanation: 'Read the passage.', evidence: 'Source worksheet' },
-                { category: 'vocabulary', prompt: 'What is a river?', options: [], answer: 'Moving water', explanation: 'A river flows.', evidence: '' },
-                { category: 'writing', prompt: 'Write a sentence about a stream.', options: [], answer: 'We see a stream.', explanation: 'Use the new noun.', evidence: '' },
-                { category: 'writing', prompt: 'Describe another place.', options: [], answer: 'We walk by the lake.', explanation: 'Give a place.', evidence: '' },
-              ] },
-            });
-          }
-          assert.deepEqual(Object.keys(input).sort(), ['academy', 'mode', 'source']);
-          assert.match(input.source, /We walk by the river\./);
-          extractionRequests.push(input.mode);
-          return respond({ words: [{ text: 'river', meaning: '강' }], sentences: extraction.sentences });
-        }
         assert.deepEqual(input, {
           mode: 'generate', academy: 'academy', topic: 'At the zoo', grade: 4, wordCount: 3, sentenceCount: 1,
         });
@@ -131,6 +110,12 @@ try {
       }
       const body = request.postData();
       assert.match(body, /name="files"; filename="pages\.(?:png|pdf)"/);
+      const options = body.match(/name="options"\r\n\r\n([^\r]+)/)?.[1];
+      if (options) {
+        const parsed = JSON.parse(options);
+        assert.deepEqual(Object.keys(parsed), ['outputs']);
+        assert.deepEqual(parsed.outputs, [body.includes('filename="pages.pdf"') ? 'sentences' : 'words']);
+      }
       const pdf = body.includes('filename="pages.pdf"');
       extractionRequests.push(pdf ? 'pdf' : 'photo');
       if (pdf) assert.match(body, /name="first"\r\n\r\n2\r\n/);
@@ -345,80 +330,43 @@ try {
   assert.match(await pdfOriginal.getAttribute('href'), /#page=2$/);
   await sourceDialog.getByRole('button', { name: '원본 바꾸기', exact: true }).click();
 
-  const attachedDocument = sheets[0].document;
-  await page.evaluate(doc => localStorage.setItem('classbank:worksheets:v1:teacher:academy', JSON.stringify({
-    current: {}, copies: [{ id: 'local-copy', name: 'River copy', updatedAt: '2026-11-17', document: doc }],
-  })), attachedDocument);
-  await sourceDialog.getByRole('button', { name: '우리 활동지', exact: true }).click();
-  const location = sourceDialog.getByRole('combobox', { name: '활동지 위치' });
-  const selectedWorksheet = sourceDialog.getByRole('combobox', { name: '우리 활동지' });
-  await location.selectOption('local');
-  await selectedWorksheet.selectOption({ label: 'River copy' });
+  const outputOptions = sourceDialog.getByRole('group', { name: '만들 자료', exact: true });
+  assert.deepEqual(await outputOptions.getByRole('checkbox').evaluateAll(inputs => inputs.map(input => input.parentElement.textContent.trim().replace(/^(library_books|notes)/, ''))), ['단어장', '문장 모음']);
+  assert.equal(await sourceDialog.getByRole('button', { name: '우리 활동지', exact: true }).count(), 0);
+  assert.equal(await sourceDialog.getByRole('group', { name: '수업·워크북 설정' }).count(), 0);
+  await outputOptions.getByRole('checkbox', { name: '단어장', exact: true }).uncheck();
+  await outputOptions.getByRole('checkbox', { name: '문장 모음', exact: true }).uncheck();
+  assert.equal(await sourceDialog.getByRole('button', { name: '단어·문장 자동 추출' }).isDisabled(), true);
+  await outputOptions.getByRole('checkbox', { name: '문장 모음', exact: true }).check();
   await sourceDialog.getByRole('button', { name: '단어·문장 자동 추출' }).click();
-  assert.equal(await sourceDialog.getByLabel('자료 이름', { exact: true }).inputValue(), 'River copy');
-  await sourceDialog.getByRole('button', { name: '원본 바꾸기', exact: true }).click();
-  await location.selectOption({ label: 'Existing workbook · Unit 2' });
-  await selectedWorksheet.selectOption({ label: attachedDocument.title });
-  await sourceDialog.getByRole('button', { name: '단어·문장 자동 추출' }).click();
-  await sourceDialog.getByLabel('자료 이름', { exact: true }).fill('River worksheet study');
+  assert.equal(await sourceDialog.getByRole('group', { name: /^단어장 \(/ }).count(), 0);
+  await sourceDialog.getByLabel('자료 이름', { exact: true }).fill('PDF sentences only');
+  await sourceDialog.getByRole('group', { name: '문장 모음 (1개)' }).getByLabel('한국어 뜻').fill('강가를 함께 걸어요.');
   await sourceDialog.getByRole('button', { name: '확인한 자료 저장', exact: true }).click();
   await sourceDialog.waitFor({ state: 'hidden' });
-  const savedWorksheetSentence = lists.find(list => list.name === 'River worksheet study' && list.kind === 'sentence');
-  assert.equal(new URL(page.url()).searchParams.get('list'), savedWorksheetSentence.id);
+  const savedPdf = lists.filter(list => list.name === 'PDF sentences only');
+  assert.deepEqual(savedPdf.map(list => [list.kind, list.items.map(item => [item.word, item.meaning])]), [
+    ['sentence', [['We walk by the river.', '강가를 함께 걸어요.']]],
+  ]);
+  assert.equal(new URL(page.url()).searchParams.get('list'), savedPdf[0].id);
+  await page.getByText('강가를 함께 걸어요.', { exact: true }).waitFor();
+
   await go('/wordlists');
   await importAi.click();
-  const outputOptions = sourceDialog.getByRole('group', { name: '만들 자료', exact: true });
-  assert.equal(await sourceDialog.getByRole('group', { name: '수업·워크북 설정' }).count(), 0);
+  await sourceDialog.getByLabel('이미지·PDF 선택').setInputFiles({ name: 'pages.png', mimeType: 'image/png',
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/kf8AAAAASUVORK5CYII=', 'base64') });
   await outputOptions.getByRole('checkbox', { name: '문장 모음', exact: true }).uncheck();
-  await outputOptions.getByRole('checkbox', { name: '수업', exact: true }).check();
-  await outputOptions.getByRole('checkbox', { name: '워크북', exact: true }).check();
-  assert.equal(await sourceDialog.getByLabel('시험 범위', { exact: true }).count(), 0);
-  await sourceDialog.getByLabel('학년', { exact: true }).selectOption('8');
-  await sourceDialog.getByLabel('영어 레벨', { exact: true }).selectOption('foundation');
-  await sourceDialog.getByLabel('수업 시간(분)', { exact: true }).fill('30');
-  await sourceDialog.getByLabel('용도', { exact: true }).selectOption('exam');
-  await sourceDialog.getByLabel('시험 범위', { exact: true }).fill('Unit 2');
-  await sourceDialog.getByLabel('문항 수', { exact: true }).fill('4');
-  await sourceDialog.getByLabel('문법', { exact: true }).fill('0');
-  await sourceDialog.getByRole('button', { name: '우리 활동지', exact: true }).click();
-  await location.selectOption('local');
-  await selectedWorksheet.selectOption({ label: 'River copy' });
-  const teach = sourceDialog.getByRole('button', { name: '선택한 자료 초안 만들기', exact: true });
-  await teach.click();
-  await sourceDialog.getByRole('alert').waitFor();
-  assert.match(await sourceDialog.getByRole('alert').innerText(), /문항 수의 합계/);
-  assert.equal(extractionRequests.filter(mode => mode === 'teaching').length, 0);
-  await sourceDialog.getByLabel('서술형', { exact: true }).fill('2');
-  await teach.click();
-  await sourceDialog.getByLabel('자료 이름', { exact: true }).fill('River lesson and workbook');
-  assert.equal(await sourceDialog.getByRole('group', { name: /^문장 모음/ }).count(), 0);
-  await sourceDialog.getByLabel('학습 목표', { exact: true }).fill('Describe a place by the river.');
-  await sourceDialog.getByLabel('단계 제목', { exact: true }).first().fill('Model by the river');
-  const workbook = sourceDialog.getByRole('group', { name: '워크북 · 4', exact: true });
-  await workbook.getByText('학생용 미리보기', { exact: true }).click();
-  await workbook.locator('details[open]').getByText('Where do we walk?', { exact: false }).waitFor();
-  await workbook.getByText('교사용 정답·해설', { exact: true }).click();
-  const reading = workbook.getByRole('group', { name: '1. 본문 이해', exact: true });
-  await reading.getByRole('textbox').first().fill('Where does the class walk?');
+  await sourceDialog.getByRole('button', { name: '단어·문장 자동 추출' }).click();
+  assert.equal(await sourceDialog.getByRole('group', { name: /^문장 모음 \(/ }).count(), 0);
+  await sourceDialog.getByLabel('자료 이름', { exact: true }).fill('Image words only');
   await sourceDialog.getByRole('button', { name: '확인한 자료 저장', exact: true }).click();
   await sourceDialog.waitFor({ state: 'hidden' });
-  assert.equal(lessons.length, 1);
-  assert.equal(lessons[0].playlist[0].elements[0].text, 'Model by the river · 10분');
-  assert.equal(lessons[0].playlist[0].elements[1].text, 'Describe a place by the river.');
-  assert.equal(lessons[0].wordListId, lists.find(list => list.name === 'River lesson and workbook').id);
-  assert.equal(lists.filter(list => list.name === 'River lesson and workbook').length, 1);
-  const links = page.getByRole('navigation', { name: '저장한 자료 열기' });
-  assert.equal(await links.getByRole('link', { name: '수업' }).getAttribute('href'), '/curriculum');
-  await links.getByRole('link', { name: '워크북' }).click();
-  await page.waitForURL('**/materials/worksheet?activity=sourceWorkbook');
-  await page.locator('.print-board').getByText('[본문 이해] Where does the class walk?', { exact: false }).waitFor();
-  await page.getByRole('button', { name: '교사용 설명·답안', exact: true }).click();
-  await page.locator('[data-audience="teacher"]').waitFor();
-  assert.match((await page.locator('.print-board').allTextContents()).join('\n'), /Source worksheet/);
-  assert.deepEqual(extractionRequests, ['photo', 'pdf', 'worksheet', 'worksheet', 'teaching']);
+  assert.deepEqual(lists.filter(list => list.name === 'Image words only').map(list => [list.kind, list.items.length]), [['word', 3]]);
+  assert.equal(lessons.length, 0);
+  assert.deepEqual(extractionRequests, ['photo', 'pdf', 'pdf', 'photo']);
   assert.equal(uploadCount, 0);
   assert.deepEqual(errors, []);
-  console.log('PASS textbook catalog, legacy study lists, exam settings, lesson save, and edited workbook reopen');
+  console.log('PASS textbook catalog, topic drafts, photo/PDF study lists, editing, selected outputs, saving, and reopening');
 } finally {
   await browser?.close();
 }

@@ -40,7 +40,7 @@
 .ai-materials-form { display: grid; gap: 1rem; }
 .ai-materials-form .study-source-picker { margin: 0; border: 0; padding: 0; }
 .study-source-picker legend { margin-bottom: .55rem; font-size: .9rem; }
-.study-source-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .65rem; }
+.study-source-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
 .study-source-option { position: relative; display: grid; align-content: start; justify-items: start; gap: .65rem; min-width: 0; min-height: 7rem; padding: .85rem; text-align: start; color: #192a44; background: #f8fbff; border: 1px solid #ccd9eb; border-radius: .8rem; cursor: pointer; }
 .study-source-option:hover, .study-source-option[aria-pressed="true"], .study-source-option[data-active="true"] { background: #eaf2ff; border-color: #3974bc; }
 .study-source-option:focus-visible, .study-source-option:focus-within { outline: 2px solid #195fbb; outline-offset: 2px; }
@@ -57,7 +57,7 @@
 .ai-materials-dialog .textbook-fields select, .ai-materials-dialog .textbook-fields textarea { width: 100%; min-width: 0; border: 1px solid #aebcd0; border-radius: .5rem; padding: .6rem; background: #fff; color: #192a44; }
 .ai-materials-dialog .textbook-fields textarea { resize: vertical; }
 .teaching-output-picker legend, .teaching-settings legend, .teaching-mix legend { margin-bottom: .55rem; }
-.teaching-output-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem; }
+.teaching-output-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
 .teaching-output { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; padding: .5rem; min-height: 2.75rem; min-width: 0; border: 1px solid #ccd9eb; border-radius: .65rem; color: #183961; cursor: pointer; }
 .teaching-output:has(:checked) { background: #eaf2ff; border-color: #3974bc; }
 .teaching-output:focus-within { outline: 2px solid #195fbb; outline-offset: 2px; }
