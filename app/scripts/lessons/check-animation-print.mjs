@@ -5,6 +5,21 @@ import {fileURLToPath} from 'node:url';
 import {createServer} from 'vite';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..');
+const readData=name=>JSON.parse(readFileSync(resolve(root,'src/data',name),'utf8'));
+const glossary=readData('animationStudyGlossary.json');
+function checkStudyWords(words){
+  for(const {word,meaning} of words){
+    const pair=glossary[word.normalize('NFKC').trim().toLowerCase()]?.[meaning.trim()];
+    assert.ok(pair?.length===2,`Missing worksheet text for ${word} / ${meaning}`);
+    for(const line of pair)assert.ok(/[a-z]/i.test(line)&&!/[가-힣]/u.test(line),word);
+  }
+}
+for(const filename of ['animationEpisodes.json','animationEpisodeCorrections.json']){
+  for(const source of readData(filename))for(const episode of source.episodes??[]){
+    for(const chapter of episode.chapters??[])checkStudyWords(chapter.words??[]);
+  }
+}
+assert.notDeepEqual(glossary.copy['복사하다'],glossary.copy['따라 하다, 흉내 내다']);
 const server=await createServer({root,configFile:false,logLevel:'error',server:{middlewareMode:true,hmr:false}});
 try {
   const {animationPrintActivities}=await server.ssrLoadModule('/src/lib/animationPrint.ts');
@@ -57,6 +72,7 @@ try {
     let count=0,pictures=0;
     for(const video of clips.filter(video=>!video.pack?.phonicsSong)){
       const source=video.pack.words??[],rows=items(video,dictionary);
+      checkStudyWords(source);
       assert.deepEqual(rows.map(row=>[row.label,row.meaning,row.answer]),source.map(word=>[word.word,word.meaning,word.word]),video.title);
       assert.equal(items(video,[]).length,source.length,video.title+' without dictionary');
       count+=rows.length;

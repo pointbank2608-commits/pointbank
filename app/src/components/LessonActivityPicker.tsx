@@ -21,6 +21,7 @@ import { resolveLessonGame, type lessonGameSources, type LessonGameMatch } from 
 import { lessonPhonicsTopic, matchUnitForWords, phonicsSlideState } from '../lib/phonicsLessonGame';
 import type { FullCardItem, GameType, LessonSlide, MaterialSlide, PdfSlide, PhonicsBankEntry } from '../lib/types';
 import LessonWorksheetChooser from './worksheets/LessonWorksheetChooser';
+import SightWordWorksheets from './worksheets/SightWordWorksheets';
 import type { BlockDef } from '../lib/blocks/types';
 import '../styles/lesson-activity-picker.css';
 
@@ -53,6 +54,13 @@ export const printSections = materialSections().map(section => ({
   ]),
 }));
 const canvasLayouts: CanvasExample[] = ['title', 'word', 'blank'];
+const printGroups = {
+  words: ['words', 'elementary800'],
+  phonics: ['phonics'],
+  sightwords: [],
+  other: ['gamecards', 'roleplay', 'other'],
+} as const;
+type PrintTab = keyof typeof printGroups;
 export type ActivityWorksheetOptions = Pick<MaterialSlide, 'words' | 'topic' | 'worksheetTab'> & LessonWorkbookSelection;
 
 function isWorkbook(block: BlockDef) {
@@ -60,18 +68,21 @@ function isWorkbook(block: BlockDef) {
   return !!materialId && !!(workbookOfMaterial(materialId) || workbookStep(materialId));
 }
 
-export default function LessonActivityPicker({onPick,onGrammarPick,onVideo,onPdf,onPowerPoint,onStem,onBundle,onClose,canAttachHelper,storageKey,cards,gameSources,slides,replaceTargetId,insertAfterId,selected,sourceName,entries,lessonName,academyId}:{
+export default function LessonActivityPicker({onPick,onGrammarPick,onVideo,onPdf,onSightWord,onPowerPoint,onStem,onBundle,onClose,canAttachHelper,storageKey,cards,gameSources,slides,replaceTargetId,insertAfterId,selected,sourceName,entries,lessonName,academyId}:{
  onGrammarPick:(grammarId:string, preset?: GrammarPreset)=>void;
  onPick:(b:BlockDef,layout?:CanvasExample,theme?:string|null, worksheet?:ActivityWorksheetOptions)=>void;onBundle:()=>void;onClose:()=>void;canAttachHelper:boolean;storageKey:string;
  cards:FullCardItem[];gameSources:ReturnType<typeof lessonGameSources>;slides:LessonSlide[];replaceTargetId:string|null;insertAfterId?:string|null;
  selected:LessonSlide|null;sourceName:string;entries:PhonicsBankEntry[];lessonName:string;
  academyId:string;onPdf:(asset:Omit<PdfSlide,'id'|'kind'>)=>void;
  onStem:(lesson:StemLesson)=>void; onPowerPoint?:()=>void;
+ onSightWord:(url:string,title:string)=>void;
  onVideo?:(block:BlockDef,source:'provided'|'custom')=>void;
 }){
  const {t,i18n}=useTranslation(),ko=i18n.language.startsWith('ko');
  const [cat,setCat]=useState<ActivityCategory>('recent'),[query,setQuery]=useState('');
  const [gameGroup, setGameGroup] = useState<GameBrowseGroup | 'all'>('all');
+ const [printTab,setPrintTab] = useState<PrintTab>('words');
+ const printTabSections = printGroups[printTab].flatMap(key=>printSections.filter(section=>section.key===key));
  const [pdfBusy, setPdfBusy] = useState(false);
  const [pdfError, setPdfError] = useState('');
  const {clips}=useVideoClips();
@@ -183,7 +194,7 @@ export default function LessonActivityPicker({onPick,onGrammarPick,onVideo,onPdf
     {cards.length > 0 && <p className="activity-source"><span className="material-symbols-outlined" aria-hidden>menu_book</span>{selectedName} · {t(gameSources.kind === 'sentence' ? 'lessonUx.sentenceCount' : 'curriculum.slides.previewWordCount', { count: cards.length })}</p>}
    </header>
    <div className="activity-body">
-    <nav aria-label={t('lessonUx.add')}>{CATEGORIES.map((c,i)=><button key={c} type="button" aria-pressed={cat===c&&(!q||grammarOpen)} onClick={()=>{if(cat!==c)setGameGroup('all');setCat(c);setQuery('');setPreview(null);setStemOpen(false);setStemPreview(null);}}><span className="material-symbols-outlined" aria-hidden>{ICONS[i]}</span>{t('lessonUx.'+c)}</button>)}</nav>
+    <nav aria-label={t('lessonUx.add')}>{CATEGORIES.map((c,i)=><button key={c} type="button" aria-pressed={cat===c&&(!q||grammarOpen)} onClick={()=>{if(cat!==c)setGameGroup('all');if(c==='print'&&(cat!==c||q))setPrintTab('words');setCat(c);setQuery('');setPreview(null);setStemOpen(false);setStemPreview(null);}}><span className="material-symbols-outlined" aria-hidden>{ICONS[i]}</span>{t('lessonUx.'+c)}</button>)}</nav>
     <section ref={listRef} className="activity-list" tabIndex={0} aria-label={t('lessonUx.chooseActivity')}>
      {grammarOpen ? <>
        <h3>{t('lessonUx.grammar')}</h3>
@@ -208,6 +219,13 @@ export default function LessonActivityPicker({onPick,onGrammarPick,onVideo,onPdf
      {pdfError && <p role="alert" className="text-error">{t(pdfError)}</p>}
      {!shown.length&&!bundleShown&&<p>{t('lessonUx.empty')}</p>}
      <div hidden={!!preview||stemOpen||!!worksheetBlock}>
+     {!q && cat==='print' && <>
+       <div className="activity-game-filters" role="group" aria-label={t('lessonUx.print')}>
+         {(Object.keys(printGroups) as PrintTab[]).map(tab=><button type="button" key={tab} aria-pressed={printTab===tab}
+           onClick={()=>setPrintTab(tab)}>{tab==='sightwords'?(ko?'사이트워드':'Sight words'):t(`materials.group_${tab}`)}</button>)}
+       </div>
+       {printTab==='sightwords'&&<SightWordWorksheets onAdd={(url,title)=>{if(!locked.current){locked.current=true;onSightWord(url,title);}}}/>}
+     </>}
      {!q && cat==='games' && <div className="activity-game-filters" role="group" aria-label={t('lessonUx.games')}>
        {(['all', ...GAME_BROWSE_GROUPS] as const).map(group => <button key={group} type="button" aria-pressed={group===gameGroup}
          onClick={()=>setGameGroup(group)}>{t(group==='all'?'gameCategory.all':`gameBrowse.${group}`)} {group==='all'?gameCards.length:gameCards.filter(block=>belongsToGameGroup(block,group)).length}</button>)}
@@ -215,7 +233,7 @@ export default function LessonActivityPicker({onPick,onGrammarPick,onVideo,onPdf
      {canvasVisible && <div className="mb-3">
        <BoardThemeChips value={theme} onChange={value => setTheme(value?.id ?? null)} />
      </div>}
-     {(!q && cat==='print' ? printSections : [{key:'all', blocks:shown}]).map(section => <section key={section.key}>
+     {(!q && cat==='print' ? printTabSections : [{key:'all', blocks:shown}]).map(section => <section key={section.key}>
      {section.key!=='all' && <h4 className="my-3 font-bold">{t(`materials.group_${section.key}`)}</h4>}
      <div className="activity-grid">{section.blocks.flatMap(block => (block.id === 'free.canvas' ? canvasLayouts : [undefined]).map(layout => {
        const videoActivity=['learn.shadow','learn.reading.cloze'].includes(block.id);

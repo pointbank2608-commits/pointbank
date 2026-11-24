@@ -75,10 +75,13 @@ function Review({ review }: { review: typeof SIGHT_WORD_REVIEWS[number] }) {
   </article>;
 }
 
-export default function SightWordWorksheets() {
-  const [mode, setMode] = useState<'word' | 'review'>('word');
-  const [word, setWord] = useState('and');
-  const [reviewId, setReviewId] = useState('01');
+export default function SightWordWorksheets({onAdd}: {onAdd?:(url:string,title:string)=>void}) {
+  const params = new URLSearchParams(onAdd ? '' : window.location.search);
+  const initialWord = params.get('word') ?? '';
+  const initialReview = SIGHT_WORD_REVIEWS.find(item=>item.id===params.get('review'));
+  const [mode, setMode] = useState<'word' | 'review'>(initialReview ? 'review' : 'word');
+  const [word, setWord] = useState(SIGHT_WORDS.includes(initialWord) ? initialWord : 'and');
+  const [reviewId, setReviewId] = useState(initialReview?.id ?? '01');
   const review = SIGHT_WORD_REVIEWS.find(item => item.id === reviewId)!;
   return <section className="rc-workbook">
     <div className="no-print">
@@ -91,7 +94,12 @@ export default function SightWordWorksheets() {
         </select></label> : <label>리뷰 세트 <select value={reviewId} onChange={event => setReviewId(event.target.value)}>
           {SIGHT_WORD_REVIEWS.map(item => <option key={item.id} value={item.id}>{item.id} · {item.words.join(' · ')}</option>)}
         </select></label>}
-        <button type="button" data-print onClick={() => window.print()}>인쇄</button>
+        {onAdd ? <button type="button" data-print onClick={()=>{
+          const url = new URL('/materials', window.location.origin);
+          url.searchParams.set('tab', 'sightwords');
+          url.searchParams.set(mode, mode==='word'?word:review.id);
+          onAdd(url.href, mode==='word'?`사이트워드 · ${word}`:`Sight Word Review ${review.id}`);
+        }}>수업에 추가</button> : <button type="button" data-print onClick={() => window.print()}>인쇄</button>}
       </div>
     </div>
     <div className="rc-preview">{mode === 'word' ? <SingleWord word={word}/> : <Review review={review}/>}</div>

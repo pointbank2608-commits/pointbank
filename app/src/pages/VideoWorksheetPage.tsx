@@ -9,6 +9,7 @@ import { animationCrossword, animationPrintActivities, type PaperItem } from '..
 import { chunk, makeRng, shuffled } from '../lib/worksheetGenerators';
 import type { WordBankEntry } from '../lib/types';
 import TracingRow from '../components/worksheets/TracingRow';
+import studyGlossary from '../data/animationStudyGlossary.json';
 import '../styles/ready-class-workbook.css';
 import '../styles/video-worksheet.css';
 
@@ -17,6 +18,14 @@ const defaults = ['study','questionChoice','grammarPractice'];
 const minimumFive = new Set<string>();
 const matchTypes = ['pictureMatch','meaningMatch'];
 const printOptions = {letters:1,bank:true,chunks:true,pictureClues:false,choiceCount:3,sentenceBank:true};
+
+// A spelling can have several meanings even within one episode.
+const studySenses: Record<string, Record<string, string[]>> = studyGlossary;
+function StudyText({word, meaning}: {word:string; meaning?:string}) {
+  const text = studySenses[word.normalize('NFKC').trim().toLowerCase()]?.[meaning?.trim() ?? ''];
+  if (!text) return null;
+  return <><p><b>Meaning · </b>{text[0]}</p><p><b>Example</b> · {text[1]}</p></>;
+}
 
 function Matching({items,pictures,teacher,start}:{items:PaperItem[];pictures:boolean;teacher:boolean;start:number}) {
   const mixed = shuffled(items,makeRng(31));
@@ -138,7 +147,7 @@ function Worksheet({ clip }: { clip: VideoClip }) {
               {row.matching?<Matching items={row.matching} pictures={row.type==='pictureMatch'} teacher={page.teacher} start={row.number}/>:row.puzzle?<Puzzle row={row} teacher={page.teacher}/>:page.teacher?
                 <p className="animation-answer">{row.number}. {row.example?'Example: ':''}{row.answer||'Answers may vary.'}{row.cue&&' · '+row.cue}{row.example&&' · Accept other suitable answers.'}</p>:
                 <>
-                  {row.type==='study'?<div className="animation-study-card"><div>{row.number}. <strong>{row.label}</strong><small lang="ko">{row.meaning}</small>{row.exampleOrigin&&<small>{row.exampleOrigin==='script'?'본문에서 확인한 단어':'장면 학습용 추천 표현'}</small>}</div><div>{row.definition&&<p><b>의미 풀이</b> · {row.definition}</p>}{row.exampleSentence&&<p>{row.exampleOrigin&&<b>{row.exampleOrigin==='script'?'본문 예문':'상황 연습용 추천 예문'} · </b>}{row.exampleSentence}</p>}{row.exampleTranslation&&<p lang="ko"><b>예문 해석</b> · {row.exampleTranslation}</p>}</div></div>:
+                  {row.type==='study'?<div className="animation-study-card"><div>{row.number}. <strong>{row.label}</strong><small lang="ko">{row.meaning}</small>{row.exampleOrigin&&<small>{row.exampleOrigin==='script'?'본문에서 확인한 단어':'장면 학습용 추천 표현'}</small>}</div><div><StudyText word={row.label} meaning={row.meaning}/></div></div>:
                   row.type==='letters'?<div className="animation-missing"><p>{row.number}. {row.prompt}</p><span lang="ko">{row.meaning}</span></div>:
                   row.type==='wordTrace'?<div className="animation-word-trace"><div>{row.number}. <strong>{row.label}</strong>{row.image&&<img src={row.image} alt=""/>}</div><div><TracingRow word={row.label} trace last={false} gapMm={2} rowMm={10} emMm={Math.min(10,110/row.label.length)}/><TracingRow word="" trace={false} last rowMm={10}/></div></div>:
                   row.situation?<><p className="animation-pattern-situation">{row.number}. {row.situation}</p><p>{row.prompt}</p></>:<p>{row.number}. {row.prompt}</p>}

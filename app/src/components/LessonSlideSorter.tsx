@@ -546,6 +546,12 @@ export default function LessonSlideSorter({
         setAddMode(null);
       }}
       onPowerPoint={()=>{setPickerOpen(false);setAddMode(null);setPowerPoint({afterId:insertAfterId??selected?.id??null});}}
+      onSightWord={(url,title)=>{
+        if(!inputSession.active)return;
+        addSlide({id:uid(),kind:'web',mode:'window',url,title});
+        setPickerOpen(false);
+        setAddMode(null);
+      }}
       onPdf={asset=>{if(!inputSession.active)return;pendingActivity.current='media.pdf';addSlide({id:uid(),kind:'pdf',...asset});setPickerOpen(false);setAddMode(null);}}
       onVideo={(block,source)=>{pendingActivity.current=block.id;setPickerOpen(false);setVideoActivity({block,source});}}
       onPick={pickBlock} onGrammarPick={(grammarId, preset) => {
