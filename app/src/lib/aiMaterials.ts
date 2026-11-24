@@ -8,7 +8,7 @@ export type AiMaterialInput = { topic: string; grade: number; wordCount: number;
 type DraftItem = { text: string; meaning: string; page?: number; meaningSuggested?: boolean };
 export type AiMaterialDraft = { words: DraftItem[]; sentences: DraftItem[] };
 export type SourceMaterialDraft = AiMaterialDraft & Partial<TeachingDraft>;
-export type AiMaterialList = { id: string; kind: WordListKind; name: string; items: WordListItem[] };
+export type AiMaterialList = { id: string; kind: WordListKind; name: string; items: WordListItem[]; append?: boolean };
 
 function isDraftItems(items: unknown, limit: number): items is DraftItem[] {
   return Array.isArray(items) && items.length <= limit && items.every(item =>
@@ -64,6 +64,11 @@ export function makeAiMaterialList(kind: WordListKind, name: string, items: Draf
 }
 
 export async function saveAiMaterials(academy: string, owner: string, lists: AiMaterialList[]) {
+  if (lists.some(list => list.append)) {
+    const { error } = await supabase.rpc('save_study_lists', { p_academy_id: academy, p_lists: lists });
+    if (error) throw error;
+    return;
+  }
   // One insert saves both lists atomically. The dialog retries the exact same rows and IDs
   // if the response is lost after the database committed.
   const { error } = await supabase.from('word_lists').upsert(lists.map(list => ({

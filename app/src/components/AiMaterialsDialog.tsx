@@ -4,6 +4,7 @@ import AccessibleDialog from './AccessibleDialog';
 import MaterialDraftReview, { type MaterialDraftItem } from './MaterialDraftReview';
 import StudyListSourceForm, { StudyListOriginal, type StudyListSourceDraft } from './StudyListSourceForm';
 import TeachingDraftReview from './TeachingDraftReview';
+import StudyListDestination from './StudyListDestination';
 import { MaterialGradeField } from './TeachingMaterialOptions';
 import { AI_MATERIAL_COUNT_LIMIT, generateAiMaterials, makeAiMaterialList, saveAiMaterials, type AiMaterialList } from '../lib/aiMaterials';
 import { assertWorkbookSpace, examCategories, isTeachingReviewComplete, makeTeachingLessonSlides, makeTeachingWorkbook,
@@ -35,6 +36,7 @@ export default function AiMaterialsDialog({ academy, owner, mode, preferredKind,
   const [wordCount, setWordCount] = useState('10');
   const [sentenceCount, setSentenceCount] = useState('5');
   const [name, setName] = useState('');
+  const [targets, setTargets] = useState({ words: '', sentences: '' });
   const [review, setReview] = useState<Review | null>(null);
   const [options, setOptions] = useState<SourceMaterialOptions>();
   const [teaching, setTeaching] = useState<TeachingDraft>();
@@ -52,6 +54,7 @@ export default function AiMaterialsDialog({ academy, owner, mode, preferredKind,
   const requested = { words: Number(wordCount), sentences: Number(sentenceCount) };
   const listKinds = kinds.filter(kind => !options || options.outputs.includes(kind));
   const hasWorkbook = options?.outputs.includes('workbook') === true;
+  const needsName = !!teaching || listKinds.some(kind => !targets[kind]);
   const selectedCount = review ? listKinds.reduce((total, kind) => total + review[kind].filter(item => item.included).length, 0) : 0;
 
   function gradeLabel(level: number) {
@@ -96,7 +99,7 @@ export default function AiMaterialsDialog({ academy, owner, mode, preferredKind,
 
   async function save(event: FormEvent) {
     event.preventDefault();
-    if (!review || status || !name.trim() || (!selectedCount && !teaching)) return;
+    if (!review || status || (needsName && !name.trim()) || (!selectedCount && !teaching)) return;
     const dialog = event.currentTarget.closest('dialog');
     setError('');
     if (!pendingSave.current) {
@@ -114,6 +117,10 @@ export default function AiMaterialsDialog({ academy, owner, mode, preferredKind,
         ...(words.length ? [makeAiMaterialList('word', name.trim(), words)] : []),
         ...(sentences.length ? [makeAiMaterialList('sentence', name.trim(), sentences)] : []),
       ];
+      for (const list of lists) {
+        const target = targets[list.kind === 'word' ? 'words' : 'sentences'];
+        if (target) { list.id = target; list.append = true; }
+      }
       const prepared: PreparedSave = { lists };
       try {
         if (teaching?.lesson && options?.teaching) {
@@ -168,9 +175,14 @@ export default function AiMaterialsDialog({ academy, owner, mode, preferredKind,
     </div>}
     {review && <form onSubmit={save}>
       <div className="textbook-fields">
+        {listKinds.map(kind => <StudyListDestination key={kind} academy={academy} kind={kind === 'words' ? 'word' : 'sentence'}
+          value={targets[kind]} disabled={savePrepared} onChange={id => setTargets(current => ({ ...current, [kind]: id }))} />)}
+      </div>
+      <p className="textbook-note">{t('aiMaterials.appendHelp')}</p>
+      {needsName && <div className="textbook-fields">
         <label>{t('aiMaterials.name')}<input ref={draftName} value={name} maxLength={hasWorkbook ? 100 : 120} required disabled={savePrepared}
           onChange={e => setName(e.target.value)} /></label>
-      </div>
+      </div>}
       <p className="textbook-note">{t(teaching ? 'aiMaterials.reviewTeaching' : mode === 'source' ? 'aiMaterials.studyReviewHelp' : 'aiMaterials.reviewHelp')}</p>
       {!!original?.unclearPages.length && <p role="status" className="textbook-error">
         {t('textbook.unclear', { pages: original.unclearPages.join(', ') })}
@@ -208,7 +220,7 @@ export default function AiMaterialsDialog({ academy, owner, mode, preferredKind,
         {selectedCount > 0 && <p className="textbook-note">{t('textbook.listSharing')}</p>}
         {hasWorkbook && <p className="textbook-note">{t(unitId ? 'aiMaterials.workbookUnit' : 'aiMaterials.workbookLocal')}</p>}
         <div className="textbook-actions">
-          <button type="submit" className={primary} disabled={!!status || !name.trim() || (!selectedCount && !teaching)}>
+          <button type="submit" className={primary} disabled={!!status || (needsName && !name.trim()) || (!selectedCount && !teaching)}>
             {t(status ? 'textbook.saving' : savePrepared ? 'aiMaterials.retrySave' : 'aiMaterials.save')}</button>
           {!savePrepared && <button type="button" className={button} onClick={() => { setReview(null); setError(''); }}>
             {t(mode === 'source' ? 'aiMaterials.changeSource' : 'aiMaterials.changeSettings')}</button>}

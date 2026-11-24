@@ -4,7 +4,7 @@ import type { SourceMaterialOptions, TeachingDraft } from './teachingMaterials';
 
 export const TEXTBOOK_MAX_BYTES = 10 * 1024 * 1024;
 export const TEXTBOOK_MAX_FILES = 6;
-export const TEXTBOOK_MAX_PDF_PAGES = 12;
+export const TEXTBOOK_MAX_PDF_PAGES = 3;
 export const TEXTBOOK_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 export const TEXTBOOK_BUCKET = 'textbook-originals';
 
@@ -100,12 +100,23 @@ export async function createTextbookBook(academy: string, owner: string, title: 
 
 export async function extractTextbook(academy: string, files: File[], first: number, last: number,
   options?: SourceMaterialOptions): Promise<TextbookExtraction & Partial<TeachingDraft>> {
+  const pdf = files[0]?.type === 'application/pdf';
+  let images = files;
+  if (pdf) {
+    if (files.length !== 1 || !Number.isInteger(first) || !Number.isInteger(last) || first < 1
+      || last < first || last > 1000 || last - first >= TEXTBOOK_MAX_PDF_PAGES) throw new Error('invalidPageRange');
+    const { renderTextbookPdf } = await import('./textbookPdf');
+    images = await renderTextbookPdf(files[0], first, last);
+  }
+  if (!images.length || images.length > TEXTBOOK_MAX_FILES
+    || images.some(file => !file.type.startsWith('image/') || !file.size)
+    || images.reduce((total, file) => total + file.size, 0) > TEXTBOOK_MAX_BYTES) throw new Error('invalidFiles');
   const body = new FormData();
   body.set('academy', academy);
-  body.set('first', String(first));
-  body.set('last', String(last));
+  body.set('first', '1');
+  body.set('last', String(images.length));
   if (options) body.set('options', JSON.stringify(options));
-  files.forEach(file => body.append('files', file));
+  images.forEach(file => body.append('files', file));
   const { data, error } = await supabase.functions.invoke<TextbookExtraction & Partial<TeachingDraft>>('extract-textbook', { body });
   if (error) {
     const payload = error.context instanceof Response ? await error.context.json().catch(() => null) : null;
@@ -114,7 +125,12 @@ export async function extractTextbook(academy: string, files: File[], first: num
   if (!data || !Array.isArray(data.words) || !Array.isArray(data.sentences) || !Array.isArray(data.unclearPages)) {
     throw new Error('extractionFailed');
   }
-  return data;
+  if (!pdf) return data;
+  return { ...data,
+    words: data.words.map(item => ({ ...item, page: first + item.page - 1 })),
+    sentences: data.sentences.map(item => ({ ...item, page: first + item.page - 1 })),
+    unclearPages: data.unclearPages.map(page => first + page - 1),
+  };
 }
 
 export async function createTextbookCatalogUnit(id: string, book: string, title: string): Promise<TextbookUnit> {
