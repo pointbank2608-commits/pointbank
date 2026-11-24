@@ -27,7 +27,7 @@ const fixture = `
 `;
 const api = `
   const lists = async () => (await fetch('${origin}/word_lists')).json();
-  const mocks = {fetchAllWordLists: lists, fetchWordLists: lists,
+  const mocks = {fetchAllWordLists: async (_academy, kind='word') => (await lists()).filter(row => kind==='all' || (row.kind || 'word')===kind), fetchWordLists: lists,
     createCurriculumLesson: async draft => (await fetch('${origin}/curriculum_lessons', {method:'POST',body:JSON.stringify(draft)})).json(),
     wordListKindOf: l => l.kind || 'word', fetchPhonicsBankResult: async () => ({entries: [], mediaAvailable: false})};
   ${apiExports.map(name => `export const ${name} = (...args) => (mocks.${name} || (async () => []))(...args);`).join('\n')}
@@ -70,16 +70,24 @@ let failSave = true;
 let lostListResponse = true;
 const extractionRequests = [];
 const aiSaveAttempts = [];
+const appendRequests = [];
+let lostAppendResponse = true;
 let browser;
 try {
   browser = await chromium.launch({ channel: 'chrome', headless: true });
+  const pdfFixture = await browser.newPage();
+  const pageColors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
+  await pdfFixture.setContent(`<style>@page{size:A4;margin:0}body{margin:0}.sheet{height:297mm;break-after:page}.sheet:last-child{break-after:auto}</style>`
+    + pageColors.map((color, index) => `<div class="sheet" style="background:${color}">Textbook page ${index + 1}</div>`).join(''));
+  const pdfBytes = await pdfFixture.pdf({ printBackground: true, preferCSSPageSize: true });
+  await pdfFixture.close();
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.route('https://**/*', route => route.abort());
   await page.route('http://127.0.0.1:5387/**', route => {
     const path = new URL(route.request().url()).pathname;
-    const contentType = path.endsWith('.js') ? 'text/javascript' : path.endsWith('.css') ? 'text/css' : 'text/html';
+    const contentType = /\.m?js$/.test(path) ? 'text/javascript' : path.endsWith('.css') ? 'text/css' : 'text/html';
     const body = assets.get(path);
     return body ? route.fulfill({ contentType, body: Buffer.from(body) }) : route.fulfill({ status: 404 });
   });
@@ -91,6 +99,25 @@ try {
     });
     if (request.method() === 'OPTIONS') return respond(null);
     if (pathname === '/word_lists') return respond(lists);
+    if (pathname.endsWith('/save_study_lists')) {
+      const input = request.postDataJSON();
+      assert.equal(input.p_academy_id, 'academy');
+      appendRequests.push(input.p_lists);
+      for (const draft of input.p_lists) {
+        if (!draft.append) {
+          if (!lists.some(list => list.id === draft.id)) lists.push({ ...draft, academy_id: 'academy', class_id: null, created_by: 'teacher' });
+          continue;
+        }
+        const target = lists.find(list => list.id === draft.id);
+        assert.equal(target.kind || 'word', draft.kind);
+        const key = item => JSON.stringify([item.word.trim().replace(/\s+/g, ' ').toLowerCase(), (item.meaning || '').trim().replace(/\s+/g, ' ').toLowerCase()]);
+        for (const item of draft.items) {
+          if (!target.items.some(old => old.id === item.id || key(old) === key(item))) target.items.push(item);
+        }
+      }
+      if (lostAppendResponse) { lostAppendResponse = false; return respond({ message: 'response lost after append' }, 503); }
+      return respond([]);
+    }
     if (pathname === '/curriculum_lessons' && request.method() === 'POST') {
       const lesson = request.postDataJSON();
       assert.ok(lesson.id && lesson.classId === null);
@@ -108,20 +135,41 @@ try {
           sentences: [{ text: 'I can see a zebra.', meaning: '얼룩말이 보여요.' }],
         });
       }
-      const body = request.postData();
-      assert.match(body, /name="files"; filename="pages\.(?:png|pdf)"/);
-      const options = body.match(/name="options"\r\n\r\n([^\r]+)/)?.[1];
+      const form = await new Request(request.url(), { method: 'POST', headers: request.headers(), body: request.postDataBuffer() }).formData();
+      const files = form.getAll('files');
+      assert.ok(files.every(file => ['image/png', 'image/jpeg'].includes(file.type)));
+      const pdf = files[0].name.startsWith('textbook-page-');
+      assert.equal(form.get('first'), '1');
+      assert.equal(form.get('last'), String(files.length));
+      if (pdf) {
+        assert.ok(files.length <= 3);
+        for (const file of files) {
+          assert.equal(file.type, 'image/jpeg');
+          const selectedPage = Number(file.name.match(/page-(\d+)\.jpg$/)[1]);
+          const bytes = Buffer.from(await file.arrayBuffer());
+          assert.deepEqual([...bytes.subarray(0, 3)], [255, 216, 255]);
+          const pixel = await page.evaluate(async encoded => {
+            const image = new Image(); image.src = 'data:image/jpeg;base64,' + encoded; await image.decode();
+            const canvas = document.createElement('canvas'); canvas.width = canvas.height = 1;
+            const context = canvas.getContext('2d'); context.drawImage(image, 100, 100, 1, 1, 0, 0, 1, 1);
+            return { color: [...context.getImageData(0, 0, 1, 1).data].slice(0, 3), longest: Math.max(image.width, image.height) };
+          }, bytes.toString('base64'));
+          const expected = pageColors[selectedPage - 1].match(/[a-f0-9]{2}/gi).map(hex => parseInt(hex, 16));
+          assert.ok(pixel.color.every((value, index) => Math.abs(value - expected[index]) < 5));
+          assert.equal(pixel.longest, 2048);
+        }
+        assert.deepEqual(files.map(file => file.name), Array.from({ length: files.length }, (_, index) => `textbook-page-${index + 2}.jpg`));
+      } else assert.equal(files[0].name, 'pages.png');
+      const options = form.get('options');
       if (options) {
         const parsed = JSON.parse(options);
         assert.deepEqual(Object.keys(parsed), ['outputs']);
-        assert.deepEqual(parsed.outputs, [body.includes('filename="pages.pdf"') ? 'sentences' : 'words']);
+        assert.deepEqual(parsed.outputs, [pdf ? 'sentences' : 'words']);
       }
-      const pdf = body.includes('filename="pages.pdf"');
       extractionRequests.push(pdf ? 'pdf' : 'photo');
-      if (pdf) assert.match(body, /name="first"\r\n\r\n2\r\n/);
       return respond(pdf ? {
-        words: extraction.words.map(item => ({ ...item, page: 2 })),
-        sentences: extraction.sentences.map(item => ({ ...item, page: 2 })), unclearPages: [2],
+        words: extraction.words.map((item, index) => ({ ...item, page: Math.min(index + 1, files.length) })),
+        sentences: extraction.sentences, unclearPages: [1],
       } : extraction);
     }
     if (pathname.endsWith('/rest/v1/word_lists') && request.method() === 'POST') {
@@ -321,14 +369,28 @@ try {
   await go('/wordlists');
   await page.getByRole('button', { name: '문장 모음', exact: true }).click();
   await importAi.click();
-  await sourceDialog.getByLabel('이미지·PDF 선택').setInputFiles({ name: 'pages.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4') });
+  await sourceDialog.getByLabel('이미지·PDF 선택').setInputFiles({ name: 'pages.pdf', mimeType: 'application/pdf', buffer: pdfBytes });
   await sourceDialog.getByLabel('PDF 시작 쪽').fill('2');
+  await sourceDialog.getByLabel('PDF 끝 쪽').fill('5');
+  await sourceDialog.getByRole('button', { name: '단어·문장 자동 추출' }).click();
+  await sourceDialog.getByRole('alert').getByText('한 번에 연속된 PDF 3쪽까지', { exact: false }).waitFor();
+  assert.deepEqual(extractionRequests, ['photo']);
+  await sourceDialog.getByLabel('PDF 끝 쪽').fill('4');
   await sourceDialog.getByRole('button', { name: '단어·문장 자동 추출' }).click();
   await sourceDialog.getByText('읽기 어려운 쪽이 있어요', { exact: false }).waitFor();
   const pdfOriginal = sourceDialog.getByRole('link', { name: '원문 열기 · 2쪽' });
   await pdfOriginal.waitFor();
   assert.match(await pdfOriginal.getAttribute('href'), /#page=2$/);
+  await sourceDialog.getByRole('button', { name: '4쪽', exact: true }).click();
+  assert.match(await sourceDialog.getByRole('link', { name: '원문 열기 · 4쪽' }).getAttribute('href'), /#page=4$/);
   await sourceDialog.getByRole('button', { name: '원본 바꾸기', exact: true }).click();
+  await sourceDialog.getByLabel('PDF 시작 쪽').fill('5');
+  await sourceDialog.getByLabel('PDF 끝 쪽').fill('6');
+  await sourceDialog.getByRole('button', { name: '단어·문장 자동 추출' }).click();
+  await sourceDialog.getByRole('alert').getByText('한 번에 연속된 PDF 3쪽까지', { exact: false }).waitFor();
+  assert.deepEqual(extractionRequests, ['photo', 'pdf']);
+  await sourceDialog.getByLabel('PDF 시작 쪽').fill('2');
+  await sourceDialog.getByLabel('PDF 끝 쪽').fill('2');
 
   const outputOptions = sourceDialog.getByRole('group', { name: '만들 자료', exact: true });
   assert.deepEqual(await outputOptions.getByRole('checkbox').evaluateAll(inputs => inputs.map(input => input.parentElement.textContent.trim().replace(/^(library_books|notes)/, ''))), ['단어장', '문장 모음']);
@@ -364,9 +426,68 @@ try {
   assert.deepEqual(lists.filter(list => list.name === 'Image words only').map(list => [list.kind, list.items.length]), [['word', 3]]);
   assert.equal(lessons.length, 0);
   assert.deepEqual(extractionRequests, ['photo', 'pdf', 'pdf', 'photo']);
+  const imageTarget = lists.find(list => list.name === 'Image words only');
+  imageTarget.items[0].image_url = '/original-river.webp';
+  imageTarget.items[0].example = 'A river flows.';
+  const originalItem = structuredClone(imageTarget.items[0]);
+  await go('/wordlists');
+  await importAi.click();
+  await sourceDialog.getByLabel('이미지·PDF 선택').setInputFiles({ name: 'pages.png', mimeType: 'image/png',
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/kf8AAAAASUVORK5CYII=', 'base64') });
+  await outputOptions.getByRole('checkbox', { name: '문장 모음', exact: true }).uncheck();
+  await sourceDialog.getByRole('button', { name: '단어·문장 자동 추출' }).click();
+  await sourceDialog.getByLabel('단어장 저장 위치').selectOption(imageTarget.id);
+  await sourceDialog.getByRole('group', { name: '단어장 (3개)' }).getByLabel('한국어 뜻').nth(1).fill('초록 숲');
+  await sourceDialog.getByRole('button', { name: '확인한 자료 저장', exact: true }).click();
+  await sourceDialog.getByRole('alert').waitFor();
+  await sourceDialog.getByRole('button', { name: '다시 저장', exact: true }).click();
+  await sourceDialog.waitFor({ state: 'hidden' });
+  assert.deepEqual(appendRequests[0], appendRequests[1]);
+  assert.equal(imageTarget.items.length, 4);
+  assert.deepEqual(imageTarget.items[0], originalItem);
+  await page.getByText('· 초록 숲', { exact: true }).waitFor();
+
+  await go('/wordlists');
+  await importAi.click();
+  await sourceDialog.getByLabel('이미지·PDF 선택').setInputFiles({ name: 'pages.pdf', mimeType: 'application/pdf', buffer: pdfBytes });
+  await sourceDialog.getByLabel('PDF 시작 쪽').fill('2');
+  await sourceDialog.getByRole('button', { name: '단어·문장 자동 추출' }).click();
+  const zooSentences = generated.find(list => list.kind === 'sentence');
+  await sourceDialog.getByLabel('문장 모음 저장 위치').selectOption(zooSentences.id);
+  await sourceDialog.getByLabel('자료 이름', { exact: true }).fill('Mixed PDF append');
+  await sourceDialog.getByRole('button', { name: '확인한 자료 저장', exact: true }).click();
+  await sourceDialog.waitFor({ state: 'hidden' });
+  assert.equal(lists.filter(list => list.name === 'Mixed PDF append').length, 1);
+  assert.equal(zooSentences.items.length, 2);
+
+  savedPhoto[0].group_name = 'Review';
+  await go('/wordlists?list=' + imageTarget.id);
+  await page.getByRole('button', { name: '기존 목록에 추가하기', exact: true }).click();
+  const appendDialog = page.getByRole('dialog', { name: '기존 목록에 추가하기', exact: true });
+  const wordDestination = appendDialog.getByLabel('단어장 저장 위치');
+  await wordDestination.selectOption(savedPhoto[0].id);
+  assert.equal(await wordDestination.locator(`option[value="${imageTarget.id}"]`).count(), 0);
+  assert.equal(await wordDestination.locator(`option[value="${zooSentences.id}"]`).count(), 0);
+  await appendDialog.getByRole('checkbox', { name: '전체 선택', exact: true }).uncheck();
+  await appendDialog.getByRole('checkbox', { name: 'river · 강', exact: true }).check();
+  await appendDialog.getByRole('button', { name: '선택한 항목 추가', exact: true }).click();
+  await appendDialog.waitFor({ state: 'hidden' });
+  assert.equal(savedPhoto[0].items.length, 3);
+  assert.equal(imageTarget.items.length, 4);
+  assert.deepEqual(savedPhoto[0].items.at(-1), { ...originalItem, id: savedPhoto[0].items.at(-1).id });
+  await page.getByText('· 강', { exact: true }).waitFor();
+
+  await go('/wordlists?list=' + savedPdf[0].id);
+  await page.getByRole('button', { name: '기존 목록에 추가하기', exact: true }).click();
+  await appendDialog.getByLabel('문장 모음 저장 위치').selectOption(zooSentences.id);
+  await appendDialog.getByRole('button', { name: '선택한 항목 추가', exact: true }).click();
+  await appendDialog.waitFor({ state: 'hidden' });
+  assert.equal(zooSentences.items.length, 3);
+  assert.equal(savedPdf[0].items.length, 1);
+  await page.getByText('강가를 함께 걸어요.', { exact: true }).waitFor();
   assert.equal(uploadCount, 0);
   assert.deepEqual(errors, []);
-  console.log('PASS textbook catalog, topic drafts, photo/PDF study lists, editing, selected outputs, saving, and reopening');
+  console.log('PASS PDF selected-page pixels and limits, original page mapping, AI append retries, mixed save, list-to-list copies, metadata, and reopening');
 } finally {
   await browser?.close();
 }

@@ -4,7 +4,7 @@ import { integerField, normalizeTeachingDraft, readSourceOptions, schemaObject, 
 const maxBytes = 10 * 1024 * 1024;
 const maxFiles = 6;
 const maxGeneratedItems = 30;
-const mimeTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+const mimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -19,7 +19,6 @@ async function hasFileSignature(file: File) {
   const bytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
   const ascii = new TextDecoder().decode(bytes);
   switch (file.type) {
-    case 'application/pdf': return ascii.startsWith('%PDF-');
     case 'image/png': return bytes[0] === 137 && ascii.slice(1, 4) === 'PNG';
     case 'image/jpeg': return bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255;
     case 'image/webp': return ascii.startsWith('RIFF') && ascii.slice(8, 12) === 'WEBP';
@@ -37,9 +36,7 @@ async function inlineFile(file: File) {
     chunks.push(btoa(String.fromCharCode(...bytes.subarray(i, i + 0x6000))));
   }
   const dataUrl = `data:${file.type};base64,${chunks.join('')}`;
-  return file.type === 'application/pdf'
-    ? { type: 'input_file', filename: 'textbook.pdf', file_data: dataUrl }
-    : { type: 'input_image', image_url: dataUrl, detail: 'high' };
+  return { type: 'input_image', image_url: dataUrl, detail: 'high' };
 }
 
 const stringField = { type: 'string' };
@@ -120,17 +117,9 @@ async function readExtraction(req: Request) {
       || files.reduce((total, file) => total + file.size, 0) > maxBytes) {
     return json({ error: 'invalidFiles' }, 400);
   }
-  const pdf = files[0].type === 'application/pdf';
-  if ((pdf && files.length !== 1) || (!pdf && files.some(file => file.type === 'application/pdf'))) {
-    return json({ error: 'invalidFiles' }, 400);
-  }
   if (!(await Promise.all(files.map(hasFileSignature))).every(Boolean)) return json({ error: 'invalidFiles' }, 400);
-
-  const first = pdf ? Number(form.get('first')) : 1;
-  const last = pdf ? Number(form.get('last')) : files.length;
-  if (!Number.isInteger(first) || !Number.isInteger(last) || first < 1 || last < first || last > 1000 || last - first >= 12) {
-    return json({ error: 'invalidPageRange' }, 400);
-  }
+  const first = 1;
+  const last = files.length;
   let options;
   try {
     const raw = form.get('options');
@@ -139,7 +128,7 @@ async function readExtraction(req: Request) {
     return json({ error: 'invalidTeachingOptions' }, 400);
   }
   if (!options) return json({ error: 'invalidTeachingOptions' }, 400);
-  return { mode: 'extract' as const, academy, files, pdf, first, last, options };
+  return { mode: 'extract' as const, academy, files, first, last, options };
 }
 
 function normalizeGeneratedItems(input: unknown, limit: number, keepDistinctMeanings = false) {
@@ -214,9 +203,7 @@ Deno.serve(async (req: Request) => {
     const instructions = job.mode === 'generate' ? generationPrompt
       : `${job.mode === 'extract' ? `${extractionPrompt} ${extractionFormat}` : worksheetPrompt}\n${teachingInstructions(job.options)}`;
     const content = job.mode === 'extract'
-      ? job.pdf
-        ? [inputText(`Use only physical PDF pages ${job.first} through ${job.last} for every requested output. If the pages do not exist, return empty lists and mark any teaching draft as insufficient.`), await inlineFile(job.files[0])]
-        : (await Promise.all(job.files.map(async (file, index) => [inputText(`Image page ${index + 1}`), await inlineFile(file)]))).flat()
+      ? (await Promise.all(job.files.map(async (file, index) => [inputText(`Image page ${index + 1}`), await inlineFile(file)]))).flat()
       : [inputText(JSON.stringify(job.mode === 'worksheet' ? job.source : {
         topic: job.topic, grade: job.grade, wordCount: job.wordCount, sentenceCount: job.sentenceCount,
       }))];

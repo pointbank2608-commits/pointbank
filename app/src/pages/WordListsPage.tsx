@@ -4,6 +4,7 @@ import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import WordListGameLauncher from '../components/WordListGameLauncher';
+import WordListAppendDialog from '../components/WordListAppendDialog';
 import TextbookLibrary from '../components/TextbookLibrary';
 import AiMaterialsDialog, { type SavedAiMaterials } from '../components/AiMaterialsDialog';
 import MyGrammarLibrary from '../components/MyGrammarLibrary';
@@ -513,6 +514,7 @@ export default function WordListsPage() {
   const linkedList = params.get('list');
   const [materialFilter, setMaterialFilter] = useState<'all' | 'word' | 'sentence'>('all');
   const [aiDialog, setAiDialog] = useState<{ scope: string; mode: 'source' | 'topic' } | null>(null);
+  const [appendSource, setAppendSource] = useState<{ scope: string; list: WordList } | null>(null);
   const [savedTeaching, setSavedTeaching] = useState<(SavedAiMaterials & { scope: string }) | null>(null);
   const [launchListId, setLaunchListId] = useState<string | null>(null);
   const [launchBusy, setLaunchBusy] = useState(false);
@@ -529,11 +531,16 @@ export default function WordListsPage() {
   const listSequence=useRef(0);
   const accountScope=useRef(''); accountScope.current=`${profile?.id}:${academy?.id}`;
   const [openId, setOpenId] = useState<string | null>(null);
+  const [viewAll, setViewAll] = useState(false);
   useEffect(() => {
-    if (linkedList) { setOpenId(linkedList); setMaterialFilter('all'); }
+    if (linkedList) { setOpenId(linkedList); setMaterialFilter('all'); setViewAll(true); }
   }, [linkedList]);
   /** 펼쳐 둔 그룹(기본은 모두 접힘) */
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    const group = lists.find(list => list.id === linkedList)?.group_name;
+    if (group) setOpenGroups(current => current.has(group) ? current : new Set([...current, group]));
+  }, [lists, linkedList]);
   const groupNames = useMemo(() => [...new Set(lists.map((l) => l.group_name).filter((g): g is string => !!g))], [lists]);
   // 같은 그룹은 붙여서(처음 나온 자리에), 그룹 없는 것은 그대로
   const orderedLists = useMemo(() => {
@@ -582,7 +589,6 @@ export default function WordListsPage() {
   const [newScope, setNewScope] = useState<'class' | 'academy'>('class');
   /** 새로 만들 것: 단어장 / 문장 목록(066) */
   const [newKind, setNewKind] = useState<'word' | 'sentence'>('word');
-  const [viewAll, setViewAll] = useState(false);
   useEffect(() => {
     const kind = (location.state as { createMaterialKind?: 'word' | 'sentence' } | null)?.createMaterialKind;
     if (kind) { setNewKind(kind); setShowCreateForm(true); setMaterialFilter(kind); setNewScope('academy'); }
@@ -760,6 +766,15 @@ export default function WordListsPage() {
             if (result.listId) { setParams({ list: result.listId }); void load(); }
             setSavedTeaching(result.lessonId || result.workbookPath ? { ...result, scope: aiDialog.scope } : null);
             notify(t('aiMaterials.saved'));
+          }} />}
+      {academy?.id && profile?.id && appendSource?.scope === accountScope.current &&
+        <WordListAppendDialog key={appendSource.scope + appendSource.list.id} academy={academy.id} owner={profile.id}
+          source={appendSource.list} onClose={() => setAppendSource(null)} onSaved={id => {
+            if (appendSource.scope !== accountScope.current) return;
+            setAppendSource(null);
+            setParams({ list: id });
+            void load();
+            notify(t('aiMaterials.appended'));
           }} />}
       {savedTeaching?.scope === accountScope.current && <nav className="flex flex-wrap items-center gap-2" aria-label={t('aiMaterials.openSaved')}>
         <span className="text-sm font-semibold text-deep-navy">{t('aiMaterials.openSaved')}</span>
@@ -985,8 +1000,12 @@ export default function WordListsPage() {
                   />
                 </div>
               )}
-              {openId === list.id && (
-                wordListKindOf(list) === 'sentence' ? (
+              {openId === list.id && <>
+                {list.items.length > 0 && <button type="button" className="textbook-button mt-3"
+                  onClick={() => setAppendSource({ scope: accountScope.current, list })}>
+                  <span className="material-symbols-outlined" aria-hidden="true">playlist_add</span>{t('aiMaterials.appendToExisting')}
+                </button>}
+                {wordListKindOf(list) === 'sentence' ? (
                   <SentenceListEditor
                     list={list}
                     onChange={(items) => setLists((prev) => prev.map((l) => (l.id === list.id ? { ...l, items } : l)))}
@@ -996,8 +1015,8 @@ export default function WordListsPage() {
                     list={list}
                     onChange={(items) => setLists((prev) => prev.map((l) => (l.id === list.id ? { ...l, items } : l)))}
                   />
-                )
-              )}
+                )}
+              </>}
             </div>
             )}
             </Fragment>

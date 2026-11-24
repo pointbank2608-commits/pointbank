@@ -11,7 +11,7 @@ const fileTypes: Record<string, string> = {
   jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', pdf: 'application/pdf',
 };
 const acceptedFiles = [...TEXTBOOK_FILE_TYPES, ...Object.keys(fileTypes).map(extension => '.' + extension)].join(',');
-const extractionErrors = ['accessDenied', 'invalidFiles', 'invalidPageRange', 'extractionFailed', 'extractionUnavailable', 'rateLimited'];
+const extractionErrors = ['accessDenied', 'invalidFiles', 'invalidPageRange', 'pdfOpenFailed', 'extractionFailed', 'extractionUnavailable', 'rateLimited'];
 
 const studyOutputs = ['words', 'sentences'] as const;
 export type StudyListSourceDraft = SourceMaterialDraft & {
