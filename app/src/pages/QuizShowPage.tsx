@@ -17,6 +17,7 @@ import { wordListToCards } from '../lib/gameFromWords';
 import {
   buildContestQuestions,
   contestAvailability,
+  configuredContestQuestions,
   contestRoundNames,
   CONTEST_ROUND_TYPES,
   isLiveQuestionReady,
@@ -127,7 +128,7 @@ export default function QuizShowPage() {
     [t],
   );
 
-  const playable = draft.filter(isLiveQuestionReady);
+  const playable = configuredContestQuestions(draft, selected?.config.liveContestRounds);
   const speedBonus = selected?.config.liveSpeedBonus ?? true;
 
   async function persist(nextConfig: GameTemplateConfig) {

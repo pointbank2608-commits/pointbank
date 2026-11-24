@@ -356,6 +356,21 @@ export function roundTypeOf(q: LiveQuestion): ContestRoundType {
   return q.style ?? q.kind;
 }
 
+/** Apply the current round options to the playable view, retaining the full saved
+ * question bank so unchecked/limited rounds can be enabled again without data loss.
+ * Legacy games without round options keep their original questions and order.
+ */
+export function configuredContestQuestions(questions: LiveQuestion[], saved: ContestRoundSetting[] | undefined): LiveQuestion[] {
+  const ready = questions.filter(isLiveQuestionReady);
+  if (!saved) return ready;
+  return normalizeContestRounds(saved).flatMap(round => {
+    if (!round.on || (round.count !== -1 && (!Number.isInteger(round.count) || round.count < 1))) return [];
+    const available = ready.filter(q => roundTypeOf(q) === round.type);
+    const selected = round.count === -1 ? available : available.slice(0, round.count);
+    return selected.map(q => ({ ...q, seconds: round.seconds ?? q.seconds, points: round.points ?? q.points }));
+  });
+}
+
 /**
  * 자동 만들기를 다시 할 때 선생님이 직접 만든 문제는 남긴다 — 같은 종류 라운드가 새로 만들어졌으면 그 라운드 끝에
  * (라운드 이름도 새 번호로), 그 종류가 없으면 맨 뒤에 원래 라운드 이름 그대로.

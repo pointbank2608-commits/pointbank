@@ -1,3 +1,4 @@
+import { configuredContestQuestions } from '../lib/liveQuiz';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../context/ToastContext';
@@ -248,7 +249,7 @@ export default function GameToolbar({ workspace, onRestart, fullscreen, onFullsc
   const type = info?.gameType;
   const quizPreviewQuestions = useMemo(() => {
     if (type !== 'quizshow' || !info?.selected || !contentDraft) return undefined;
-    try { return gameEditContent(info.selected, contentDraft, nativeOptions).config.liveQuestions; }
+    try { return configuredContestQuestions(gameEditContent(info.selected, contentDraft, nativeOptions).config.liveQuestions ?? [], nativeOptions.liveContestRounds); }
     catch { return []; }
   }, [type, info?.selected, contentDraft, nativeOptions]);
   const savedParticipantMode = type === 'shufflefind' ? info?.selected?.config.shuffleMode : type === 'telepathy' ? info?.selected?.config.telepathyMode : undefined;

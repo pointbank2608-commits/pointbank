@@ -56,10 +56,11 @@ export default function QuizShowRoundSettings({ value, questions, onChange }: {
             <input className={field} type="number" min={-1} value={round.count} onChange={e => patch(i, { count: e.target.valueAsNumber })}/>
           </label>
           <label className="block text-sm">{text('제한 시간(초)', 'Time limit (sec)')}
-            <input className={field} type="number" min={5} max={120} value={round.seconds ?? 20} onChange={e => patch(i, { seconds: e.target.valueAsNumber })}/>
+            <input className={`${field} disabled:opacity-40`} type="number" min={5} max={120} disabled={round.type === 'buzzer'} value={round.seconds ?? (round.type === 'ox' ? 15 : round.type === 'text' || round.type === 'scramble' ? 30 : round.type === 'blank' ? 25 : 20)} onChange={e => patch(i, { seconds: e.target.valueAsNumber })}/>
           </label>
+          {round.type === 'buzzer' && <p className="text-xs text-on-surface-variant">{text('부저는 시간 제한 없이 선생님이 판정해요. 예상시간은 문제당 답변·판정 30초로 계산해요.', 'Buzzer rounds are untimed and judged by the teacher. The estimate allows 30s for answering/judging each question.')}</p>}
           <label className="block text-sm">{text('점수', 'Points')}
-            <input className={field} type="number" min={0} value={round.points ?? 1000} onChange={e => patch(i, { points: e.target.valueAsNumber })}/>
+            <input className={field} type="number" min={0} value={round.points ?? (round.type === 'text' || round.type === 'scramble' ? 1500 : 1000)} onChange={e => patch(i, { points: e.target.valueAsNumber })}/>
           </label>
           <div className="flex gap-2">{[-1, 1].map(delta => <button key={delta} type="button" className={button}
             disabled={i + delta < 0 || i + delta >= rounds.length} onClick={() => {

@@ -86,5 +86,36 @@ try{
  await page.goto('http://127.0.0.1:5595/games/twodice');
  await page.getByRole('button',{name:'반 설정',exact:true}).waitFor();
  assert.equal(await page.getByRole('button',{name:'반 설정',exact:true}).isEnabled(),true);
- console.log('PASS other games retain class settings');assert.deepEqual(errors,[]);
+ console.log('PASS other games retain class settings');
+ const native=await browser.newPage({viewport:{width:1600,height:1000}});
+ native.on('pageerror',error=>errors.push(error.message));native.setDefaultTimeout(20000);
+ await native.addInitScript(()=>localStorage.setItem('classbank.startCheck.skip','1'));
+ await native.goto('http://127.0.0.1:5595/games/quizshow');
+ await native.getByRole('button',{name:'게임설정',exact:true}).waitFor();
+ const startNative=native.locator('[data-game-start-card]').getByRole('button',{name:'게임 시작',exact:true});
+ if(await startNative.isVisible())await startNative.click();
+ await native.getByRole('button',{name:'게임설정',exact:true}).click();
+ for(const type of ['ox','text','buzzer'])await native.locator(`[data-quiz-round="${type}"]`).getByRole('checkbox').uncheck();
+ const nativeRound=native.locator('[data-quiz-round="choice"]');
+ await nativeRound.getByRole('button',{name:'뜻 고르기 펼치기',exact:true}).click();
+ await nativeRound.getByRole('spinbutton',{name:'문제 수 (−1은 전체)',exact:true}).fill('1');
+ await nativeRound.getByRole('spinbutton',{name:'제한 시간(초)',exact:true}).fill('40');
+ await nativeRound.getByRole('spinbutton',{name:'점수',exact:true}).fill('600');
+ assert((await native.locator('[data-contest-duration]').innerText()).includes('출제 가능 1문제'));
+ await native.getByRole('button',{name:'적용',exact:true}).click();
+ await native.getByRole('button',{name:/대회 열기/}).click();
+ await native.getByRole('img',{name:'QR',exact:true}).waitFor();
+ const nativeQuestions=await native.evaluate(()=>window.__quizSession.questions);
+ assert.equal(nativeQuestions.length,1);assert.equal(nativeQuestions[0].seconds,40);assert.equal(nativeQuestions[0].points,600);
+ const bank=await native.evaluate(async()=>{
+  const {configuredContestQuestions}=await import('/src/lib/liveQuiz.ts');
+  const questions=[1,2,3].map(n=>({id:String(n),prompt:'q'+n,kind:'choice',choices:['a','b'],correctIndex:0,seconds:20,custom:true}));
+  const original=JSON.stringify(questions);
+  const rounds=[{type:'choice',on:false,count:1}];
+  return {off:configuredContestQuestions(questions,rounds).length,limited:configuredContestQuestions(questions,[{...rounds[0],on:true}]).length,
+   restored:configuredContestQuestions(questions,[{...rounds[0],on:true,count:-1}]).length,unchanged:JSON.stringify(questions)===original};
+ });
+ assert.deepEqual(bank,{off:0,limited:1,restored:3,unchanged:true});
+ console.log('PASS sample / custom questions obey round selection, count, time and points; full bank retained');
+ assert.deepEqual(errors,[]);
 }finally{await browser?.close();await server.close();}
