@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GrammarPickerPanel from './GrammarPickerPanel';
 import MyGrammarLibrary from './MyGrammarLibrary';
+import { AiGrammarCreateButton } from './AiGrammarCreator';
 import type { GrammarPreset } from '../lib/myGrammar';
 import AccessibleDialog from './AccessibleDialog';
 import { GROUP_ACTIVITIES, activityCategory, readRecentActivities, type ActivityCategory } from '../lib/lessonActivities';
@@ -115,6 +116,7 @@ export default function LessonActivityPicker({onPick,onGrammarPick,onVideo,onPdf
  }
  const [theme, setTheme] = useState<string | null>('green');
  const [myGrammar, setMyGrammar] = useState(false);
+ const [grammarRevision, setGrammarRevision] = useState(0);
  const [preview, setPreview] = useState<{ block: BlockDef; layout?: CanvasExample; workbook?: MaterialSlide } | null>(null);
  const previewOrigin = useRef<HTMLButtonElement | null>(null);
  const back = useRef<HTMLButtonElement>(null);
@@ -202,8 +204,13 @@ export default function LessonActivityPicker({onPick,onGrammarPick,onVideo,onPdf
          {([false,true] as const).map(mine => <button key={String(mine)} type="button" aria-pressed={myGrammar === mine}
            className={`min-h-10 rounded-lg border px-3 font-bold ${myGrammar === mine ? 'bg-primary text-white' : 'bg-white text-primary'}`}
            onClick={() => setMyGrammar(mine)}>{t(mine ? 'myGrammar.import' : 'myGrammar.catalog')}</button>)}
+         <AiGrammarCreateButton onSaved={() => {
+           setQuery('');
+           setMyGrammar(true);
+           setGrammarRevision(n => n + 1);
+         }} />
        </div>
-       {myGrammar ? <MyGrammarLibrary query={query} onPick={preset => {
+       {myGrammar ? <MyGrammarLibrary key={grammarRevision} query={query} onPick={preset => {
          if (locked.current) return;
          locked.current = true;
          onGrammarPick(preset.grammarId, preset);

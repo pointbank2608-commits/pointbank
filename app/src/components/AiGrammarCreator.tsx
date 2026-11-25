@@ -1,12 +1,29 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../context/AuthContext';
+import { useAcademyAi } from '../lib/useAcademyAi';
 import { extractGrammar } from '../lib/textbooks';
 import { insertGrammarDraft, type GrammarPreset } from '../lib/myGrammar';
 import AccessibleDialog from './AccessibleDialog';
 import StudyListSourceForm from './StudyListSourceForm';
 import '../styles/textbooks.css';
 
-export default function AiGrammarCreator({ academy, owner, onSaved, onClose }: {
+export function AiGrammarCreateButton({ onSaved }: { onSaved: () => void }) {
+  const { t } = useTranslation();
+  const { academy, profile } = useAuth();
+  const enabled = useAcademyAi();
+  const [openFor, setOpenFor] = useState('');
+  if (!enabled || !academy || !profile) return null;
+  const scope = academy.id + '/' + profile.id;
+  return <>
+    <button type="button" aria-haspopup="dialog" className="min-h-10 rounded-lg bg-primary px-4 py-2 font-bold text-white"
+      onClick={() => setOpenFor(scope)}>{t('myGrammar.aiCreate')}</button>
+    {openFor === scope && <AiGrammarCreator academy={academy.id} owner={profile.id}
+      onClose={() => setOpenFor('')} onSaved={() => { setOpenFor(''); onSaved(); }} />}
+  </>;
+}
+
+function AiGrammarCreator({ academy, owner, onSaved, onClose }: {
   academy: string; owner: string; onSaved: () => void; onClose: () => void;
 }) {
   const { t } = useTranslation();

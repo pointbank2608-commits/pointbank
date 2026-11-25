@@ -4057,7 +4057,7 @@ const en: Ko = {
     formatHint: 'One card per line: cue | answer sentence | Korean (optional). {{count}} cards now.',
   },
   myGrammar: {
-    aiCreate: "Create my grammar with AI",
+    aiCreate: "Quick-create grammar with AI",
     generateAndSave: "Create and save board",
     audience: "School level",
     elementary: "Elementary",

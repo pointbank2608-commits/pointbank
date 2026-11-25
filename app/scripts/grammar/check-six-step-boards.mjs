@@ -25,6 +25,8 @@ const fixture = `
 import {useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import MyGrammarLibrary from '/src/components/MyGrammarLibrary';
+import LessonActivityPicker from '/src/components/LessonActivityPicker';
+import {lessonGameSources} from '/src/lib/lessonGameContent';
 import GrammarBoard from '/src/components/GrammarBoard';
 import {grammarSlidePoint} from '/src/lib/grammar';
 import i18n from '/src/i18n';
@@ -33,13 +35,20 @@ await i18n.changeLanguage('ko');
 function App() {
   const [pick, setPick] = useState(false);
   const [slide, setSlide] = useState(null);
-  return <><button onClick={()=>{setPick(true);setSlide(null)}}>내 문법에서 불러오기</button>
+  return <><button onClick={()=>{setPick(true);setSlide(null)}}>활동 추가 열기</button>
     <button onClick={()=>setSlide({kind:'grammar',id:'sample',grammarId:'m-modals'})}>기본 문법 열기</button>
     {slide ? <div data-testid="classroom-board" style={{width:'100%',aspectRatio:'16/9'}}><GrammarBoard point={grammarSlidePoint(slide)} /></div>
-    : <MyGrammarLibrary key={String(pick)} onPick={pick ? block=>setSlide({...block,kind:'grammar',id:'slide-1'}) : undefined}/>}</>;
+    : !pick && <MyGrammarLibrary/>}
+    {pick && <LessonActivityPicker academyId="${academy}" storageKey="test" slides={[]} cards={[]} entries={[]}
+      gameSources={lessonGameSources([],null,[])} lessonName="test" sourceName="" selected={null}
+      onClose={()=>setPick(false)} onGrammarPick={(grammarId,block)=>{
+        setSlide({...block,grammarId,kind:'grammar',id:'slide-1'});setPick(false);
+      }}/>}</>;
 }
 createRoot(document.getElementById('root')).render(<App/>);`;
-const bundle = await build({ root, configFile: false, logLevel:'error', plugins:[react(),tailwindcss(),{
+const bundle = await build({ root, configFile: false, logLevel:'error',
+  define:{'import.meta.env.VITE_SUPABASE_URL':JSON.stringify(origin),'import.meta.env.VITE_SUPABASE_ANON_KEY':JSON.stringify('test-key')},
+  plugins:[react(),tailwindcss(),{
   name:'grammar-test', enforce:'pre', load(id) {
     const path = id.replaceAll('\\','/');
     if (path.endsWith('/scripts/games/focus.tsx')) return fixture;
@@ -79,8 +88,10 @@ try {
     return route.abort();
   });
   await page.goto(origin+'/scripts/games/focus.html');
-  await page.getByText('저장한 문법 블록이 없어요.').waitFor();
-  const create = page.getByRole('button',{name:'AI로 내 문법 만들기',exact:true});
+  await page.getByText('저장한 문법 블록이 없어요.').waitFor({timeout:5000}).catch(async error => {
+    throw new Error([error.message, await page.locator('body').innerText(), ...errors].join('\n'));
+  });
+  const create = page.getByRole('button',{name:'문법 뚝딱 만들기',exact:true});
   assert.equal(await create.count(),0);
   enabled = true;
   await page.reload(); await create.click();
@@ -92,9 +103,30 @@ try {
   });
   await page.getByText('내 문법에 저장했어요.').waitFor();
   assert.equal(calls,1); assert.equal(inserts,2); assert.equal(rows.size,1);
-  enabled=false; await page.reload();
+  const openPicker = async () => {
+    await page.getByRole('button',{name:'활동 추가 열기'}).click();
+    await page.getByRole('navigation').getByRole('button',{name:'문법',exact:true}).click();
+  };
+  await openPicker();
+  await create.click();
+  await page.keyboard.press('Escape');
+  await page.getByRole('dialog',{name:'활동 추가',exact:true}).waitFor({timeout:3000});
   await page.getByRole('button',{name:'내 문법에서 불러오기'}).click();
-  await page.getByRole('button',{name:new RegExp('도움 요청하기')}).click();
+  await page.getByPlaceholder(/문법 찾기/).fill('no match');
+  await create.click();
+  await page.locator('input[type=file][multiple]').setInputFiles({name:'lesson.pdf',mimeType:'application/pdf',buffer:pdf});
+  await page.getByRole('button',{name:'문법 블록 만들고 저장'}).click();
+  const imported = page.getByRole('button',{name:new RegExp('도움 요청하기')});
+  await imported.nth(1).waitFor();
+  assert.equal(await page.getByPlaceholder(/문법 찾기/).inputValue(),'');
+  assert.equal(rows.size,2);
+  await imported.first().click();
+  await page.getByRole('heading',{name:'1 / 6 · 언제 쓸까?'}).waitFor();
+  enabled=false; await page.reload();
+  await openPicker();
+  assert.equal(await create.count(),0);
+  await page.getByRole('button',{name:'내 문법에서 불러오기'}).click();
+  await imported.first().click();
   await page.getByRole('heading',{name:'1 / 6 · 언제 쓸까?'}).waitFor();
   for (let index=0;index<6;index++) {
     await page.getByRole('button',{name:'힌트',exact:false}).click();

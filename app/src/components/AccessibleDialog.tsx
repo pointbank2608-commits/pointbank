@@ -24,12 +24,13 @@ export default function AccessibleDialog({ label, onClose, children, className =
   return (
     <dialog ref={ref} className={`classroom-dialog ${className}`} aria-label={label} data-game-history-owned={historyActions?history?.owner:undefined}
       onCancel={(event) => {
+        if (event.target !== event.currentTarget) return;
         if (nativeDismiss === 'enabled') return;
         event.preventDefault();
         if (!nativeDismiss) onClose();
       }}
       onClose={nativeDismiss ? (event) => {
-        if (!event.currentTarget.open) onClose();
+        if (event.target === event.currentTarget && !event.currentTarget.open) onClose();
       } : undefined}>
       {children}
     </dialog>

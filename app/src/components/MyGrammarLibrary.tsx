@@ -4,16 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import { grammarBoardContent, grammarSlidePoint, GRAMMAR_POINTS } from '../lib/grammar';
 import { listMyGrammar, saveMyGrammar, type GrammarPreset, type SavedGrammar } from '../lib/myGrammar';
 import GrammarContentEditor from './GrammarContentEditor';
-import AiGrammarCreator from './AiGrammarCreator';
-import { useAcademyAi } from '../lib/useAcademyAi';
+import { AiGrammarCreateButton } from './AiGrammarCreator';
 
 export default function MyGrammarLibrary({ onPick, query = '' }: { onPick?: (block: GrammarPreset) => void; query?: string }) {
   const { academy, profile } = useAuth();
   const { t } = useTranslation();
   const [refresh, setRefresh] = useState(0);
-  const aiEnabled = useAcademyAi();
   const scope = academy?.id + '/' + profile?.id;
-  const [creating, setCreating] = useState('');
   const [saved, setSaved] = useState('');
   const [rows, setRows] = useState<SavedGrammar[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -48,14 +45,11 @@ export default function MyGrammarLibrary({ onPick, query = '' }: { onPick?: (blo
         const point = GRAMMAR_POINTS.find(p => p.id === baseId)!;
         setEditor({ block: { grammarId: point.id, content: grammarBoardContent(point), boardTheme:'green' } });
       }}>{t('myGrammar.create')}</button>
-      {aiEnabled && <button className="rounded-lg bg-primary px-4 py-2 font-bold text-white" type="button"
-        onClick={() => { setSaved(''); setCreating(scope); }}>{t('myGrammar.aiCreate')}</button>}
+      <AiGrammarCreateButton onSaved={() => { setLibraryQuery(''); setSaved(scope); setRefresh(n => n + 1); }} />
     </div>}
     {!onPick && <input type="search" className="w-full rounded-lg border p-2" value={libraryQuery}
       aria-label={t('grammar.searchPlaceholder')} placeholder={t('grammar.searchPlaceholder')}
       onChange={e => setLibraryQuery(e.target.value)} />}
-    {creating === scope && aiEnabled && academy && profile && <AiGrammarCreator key={scope} academy={academy.id}
-      owner={profile.id} onClose={() => setCreating('')} onSaved={() => { setCreating(''); setSaved(scope); setRefresh(n => n + 1); }} />}
     {saved === scope && <p role="status">{t('myGrammar.saved')}</p>}
     {status === 'loading' && <p role="status">{t('common.loading')}</p>}
     {status === 'error' && <p role="alert">{t('myGrammar.loadFailed')} <button type="button" className="text-primary underline" onClick={() => setRefresh(n => n+1)}>{t('guide.retry')}</button></p>}
