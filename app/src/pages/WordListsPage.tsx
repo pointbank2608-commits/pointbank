@@ -17,7 +17,7 @@ import ClassChipRow from '../components/ClassChipRow';
 import FlashcardStudy from '../components/FlashcardStudy';
 import LyricsWordPicker from '../components/LyricsWordPicker';
 import MaterialsLaunchButtons from '../components/MaterialsLaunchButtons';
-import { fetchScanAccess } from '../lib/api';
+import { useAcademyAi } from '../lib/useAcademyAi';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
@@ -601,14 +601,7 @@ function TeachingMaterialsPage() {
   const myGrammar = params.get('tab') === 'grammar';
   const linkedList = params.get('list');
   const [materialFilter, setMaterialFilter] = useState<'all' | 'word' | 'sentence'>('all');
-  const [scanAcademy, setScanAcademy] = useState<string | null>(null);
-  useEffect(() => {
-    let current = true;
-    const id = academy?.id;
-    setScanAcademy(null);
-    if (id) void fetchScanAccess(id).then(enabled => { if (current && enabled) setScanAcademy(id); }).catch(() => {});
-    return () => { current = false; };
-  }, [academy?.id]);
+  const aiEnabled = useAcademyAi();
   const [aiDialog, setAiDialog] = useState<{ scope: string; mode: 'source' | 'topic' } | null>(null);
   const [appendDialog, setAppendDialog] = useState<{ scope: string; list: WordList; action: WordListAction } | null>(null);
   const [savedTeaching, setSavedTeaching] = useState<(SavedAiMaterials & { scope: string }) | null>(null);
@@ -827,12 +820,12 @@ function TeachingMaterialsPage() {
         {t('textbook.materials')}
       </h2>
             <div className="flex flex-wrap gap-2">
-              {!textbooks && !myGrammar && academy?.id && profile?.id && <>
-                {scanAcademy === academy.id && <button type="button" onClick={() => setAiDialog({ scope: accountScope.current, mode: 'source' })}
+              {!textbooks && !myGrammar && academy?.id && profile?.id && aiEnabled && <>
+                <button type="button" onClick={() => setAiDialog({ scope: accountScope.current, mode: 'source' })}
                   className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 font-label-md text-label-md text-on-primary transition-colors hover:brightness-95">
                   <span className="material-symbols-outlined text-[18px]" aria-hidden="true">auto_awesome</span>
                   {t('aiMaterials.sourceTitle')}
-                </button>}
+                </button>
                 <button type="button" className="textbook-button"
                   onClick={() => setAiDialog({ scope: accountScope.current, mode: 'topic' })}>{t('aiMaterials.title')}</button>
               </>}
@@ -854,7 +847,7 @@ function TeachingMaterialsPage() {
               ))}
             </div>
       </div>
-      {academy?.id && profile?.id && aiDialog?.scope === accountScope.current && (aiDialog.mode !== 'source' || scanAcademy === academy.id) &&
+      {academy?.id && profile?.id && aiDialog?.scope === accountScope.current && aiEnabled &&
         <AiMaterialsDialog key={aiDialog.scope + aiDialog.mode} academy={academy.id} owner={profile.id} mode={aiDialog.mode}
           preferredKind={materialFilter === 'all' ? undefined : materialFilter} onClose={() => setAiDialog(null)}
           onSaved={result => {

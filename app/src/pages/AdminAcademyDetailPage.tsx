@@ -39,6 +39,22 @@ function FeatureSwitch({ label, checked, disabled, onClick }: {
   );
 }
 
+function FeatureToggleRow({ title, description, enabled, disabled, onToggle }: {
+  title: string; description: string; enabled: boolean; disabled: boolean; onToggle: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-outline-variant/50 px-3 py-2">
+      <div className="min-w-0 flex-1">
+        <div className="font-label-md text-label-md font-bold text-on-surface">{title}</div>
+        <div className="font-caption text-caption text-on-surface-variant">{description}</div>
+      </div>
+      <FeatureSwitch label={title} checked={enabled} disabled={disabled} onClick={onToggle} />
+      <span className="w-12 shrink-0 text-sm font-bold">{t(enabled ? 'adminOps.featureOpen' : 'adminOps.featureClosed')}</span>
+    </div>
+  );
+}
+
 function ScanAccessRow({ academyId }: { academyId: string }) {
   const { t } = useTranslation();
   const state = useAdminQuery(() => fetchScanAccess(academyId), [academyId]);
@@ -54,10 +70,10 @@ function ScanAccessRow({ academyId }: { academyId: string }) {
     } catch (e) { setFailure(errorText(e)); }
     finally { setSaving(false); }
   }
-  return <li><DataState state={state} empty="" compact>{enabled => <div className="flex items-center justify-between gap-3">
-    <span>{t('billing.scanAccess')}</span>
-    <FeatureSwitch label={t('billing.scanAccess')} checked={enabled} disabled={saving} onClick={() => void change(!enabled)} />
-  </div>}</DataState>{failure && <p role="alert">{failure}</p>}</li>;
+  return <li><DataState state={state} empty="" compact>{enabled => (
+    <FeatureToggleRow title={t('billing.scanAccess')} description={t('billing.scanAccessDescription')}
+      enabled={enabled} disabled={saving || state.status !== 'ready'} onToggle={() => void change(!enabled)} />
+  )}</DataState>{failure && <p role="alert" className="mt-1 text-sm text-error">{failure}</p>}</li>;
 }
 
 function AcademyLoginPolicyRow({ academyId, onSaved }: { academyId: string; onSaved: () => void }) {
@@ -291,13 +307,9 @@ export default function AdminAcademyDetailPage() {
           {features && <p className="font-body-sm text-body-sm text-on-surface-variant">{t('adminOps.featuresHint')}</p>}
           <ul className="space-y-2 pt-1">
             {features && (['group', 'solo', 'homework'] as const).map((k) => (
-              <li key={k} className="flex items-center gap-3 rounded-lg border border-outline-variant/50 px-3 py-2">
-                <div className="min-w-0 flex-1">
-                  <div className="font-label-md text-label-md font-bold text-on-surface">{t(`adminOps.feature_${k}`)}</div>
-                  <div className="font-caption text-caption text-on-surface-variant">{t(`adminOps.featureDesc_${k}`)}</div>
-                </div>
-                <FeatureSwitch label={t(`adminOps.feature_${k}`)} checked={features[k]} disabled={busy} onClick={() => void toggleFeature(k)} />
-                <span className="w-12 text-sm font-bold">{features[k] ? t('adminOps.featureOpen') : t('adminOps.featureClosed')}</span>
+              <li key={k}>
+                <FeatureToggleRow title={t(`adminOps.feature_${k}`)} description={t(`adminOps.featureDesc_${k}`)}
+                  enabled={features[k]} disabled={busy} onToggle={() => void toggleFeature(k)} />
               </li>
             ))}
             {a.id === id && <ScanAccessRow key={`scan-${id}`} academyId={id} />}

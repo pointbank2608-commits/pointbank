@@ -11,6 +11,8 @@
 // 배포 전에는 앱의 "AI로 대사표 만들기" 버튼이 실패를 잡아 "스크립트 표시를 붙여넣어 주세요" 안내만 띄운다.
 // 같은 일을 로컬에서 하는 스크립트: app/scripts/shadow/make-shadow-script.mjs(Vertex, gcloud 로그인).
 
+import { reserveAcademyAi } from '../_shared/academyAi.ts';
+
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -26,6 +28,9 @@ const PROMPT =
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS_HEADERS });
+  if (req.method !== 'POST') return Response.json({ error: 'invalidRequest' }, { status: 405, headers: CORS_HEADERS });
+  const status = await reserveAcademyAi(req);
+  if (status !== 200) return Response.json({ error: status === 429 ? 'rateLimited' : 'accessDenied' }, { status, headers: CORS_HEADERS });
   const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...CORS_HEADERS, 'content-type': 'application/json' } });
   try {
     const apiKey = Deno.env.get('GEMINI_API_KEY');

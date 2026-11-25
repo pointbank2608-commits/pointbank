@@ -30,7 +30,17 @@ export interface GrammarPitfall {
   why: string;
 }
 
+export interface GrammarTeachingStep {
+  prompt: string;
+  hint: string;
+  answer: string;
+  followUp: string;
+}
+
 export interface GrammarPoint {
+  steps?: GrammarTeachingStep[];
+  goal?: string;
+  audience?: 'elementary' | 'middle' | 'high';
   id: string;
   /** 초등은 Language Level 1~4, 중등은 학년 묶음 5(중1)·6(중2)·7(중3) — 중학교는 교과서·내신이 학년 단위라서.
    * 8품사 8 · 시제 9 · 5형식 10, 고등은 영역 묶음 11(동사) · 12(준동사) · 13(관계사·접속사) · 14(가정법·비교) · 15(특수 구문). */
@@ -57,21 +67,33 @@ export interface GrammarPoint {
   slots: GrammarSlot[] | null;
 }
 
-export const GRAMMAR_POINTS = grammarData as GrammarPoint[];
+export const GRAMMAR_POINTS = (grammarData as GrammarPoint[]).map(point => ({
+  ...point, name: point.name + ' — ' + point.goal,
+}));
 
-export type GrammarBoardContent = Pick<GrammarPoint, 'name' | 'pattern' | 'explain' | 'examples' | 'translations' | 'rule' | 'usage' | 'detail' | 'pitfalls' | 'tip'>;
+export type GrammarBoardContent = Pick<GrammarPoint, 'name' | 'pattern' | 'explain' | 'examples' | 'translations' | 'rule' | 'usage' | 'detail' | 'pitfalls' | 'tip' | 'steps' | 'audience'>;
 
-export function grammarBoardContent({ name, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip }: GrammarPoint): GrammarBoardContent {
-  return { name, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip };
+export function grammarBoardContent({ name, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip, steps, audience }: GrammarPoint): GrammarBoardContent {
+  return { name, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip, steps, audience };
 }
 
 export function grammarSlidePoint(slide: GrammarSlide): GrammarPoint | null {
   const base = grammarPoint(slide.grammarId);
-  return base && slide.content ? { ...base, ...slide.content } : base;
+  if (!slide.content) return base;
+  if (base) return { ...base, ...slide.content, steps: slide.content.steps };
+  const stage = slide.content.audience ?? 'middle';
+  return { id: slide.grammarId, level: 0, grade: { elementary: '초등', middle: '중등', high: '고등' }[stage],
+    stage, band: 'entry', slots: null, ...slide.content };
 }
 
 export function grammarPoint(id: string | null | undefined): GrammarPoint | null {
   return GRAMMAR_POINTS.find((g) => g.id === id) ?? null;
+}
+
+export function matchesGrammarSearch(point: GrammarPoint, query: string) {
+  const band = { elementary: '초등', middle: '중등', high: '고등', pos: '품사', tense: '시제', forms: '문장 형식' }[point.stage];
+  const text = [band, point.grade, point.name, point.pattern, point.explain, ...point.usage ?? []].join(' ').toLowerCase();
+  return query.toLowerCase().trim().split(/\s+/).every(term => text.includes(term));
 }
 
 export const GRAMMAR_STAGES: GrammarStage[] = ['elementary', 'middle', 'high', 'pos', 'tense', 'forms'];
@@ -85,7 +107,7 @@ export const GRAMMAR_LEVELS_BY_STAGE: Record<GrammarStage, number[]> = {
 };
 /** 목록·칩에 쓰는 레벨 이름: 초등 "Lv.1", 중등은 학년 그대로. */
 export function grammarLevelTag(point: Pick<GrammarPoint, 'stage' | 'level' | 'grade'>): string {
-  return point.stage === 'elementary' ? `Lv.${point.level} · ${point.grade}` : point.grade;
+  return point.stage === 'elementary' && point.level > 0 ? `Lv.${point.level} · ${point.grade}` : point.grade;
 }
 
 /* ---------- ** 강조 표시 ---------- */

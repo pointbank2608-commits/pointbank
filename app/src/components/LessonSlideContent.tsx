@@ -46,6 +46,7 @@ export default function LessonSlideContent({
   lessonSlides = [],
   phonicsObservation,
   onCanvasAudio,
+  onGrammarCue,
   preview = false,
 }: {
   slide: LessonSlide;
@@ -61,6 +62,7 @@ export default function LessonSlideContent({
   lessonSlides?: LessonSlide[];
   phonicsObservation?: { lessonId: string; position: number };
   onCanvasAudio?: () => void;
+  onGrammarCue?: (action: 'shown' | 'hint' | 'revealed', stageIndex: number) => void;
   preview?: boolean;
 }) {
   const { t } = useTranslation();
@@ -201,6 +203,7 @@ export default function LessonSlideContent({
         <GrammarBoard
           key={slide.id}
           point={point}
+          onCue={onGrammarCue}
           extra={extra}
           themeId={slide.boardTheme ?? 'green'}
           initialShowKo={!!slide.showKo}

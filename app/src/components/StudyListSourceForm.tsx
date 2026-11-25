@@ -21,16 +21,17 @@ export type StudyListSourceDraft = SourceMaterialDraft & {
   original?: { files: File[]; first: number; unclearPages: number[] };
 };
 
-export default function StudyListSourceForm({ academy, busy, onBusy, onDraft }: {
+export default function StudyListSourceForm({ academy, busy, onBusy, onDraft, onGrammar }: {
   academy: string;
   busy: boolean;
   onBusy: (busy: boolean) => void;
-  onDraft: (draft: StudyListSourceDraft) => void;
-}) {
+ } & ({ onDraft: (draft: StudyListSourceDraft) => void; onGrammar?: never } |
+    { onDraft?: never; onGrammar: (files: File[], first: number, last: number, audience: string) => Promise<void> })) {
   const { t } = useTranslation();
   const [source, setSource] = useState<'camera' | 'file'>('file');
   const [files, setFiles] = useState<File[]>([]);
   const [first, setFirst] = useState('1');
+  const [audience, setAudience] = useState('middle');
   const [last, setLast] = useState('1');
   const [outputs, setOutputs] = useState<(typeof studyOutputs[number])[]>(['words', 'sentences']);
   const [error, setError] = useState('');
@@ -71,6 +72,10 @@ export default function StudyListSourceForm({ academy, busy, onBusy, onDraft }: 
     onBusy(true);
     const requestOptions = outputs.length === 2 ? undefined : options;
     try {
+      if (onGrammar) {
+        await onGrammar(files, start, end, audience);
+        return;
+      }
       const items = await extractTextbook(academy, files, start, end, requestOptions);
       if (!items.words.length && !items.sentences.length) throw new Error(items.unclearPages.length ? 'extractionFailed' : 'noStudyItems');
       onDraft({ words: items.words, sentences: items.sentences,
@@ -117,7 +122,11 @@ export default function StudyListSourceForm({ academy, busy, onBusy, onDraft }: 
         onChange={event => setLast(event.target.value)} /></label>
     </div>}
     <p className="textbook-note">{t('textbook.privacy')}</p>
-    <fieldset disabled={busy} className="teaching-output-picker">
+    {onGrammar ? <label className="grid gap-1 font-bold">{t('myGrammar.audience')}
+      <select className="rounded-lg border p-2" disabled={busy} value={audience} onChange={e => setAudience(e.target.value)}>
+        {['elementary', 'middle', 'high'].map(value => <option key={value} value={value}>{t('myGrammar.' + value)}</option>)}
+      </select>
+    </label> : <fieldset disabled={busy} className="teaching-output-picker">
       <legend>{t('aiMaterials.outputs')}</legend>
       <div className="teaching-output-options">
         {studyOutputs.map(output => <label className="teaching-output" key={output}>
@@ -129,14 +138,14 @@ export default function StudyListSourceForm({ academy, busy, onBusy, onDraft }: 
           <span>{t(`textbook.${output}`)}</span>
         </label>)}
       </div>
-    </fieldset>
+    </fieldset>}
     {error && <p role="alert" className="textbook-error">
       {t(extractionErrors.includes(error) ? 'textbook.' + error : 'aiMaterials.' + error)}
     </p>}
     <button type="submit" className={button + ' textbook-primary'}
       disabled={busy || !outputs.length || !files.length}>
       <span className="material-symbols-outlined" aria-hidden="true">auto_awesome</span>
-      {t(busy ? 'aiMaterials.readingSource' : 'textbook.extract')}
+      {t(busy ? 'aiMaterials.readingSource' : onGrammar ? 'myGrammar.generateAndSave' : 'textbook.extract')}
     </button>
   </form>;
 }

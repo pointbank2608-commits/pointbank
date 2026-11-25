@@ -24,6 +24,8 @@ interface ExtractedWord {
   meaning: string;
 }
 
+import { reserveAcademyAi } from '../_shared/academyAi.ts';
+
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -76,6 +78,9 @@ async function extractWords(transcript: string, apiKey: string): Promise<Extract
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS_HEADERS });
+  if (req.method !== 'POST') return Response.json({ error: 'invalidRequest' }, { status: 405, headers: CORS_HEADERS });
+  const status = await reserveAcademyAi(req);
+  if (status !== 200) return Response.json({ error: status === 429 ? 'rateLimited' : 'accessDenied' }, { status, headers: CORS_HEADERS });
   try {
     const { videoId } = (await req.json()) as ExtractRequest;
     if (!videoId) throw new Error('videoId가 필요해요.');

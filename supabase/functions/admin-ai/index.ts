@@ -115,13 +115,13 @@ Deno.serve(async (request) => {
       if (job.kind === 'error') {
         const { data, error } = await db.rpc('admin_ai_error_context', { p_fingerprint: job.source_id });
         if (error) throw new Error('Could not load error context');
-        if (!data) return await save(job, 'skipped');
-        const { message, page, stack, ...counts } = data as ErrorContext;
+        if (data?.ai_allowed !== true) return await save(job, 'skipped');
+        const { message, page, stack, ai_allowed: _allowed, ...counts } = data as ErrorContext;
         input = { ...counts, message: redact(message, 900), page: safePage(page),
           stack: redact(stack ?? '', 900), public_asset_check: await checkAsset(message) };
       } else {
         const [ticket, messages, faqs] = await Promise.all([
-          db.from('support_tickets').select('subject,category,status,admin_state').eq('id', job.source_id).maybeSingle(),
+          db.from('support_tickets').select('subject,category,status,admin_state,academy_id').eq('id', job.source_id).maybeSingle(),
           db.from('support_messages').select('id,sender,body').eq('ticket_id', job.source_id)
             .order('created_at', { ascending: false }).order('id', { ascending: false }).limit(4),
           db.from('faq_entries').select('q_ko,a_ko').eq('published', true).order('created_at', { ascending: false }).limit(150),
@@ -130,6 +130,10 @@ Deno.serve(async (request) => {
         const latest = messages.data?.[0];
         if (!ticket.data || ticket.data.status !== 'open' || ['resolved', 'closed'].includes(ticket.data.admin_state)
             || latest?.id !== job.revision || latest.sender !== 'user') return await save(job, 'skipped');
+        if (!ticket.data.academy_id) return await save(job, 'skipped');
+        const access = await db.from('academy_scan_access').select('enabled').eq('academy_id', ticket.data.academy_id).maybeSingle();
+        if (access.error) throw new Error('Could not check academy AI access');
+        if (access.data?.enabled !== true) return await save(job, 'skipped');
         const subject = redact(ticket.data.subject, 220);
         input = { subject, category: ticket.data.category,
           messages: messages.data!.reverse().map((message) => ({ role: message.sender, body: redact(message.body, 600) })),

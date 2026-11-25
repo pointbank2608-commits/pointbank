@@ -4,7 +4,7 @@ import { durationSlice, type SensorAction, type SensorContext } from './core';
 
 /** Shared by real players only. No provider means no collection (including previews). */
 export function useLearningActivity(context: SensorContext | undefined, position: number | null, question: number | null = null) {
-  const emitRef = useRef<(action: SensorAction) => void>(() => undefined);
+  const emitRef = useRef<(action: SensorAction, itemIndex?: number) => void>(() => undefined);
   const source = context?.source, credential = context?.credential, resource = context?.resource, runId = context?.runId;
   const sinkRef = useRef<ReturnType<typeof createSensorSink> | null>(null);
   const session = useRef<string | null>(null);
@@ -32,10 +32,10 @@ export function useLearningActivity(context: SensorContext | undefined, position
     let lastInput = Number.NEGATIVE_INFINITY;
     let visible = document.visibilityState === 'visible';
     let ended = false;
-    const emit = (action: SensorAction) => {
+    const emit = (action: SensorAction, itemIndex?: number) => {
       if (ended) return;
       const now = performance.now();
-      sink.emit({ id: crypto.randomUUID(), session: sessionId, position, question, action,
+      sink.emit({ id: crypto.randomUUID(), session: sessionId, position, question: itemIndex ?? question, action,
         at: new Date().toISOString(), ...durationSlice(now - last, visible, now - lastInput) });
       last = now;
       void sink.flush();
@@ -65,5 +65,5 @@ export function useLearningActivity(context: SensorContext | undefined, position
       for (const event of ['pointerdown', 'keydown', 'touchstart']) window.removeEventListener(event, input);
     };
   }, [source, credential, resource, runId, position, question]);
-  return (action: SensorAction) => emitRef.current(action);
+  return (action: SensorAction, itemIndex?: number) => emitRef.current(action, itemIndex);
 }

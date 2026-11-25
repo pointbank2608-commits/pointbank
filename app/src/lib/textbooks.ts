@@ -98,8 +98,7 @@ export async function createTextbookBook(academy: string, owner: string, title: 
   return existing.data;
 }
 
-export async function extractTextbook(academy: string, files: File[], first: number, last: number,
-  options?: SourceMaterialOptions): Promise<TextbookExtraction & Partial<TeachingDraft>> {
+async function textbookForm(academy: string, files: File[], first: number, last: number) {
   const pdf = files[0]?.type === 'application/pdf';
   let images = files;
   if (pdf) {
@@ -115,13 +114,35 @@ export async function extractTextbook(academy: string, files: File[], first: num
   body.set('academy', academy);
   body.set('first', '1');
   body.set('last', String(images.length));
-  if (options) body.set('options', JSON.stringify(options));
   images.forEach(file => body.append('files', file));
-  const { data, error } = await supabase.functions.invoke<TextbookExtraction & Partial<TeachingDraft>>('extract-textbook', { body });
+  return body;
+}
+
+async function requestExtraction<T>(body: FormData) {
+  const { data, error } = await supabase.functions.invoke<T>('extract-textbook', { body });
   if (error) {
     const payload = error.context instanceof Response ? await error.context.json().catch(() => null) : null;
     throw new Error(typeof payload?.error === 'string' ? payload.error : 'extractionUnavailable');
   }
+  return data;
+}
+
+export async function extractGrammar(academy: string, files: File[], first: number, last: number,
+  audience: string) {
+  const body = await textbookForm(academy, files, first, last);
+  body.set('mode', 'grammar');
+  body.set('audience', audience);
+  const result = await requestExtraction<{ content: import('./grammar').GrammarBoardContent }>(body);
+  if (result?.content?.steps?.length !== 6 || !result.content.examples?.length) throw new Error('extractionFailed');
+  return result.content;
+}
+
+export async function extractTextbook(academy: string, files: File[], first: number, last: number,
+  options?: SourceMaterialOptions): Promise<TextbookExtraction & Partial<TeachingDraft>> {
+  const pdf = files[0]?.type === 'application/pdf';
+  const body = await textbookForm(academy, files, first, last);
+  if (options) body.set('options', JSON.stringify(options));
+  const data = await requestExtraction<TextbookExtraction & Partial<TeachingDraft>>(body);
   if (!data || !Array.isArray(data.words) || !Array.isArray(data.sentences) || !Array.isArray(data.unclearPages)) {
     throw new Error('extractionFailed');
   }

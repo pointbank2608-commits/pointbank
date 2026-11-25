@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { matchesGrammarSearch } from '../lib/grammar';
 import { useTranslation } from 'react-i18next';
 import { GRAMMAR_LEVELS_BY_STAGE, GRAMMAR_POINTS, GRAMMAR_STAGES, grammarLevelTag, type GrammarStage } from '../lib/grammar';
 
@@ -11,7 +12,7 @@ export default function GrammarPickerPanel({ onPick, searchQuery }: { onPick: (g
   const q = (searchQuery ?? query).trim().toLowerCase();
   // 검색어가 있으면 과정·레벨과 상관없이 전체 127개에서 찾는다.
   const list = q
-    ? GRAMMAR_POINTS.filter((g) => g.name.toLowerCase().includes(q) || g.pattern.toLowerCase().includes(q) || g.explain.includes(q))
+    ? GRAMMAR_POINTS.filter((g) => matchesGrammarSearch(g, q))
     : GRAMMAR_POINTS.filter((g) => g.level === level);
   return (
     <div className="space-y-3">

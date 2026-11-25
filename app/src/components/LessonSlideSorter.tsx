@@ -88,6 +88,7 @@ import RainbowStructure from './rainbow/RainbowStructure';
 import RainbowSlideForm, { pickSpeaking, pickStructure } from './rainbow/RainbowSlideForm';
 import { parseQnaText, qnaToText } from '../lib/qnaLines';
 import { generateShadowScript } from '../lib/api';
+import { useAcademyAi } from '../lib/useAcademyAi';
 import ReadingBoard from './ReadingBoard';
 import { parseReadingText, transcriptClozeSource } from '../lib/readingLines';
 import GrammarExplainCard from './GrammarExplainCard';
@@ -2080,6 +2081,7 @@ function ShadowSlideDetail({ slide, onUpdate }: { slide: ShadowSlide; onUpdate: 
 
 /** 쉐도잉 슬라이드 만들기·고치기 — 유튜브 주소 + 대사표. 유튜브 "스크립트 표시"를 그대로 붙여넣어도 시간표로 바꿔 준다. */
 function ShadowSlideForm({ initial, onAdd, onChange }: { initial?: ShadowDraft; onAdd?: (draft: ShadowDraft) => void; onChange?: (patch: Partial<ShadowDraft>) => void }) {
+  const aiEnabled = useAcademyAi();
   const { t } = useTranslation();
   const { notify } = useToast();
   const [draft, setDraft] = useState<ShadowDraft>(initial ?? { title: '', source: '', videoUrl: '', flow: 'video', repeat: 1, speed: 1, subtitle: 'both', roleTeams: 0 });
@@ -2156,7 +2158,7 @@ function ShadowSlideForm({ initial, onAdd, onChange }: { initial?: ShadowDraft; 
         placeholder={t('curriculum.shadow.sourcePlaceholder')}
       />
       <div className="flex flex-wrap items-center gap-2">
-        <button
+        {aiEnabled && <button
           type="button"
           onClick={() => void autoScript()}
           disabled={busy || !extractYoutubeId(draft.videoUrl ?? '')}
@@ -2164,7 +2166,7 @@ function ShadowSlideForm({ initial, onAdd, onChange }: { initial?: ShadowDraft; 
         >
           <span className={`material-symbols-outlined text-[18px] ${busy ? 'animate-spin' : ''}`}>{busy ? 'progress_activity' : 'auto_awesome'}</span>
           {t('curriculum.shadow.autoButton')}
-        </button>
+        </button>}
         <button
           type="button"
           onClick={() => set({ source: toShadowSource(draft.source) })}

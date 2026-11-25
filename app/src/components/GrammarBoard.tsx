@@ -29,6 +29,7 @@ export default function GrammarBoard({
   className = '',
   initialShowKo = false,
   initialRevealAll = false,
+  onCue,
   editor,
 }: {
   point: GrammarPoint;
@@ -43,6 +44,7 @@ export default function GrammarBoard({
   initialShowKo?: boolean;
   /** 슬라이드 설정: 예문을 처음부터 모두 보여주기(하나씩 꺼내지 않음) */
   initialRevealAll?: boolean;
+  onCue?: (action: 'shown' | 'hint' | 'revealed', stageIndex: number) => void;
   editor?: GrammarBoardEditor;
 }) {
   const { t } = useTranslation();
@@ -54,7 +56,23 @@ export default function GrammarBoard({
   const startShown = !interactive || initialRevealAll ? lines.length : 1;
   const [shown, setShown] = useState(startShown);
   // 예문 / 틀리기 쉬운 것(✗ → ✓) / 설명(이럴 때 써요·쉽게 이해하기) 화면
-  const [view, setView] = useState<'examples' | 'pitfalls' | 'explain'>('examples');
+  const startView = point.steps?.length === 6 && !editor && !initialRevealAll && !initialShowKo ? 'lesson' : 'examples';
+  const [view, setView] = useState<'lesson' | 'examples' | 'pitfalls' | 'explain'>(startView);
+  const [step, setStep] = useState(0);
+  const [hintOpen, setHintOpen] = useState(false);
+  const [answerOpen, setAnswerOpen] = useState(false);
+  const lesson = point.steps?.[step];
+  const cue = useRef(onCue);
+  cue.current = onCue;
+  const observed = !!onCue;
+  useEffect(() => {
+    if (observed && view === 'lesson') cue.current?.('shown', step);
+  }, [observed, point.id, view, step]);
+  function moveTo(index: number) {
+    setStep(index);
+    setHintOpen(false);
+    setAnswerOpen(false);
+  }
   const pitfalls = point.pitfalls ?? [];
   const hasExplain = !!(point.usage?.length || point.detail?.length);
   // 예문 해석(초보자용) — 켜면 예문 아래에 작게 한국어가 붙는다.
@@ -63,7 +81,10 @@ export default function GrammarBoard({
   const shownRef = useRef(shown);
   shownRef.current = shown;
   // 학생 따라보기: 선생님이 꺼낸 예문 수·화면·해석을 학생 화면에 그대로
-  const follower = useSyncedSubState({ shown, view, showKo }, (s) => {
+  const follower = useSyncedSubState({ shown, view, showKo, step, hintOpen, answerOpen }, (s) => {
+    setStep(Math.max(0, Math.min(5, Number(s.step) || 0)));
+    setHintOpen(!!s.hintOpen);
+    setAnswerOpen(!!s.answerOpen);
     setShown(Number(s.shown) || 1);
     setView((s.view as typeof view) ?? 'examples');
     setShowKo(!!s.showKo);
@@ -72,7 +93,8 @@ export default function GrammarBoard({
   const resetExampleCount = editor ? 0 : point.examples.length;
   useEffect(() => {
     setShown(startShown);
-    setView('examples');
+    setView(startView);
+    moveTo(0);
     setShowKo(initialShowKo);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [point.id, interactive, resetExampleCount, extra.length, initialRevealAll, initialShowKo]);
@@ -83,9 +105,17 @@ export default function GrammarBoard({
     if (!keyboard || follower) return;
     function onKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement | null)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (tag === 'BUTTON' && e.key === ' ')) return;
       const forward = e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown';
       const back = e.key === 'ArrowLeft' || e.key === 'PageUp';
+      if (view === 'lesson') {
+        if ((forward && step < 5) || (back && step > 0)) {
+          e.preventDefault();
+          e.stopPropagation();
+          moveTo(step + (forward ? 1 : -1));
+        }
+        return;
+      }
       if (forward && shownRef.current < lines.length) {
         e.preventDefault();
         e.stopPropagation();
@@ -101,7 +131,7 @@ export default function GrammarBoard({
     }
     document.addEventListener('keydown', onKey, true);
     return () => document.removeEventListener('keydown', onKey, true);
-  }, [keyboard, lines.length, follower]);
+  }, [keyboard, lines.length, follower, view, step]);
 
   const visible = editor ? lines : lines.slice(0, shown);
   function field(key: GrammarField, value: string, display: ReactNode = value, index?: number) {
@@ -208,6 +238,17 @@ export default function GrammarBoard({
             </span>
             <span>{field('name', point.name)}</span>
           </div>
+          {view === 'lesson' && lesson ? <section key={step} className="mt-[2cqh] min-h-0 flex-1 space-y-[2cqh] overflow-y-auto pb-[9cqh]" style={{ fontFamily: BOARD_FONTS.sans }}>
+            <h2 className="font-bold" style={{ fontSize: '4.8cqh', color: th.accent }}>{step + 1} / 6 · {t('myGrammar.stage' + (step + 1))}</h2>
+            <p className="whitespace-pre-line leading-snug" style={{ fontSize: '4.2cqh' }}><Marked text={lesson.prompt} /></p>
+            {hintOpen && <p className="whitespace-pre-line rounded-[1cqh] p-[1.4cqh]" style={{ background: th.chip, fontSize: '3.2cqh' }}>
+              <strong>{t('myGrammar.hint')} · </strong><Marked text={lesson.hint} />
+            </p>}
+            {answerOpen && <div className="space-y-[1cqh] whitespace-pre-line" style={{ fontSize: '3.4cqh' }}>
+                <div className="pt-[1cqh]"><strong className="block" style={{ color: th.accent, fontSize: '2.6cqh' }}>{t('myGrammar.answer')}</strong><Marked text={lesson.answer} /></div>
+                <div className="mt-[2cqh] border-t pt-[1.3cqh]" style={{ borderColor: th.muted }}><strong className="block" style={{ color: th.accent, fontSize: '2.6cqh' }}>{t('myGrammar.followUp')}</strong><Marked text={lesson.followUp} /></div>
+            </div>}
+          </section> : <>
           <div className="mt-[2cqh] font-bold leading-tight" style={{ fontSize: '6.4cqh' }}>
             {field('pattern', point.pattern, <Pattern />)}
           </div>
@@ -323,17 +364,33 @@ export default function GrammarBoard({
             ))}
           </ul>
           )}
+          </>}
         </div>
         {interactive && (
           <div className="absolute bottom-[2.5cqh] right-[3cqh] flex items-center gap-[1cqh]" style={{ fontSize: '2.4cqh' }}>
-            {(hasExplain || editor) && (
+            {point.steps?.length === 6 && !editor && <BoardButton icon={view === 'lesson' ? undefined : 'menu_book'}
+              label={t(view === 'lesson' ? 'grammar.backToExamples' : 'myGrammar.sixSteps')}
+              onClick={() => setView(view === 'lesson' ? 'examples' : 'lesson')} />}
+            {view === 'lesson' && <>
+              <BoardButton pressed={hintOpen} label={t('myGrammar.hint')} onClick={() => {
+                if (!hintOpen) onCue?.('hint', step);
+                setHintOpen(!hintOpen);
+              }} />
+              <BoardButton pressed={answerOpen} label={t('myGrammar.answer')} onClick={() => {
+                if (!answerOpen) onCue?.('revealed', step);
+                setAnswerOpen(!answerOpen);
+              }} />
+              <BoardButton label={t('myGrammar.prev')} disabled={step === 0} onClick={() => moveTo(step - 1)} />
+              <BoardButton label={t('myGrammar.next')} disabled={step === 5} onClick={() => moveTo(step + 1)} />
+            </>}
+            {view !== 'lesson' && (hasExplain || editor) && (
               <BoardButton
                 icon={view === 'explain' ? 'format_list_numbered' : 'menu_book'}
                 label={view === 'explain' ? t('grammar.backToExamples') : t('grammar.explainView')}
                 onClick={() => setView((v) => (v === 'explain' ? 'examples' : 'explain'))}
               />
             )}
-            {(pitfalls.length > 0 || editor) && view !== 'explain' && (
+            {(pitfalls.length > 0 || editor) && view !== 'lesson' && view !== 'explain' && (
               <BoardButton
                 icon={view === 'pitfalls' ? 'format_list_numbered' : 'error'}
                 label={view === 'pitfalls' ? t('grammar.backToExamples') : t('grammar.pitfalls')}
@@ -364,18 +421,19 @@ export default function GrammarBoard({
   );
 }
 
-function BoardButton({ icon, label, onClick, disabled }: { icon: string; label: string; onClick: () => void; disabled?: boolean }) {
+function BoardButton({ icon, label, onClick, disabled, pressed }: { icon?: string; label: string; onClick: () => void; disabled?: boolean; pressed?: boolean }) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
+      aria-pressed={pressed}
       className="flex items-center gap-[0.6cqh] rounded-full bg-white/90 px-[1.8cqh] py-[0.9cqh] font-bold text-[#1f2937] shadow-md transition-opacity hover:bg-white disabled:opacity-40"
       style={{ fontFamily: BOARD_FONTS.sans }}
     >
-      <span className="material-symbols-outlined" style={{ fontSize: '1.2em' }}>
+      {icon && <span aria-hidden="true" className="material-symbols-outlined" style={{ fontSize: '1.2em' }}>
         {icon}
-      </span>
+      </span>}
       {label}
     </button>
   );

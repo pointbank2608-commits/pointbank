@@ -15,6 +15,7 @@ import type { WordBankEntry } from '../lib/types';
 import { GRAMMAR_POINTS } from '../lib/grammar';
 import { useToast } from '../context/ToastContext';
 import { generateShadowScript } from '../lib/api';
+import { useAcademyAi } from '../lib/useAcademyAi';
 import { fetchVideoClips } from '../lib/videoClips';
 import { parseShadowText, toShadowSource } from '../lib/shadowLines';
 import { extractYoutubeId } from '../lib/youtube';
@@ -64,6 +65,7 @@ export default function LessonRecipePicker({
   autoSample?: boolean;
 }) {
   const { t, i18n } = useTranslation();
+  const aiEnabled = useAcademyAi();
   const [tab, setTab] = useState<'sets' | 'recipes'>('sets');
   const [picked, setPicked] = useState<LessonRecipe | null>(null);
   const [grammarId, setGrammarId] = useState<string | null>(null);
@@ -496,7 +498,7 @@ export default function LessonRecipePicker({
                 className="w-full rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 font-mono text-sm outline-none focus:border-primary"
               />
               <div className="flex flex-wrap items-center gap-2">
-                <button
+                {aiEnabled && <button
                   type="button"
                   disabled={scripting || !extractYoutubeId(video.videoUrl)}
                   onClick={async () => {
@@ -516,7 +518,7 @@ export default function LessonRecipePicker({
                 >
                   <span className={`material-symbols-outlined text-[18px] ${scripting ? 'animate-spin' : ''}`}>{scripting ? 'progress_activity' : 'auto_awesome'}</span>
                   {t('curriculum.shadow.autoButton')}
-                </button>
+                </button>}
                 <span className="font-caption text-caption text-on-surface-variant">{t('curriculum.shadow.lineCount', { count: parseShadowText(video.source).length })}</span>
               </div>
             </div>

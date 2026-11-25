@@ -12,6 +12,13 @@ export async function listMyGrammar(academy: string, owner: string): Promise<Sav
   return data ?? [];
 }
 
+export async function insertGrammarDraft(academy: string, owner: string, id: string, block: GrammarPreset) {
+  const { error } = await supabase.from('teacher_grammar_blocks').upsert({
+    id, academy_id: academy, owner_id: owner, block,
+  }, { onConflict: 'id', ignoreDuplicates: true });
+  if (error) throw error;
+}
+
 export async function saveMyGrammar(academy: string, owner: string, block: GrammarPreset, previous?: SavedGrammar) {
   const table = supabase.from('teacher_grammar_blocks');
   const query = previous

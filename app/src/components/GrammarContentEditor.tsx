@@ -111,6 +111,9 @@ export default function GrammarContentEditor({ point, themeId, inline, onClose, 
     if (!name || !draft.pattern.trim() || !draft.examples.length || draft.examples.some(en => !en.trim())) {
       setError(t('myGrammar.required')); return;
     }
+    if (draft.steps?.some(step => Object.values(step).some(value => !value.trim()))) {
+      setError(t('myGrammar.stepsRequired')); return;
+    }
     saving.current = true;
     setBusy(true);
     try {
@@ -139,6 +142,19 @@ export default function GrammarContentEditor({ point, themeId, inline, onClose, 
         <GrammarBoard point={{ ...point, ...draft }} themeId={themeId} keyboard={false} editor={editor} />
       </PresentSyncContext.Provider>
     </div>
+    {draft.steps && <details className="rounded-lg border p-3">
+      <summary className="cursor-pointer font-bold">{t('myGrammar.sixSteps')}</summary>
+      {draft.steps.map((step, index) => <fieldset key={index} className="my-3 grid gap-2">
+        <legend className="font-bold">{index + 1}. {t('myGrammar.stage' + (index + 1))}</legend>
+        {(['prompt', 'hint', 'answer', 'followUp'] as const).map(key => <label className="grid text-sm" key={key}>
+          {t('myGrammar.' + key)}
+          <textarea rows={2} value={step[key]} className="rounded-md border p-2" onChange={event => {
+            const value = event.target.value;
+            setDraft(prev => ({ ...prev, steps: prev.steps?.map((s, i) => i === index ? { ...s, [key]: value } : s) }));
+          }} />
+        </label>)}
+      </fieldset>)}
+    </details>}
     {error && copyName === null && <p role="alert" className="text-error">{error}</p>}
     <footer className="flex flex-wrap items-center gap-2">
       {selected && <><span className="text-sm">{selected.index !== undefined && (selected.index + 1) + '. '}{t('myGrammar.' + selected.key)}</span>

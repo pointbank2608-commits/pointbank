@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next';
 import ClassChipRow from '../components/ClassChipRow';
 import LessonSlideSorter from '../components/LessonSlideSorter';
 import { useAuth } from '../context/AuthContext';
+import { useAcademyAi } from '../lib/useAcademyAi';
 import { useLessonRunner } from '../context/LessonRunnerContext';
 import { useToast } from '../context/ToastContext';
 import {
@@ -72,6 +73,7 @@ export default function CurriculumPage() {
   const location = useLocation();
   const { start } = useLessonRunner();
   const { academy, profile } = useAuth();
+  const aiEnabled = useAcademyAi();
   const { notify, run } = useToast();
   const { classes, selectedId: staffClassId, select: selectClass, reorder: reorderClasses } = useClasses(academy?.id);
   const soloOpen = useFeature('solo');
@@ -1063,7 +1065,7 @@ export default function CurriculumPage() {
                 placeholder={t('curriculum.videoUrlPlaceholder') ?? ''}
                 className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               />
-              {videoUrl.trim() && (
+              {aiEnabled && videoUrl.trim() && (
                 <button
                   type="button"
                   disabled={extracting}

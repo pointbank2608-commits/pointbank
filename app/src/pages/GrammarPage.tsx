@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { matchesGrammarSearch } from '../lib/grammar';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { BoardThemeChips } from '../components/CanvasSlideEditor';
@@ -55,7 +56,7 @@ export default function GrammarPage() {
       (g) =>
         g.stage === stage &&
         (level === null || g.level === level) &&
-        (!q || g.name.toLowerCase().includes(q) || g.pattern.toLowerCase().includes(q) || g.explain.includes(q)),
+        (!q || matchesGrammarSearch(g, q)),
     );
   }, [stage, level, query]);
 

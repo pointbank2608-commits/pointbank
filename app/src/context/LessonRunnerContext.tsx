@@ -62,6 +62,7 @@ interface RunnerState {
 
 interface RunnerValue {
   recordSlideAudio: () => void;
+  recordGrammarCue: (action: 'shown' | 'hint' | 'revealed', stageIndex: number) => void;
   replaceGame: (type: GameType, templateId: string, state: Record<string, unknown>) => void;
   runner: RunnerState | null;
   preparingCollectionGame: boolean;
@@ -531,7 +532,7 @@ export function LessonRunnerProvider({ children }: { children: ReactNode }) {
 
   return (
     <LessonRunnerContext.Provider
-      value={{ runner, preparingCollectionGame, start, next, prev, goTo, replaceGame, exit, isFullscreen, toggleFullscreen, zoom, setZoom, startView, stopView, recordSlideAudio: () => recordActivity('audio') }}
+      value={{ runner, preparingCollectionGame, start, next, prev, goTo, replaceGame, exit, isFullscreen, toggleFullscreen, zoom, setZoom, startView, stopView, recordSlideAudio: () => recordActivity('audio'), recordGrammarCue: recordActivity }}
     >
       <PresentSyncContext.Provider value={teacherSync}>
       {children}
