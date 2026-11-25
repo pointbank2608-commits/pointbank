@@ -21,7 +21,7 @@ const recommended = ['wheel', 'matchup', 'unscramble', 'treasuredig'];
 const previews = ['previewWheel', 'previewMatch', 'previewSentence', 'previewDig'];
 export default function DashboardPage() {
   const { t } = useTranslation();
-  const { academy, session, hasFullAccess } = useAuth();
+  const { academy, session, profile, hasFullAccess } = useAuth();
   const navigate = useNavigate();
   const groupOpen = useFeature('group');
   const [lists, setLists] = useState<WordList[]>([]);
@@ -56,7 +56,7 @@ export default function DashboardPage() {
     <section className="home-material-start" aria-labelledby="whiteboard-start-title" data-home-whiteboard><div><h2 id="whiteboard-start-title">{t('whiteboard.homeTitle')}</h2><p>{t('whiteboard.homeDesc')}</p></div><div className="home-actions"><Link className={`${button} home-button-primary`} to="/whiteboard">{t('whiteboard.homeOpen')} <span aria-hidden="true">→</span></Link></div></section>
     <section className="home-material-start" aria-labelledby="material-start-title"><div><h2 id="material-start-title">{t('flow.materialTitle')}</h2><p>{t('flow.materialSubtitle')}</p></div><div className="home-actions"><Link className={button} to="/wordlists" state={{createMaterialKind:'word'}}>{t('flow.createWords')}</Link><Link className={button} to="/wordlists" state={{createMaterialKind:'sentence'}}>{t('flow.createSentences')}</Link><Link className={button} to="/wordlists">{t('flow.loadMaterial')}</Link></div></section>
     <section className="home-recommended" aria-labelledby="recommend-title"><div className="home-section-heading"><h2 id="recommend-title">{t('quick.recommended')}</h2><Link to="/games" className="home-text-link">{t('quick.allGames')} <span aria-hidden="true">→</span></Link></div>
-      <div className="home-game-grid">{recommended.map((type,index) => { const g = GAME_CATALOG.find(game => game.type === type)!; const locked = !hasFullAccess && !isFreeTierGame(g.type); return <article key={type} className="home-game-card">
+      <div className="home-game-grid">{recommended.map((type,index) => { const g = GAME_CATALOG.find(game => game.type === type)!; const locked = !hasFullAccess && !isFreeTierGame(g.type, profile?.free_game_choices); return <article key={type} className="home-game-card">
         <img className="home-game-art" src={`/home/game-${type}.webp`} alt={t(`quick.${previews[index]}`)} width={640} height={400} loading="lazy" decoding="async" />
         <div className="home-game-copy"><h3>{t(g.nameKey)} {locked && <span className="home-lock" aria-label={t('nav.premiumPageBadge')}><svg aria-hidden="true" viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="3" y="7" width="10" height="7" rx="2"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg></span>}</h3><p>{t(`home.descriptions.${type}`)}</p><Link to={g.path} className={`${button} home-button-soft`} aria-label={`${t(g.nameKey)} · ${t('quick.start')}`}>{t('quick.start')} <span aria-hidden="true">→</span></Link></div>
       </article>; })}</div>

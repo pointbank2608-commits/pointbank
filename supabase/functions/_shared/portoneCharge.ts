@@ -3,7 +3,7 @@
 // 포트원에 결제를 요청하고 → 결과를 돌려준다"만 한다. billing_history 기록·academies
 // 갱신은 호출한 쪽(각 함수)에서 한다 — 실패 시에도 기록을 남겨야 하기 때문.
 //
-// 학생 수는 결제 내역에 참고용으로 기록한다. 청구액은 월 9,900원(부가세 포함)으로 고정한다.
+// 첫 결제와 갱신은 회차에 확정한 견적을 사용한다.
 
 export interface ChargeResult {
   success: boolean;
@@ -15,6 +15,8 @@ export interface ChargeResult {
 
 const PORTONE_API_BASE = 'https://api.portone.io';
 export const MONTHLY_SUBSCRIPTION_KRW = 9900;
+
+export const studentMonthlyAmount = (count: number) => MONTHLY_SUBSCRIPTION_KRW + count * 4900;
 
 export async function requireIssuedBillingKey(billingKey: string) {
   const apiSecret = Deno.env.get('PORTONE_API_SECRET');
@@ -33,25 +35,14 @@ export async function requireIssuedBillingKey(billingKey: string) {
 }
 
 export async function chargeAcademy(
-  // deno-lint-ignore no-explicit-any
-  supabaseAdmin: any,
   academyId: string,
   billingKey: string,
   customerUid: string,
   // 결제 번호를 "학원 + 청구 기준일(한국 날짜) + 시도 횟수"로 정해, 같은 청구를 두 번 요청해도 포트원이 중복을 막게 한다(2026-10-18).
   // 예전에는 Date.now()를 써서 재실행하면 같은 청구가 두 번 결제될 수 있었다.
-  opts: { dueDate: string; attempt: number },
+  opts: { dueDate: string; attempt: number; studentCount: number; amountKrw: number },
 ): Promise<ChargeResult> {
-  const { count, error: countError } = await supabaseAdmin
-    .from('students')
-    .select('*', { count: 'exact', head: true })
-    .eq('academy_id', academyId);
-  if (countError) {
-    return { success: false, studentCount: 0, amountKrw: 0, failureReason: `학생 수 조회 실패: ${countError.message}` };
-  }
-
-  const studentCount = count ?? 0;
-  const amountKrw = MONTHLY_SUBSCRIPTION_KRW;
+  const { studentCount, amountKrw } = opts;
 
   const apiSecret = Deno.env.get('PORTONE_API_SECRET');
   const channelKey = Deno.env.get('PORTONE_CHANNEL_KEY');
@@ -64,52 +55,44 @@ export async function chargeAcademy(
     };
   }
 
-  try {
-    // KCP는 주문번호를 40자까지 받는다. 날짜와 시도 번호를 포함해 재시도에도 같은 ID를 쓴다.
-    const paymentSeed = new TextEncoder().encode(`${academyId}:${opts.dueDate}:${opts.attempt}`);
-    const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', paymentSeed));
-    const paymentId = `sub_${Array.from(digest.slice(0, 18), (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
-    const res = await fetch(`${PORTONE_API_BASE}/payments/${paymentId}/billing-key`, {
-      method: 'POST',
-      headers: {
-        Authorization: `PortOne ${apiSecret}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        billingKey,
-        channelKey,
-        orderName: '클래스뱅크 유료 플랜 구독료',
-        customer: { id: customerUid },
-        amount: { total: amountKrw },
-        currency: 'KRW',
-      }),
-    });
+  // KCP는 주문번호를 40자까지 받는다. 날짜와 시도 번호를 포함해 재시도에도 같은 ID를 쓴다.
+  const paymentSeed = new TextEncoder().encode(`${academyId}:${opts.dueDate}:${opts.attempt}`);
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', paymentSeed));
+  const paymentId = `sub_${Array.from(digest.slice(0, 18), (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
+  const res = await fetch(`${PORTONE_API_BASE}/payments/${paymentId}/billing-key`, {
+    method: 'POST',
+    headers: {
+      Authorization: `PortOne ${apiSecret}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      billingKey,
+      channelKey,
+      orderName: '클래스뱅크 유료 플랜 구독료',
+      customer: { id: customerUid },
+      amount: { total: amountKrw },
+      currency: 'KRW',
+    }),
+  });
 
-    if (!res.ok) {
-      const body = await res.text();
-      // 재요청 전에 포트원에서 결제가 끝났다면 같은 청구 ID의 확정 금액으로 복구한다.
-      if (res.status === 409 || /already[_ ]?paid/i.test(body)) {
-        const previous = await fetch(`${PORTONE_API_BASE}/payments/${paymentId}`, {
-          headers: { Authorization: `PortOne ${apiSecret}` },
-        });
-        if (previous.ok) {
-          const payment = await previous.json();
-          if (payment.status === 'PAID' && payment.channel?.key === channelKey &&
-            payment.currency === 'KRW' && payment.amount?.total === amountKrw) {
-            return { success: true, studentCount, amountKrw, portonePaymentId: paymentId };
-          }
+  if (!res.ok) {
+    const body = await res.text();
+    // 재요청 전에 포트원에서 결제가 끝났다면 같은 청구 ID의 확정 금액으로 복구한다.
+    if (res.status === 409 || /already[_ ]?paid/i.test(body)) {
+      const previous = await fetch(`${PORTONE_API_BASE}/payments/${paymentId}`, {
+        headers: { Authorization: `PortOne ${apiSecret}` },
+      });
+      if (previous.ok) {
+        const payment = await previous.json();
+        if (payment.status === 'PAID' && payment.channel?.key === channelKey &&
+          payment.currency === 'KRW' && payment.amount?.total === amountKrw) {
+          return { success: true, studentCount, amountKrw, portonePaymentId: paymentId };
         }
       }
-      return { success: false, studentCount, amountKrw, failureReason: body.slice(0, 500) };
     }
-
-    return { success: true, studentCount, amountKrw, portonePaymentId: paymentId };
-  } catch (err) {
-    return {
-      success: false,
-      studentCount,
-      amountKrw,
-      failureReason: err instanceof Error ? err.message : String(err),
-    };
+    if (res.status === 409 || res.status >= 500 || res.status === 408 || res.status === 429 || /already[_ ]?paid/i.test(body)) throw new Error("결제 결과 확인 대기");
+    return { success: false, studentCount, amountKrw, failureReason: body.slice(0, 500) };
   }
+
+  return { success: true, studentCount, amountKrw, portonePaymentId: paymentId };
 }

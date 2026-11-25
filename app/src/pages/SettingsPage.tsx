@@ -30,7 +30,7 @@ import type { Preset } from '../lib/types';
 const MAX_LOGO_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export default function SettingsPage() {
-  const { academy, profile, refresh, isPaid } = useAuth();
+  const { academy, profile, refresh, isPaid, hasFullAccess } = useAuth();
   const { notify, run } = useToast();
   const { t } = useTranslation();
   const watermarkOn = usePrintWatermark();
@@ -295,6 +295,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {hasFullAccess && <>
       <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
         <h4 className="font-title-md text-title-md text-on-surface mb-1.5">{t('settings.watermarkTitle')}</h4>
         <p className="font-caption text-caption text-on-surface-variant mb-4">{t('settings.watermarkHint')}</p>
@@ -520,6 +521,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      </>}
       <AccountDataSection />
     </div>
   );

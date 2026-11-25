@@ -1,10 +1,10 @@
 // 원장만 구독 조건 조회, 구독 시작, 기존 구독의 카드 변경을 할 수 있다.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.109.0';
-import { chargeAcademy, MONTHLY_SUBSCRIPTION_KRW, requireIssuedBillingKey } from '../_shared/portoneCharge.ts';
+import { chargeAcademy, studentMonthlyAmount, requireIssuedBillingKey } from '../_shared/portoneCharge.ts';
 
 type SubscriptionRequest =
   | { action: 'quote' }
-  | { action: 'start-subscription'; billingKey: string; firstChargeOn: string; amountKrw: number }
+  | { action: 'start-subscription'; billingKey: string; firstChargeOn: string; amountKrw: number; pricingVersion: string }
   | { action: 'change-card'; billingKey: string };
 
 const CORS_HEADERS = {
@@ -67,7 +67,19 @@ Deno.serve(async (req: Request) => {
       if (error) throw new Error(error.message);
       return json({ ok: true });
     }
-    if (subscribed) throw new Error('이미 구독 중이에요.');
+    const { count, error: rosterError } = await admin.from('students')
+      .select('id', { count: 'exact', head: true }).eq('academy_id', academyId).is('archived_at', null);
+    if (rosterError || count == null) throw new Error('등록 학생 수를 확인할 수 없어요.');
+    if (subscribed) {
+      if (request.action !== 'quote') throw new Error('이미 구독 중이에요.');
+      const { data: key, error } = await admin.from('academy_billing_keys')
+        .select('student_price_limit').eq('academy_id', academyId).single();
+      if (error) throw new Error(error.message);
+      const limit = key.student_price_limit;
+      return json({ ok: true, firstChargeOn: academy.next_billing_at, amountKrw: studentMonthlyAmount(Math.min(count, limit ?? 0)),
+        studentCount: count, limit, chargeNow: false });
+    }
+    const amountKrw = studentMonthlyAmount(count);
 
     const today = new Date(Date.now() + 9 * 3_600_000).toISOString().slice(0, 10);
     let firstChargeOn = today;
@@ -77,9 +89,9 @@ Deno.serve(async (req: Request) => {
       firstChargeOn = end.toISOString().slice(0, 10);
     }
     const chargeNow = firstChargeOn === today;
-    if (request.action === 'quote') return json({ ok: true, firstChargeOn, amountKrw: MONTHLY_SUBSCRIPTION_KRW, chargeNow });
+    if (request.action === 'quote') return json({ ok: true, firstChargeOn, amountKrw, studentCount: count, limit: count, chargeNow });
 
-    if (request.firstChargeOn !== firstChargeOn || request.amountKrw !== MONTHLY_SUBSCRIPTION_KRW) {
+    if (request.pricingVersion !== 'per_student_v1' || request.firstChargeOn !== firstChargeOn || request.amountKrw !== amountKrw) {
       return json({ error: '첫 결제 조건이 바뀌었어요. 금액과 날짜를 다시 확인해 주세요.' }, 409);
     }
     const { billingKey } = request;
@@ -87,14 +99,14 @@ Deno.serve(async (req: Request) => {
     await requireIssuedBillingKey(billingKey);
 
     const nextChargeOn = chargeNow ? nextMonth(firstChargeOn) : firstChargeOn;
-    const result = chargeNow ? await chargeAcademy(admin, academyId, billingKey, academyId, { dueDate: firstChargeOn, attempt: 1 }) : null;
+    const result = chargeNow ? await chargeAcademy(academyId, billingKey, academyId, { dueDate: firstChargeOn, attempt: 1, studentCount: count, amountKrw }) : null;
     if (result && !result.success) {
       const { error } = await admin.from('billing_history').insert({
         academy_id: academyId,
         period_start: firstChargeOn,
         period_end: nextChargeOn,
         student_count: result.studentCount,
-        amount_krw: MONTHLY_SUBSCRIPTION_KRW,
+        amount_krw: amountKrw,
         status: 'failed',
         failure_reason: result.failureReason,
       });
@@ -102,13 +114,13 @@ Deno.serve(async (req: Request) => {
       throw new Error(result.failureReason || '결제에 실패했어요.');
     }
 
-    const { data: activated, error } = await admin.rpc('activate_monthly_subscription', {
+    const { data: activated, error } = await admin.rpc('activate_student_subscription', {
       p_academy_id: academyId,
       p_billing_key: billingKey,
       p_first_charge_on: firstChargeOn,
       p_next_charge_on: nextChargeOn,
-      p_student_count: result?.studentCount ?? 0,
-      p_amount_krw: MONTHLY_SUBSCRIPTION_KRW,
+      p_student_count: count,
+      p_amount_krw: amountKrw,
       p_paid_payment_id: result?.portonePaymentId ?? null,
     });
     if (error) throw new Error(error.message);

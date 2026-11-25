@@ -30,7 +30,7 @@ export default function RefundPolicyPage() {
             <h2 className="mb-2 font-title-md text-title-md text-on-surface">1. 결제 및 청구 방식</h2>
             <ol className="list-decimal space-y-1.5 pl-5">
               <li>유료 플랜은 매월 정기적으로 자동 결제되는 구독형 서비스입니다.</li>
-              <li>청구 금액은 등록 학생 수와 무관하게 <span className="font-bold">월 9,900원</span> 정액입니다.</li>
+              <li>학생별 요금제는 부가세 포함 월 기본 9,900원에 결제일 기준 등록 학생 1명당 4,900원을 더합니다. 보관한 학생은 제외하며 기존 정액 구독은 전환에 동의한 경우부터 새 요금을 적용합니다.</li>
               <li>결제는 회원이 등록한 신용카드로 전자지급결제대행사(PG사)를 통해 이루어지며, 카드 정보는 회사가 보관하지 않습니다.</li>
             </ol>
           </section>

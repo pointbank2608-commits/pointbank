@@ -10,7 +10,7 @@ import AccessibleDialog from '../AccessibleDialog';
 export default function BoardGameDialog({ material, onClose }: { material: BoardMaterial; onClose: () => void }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { session, academy, hasFullAccess } = useAuth();
+  const { session, academy, profile, hasFullAccess } = useAuth();
   const games = guideCatalogue(material.kind);
 
   function launch(path: string) {
@@ -33,7 +33,7 @@ export default function BoardGameDialog({ material, onClose }: { material: Board
         </header>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {games.map((g) => {
-            const locked = !hasFullAccess && !isFreeTierGame(g.type);
+            const locked = !hasFullAccess && !isFreeTierGame(g.type, profile?.free_game_choices);
             return (
               <button key={g.type} type="button" disabled={locked} data-game={g.type} className={`${btn} text-left disabled:opacity-40`} onClick={() => launch(g.path)}>
                 {g.cover && <img className="mb-2 h-24 w-full rounded-lg object-cover" src={g.cover} alt="" loading="lazy" />}

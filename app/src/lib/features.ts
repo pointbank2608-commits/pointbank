@@ -20,8 +20,8 @@ export function featureOpen(academy: FeatureSource, key: FeatureKey): boolean {
 }
 
 export function useFeature(key: FeatureKey): boolean {
-  const { academy } = useAuth();
-  return featureOpen(academy, key);
+  const { academy, hasFullAccess } = useAuth();
+  return hasFullAccess && featureOpen(academy, key);
 }
 
 /** 이 경로가 어느 기능에 속하는지(속하지 않으면 null) — 막힌 기능이면 대시보드로 돌려보낸다 */

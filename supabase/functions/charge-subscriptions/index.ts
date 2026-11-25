@@ -26,9 +26,12 @@ function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { ...CORS_HEADERS, 'content-type': 'application/json' } });
 }
 
-function addOneMonth(dateStr: string): string {
+function addOneMonth(dateStr: string, anchor: number | null): string {
   const d = new Date(`${dateStr}T00:00:00Z`);
+  const day = anchor ?? d.getUTCDate();
+  d.setUTCDate(1);
   d.setUTCMonth(d.getUTCMonth() + 1);
+  d.setUTCDate(Math.min(day, new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate()));
   return d.toISOString().slice(0, 10);
 }
 
@@ -69,7 +72,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: dueAcademies, error: dueError } = await supabaseAdmin
       .from('academies')
-      .select('id, plan_status, billing_failure_count, next_billing_at')
+      .select('id, plan_status, billing_failure_count, next_billing_at, billing_cycle_day')
       .eq('plan', 'paid')
       .lte('next_billing_at', today);
     if (dueError) throw new Error(dueError.message);
@@ -102,26 +105,31 @@ Deno.serve(async (req: Request) => {
 
         // 같은 청구 기준일에 이미 성공한 청구가 있으면(배치 중복 실행·늦게 저장된 경우) 다시 결제하지 않고 다음 청구일만 맞춘다.
         const dueDate = academy.next_billing_at ?? today;
-        const { data: already } = await supabaseAdmin
+        const { data: already, error: historyError } = await supabaseAdmin
           .from('billing_history')
           .select('id')
           .eq('academy_id', academy.id)
           .eq('status', 'success')
           .eq('period_start', dueDate)
           .limit(1);
+        if (historyError) throw new Error(historyError.message);
         if (already && already.length > 0) {
-          await supabaseAdmin.from('academies').update({ next_billing_at: addOneMonth(dueDate), billing_failure_count: 0 }).eq('id', academy.id);
+          await supabaseAdmin.from('academies').update({ next_billing_at: addOneMonth(dueDate, academy.billing_cycle_day), billing_failure_count: 0 }).eq('id', academy.id).eq('next_billing_at', dueDate);
           results.push({ academyId: academy.id, outcome: 'already_charged_skipped' });
           continue;
         }
 
-        const result = await chargeAcademy(supabaseAdmin, academy.id, keyRow.billing_key, keyRow.customer_uid, {
-          dueDate,
+        const { data: quote, error: quoteError } = await supabaseAdmin.rpc('subscription_period_quote', {
+          p_academy: academy.id, p_due: dueDate,
+        }).single<{ student_count: number; amount_krw: number }>();
+        if (quoteError || !quote) throw new Error(quoteError?.message ?? 'missing_quote');
+        const result = await chargeAcademy(academy.id, keyRow.billing_key, keyRow.customer_uid, {
+          dueDate, studentCount: quote.student_count, amountKrw: quote.amount_krw,
           attempt: (academy.billing_failure_count ?? 0) + 1,
         });
-        const nextBillingDate = addOneMonth(today);
+        const nextBillingDate = addOneMonth(dueDate, academy.billing_cycle_day);
 
-        await supabaseAdmin.from('billing_history').insert({
+        const { error: recordError } = await supabaseAdmin.from('billing_history').insert({
           academy_id: academy.id,
           period_start: dueDate,
           period_end: nextBillingDate,
@@ -132,11 +140,13 @@ Deno.serve(async (req: Request) => {
           failure_reason: result.failureReason ?? null,
         });
 
+        if (recordError) throw new Error(recordError.message);
+
         if (result.success) {
           await supabaseAdmin
             .from('academies')
             .update({ next_billing_at: nextBillingDate, billing_failure_count: 0, plan_source: 'subscription' })
-            .eq('id', academy.id);
+            .eq('id', academy.id).eq('next_billing_at', dueDate);
           results.push({ academyId: academy.id, outcome: 'charged' });
         } else {
           const failureCount = (academy.billing_failure_count ?? 0) + 1;
@@ -147,7 +157,7 @@ Deno.serve(async (req: Request) => {
               billing_failure_count: failureCount,
               ...(forceFree ? { plan: 'free', plan_status: 'active', next_billing_at: null } : {}),
             })
-            .eq('id', academy.id);
+            .eq('id', academy.id).eq('next_billing_at', dueDate).eq('billing_failure_count', academy.billing_failure_count ?? 0);
           results.push({ academyId: academy.id, outcome: forceFree ? 'failed_forced_free' : 'failed_will_retry' });
         }
       } catch (err) {

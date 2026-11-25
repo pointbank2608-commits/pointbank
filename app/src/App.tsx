@@ -164,7 +164,7 @@ const LessonSlideViewerPage = lazyPage(() => import('./pages/LessonSlideViewerPa
 
 function AppRoutes() {
   const { t } = useTranslation();
-  const { loading, session, sessionReplaced, profile, isStaff, isAdmin } = useAuth();
+  const { loading, session, sessionReplaced, profile, isStaff, isAdmin, hasFullAccess } = useAuth();
   const { pathname } = useLocation();
 
   if (pathname === '/p' || pathname === '/p/') return <ParentPortalPage />;
@@ -307,7 +307,7 @@ function AppRoutes() {
         {isStaff ? (
           <>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/dashboard" element={hasFullAccess ? <DashboardPage /> : <Navigate to="/games" replace />} />
             <Route path="/curriculum" element={<CurriculumPage />} />
             <Route path="/stem" element={<StemReadyClassPage />} />
             <Route path="/curriculum/:id/slide/:slideId" element={<LessonSlideViewerPage />} />

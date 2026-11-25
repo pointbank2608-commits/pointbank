@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../context/AuthContext';
+import { fetchSubscriptionQuote, type SubscriptionQuote } from '../lib/api';
+import { monthlyFee } from '../lib/planLimits';
 import SavedPhone from './SavedPhone';
 import { formatPhone, revealGuardianPhone } from '../lib/studentPortal';
 import type { ParentAccount } from '../lib/parentPortal';
@@ -18,6 +21,19 @@ export default function AddStudentModal({
   onAdded: (name: string, phoneProblem: string | null) => void;
 }) {
   const { t } = useTranslation();
+  const { academy, profile } = useAuth();
+  const pricedOwner = !student && academy?.id === academyId && !!academy.next_billing_at && profile?.role === 'owner';
+  const [quote, setQuote] = useState<SubscriptionQuote | null>(null);
+  const [priceError, setPriceError] = useState(false);
+  const [quoteAttempt, setQuoteAttempt] = useState(0);
+  useEffect(() => {
+    let current = true;
+    setQuote(null); setPriceError(false);
+    if (pricedOwner) void fetchSubscriptionQuote().then(value => { if (current) setQuote(value); }).catch(() => { if (current) setPriceError(true); });
+    return () => { current = false; };
+  }, [pricedOwner, academyId, quoteAttempt]);
+  const addition = pricedOwner && quote && quote.limit != null
+    ? { due: quote.firstChargeOn, total: monthlyFee(quote.studentCount + 1) } : undefined;
   const [name, setName] = useState(student?.name ?? '');
   const [phone, setPhone] = useState('');
   const [loginLast4, setLoginLast4] = useState<string | null>(null);
@@ -60,7 +76,7 @@ export default function AddStudentModal({
   const wantsParent = parentEditing && (parentName.trim().length > 0 || parentPhone.trim().length > 0 || !!parent);
   const phoneOk = !wantsPhone || (digits.length >= 10 && digits.length <= 11 && consent);
   const parentOk = !wantsParent || (!!parentName.trim() && parentDigits.length >= 10 && parentDigits.length <= 11 && parentConsent);
-  const ready = !!name.trim() && phoneOk && parentOk && !loading && !loadFailed;
+  const ready = (!pricedOwner || !!quote) && !!name.trim() && phoneOk && parentOk && !loading && !loadFailed;
   const normalize = (value: string) => value.replace(/\s+/g, '').toLowerCase();
   const sameName = normalize(name) !== normalize(student?.name ?? '')
     && existingNames.some((existing) => normalize(existing) === normalize(name));
@@ -68,7 +84,7 @@ export default function AddStudentModal({
   async function submit() {
     if (!ready || busy) return;
     const input = {
-      student: student?.id ?? null, classId, name: name.trim(),
+      priceConsent: addition, student: student?.id ?? null, classId, name: name.trim(),
       loginPhone: wantsPhone ? phone : null, loginConsent: consent,
       parentName: wantsParent ? parentName.trim() : null, parentPhone: wantsParent ? parentPhone : null,
       parentConsent,
@@ -82,7 +98,9 @@ export default function AddStudentModal({
       onAdded(name.trim(), null);
     } catch (failure) {
       const message = failure instanceof Error ? failure.message : '';
-      setError(message.includes('duplicate_student') ? t('studentLogin.err_duplicate')
+      if (message.includes('student_price')) setQuoteAttempt(v => v + 1);
+      setError(message.includes('student_price_changed') ? t('billing.priceChanged') : message.includes('student_price_limit') ? t('billing.limitReached')
+        : message.includes('duplicate_student') ? t('studentLogin.err_duplicate')
         : message.includes('not_owner') ? t('studentLogin.ownerOnly')
           : t('parentPortal.studentSaveFailed'));
       setBusy(false);
@@ -106,6 +124,11 @@ export default function AddStudentModal({
           <span className="text-sm font-bold">{t('addStudent.name')}</span>
           <input autoFocus value={name} maxLength={100} onChange={(event) => setName(event.target.value)} disabled={busy} className={inputStyle} />
         </label>
+        {pricedOwner && !quote && <p role="status">{t(priceError ? 'billing.quoteFailed' : 'billing.quoteLoading')}
+          {priceError && <button type="button" className="ml-2 underline" onClick={() => setQuoteAttempt(v => v+1)}>{t('billing.retryQuote')}</button>}</p>}
+        {addition && <p className="rounded-lg bg-surface-container-low p-3 text-sm">{t('billing.studentAddConsent', {
+          date: addition.due, amount: addition.total.toLocaleString(),
+        })}</p>}
         {sameName && <p className="rounded-lg bg-warm-yellow/25 p-3 text-sm">{t('addStudent.sameName')}</p>}
         {student && !loading && !loadFailed && loginLast4 && <div className="space-y-1">
           <SavedPhone key={student.id} label={t('parentPortal.savedLoginPhone')} last4={loginLast4} canReveal={canReveal}

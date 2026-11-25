@@ -12,12 +12,13 @@ class TestDate extends Date {
   static now() { return Date.parse(`${today}T05:00:00Z`); }
 }
 
-function fixture({ plan = 'free', trialEnds = today, nextBilling = null, role = 'owner', issuedChannel = 'expected-channel' } = {}) {
+function fixture({ plan = 'free', trialEnds = today, nextBilling = null, role = 'owner', studentCount = 3, issuedChannel = 'expected-channel' } = {}) {
   const writes = [];
   const charges = [];
   let handler;
   const tables = {
     profiles: { academy_id: 'academy-1', role },
+    academy_billing_keys: { student_price_limit: null },
     academies: { plan, trial_ends_at: trialEnds, next_billing_at: nextBilling },
   };
   const client = {
@@ -26,7 +27,7 @@ function fixture({ plan = 'free', trialEnds = today, nextBilling = null, role = 
       select: () => ({ eq: () => ({
         single: async () => ({ data: tables[name] }),
         maybeSingle: async () => ({ data: tables[name] }),
-        count: 0,
+        is: async () => ({ count: studentCount }),
       }) }),
       upsert: async (values) => { writes.push([name, values]); return {}; },
       insert: async (values) => { writes.push([name, values]); return {}; },
@@ -61,21 +62,21 @@ function fixture({ plan = 'free', trialEnds = today, nextBilling = null, role = 
 const activeTrial = fixture();
 const duringTrial = await activeTrial.call({ action: 'quote' });
 assert.equal(duringTrial.firstChargeOn, '2026-11-17');
-assert.equal(duringTrial.amountKrw, 9900);
+assert.equal(duringTrial.amountKrw, 24600);
 assert.equal(duringTrial.chargeNow, false);
 await activeTrial.call({ billingKey: 'old-client' }, 400);
 await activeTrial.call({ action: 'change-card', billingKey: 'old-client' }, 400);
-await activeTrial.call({ ...duringTrial, action: 'start-subscription', billingKey: 'test', amountKrw: 10890 }, 409);
-await activeTrial.call({ ...duringTrial, action: 'start-subscription', billingKey: 'test', firstChargeOn: today }, 409);
+await activeTrial.call({ ...duringTrial, action: 'start-subscription', pricingVersion: 'per_student_v1', billingKey: 'test', amountKrw: 10890 }, 409);
+await activeTrial.call({ ...duringTrial, action: 'start-subscription', pricingVersion: 'per_student_v1', billingKey: 'test', firstChargeOn: today }, 409);
 assert.equal(activeTrial.writes.length, 0);
 assert.equal(activeTrial.charges.length, 0);
-const scheduled = await activeTrial.call({ ...duringTrial, action: 'start-subscription', billingKey: 'test' });
+const scheduled = await activeTrial.call({ ...duringTrial, action: 'start-subscription', pricingVersion: 'per_student_v1', billingKey: 'test' });
 assert.equal(scheduled.scheduled, '2026-11-17');
 assert.equal(activeTrial.charges.length, 0);
 assert.equal(activeTrial.writes[0][1].p_paid_payment_id, null);
 
 const wrongChannel = fixture({ issuedChannel: 'other-channel' });
-await wrongChannel.call({ ...duringTrial, action: 'start-subscription', billingKey: 'test' }, 400);
+await wrongChannel.call({ ...duringTrial, action: 'start-subscription', pricingVersion: 'per_student_v1', billingKey: 'test' }, 400);
 assert.equal(wrongChannel.writes.length, 0);
 assert.equal(wrongChannel.charges.length, 0);
 
@@ -83,13 +84,16 @@ const expired = fixture({ trialEnds: '2026-11-15' });
 const immediate = await expired.call({ action: 'quote' });
 assert.equal(immediate.firstChargeOn, today);
 assert.equal(immediate.chargeNow, true);
-const started = await expired.call({ ...immediate, action: 'start-subscription', billingKey: 'test' });
+const started = await expired.call({ ...immediate, action: 'start-subscription', pricingVersion: 'per_student_v1', billingKey: 'test' });
 assert.equal(started.scheduled, null);
-assert.equal(expired.charges[0].amount.total, 9900);
+assert.equal(expired.charges[0].amount.total, 24600);
 assert.equal(expired.charges[0].channelKey, 'expected-channel');
 assert.equal(expired.writes[0][1].p_next_charge_on, '2026-12-16');
 
+assert.equal(activeTrial.writes[0][1].p_student_count, 3);
+assert.equal((await fixture({ studentCount: 0 }).call({ action: 'quote' })).amountKrw, 9900);
 const paid = fixture({ plan: 'paid', nextBilling: '2026-12-16' });
+assert.equal((await paid.call({ action: 'quote' })).amountKrw, 9900);
 await paid.call({ action: 'change-card', billingKey: 'test' });
 assert.equal(paid.writes[0][0], 'academy_billing_keys');
 assert.equal(paid.charges.length, 0);

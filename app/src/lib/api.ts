@@ -1031,6 +1031,28 @@ export async function fetchWordLists(academyId: string, classId: string, kind: W
 }
 
 /** 반 구분 없이 이 학원의 단어장을 전부 불러온다 ("내 단어장"의 "전체" 탭). */
+export async function recordFreeGamePlay(game: string, visit: string) {
+  const { error } = await supabase.rpc('record_free_choice_play', { p_game: game, p_visit: visit });
+  if (error) throw error;
+  window.dispatchEvent(new Event('classbank-free-game-play'));
+}
+
+export async function nextFreeUpgradePrompt(teacherId: string) {
+  const row = unwrap<{ completed: number; acknowledged: number } | null>(await supabase.from('free_game_usage').select('completed,acknowledged').eq('teacher_id', teacherId).maybeSingle());
+  return row && row.completed > row.acknowledged ? row.acknowledged + 1 : null;
+}
+
+export async function dismissFreeUpgradePrompt(cycle: number, hideToday: boolean) {
+  const action = hideToday ? 'hide_free_upgrade_prompt_today' : 'dismiss_free_upgrade_prompt';
+  const { error } = await supabase.rpc(action, { p_cycle: cycle });
+  if (error) throw error;
+}
+
+export async function saveFreeGameChoices(expected: string[], choices: string[]) {
+  const { error } = await supabase.rpc('save_free_game_choices', { p_expected: expected, p_choices: choices });
+  if (error) throw error;
+}
+
 export async function fetchAllWordLists(academyId: string, kind: WordListKind | 'all' = 'word'): Promise<WordList[]> {
   const rows: WordList[] = [];
   for (let offset = 0; ; offset += 500) {
@@ -1416,6 +1438,8 @@ export async function fetchBillingHistory(academyId: string): Promise<BillingHis
 }
 
 export interface SubscriptionQuote {
+  studentCount: number;
+  limit: number | null;
   firstChargeOn: string;
   amountKrw: number;
   chargeNow: boolean;
@@ -1433,13 +1457,26 @@ async function requestBilling<T>(body: Record<string, unknown>): Promise<T> {
   return data;
 }
 
-export function fetchSubscriptionQuote(): Promise<SubscriptionQuote> {
-  return requestBilling({ action: 'quote' });
+export async function confirmStudentLimit(limit: number, due: string, amount: number) {
+  const { error } = await supabase.rpc('confirm_student_price_limit', { p_limit: limit, p_due: due, p_max_amount: amount });
+  if (error) throw new Error(error.message);
+}
+
+export async function fetchScanAccess(academyId: string): Promise<boolean> {
+  const { data, error } = await supabase.from('academy_scan_access').select('enabled').eq('academy_id', academyId).maybeSingle();
+  if (error) throw new Error(error.message);
+  return data?.enabled === true;
+}
+
+export async function fetchSubscriptionQuote(): Promise<SubscriptionQuote> {
+  const result = await requestBilling<SubscriptionQuote>({ action: 'quote' });
+  if (!Number.isInteger(result.studentCount) || result.limit === undefined) throw new Error('학생별 요금을 확인할 수 없어요.');
+  return result;
 }
 
 export async function startMonthlySubscription(billingKey: string, quote: SubscriptionQuote): Promise<string | null> {
   const { scheduled } = await requestBilling<{ scheduled: string | null }>({
-    action: 'start-subscription', billingKey, firstChargeOn: quote.firstChargeOn, amountKrw: quote.amountKrw,
+    action: 'start-subscription', pricingVersion: 'per_student_v1', billingKey, firstChargeOn: quote.firstChargeOn, amountKrw: quote.amountKrw,
   });
   return scheduled;
 }

@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { cancelBilling, changeSubscriptionCard, fetchBillingHistory, fetchStudentsOfAcademy, fetchSubscriptionQuote, startMonthlySubscription, type SubscriptionQuote } from '../lib/api';
-import { BASE_FEE_KRW } from '../lib/planLimits';
+import { confirmStudentLimit, cancelBilling, changeSubscriptionCard, fetchBillingHistory, fetchStudentsOfAcademy, fetchSubscriptionQuote, startMonthlySubscription, type SubscriptionQuote } from '../lib/api';
+import { BASE_FEE_KRW, monthlyFee } from '../lib/planLimits';
 import { issueBillingKey } from '../lib/portone';
 import type { BillingHistoryRow } from '../lib/types';
 
@@ -27,12 +27,13 @@ export default function BillingPage() {
   const [quoteFailed, setQuoteFailed] = useState(false);
   const [quoteVersion, setQuoteVersion] = useState(0);
 
+  const [limitInput, setLimitInput] = useState('');
   const isOwner = profile?.role === 'owner';
   const hasSubscription = isPaid && !!academy?.next_billing_at;
   const currentQuote = quote?.academyId === academy?.id ? quote : null;
 
   const load = useCallback(async () => {
-    if (!academy?.id) return;
+    if (!academy?.id || !isOwner) return;
     try {
       const [students, rows] = await Promise.all([
         fetchStudentsOfAcademy(academy.id),
@@ -43,7 +44,7 @@ export default function BillingPage() {
     } catch (err) {
       notify(err instanceof Error ? err.message : String(err), 'error');
     }
-  }, [academy?.id, notify]);
+  }, [academy?.id, isOwner, notify]);
 
   useEffect(() => {
     void load();
@@ -51,7 +52,7 @@ export default function BillingPage() {
 
   useEffect(() => {
     const academyId = academy?.id;
-    if (!isOwner || !academyId || hasSubscription) return;
+    if (!isOwner || !academyId) return;
     let current = true;
     setQuote(null);
     setQuoteFailed(false);
@@ -82,6 +83,17 @@ export default function BillingPage() {
     }
   }
 
+  const limitValue = Number(limitInput);
+  const limitValid = currentQuote && /^\d+$/.test(limitInput) && Number.isSafeInteger(limitValue)
+    && limitValue >= currentQuote.studentCount && limitValue <= 400000 && limitValue !== currentQuote.limit;
+  async function saveLimit() {
+    if (!currentQuote || !limitValid || busy) return;
+    setBusy(true);
+    const ok = await run(() => confirmStudentLimit(limitValue, currentQuote.firstChargeOn, monthlyFee(limitValue)));
+    setBusy(false);
+    if (ok) { setLimitInput(''); setQuoteVersion(v => v + 1); }
+  }
+
   async function handleCancel() {
     if (!confirm(t('billing.cancelConfirm'))) return;
     const ok = await run(() => cancelBilling('cancel'), t('billing.cancelScheduledToast'));
@@ -93,11 +105,6 @@ export default function BillingPage() {
     if (ok) await refresh();
   }
 
-  if (!isOwner) {
-    return (
-      <div className="text-center py-16 font-body-md text-on-surface-variant">{t('billing.ownerOnly')}</div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -112,6 +119,18 @@ export default function BillingPage() {
         {t('settings.billingTitle')}
       </h2>
 
+      <p className="text-on-surface-variant">{t('landing.pricingDesc')}</p>
+      <section className="grid gap-4 sm:grid-cols-2" aria-label={t('settings.billingTitle')}>
+        {(['Free','Paid'] as const).map(plan => <article key={plan} className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5">
+          <h3 className="font-bold">{t(`landing.pricing${plan}Name`)}</h3>
+          <p className="my-2 text-xl font-bold">{t(`landing.pricing${plan}Price`)}</p>
+          {plan === 'Paid' && <p>{t('landing.pricingPaidVat')}</p>}
+          <ul className="mt-3 list-disc space-y-1 pl-5">{(['F1','F2','F3'] as const).map(key =>
+            <li key={key}>{t(`landing.pricing${plan}${key}`)}</li>)}</ul>
+        </article>)}
+      </section>
+
+      {!isOwner ? <p>{t('billing.ownerOnly')}</p> : <>
       <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="font-title-md text-title-md text-on-surface">{t('billing.currentPlanTitle')}</h4>
@@ -124,9 +143,9 @@ export default function BillingPage() {
           </span>
         </div>
 
-        {studentCount !== null && (
+        {(currentQuote || studentCount !== null) && (
           <p className="font-body-md text-body-md text-on-surface-variant">
-            {t('billing.studentCountLabel', { count: studentCount })}
+            {t('billing.studentCountLabel', { count: currentQuote?.studentCount ?? studentCount })}
           </p>
         )}
 
@@ -138,7 +157,21 @@ export default function BillingPage() {
             {academy?.next_billing_at && (
               <p>{t('billing.nextBillingDate', { date: formatDate(academy.next_billing_at) })}</p>
             )}
-            {hasSubscription && <p>{t('billing.estimatedAmount', { amount: formatKrw(BASE_FEE_KRW) })}</p>}
+            {hasSubscription && currentQuote && <>
+              <p>{t('billing.estimatedAmount', { amount: formatKrw(currentQuote.amountKrw) })}</p>
+              <p>{currentQuote.limit === null ? t('billing.legacyPrice') : t('billing.approvedLimit', { count: currentQuote.limit })}</p>
+              {academy?.plan_status === 'active' && <div className="space-y-2">
+                <label className="flex items-center gap-2">{t('billing.limitLabel')}
+                  <input type="number" min={currentQuote.studentCount} max={400000} value={limitInput}
+                    placeholder={String(currentQuote.limit ?? currentQuote.studentCount)} onChange={e => setLimitInput(e.target.value)}
+                    className="w-24 rounded border p-2" /></label>
+                <p>{t('billing.limitHelp')}</p>
+                {limitValid && <p>{t('billing.limitQuote', { date: formatDate(currentQuote.firstChargeOn),
+                  amount: formatKrw(monthlyFee(currentQuote.studentCount)), max: formatKrw(monthlyFee(limitValue)) })}</p>}
+                <button type="button" disabled={!limitValid || busy} onClick={() => void saveLimit()}
+                  className="rounded-lg border px-3 py-2 disabled:opacity-50">{t('billing.confirmLimit')}</button>
+              </div>}
+            </>}
           </div>
         ) : (
           <div className="space-y-2 font-body-md text-body-md text-on-surface-variant">
@@ -146,18 +179,18 @@ export default function BillingPage() {
           </div>
         )}
 
-        {!hasSubscription && (currentQuote ? (
+        {!hasSubscription && currentQuote ? (
           <div className="space-y-1 rounded-lg bg-surface-container-low px-4 py-3 font-body-md text-body-md text-on-surface">
             <p className="font-semibold">{t('billing.firstChargeSummary', { date: formatDate(currentQuote.firstChargeOn), amount: formatKrw(currentQuote.amountKrw) })}</p>
             <p>{t(currentQuote.chargeNow ? 'billing.firstChargeToday' : 'billing.firstChargeAfterTrial')}</p>
             <p>{t('billing.recurringConsent', { amount: formatKrw(currentQuote.amountKrw) })}</p>
           </div>
-        ) : (
+        ) : !currentQuote ? (
           <div role="status" className="font-body-md text-body-md text-on-surface-variant">
             {t(quoteFailed ? 'billing.quoteFailed' : 'billing.quoteLoading')}
             {quoteFailed && <button type="button" className="ml-2 text-primary underline" onClick={() => setQuoteVersion((version) => version + 1)}>{t('billing.retryQuote')}</button>}
           </div>
-        ))}
+        ) : null}
 
         <div className="flex items-start gap-2 rounded-lg bg-tertiary-container/40 px-3 py-2.5 font-caption text-caption text-on-surface">
           <span aria-hidden="true">⚠️</span>
@@ -171,7 +204,9 @@ export default function BillingPage() {
             disabled={busy || (!hasSubscription && !currentQuote)}
             className="px-5 py-2.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md disabled:opacity-60 hover:bg-primary-container transition-colors"
           >
-            {hasSubscription ? t('billing.changeCardButton') : t('billing.startSubscriptionButton', { amount: formatKrw(currentQuote?.amountKrw ?? BASE_FEE_KRW) })}
+            {hasSubscription ? t('billing.changeCardButton') : currentQuote
+              ? t('billing.startSubscriptionButton', { amount: formatKrw(currentQuote.amountKrw) })
+              : t('landing.pricingPaidName')}
           </button>
 
           {hasSubscription && academy?.plan_status === 'active' && (
@@ -245,6 +280,7 @@ export default function BillingPage() {
           </div>
         )}
       </div>
+      </>}
     </div>
   );
 }

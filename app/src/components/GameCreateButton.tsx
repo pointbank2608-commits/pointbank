@@ -13,7 +13,7 @@ import AccessibleDialog from './AccessibleDialog';
 export const guideButton = 'min-h-12 rounded-xl border border-outline-variant bg-white px-5 py-3 text-base font-bold text-deep-navy focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-40';
 const lines=(v:string)=>v.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
 export default function GameCreateButton() {
-  const {t}=useTranslation();const {session,academy,hasFullAccess,isStaff}=useAuth();const navigate=useNavigate();
+  const {t}=useTranslation();const {session,academy,profile,hasFullAccess,isStaff}=useAuth();const navigate=useNavigate();
   const [open,setOpen]=useState(false);const [kind,setKind]=useState<GuideKind|null>(null);const [ready,setReady]=useState(false);
   const [text,setText]=useRecoverableField(`game-create:${kind||'word'}`);const [cards,setCards]=useState<FullCardItem[]>([]);
   useEffect(()=>{setOpen(false);setKind(null);setCards([]);},[session?.user.id,academy?.id]);
@@ -28,7 +28,7 @@ export default function GameCreateButton() {
         <label className="block font-bold">{t(kind==='names'?'guide.nameColumn':kind==='numbers'?'guide.numberColumn':'guide.paste')}<textarea className="mt-2 min-h-44 w-full rounded-xl border p-3 font-normal" value={text} onChange={e=>setText(e.target.value)} placeholder={kind==='word'?'apple | 사과\nbanana | 바나나':kind==='sentence'?'I like apples.\nShe has a cat.':t('flow.participant',{n:1})+'\n'+t('flow.participant',{n:2})}/></label><p>{t('guide.pasteHint')}</p>
         <button className={`${guideButton} bg-primary! text-white!`} disabled={!text.trim()} onClick={()=>{setCards(parse());setReady(true);}}>{t('guide.next')}</button>
 
-      </>:<><p>{t(`guide.${kind}`)}{cards.length?` · ${cards.length}`:''}</p><div className="grid max-h-[55dvh] gap-3 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3">{guideCatalogue(kind).map(g=>{const locked=!hasFullAccess&&!isFreeTierGame(g.type);return <button key={g.type} className={`${guideButton} text-left`} disabled={locked} onClick={()=>{navigate(g.path,{state:{guideLaunch:{kind,cards,ownerId:session?.user.id,academyId:academy?.id}}});close();}}>{g.cover&&<img className="mb-2 h-24 w-full rounded-lg object-cover" src={g.cover} alt="" loading="lazy"/>}<span className="block text-lg">{t(g.nameKey)}</span><span className="block font-normal">{t(g.descKey)}</span>{locked&&<span>{t('guide.locked')}</span>}</button>;})}</div></>}
+      </>:<><p>{t(`guide.${kind}`)}{cards.length?` · ${cards.length}`:''}</p><div className="grid max-h-[55dvh] gap-3 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3">{guideCatalogue(kind).map(g=>{const locked=!hasFullAccess&&!isFreeTierGame(g.type, profile?.free_game_choices);return <button key={g.type} className={`${guideButton} text-left`} disabled={locked} onClick={()=>{navigate(g.path,{state:{guideLaunch:{kind,cards,ownerId:session?.user.id,academyId:academy?.id}}});close();}}>{g.cover&&<img className="mb-2 h-24 w-full rounded-lg object-cover" src={g.cover} alt="" loading="lazy"/>}<span className="block text-lg">{t(g.nameKey)}</span><span className="block font-normal">{t(g.descKey)}</span>{locked&&<span>{t('guide.locked')}</span>}</button>;})}</div></>}
       {kind&&<button className={guideButton} onClick={()=>{if(ready){setReady(false);setCards([]);}else setKind(null);}}>{t('guide.back')}</button>}
       <p className="text-sm text-on-surface-variant">{t('guide.temporary')}</p>
     </div>

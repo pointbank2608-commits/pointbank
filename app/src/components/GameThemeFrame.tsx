@@ -1,3 +1,5 @@
+import { useAuth } from '../context/AuthContext';
+import { recordFreeGamePlay } from '../lib/api';
 import {GameTurnProvider,GameTurnDisplay} from './GameTurnDisplay';
 import {GameTurnContext} from '../context/GameTurnContext';
 import { useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
@@ -163,6 +165,18 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, r
   const presenting = usePresenting();
   const embed = useGameEmbed();
   const activityPreview = !!embed?.preview;
+  const { profile, hasFullAccess } = useAuth();
+  const visit = useRef<{ scope: string; id: string; recorded: boolean } | null>(null);
+  function recordInteraction() {
+    if (hasFullAccess || !workspace?.running || workspace.panel || activityPreview || !frameGame ||
+        !profile?.free_game_choices?.includes(frameGame) || profile.free_game_choices.length !== 3) return;
+    const scope = profile.id + ':' + frameGame;
+    if (visit.current?.scope !== scope) visit.current = { scope, id: crypto.randomUUID(), recorded: false };
+    const current = visit.current;
+    if (current.recorded) return;
+    current.recorded = true;
+    void recordFreeGamePlay(frameGame, current.id).catch(() => { current.recorded = false; });
+  }
   const lessonClassTurns = !!lessonTurnScope && (presenting || (!!embed && !embed.slideId && !activityPreview));
   const turnScope = lessonClassTurns ? lessonTurnScope : '';
   const roster = lessonClassTurns ? suppliedRoster : (workspace?.roster ?? suppliedRoster);
@@ -501,7 +515,7 @@ function GameThemeFrameContent({ gameType, bg, className, children, onRestart, r
             <p role="status" className="rounded-2xl bg-white px-6 py-3 text-xl font-bold text-deep-navy shadow-lg">{t('teacherGame.paused')}</p>
           </div>
         )}
-        <div ref={stageRef} data-game-stage data-game-fit="contain" inert={!!workspace && (!workspace.running || !!workspace.panel)} className="game-fs-stage game-fit-stage" style={{position: 'relative', zIndex: 1}}>
+        <div ref={stageRef} onPointerDownCapture={recordInteraction} onKeyDownCapture={event => { if (event.key !== 'Tab' && !event.repeat) recordInteraction(); }} data-game-stage data-game-fit="contain" inert={!!workspace && (!workspace.running || !!workspace.panel)} className="game-fs-stage game-fit-stage" style={{position: 'relative', zIndex: 1}}>
           <div className="game-viewport-box">
             <div ref={scaleRef} data-game-canvas className="game-fs-scale game-fit-canvas">
               <GameHistoryRegion containerRef={scaleRef} identity={`${frameGame}:${template?.id??''}:${JSON.stringify(template?.config)}:${JSON.stringify(template?.items)}`}><PictureWordTurnProvider key={pictureModeTemplate?.id ?? 'standard'} config={pictureModeTemplate?.config}>{children}</PictureWordTurnProvider></GameHistoryRegion>

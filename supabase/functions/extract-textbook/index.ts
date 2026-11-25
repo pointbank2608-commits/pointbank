@@ -164,7 +164,7 @@ Deno.serve(async (req: Request) => {
 
   let stage = 'reserve';
   try {
-    const access = await fetch(`${supabaseUrl}/rest/v1/rpc/reserve_textbook_extraction`, {
+    const access = await fetch(`${supabaseUrl}/rest/v1/rpc/${job.mode === 'extract' ? 'reserve_enabled_scan' : 'reserve_textbook_extraction'}`, {
       method: 'POST',
       headers: { authorization, apikey: supabaseKey, 'Content-Type': 'application/json' },
       body: JSON.stringify({ p_academy_id: job.academy }),

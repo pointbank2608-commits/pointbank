@@ -22,6 +22,7 @@ export interface Academy {
 }
 
 export interface Profile {
+  free_game_choices?: GameType[];
   id: string;
   academy_id: string | null;
   role: Role;

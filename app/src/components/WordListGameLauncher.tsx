@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AccessibleDialog from './AccessibleDialog';
@@ -11,13 +12,14 @@ export default function WordListGameLauncher({ list, classes, selectedClassId, i
   onLaunch: (game: GameType, classId: string) => void;
 }) {
   const { t } = useTranslation();
+  const { profile } = useAuth();
   // 문장 목록은 문장 게임만, 단어장은 단어 게임만
   const games = GAME_CATALOG.filter((entry) => prepareClassroomGame(entry.type, list));
   const [game, setGame] = useState<GameType>(games[0]?.type ?? 'wheel');
   const preferred = list.class_id ?? selectedClassId;
   const classId = classes.find(row => row.id === preferred)?.id ?? '';
   const prepared = useMemo(() => { const content = prepareClassroomGame(game,list); return { ready: !!content, count: content ? list.items.filter(item => item.word.trim()).length : 0 }; }, [list, game]);
-  const canLaunch = prepared.ready && (isPaid || isFreeTierGame(game));
+  const canLaunch = prepared.ready && (isPaid || isFreeTierGame(game, profile?.free_game_choices));
   return (
     <AccessibleDialog label={t('classroomUx.launchTitle')} onClose={() => { if (!busy) onClose(); }}>
       <div className="p-5 sm:p-7">
@@ -35,7 +37,7 @@ export default function WordListGameLauncher({ list, classes, selectedClassId, i
             <div className="grid grid-cols-2 gap-3">
               {games.map((entry) => {
                 const { type } = entry;
-                const locked = !isPaid && !isFreeTierGame(type);
+                const locked = !isPaid && !isFreeTierGame(type, profile?.free_game_choices);
                 return <button key={type} type="button" disabled={locked} aria-pressed={game === type} onClick={() => setGame(type)}
                   className={`flex flex-col items-stretch gap-2 overflow-hidden rounded-xl border-2 p-0 text-left outline-offset-2 focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-60 ${game === type ? 'border-primary bg-primary/5' : 'border-outline-variant/40'}`}>
                   <span aria-hidden className="grid aspect-video w-full place-items-center overflow-hidden bg-primary-fixed text-primary">

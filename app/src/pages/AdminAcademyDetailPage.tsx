@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import {
+  fetchScanAccess,
   adminAcademyContent,
   adminRestoreRevision,
   adminAcademyFeatures,
@@ -36,6 +37,27 @@ function FeatureSwitch({ label, checked, disabled, onClick }: {
       <span className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all ${checked ? 'left-[22px]' : 'left-0.5'}`} />
     </button>
   );
+}
+
+function ScanAccessRow({ academyId }: { academyId: string }) {
+  const { t } = useTranslation();
+  const state = useAdminQuery(() => fetchScanAccess(academyId), [academyId]);
+  const [saving, setSaving] = useState(false);
+  const [failure, setFailure] = useState('');
+  async function change(enabled: boolean) {
+    setSaving(true);
+    setFailure('');
+    try {
+      const { error } = await supabase.from('academy_scan_access').upsert({ academy_id: academyId, enabled });
+      if (error) throw error;
+      state.reload();
+    } catch (e) { setFailure(errorText(e)); }
+    finally { setSaving(false); }
+  }
+  return <li><DataState state={state} empty="" compact>{enabled => <div className="flex items-center justify-between gap-3">
+    <span>{t('billing.scanAccess')}</span>
+    <FeatureSwitch label={t('billing.scanAccess')} checked={enabled} disabled={saving} onClick={() => void change(!enabled)} />
+  </div>}</DataState>{failure && <p role="alert">{failure}</p>}</li>;
 }
 
 function AcademyLoginPolicyRow({ academyId, onSaved }: { academyId: string; onSaved: () => void }) {
@@ -278,6 +300,7 @@ export default function AdminAcademyDetailPage() {
                 <span className="w-12 text-sm font-bold">{features[k] ? t('adminOps.featureOpen') : t('adminOps.featureClosed')}</span>
               </li>
             ))}
+            {a.id === id && <ScanAccessRow key={`scan-${id}`} academyId={id} />}
             {a.id === id && <AcademyLoginPolicyRow key={id} academyId={id} onSaved={log.reload} />}
           </ul>
         </section>

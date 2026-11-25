@@ -17,6 +17,7 @@ import ClassChipRow from '../components/ClassChipRow';
 import FlashcardStudy from '../components/FlashcardStudy';
 import LyricsWordPicker from '../components/LyricsWordPicker';
 import MaterialsLaunchButtons from '../components/MaterialsLaunchButtons';
+import { fetchScanAccess } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
@@ -200,8 +201,9 @@ function CategoryPickerModal({
   );
 }
 
-export function WordListEditor({ list, onChange, saveItems = updateWordListItems }: {
+export function WordListEditor({ list, onChange, maxWords, saveItems = updateWordListItems }: {
   list: WordList; onChange: (items: WordListItem[]) => void;
+  maxWords?: number;
   saveItems?: (id: string, items: WordListItem[]) => Promise<void>;
 }) {
   const { t } = useTranslation();
@@ -233,6 +235,7 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
 
   async function persist(next: WordListItem[], onSuccess?: () => void) {
     if (savingRef.current) return;
+    if (maxWords !== undefined && next.length > maxWords) { notify(t('trial.changeLists'), 'error'); return; }
     savingRef.current = true;
     setSaving(true);
     setFailedSave(null);
@@ -347,7 +350,7 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
         </div>
       )}
 
-      <div className="flex flex-wrap max-w-full bg-surface-container-lowest rounded-lg p-1 mb-3 w-fit">
+      {maxWords === undefined && <div className="flex flex-wrap max-w-full bg-surface-container-lowest rounded-lg p-1 mb-3 w-fit">
         <button
           type="button"
           onClick={() => setTab('dictionary')}
@@ -385,7 +388,7 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
           <span className="material-symbols-outlined text-base">music_note</span>
           {t('lyricsPicker.tab')}
         </button>
-      </div>
+      </div>}
 
       {tab === 'manual' ? (
         <div className="flex flex-wrap gap-2">
@@ -506,6 +509,61 @@ export function WordListEditor({ list, onChange, saveItems = updateWordListItems
 
 export default function WordListsPage() {
   const { academy, profile, hasFullAccess } = useAuth();
+  if (hasFullAccess) return <TeachingMaterialsPage />;
+  return academy && profile ? <FreeWordList key={academy.id} academyId={academy.id} teacherId={profile.id} /> : null;
+}
+
+function FreeWordList({ academyId, teacherId }: { academyId: string; teacherId: string }) {
+  const { t } = useTranslation();
+  const { run } = useToast();
+  const [list, setList] = useState<WordList | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [reload, setReload] = useState(0);
+  const [name, setName] = useState('');
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    let current = true;
+    setLoading(true);
+    setError(false);
+    fetchAllWordLists(academyId).then(rows => {
+      if (current) setList(rows.filter(row => row.items.length <= 10)
+        .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id))[0] ?? null);
+    }).catch(() => { if (current) setError(true); })
+      .finally(() => { if (current) setLoading(false); });
+    return () => { current = false; };
+  }, [academyId, reload]);
+
+  async function create() {
+    if (busy || loading || error || list) return;
+    setBusy(true);
+    const ok = await run(async () => {
+      setList(await createWordList({ academyId, teacherId, classId: null, name: name.trim() || t('flow.defaultWords'), items: [] }));
+    });
+    setBusy(false);
+    if (!ok) setReload(value => value + 1);
+  }
+
+  return <section className="space-y-4">
+    <h2 className="text-2xl font-bold">{t('landing.pricingFreeF3')}</h2>
+    {loading ? <p role="status">{t('common.loading')}</p> : error
+      ? <button className="textbook-button" onClick={() => setReload(value => value + 1)}>{t('classroomUx.reload')}</button>
+      : list ? <article className="rounded-xl bg-white p-5">
+        <h3 className="mb-3 font-semibold">{list.name} · {list.items.length}/10</h3>
+        {list.items.length > 0 && <Link className="textbook-button mb-3 inline-flex" to="/games" state={{ quickSource: {
+          ownerId: teacherId, academyId, cards: wordListToCards(list), kind: 'word', name: list.name, id: list.id,
+        } }}>{t('quick.otherGame')}</Link>}
+        <WordListEditor key={list.id} list={list} maxWords={10} onChange={items => setList({ ...list, items })} />
+      </article> : <form className="flex flex-wrap gap-3" onSubmit={event => { event.preventDefault(); void create(); }}>
+        <input className="rounded-lg border p-2" value={name} onChange={event => setName(event.target.value)}
+          aria-label={t('wordLists.namePlaceholder')} placeholder={t('wordLists.namePlaceholder')} />
+        <button type="submit" className="textbook-button" disabled={busy}>{t('wordLists.createButton')}</button>
+      </form>}
+  </section>;
+}
+
+function TeachingMaterialsPage() {
+  const { academy, profile, hasFullAccess } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [params, setParams] = useSearchParams();
@@ -513,6 +571,14 @@ export default function WordListsPage() {
   const myGrammar = params.get('tab') === 'grammar';
   const linkedList = params.get('list');
   const [materialFilter, setMaterialFilter] = useState<'all' | 'word' | 'sentence'>('all');
+  const [scanAcademy, setScanAcademy] = useState<string | null>(null);
+  useEffect(() => {
+    let current = true;
+    const id = academy?.id;
+    setScanAcademy(null);
+    if (id) void fetchScanAccess(id).then(enabled => { if (current && enabled) setScanAcademy(id); }).catch(() => {});
+    return () => { current = false; };
+  }, [academy?.id]);
   const [aiDialog, setAiDialog] = useState<{ scope: string; mode: 'source' | 'topic' } | null>(null);
   const [appendSource, setAppendSource] = useState<{ scope: string; list: WordList } | null>(null);
   const [savedTeaching, setSavedTeaching] = useState<(SavedAiMaterials & { scope: string }) | null>(null);
@@ -685,7 +751,7 @@ export default function WordListsPage() {
   async function handleLaunch(game: GameType, classId: string) {
     const list = lists.find((item) => item.id === launchListId);
     if (launchBusyRef.current || !list || !academy || !profile) return;
-    if (!hasFullAccess && !isFreeTierGame(game)) return;
+    if (!hasFullAccess && !isFreeTierGame(game, profile.free_game_choices)) return;
     const prepared = prepareClassroomGame(game, list);
     if (!prepared) return;
     launchBusyRef.current = true;
@@ -731,11 +797,11 @@ export default function WordListsPage() {
       </h2>
             <div className="flex flex-wrap gap-2">
               {!textbooks && !myGrammar && academy?.id && profile?.id && <>
-                <button type="button" onClick={() => setAiDialog({ scope: accountScope.current, mode: 'source' })}
+                {scanAcademy === academy.id && <button type="button" onClick={() => setAiDialog({ scope: accountScope.current, mode: 'source' })}
                   className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 font-label-md text-label-md text-on-primary transition-colors hover:brightness-95">
                   <span className="material-symbols-outlined text-[18px]" aria-hidden="true">auto_awesome</span>
                   {t('aiMaterials.sourceTitle')}
-                </button>
+                </button>}
                 <button type="button" className="textbook-button"
                   onClick={() => setAiDialog({ scope: accountScope.current, mode: 'topic' })}>{t('aiMaterials.title')}</button>
               </>}
@@ -757,7 +823,7 @@ export default function WordListsPage() {
               ))}
             </div>
       </div>
-      {academy?.id && profile?.id && aiDialog?.scope === accountScope.current &&
+      {academy?.id && profile?.id && aiDialog?.scope === accountScope.current && (aiDialog.mode !== 'source' || scanAcademy === academy.id) &&
         <AiMaterialsDialog key={aiDialog.scope + aiDialog.mode} academy={academy.id} owner={profile.id} mode={aiDialog.mode}
           preferredKind={materialFilter === 'all' ? undefined : materialFilter} onClose={() => setAiDialog(null)}
           onSaved={result => {

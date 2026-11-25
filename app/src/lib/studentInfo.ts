@@ -15,6 +15,7 @@ export async function revealParentPhone(student: string): Promise<string | null>
 }
 
 export interface StudentInfoInput {
+  priceConsent?: { due: string; total: number };
   request: string;
   student: string | null;
   classId: string;
@@ -27,8 +28,9 @@ export interface StudentInfoInput {
 }
 
 export async function saveStudentInfo(input: StudentInfoInput): Promise<string> {
-  const { data, error } = await supabase.rpc('student_save_info', {
-    p_request: input.request, p_student: input.student, p_class: input.classId, p_name: input.name.trim(),
+  const consent = input.priceConsent;
+  const { data, error } = await supabase.rpc(consent ? 'student_add_with_price' : 'student_save_info', {
+    p_request: input.request, ...(consent ? { p_due: consent.due, p_total: consent.total } : { p_student: input.student }), p_class: input.classId, p_name: input.name.trim(),
     p_login_phone: input.loginPhone, p_login_consent: input.loginConsent,
     p_parent_name: input.parentName, p_parent_phone: input.parentPhone, p_parent_consent: input.parentConsent,
   });

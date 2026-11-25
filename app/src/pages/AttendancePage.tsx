@@ -24,7 +24,6 @@ import {
   markPresent,
 } from '../lib/api';
 import { useClasses } from '../lib/useClasses';
-import { FREE_CLASS_LIMIT, FREE_STUDENT_LIMIT } from '../lib/planLimits';
 import type { Attendance, Student } from '../lib/types';
 
 const AVATAR_TONES = ['#cfe3ff', '#ffd9e6', '#d6f5e6', '#e4dcff', '#ffeaa8', '#cdeff2'];
@@ -45,7 +44,7 @@ function timeOnly(iso: string): string {
 }
 
 export default function AttendancePage() {
-  const { academy, profile, hasFullAccess } = useAuth();
+  const { academy, profile } = useAuth();
   const soloOpen = useFeature('solo');
   const homeworkOpen = useFeature('homework');
   const studentAreaOpen = soloOpen || homeworkOpen;
@@ -56,9 +55,6 @@ export default function AttendancePage() {
     const target = new URLSearchParams(location.search).get('classId');
     if (target && classes.some(c => c.id === target)) select(target);
   }, [classes, select]);
-  /** 무료 플랜 학생 10명 한도는 반 하나가 아니라 학원 전체 기준이라, 반별 학생 목록(students
-   * state)과는 별도로 학원 전체 학생 수를 따로 추적한다. */
-  const [academyStudentCount, setAcademyStudentCount] = useState(0);
   const [academyStudentNames, setAcademyStudentNames] = useState<string[]>([]);
   const [addingStudent, setAddingStudent] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
@@ -68,7 +64,6 @@ export default function AttendancePage() {
     if (!academy?.id) return;
     try {
       const all = await fetchStudentsOfAcademy(academy.id);
-      setAcademyStudentCount(all.length);
       setAcademyStudentNames(all.map((s) => s.name));
     } catch {
       // 한도 체크용 보조 값이라 실패해도 화면을 막지 않는다.
@@ -132,10 +127,6 @@ export default function AttendancePage() {
 
   async function handleAddClass() {
     if (!academy?.id) return;
-    if (!hasFullAccess && classes.length >= FREE_CLASS_LIMIT) {
-      notify(t('attendance.freeClassLimitToast'), 'error');
-      return;
-    }
     const name = prompt(t('attendance.addClassPrompt'));
     if (!name?.trim()) return;
     const ok = await run(async () => {
@@ -146,10 +137,6 @@ export default function AttendancePage() {
 
   async function handleAddStudent() {
     if (!academy?.id || !selectedId) return;
-    if (!hasFullAccess && academyStudentCount >= FREE_STUDENT_LIMIT) {
-      notify(t('attendance.freeStudentLimitToast'), 'error');
-      return;
-    }
     setAddingStudent(true);
   }
 
@@ -287,18 +274,11 @@ export default function AttendancePage() {
         <ClassChipRow classes={classes} selectedId={selectedId} onSelect={select} onReorder={reorder} />
         <button
           onClick={() => void handleAddClass()}
-          disabled={!hasFullAccess && classes.length >= FREE_CLASS_LIMIT}
-          title={!hasFullAccess && classes.length >= FREE_CLASS_LIMIT ? t('attendance.freeClassLimitToast') : undefined}
           className="flex min-h-11 items-center gap-1 rounded-full border border-dashed border-primary/60 bg-white px-5 font-label-md text-[15px] font-bold text-primary transition-colors hover:bg-primary-fixed disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
         >
           <span className="material-symbols-outlined text-[18px]">add</span>
           {t('settings.addClass')}
         </button>
-        {!hasFullAccess && classes.length >= FREE_CLASS_LIMIT && (
-          <Link to="/settings/billing" className="font-label-md text-label-md text-primary hover:underline">
-            {t('plan.upgradeCta')}
-          </Link>
-        )}
       </div>
 
       {selectedId && profile && ['owner','teacher'].includes(profile.role) &&
@@ -361,17 +341,10 @@ export default function AttendancePage() {
               <>
                 <button
                   onClick={() => void handleAddStudent()}
-                  disabled={!hasFullAccess && academyStudentCount >= FREE_STUDENT_LIMIT}
-                  title={!hasFullAccess && academyStudentCount >= FREE_STUDENT_LIMIT ? t('attendance.freeStudentLimitToast') : undefined}
                   className="flex min-h-11 items-center gap-1 rounded-[12px] border border-primary px-4 font-label-md text-[15px] font-bold text-primary transition-colors hover:bg-primary-fixed disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {t('board.addStudent')}
                 </button>
-                {!hasFullAccess && academyStudentCount >= FREE_STUDENT_LIMIT && (
-                  <Link to="/settings/billing" className="font-label-md text-label-md text-primary hover:underline">
-                    {t('plan.upgradeCta')}
-                  </Link>
-                )}
               </>
             )}
           </div>

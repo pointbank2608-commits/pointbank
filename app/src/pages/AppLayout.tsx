@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import FreeUpgradePrompt from '../components/FreeUpgradePrompt';
 import PageLoading from '../components/PageLoading';
 import { useState, useEffect } from 'react';
 import { NoticeOverlays, NotificationBell } from '../components/NoticeCenter';
@@ -41,7 +42,7 @@ export default function AppLayout() {
 }
 
 function AppLayoutInner() {
-  const { academy, profile, pointUnit, isStaff, isPaid, trial, signOut } = useAuth();
+  const { academy, profile, pointUnit, isStaff, isPaid, trial, hasFullAccess, signOut } = useAuth();
   const { t } = useTranslation();
   const { pathname } = useLocation();
   // 도움말·문의를 열기 전 마지막 페이지(문의에 자동으로 붙는다)
@@ -107,7 +108,7 @@ function AppLayoutInner() {
         <StaffNav onNavigate={() => setMobileOpen(false)} />
       ) : (
         <ul className="flex flex-1 flex-col gap-1.5 px-4">
-          {studentNavItems.map((item) => (
+          {studentNavItems.filter(item => hasFullAccess || item.to === '/games').map((item) => (
             <li key={item.to}>
               <NavLink to={item.to} onClick={() => setMobileOpen(false)} className={navLinkClass}>
                 <span className="material-symbols-outlined text-[28px]">{item.icon}</span>
@@ -118,7 +119,7 @@ function AppLayoutInner() {
         </ul>
       )}
 
-      {isStaff && <AcademyCodeButton />}
+      {isStaff && hasFullAccess && <AcademyCodeButton />}
 
       <div className="mx-5 mb-4 mt-4 hidden text-center [@media(min-height:820px)]:block">
         <img src="/ui2/m-pencil.webp" alt="" aria-hidden width={669} height={654} loading="lazy" draggable={false} className="mx-auto h-[7.5rem] w-auto select-none" />
@@ -186,8 +187,8 @@ function AppLayoutInner() {
         {isMaterialsPrint && <PrintBrandFooter />}
         <LessonRunnerBar key={runner.startedAt} />
         <PresentZoomArea>
-          <PlanRouteGuard />
-          <Suspense fallback={<PageLoading />}><Outlet /></Suspense>
+
+          <PlanRouteGuard><Suspense fallback={<PageLoading />}><Outlet /></Suspense></PlanRouteGuard>
         </PresentZoomArea>
       </div>
     );
@@ -264,13 +265,14 @@ function AppLayoutInner() {
         <div data-app-content className={`p-margin-mobile md:p-margin-desktop mx-auto w-full print:max-w-none print:p-0 ${/^\/games\/popcorn\/?$/.test(pathname) ? 'max-w-[1920px]' : 'max-w-[1280px]'}`}>
           <div data-app-chrome>
           {isStaff && <NoticeOverlays />}
-          <PlanRouteGuard />
+
           {isStaff && <DeletionBanner />}
           {isStaff && <TrialBanner />}
           {isStaff && <CoachTip />}
           {isStaff && <TrialModal />}
+          {isStaff && profile && !hasFullAccess && !pathname.startsWith('/games/') && pathname !== '/settings/billing' && <FreeUpgradePrompt key={profile.id} teacherId={profile.id} />}
           </div>
-          <Suspense fallback={<PageLoading />}><Outlet /></Suspense>
+          <PlanRouteGuard><Suspense fallback={<PageLoading />}><Outlet /></Suspense></PlanRouteGuard>
         </div>
         {pathname.startsWith('/materials') && <MaterialsPenButton />}
         <BoardReturnPill />

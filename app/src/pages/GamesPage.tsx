@@ -10,11 +10,14 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
 import { useAuth } from '../context/AuthContext';
-import { fetchClassLibraryTypes, fetchMyStudentRow } from '../lib/api';
+import { saveFreeGameChoices, fetchClassLibraryTypes, fetchMyStudentRow } from '../lib/api';
 import { useClasses } from '../lib/useClasses';
-import { GAME_CATALOG, isFreeTierGame, type GameCatalogEntry } from '../lib/gameCatalog';
+import { GAME_CATALOG, canChooseFreeGame, isFreeTierGame, type GameCatalogEntry } from '../lib/gameCatalog';
 import { PHONICS_GAMES, gameAvailability, gameName, phonicsGameUnits } from '../lib/phonicsGames';
 import { gameVisual, worldBackground } from '../lib/phonicsGameVisuals';
+
+import { useToast } from '../context/ToastContext';
+import type { GameType } from '../lib/types';
 
 type ViewMode = 'library' | 'all' | 'favorites';
 
@@ -25,6 +28,52 @@ const phonicsCards = PHONICS_GAMES.map(game => ({
 }));
 
 export default function GamesPage() {
+  const { hasFullAccess, profile } = useAuth();
+  return hasFullAccess ? <FullGameCatalogue /> : <FreeGameCatalogue key={profile?.id + ':' + (profile?.free_game_choices ?? []).join(',')} />;
+}
+
+function FreeGameCatalogue() {
+  const { profile, isStaff, refresh } = useAuth();
+  const { t } = useTranslation();
+  const { run } = useToast();
+  const saved = profile?.free_game_choices ?? [];
+  const [slots, setSlots] = useState<(GameType | '')[]>([saved[0] ?? '', saved[1] ?? '', saved[2] ?? '']);
+  const [saving, setSaving] = useState(false);
+  const choices = slots.filter((type): type is GameType => type !== '');
+  const changed = choices.join(',') !== saved.join(',');
+  async function save() {
+    if (!changed || saving || !profile || !isStaff) return;
+    setSaving(true);
+    await run(async () => {
+      try { await saveFreeGameChoices(saved, choices); } finally { await refresh(); }
+    }, t('freeGames.saved'));
+    setSaving(false);
+  }
+  return <section className="space-y-5">
+    <h2 className="text-2xl font-bold">{t('freeGames.custom')}</h2>
+    <p>{t('freeGames.help')}</p>
+    {isStaff && <form className="flex flex-wrap items-end gap-3" onSubmit={event => { event.preventDefault(); void save(); }}>
+      {slots.map((current, index) => <label key={index} className="grid gap-1 font-semibold">{t('freeGames.choose')} {index + 1}
+        <select className="rounded-lg border p-2" value={current} disabled={saving} onChange={event => setSlots(slots.map((value, n) => n === index ? event.target.value as GameType | '' : value))}>
+          <option value="">{t('freeGames.empty')}</option>
+          {GAME_CATALOG.filter(game => canChooseFreeGame(game.type)).map(game => <option key={game.type} value={game.type}
+            disabled={slots.includes(game.type) && current !== game.type}>{t(game.nameKey)}</option>)}
+        </select>
+      </label>)}
+      <button type="submit" disabled={!changed || saving} className="textbook-button disabled:opacity-50">{t('settings.save')}</button>
+    </form>}
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {GAME_CATALOG.filter(game => isFreeTierGame(game.type, saved)).map(game => <GameCard key={game.type} g={game} locked={false} />)}
+    </div>
+    <h2 className="text-2xl font-bold">{t('freeGames.sample')}</h2>
+    <p>{t('freeGames.sampleHint')}</p>
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {GAME_CATALOG.filter(game => !isFreeTierGame(game.type, saved)).map(game => <GameCard key={game.type} g={game} locked={false} sample />)}
+    </div>
+  </section>;
+}
+
+function FullGameCatalogue() {
   const { t, i18n } = useTranslation();
 
   const { academy, isStaff, session, hasFullAccess } = useAuth();
@@ -216,11 +265,11 @@ export default function GamesPage() {
   );
 }
 
-function GameCard({ g, locked }: { g: GameCatalogEntry; locked: boolean }) {
+function GameCard({ g, locked, sample = false }: { g: GameCatalogEntry; locked: boolean; sample?: boolean }) {
   const { t } = useTranslation();
   const location = useLocation();
   const { session, academy } = useAuth();
-  const source = ownedQuickSource((location.state as { quickSource?: QuickActivitySource } | null)?.quickSource, session?.user.id, academy?.id);
+  const source = sample ? null : ownedQuickSource((location.state as { quickSource?: QuickActivitySource } | null)?.quickSource, session?.user.id, academy?.id);
   const compatible = !source || !!prepareClassroomGame(g.type, source.cards, source.kind);
   const meta = GAME_META[g.type];
   return (

@@ -41,7 +41,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
   const history=useGameHistory();
   const { t, i18n } = useTranslation();
   const {notify}=useToast();
-  const { hasFullAccess, session, academy } = useAuth();
+  const { hasFullAccess, session, academy, profile } = useAuth();
   const presenting = usePresenting();
   const lessonEditor = !!useGameEmbed()?.slideId;
   const lesson = useLessonRunner();
@@ -386,7 +386,7 @@ function TeacherGameWorkspace({ children }: { children: ReactNode }) {
           <h3 className="font-bold">{t('flow.savedGames')}</h3>
           {info?.templates.filter(row=>!isActivityDraft(row.id)).map(row=><button key={row.id} className={`${btn} mr-2 mb-2`} onClick={()=>{bridge.current?.selectTemplate(row.id);setPanel(null);}}>{row.name}</button>)}
         </div>}
-        {panel === 'games' && !info?.sharedView && <div className="space-y-3 p-4">{GAME_CATALOG.filter(game=>game.type!==info?.gameType && info?.sourceCards && prepareClassroomGame(game.type,info.sourceCards,sourceKind)).map(game=><button key={game.type} className={`${btn} m-1`} disabled={busy || (!hasFullAccess&&!isFreeTierGame(game.type))} onClick={()=>void action(()=>bridge.current!.switchGame(game.type))}>{i18n.t(game.nameKey)}</button>)}</div>}
+        {panel === 'games' && !info?.sharedView && <div className="space-y-3 p-4">{GAME_CATALOG.filter(game=>game.type!==info?.gameType && info?.sourceCards && prepareClassroomGame(game.type,info.sourceCards,sourceKind)).map(game=><button key={game.type} className={`${btn} m-1`} disabled={busy || (!hasFullAccess&&!isFreeTierGame(game.type, profile?.free_game_choices))} onClick={()=>void action(()=>bridge.current!.switchGame(game.type))}>{i18n.t(game.nameKey)}</button>)}</div>}
         {info && info.gameType !== 'quizshow' && <GameSetupGuide presetKind={guidePreset} onPresetUsed={() => setGuidePreset(null)} info={info} active={panel==='guide'} canStart={canStart} busy={busy} run={fn=>action(fn,false)} complete={completePreparation} editRevision={editRevision} nativeVisible={setGuideNative} />}
         <div hidden={(panel !== 'settings' && panel !== 'detective-authoring' && !(panel==='guide'&&(guideNative||info?.gameType==='quizshow'))) || !!info?.sharedView} className="p-4" data-game-existing-settings>
           {info?.selected && info.gameType !== 'quizshow' && !simpleSettings && <div className="mb-3 flex flex-wrap items-center gap-3 rounded-xl bg-surface-container-low p-3" data-activity-title>

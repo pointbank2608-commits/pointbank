@@ -22,7 +22,8 @@ export default function StaffNav({ onNavigate }: Props) {
   const groupOpen = useFeature('group');
   const homeworkOpen = useFeature('homework');
 
-  const groups = visibleGroups(STAFF_NAV_GROUPS, { group: groupOpen, homework: homeworkOpen });
+  const allGroups = visibleGroups(STAFF_NAV_GROUPS, { group: groupOpen, homework: homeworkOpen });
+  const groups = hasFullAccess ? allGroups : allGroups.filter(group => ['games', 'wordlists', 'more'].includes(group.id)).map(group => ({ ...group, children: group.children.filter(child => !FREE_BLOCKED_PATHS.includes(child.to)) }));
   const active = findActive(groups, pathname+(search.includes('tab=course')?'?tab=course':''));
   const lockedPath = (to: string) => !hasFullAccess && FREE_BLOCKED_PATHS.includes(to);
   const lock = (

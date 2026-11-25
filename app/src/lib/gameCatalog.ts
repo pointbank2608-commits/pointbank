@@ -32,8 +32,7 @@ export interface GameCatalogEntry {
   cover: string | null;
   nameKey: string;
   descKey: string;
-  /** 'free'로 표시된 4종(돌림판·사다리·시한폭탄·행맨)만 무료 플랜에서 플레이 가능. 없으면
-   * 유료 전용으로 취급한다 — 새 게임을 추가할 때 이 필드를 안 넣어도 안전하게 유료로 막힌다. */
+  /** Always editable for free teachers, in addition to their three personal choices. */
   tier?: 'free';
 }
 
@@ -138,7 +137,6 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     cover: '/covers/game-bomb.jpg',
     nameKey: 'gamesList.bombName',
     descKey: 'gamesList.bombDesc',
-    tier: 'free',
   },
   {
     type: 'timer',
@@ -273,7 +271,6 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
     cover: '/covers/game-hangman.jpg',
     nameKey: 'gamesList.hangmanName',
     descKey: 'gamesList.hangmanDesc',
-    tier: 'free',
   },
   {
     type: 'truefalse',
@@ -707,7 +704,11 @@ export function getGameCatalogEntry(type: GameType): GameCatalogEntry | undefine
   return GAME_CATALOG.find((g) => g.type === type);
 }
 
-/** 무료 플랜에서 플레이 가능한 게임인지 — tier 필드가 없으면(대부분) 유료 전용이다. */
-export function isFreeTierGame(type: GameType): boolean {
-  return getGameCatalogEntry(type)?.tier === 'free';
+/** Eligible for one of the three teacher-selected slots. */
+export function canChooseFreeGame(type: GameType): boolean {
+  return type !== 'quizshow' && !!getGameCatalogEntry(type) && getGameCatalogEntry(type)?.tier !== 'free';
+}
+
+export function isFreeTierGame(type: GameType, choices: readonly GameType[] = []): boolean {
+  return getGameCatalogEntry(type)?.tier === 'free' || (canChooseFreeGame(type) && choices.includes(type));
 }
