@@ -4,10 +4,11 @@ import AccessibleDialog from '../../AccessibleDialog';
 import { fetchStudentsOfClass } from '../../../lib/api';
 import type { Student } from '../../../lib/types';
 import { assignDraft, loadPublication, revisePublication, type PublishedHomework } from '../../../lib/homework/blockApi';
-import { newBlock, newDraft, validateItems, type HomeworkDraft } from '../../../lib/homework/blocks';
+import { newDraft, validateItems, type HomeworkDraft } from '../../../lib/homework/blocks';
 import { guidedDeadline } from '../../../lib/homework/deadline';
 import { addDays, kstToday } from '../../wordMemoryProject/model';
 import { QuestionEditor } from './HomeworkBlockEditor';
+import PublishedActivityPicker from './PublishedActivityPicker';
 
 type Mode = 'edit' | 'reissue';
 const field = 'mt-1 block min-h-11 w-full rounded-xl border border-outline-variant bg-white px-3 py-2';
@@ -24,7 +25,8 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
   const [title, setTitle] = useState('');
   const [day, setDay] = useState('');
   const [items, setItems] = useState<HomeworkDraft['items']>([]);
-  const [selected, select] = useState(0);
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const [adding, setAdding] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
   const [targets, setTargets] = useState<string[]>([]);
   const [error, setError] = useState('');
@@ -35,7 +37,6 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
   const copying = mode === 'reissue';
   const heading = copying ? l('숙제 재발행', 'Reissue homework') : l('발행한 숙제 수정', 'Edit published homework');
   const canEditContent = copying || !original?.started;
-  const item = items[selected];
   const originalDay = original?.due ? kstToday(new Date(original.due)) : '';
 
   useEffect(() => {
@@ -47,7 +48,7 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
       const roster = await fetchStudentsOfClass(data.classId);
       if (!active) return;
       const dueDay = data.due ? kstToday(new Date(data.due)) : '';
-      setOriginal(data); setTitle(data.title); setItems(data.items); select(0);
+      setOriginal(data); setTitle(data.title); setItems(data.items); setExpanded(null); setAdding(false);
       setMode(initialMode);
       setDay(initialMode === 'reissue' && data.due && Date.parse(data.due) <= Date.now() ? addDays(kstToday(), 1) : dueDay);
       setStudents(roster); setTargets(roster.filter(s => data.students.includes(s.id)).map(s => s.id));
@@ -59,8 +60,8 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
     setMode('reissue'); setError('');
     if (day && day <= kstToday()) setDay(addDays(kstToday(), 1));
   }
-  function updateItem(next: typeof item) {
-    setItems(current => current.map((row, index) => index === selected ? next : row));
+  function updateItem(index: number, next: HomeworkDraft['items'][number]) {
+    setItems(current => current.map((row, i) => i === index ? next : row));
   }
   async function save() {
     if (!original || lock.current) return;
@@ -116,21 +117,36 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
           <div className="flex flex-wrap gap-2">{students.map(s=><label className="flex min-h-11 items-center gap-2 px-2" key={s.id}>
             <input type="checkbox" checked={targets.includes(s.id)} onChange={e=>setTargets(e.target.checked ? [...targets,s.id] : targets.filter(x=>x!==s.id))}/>{s.name}</label>)}</div>
         </fieldset>}
-        {canEditContent && <section className="space-y-3 rounded-xl border border-outline-variant p-3">
-          <label className="block font-bold">{l('편집할 활동','Activity to edit')}<select className={field} value={selected} onChange={e=>select(Number(e.target.value))}>
-            {items.map((it,i)=><option key={i} value={i}>{i+1}. {it.title || it.kind}</option>)}</select></label>
-          {item && <div key={selected} className="space-y-3">
-            <label className="block">{l('활동 이름','Activity name')}<input className={field} value={item.title} onChange={e=>updateItem({...item,title:e.target.value})}/></label>
+        <section className="space-y-3" aria-label={l('선택된 활동','Selected activities')}>
+          <h3 className="font-bold">{l('선택된 활동','Selected activities')} ({items.length})</h3>
+          <ol className="divide-y divide-outline-variant rounded-xl border border-outline-variant">
+          {items.map((item,index) => <li key={index} className="p-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0"><strong className="break-words">{index+1}. {item.title || item.kind}</strong>
+                <div className="flex flex-wrap gap-x-2 text-sm text-on-surface-variant">
+                  {item.config.materialList && <span>{item.config.materialList.name}</span>}
+                  {item.content.questions.length > 0 && <span>{l(`문제 ${item.content.questions.length}개`, `${item.content.questions.length} questions`)}</span>}
+                </div>
+              </div>
+              <button type="button" className={button+' shrink-0'} aria-expanded={expanded === index} aria-label={`${index+1}. ${item.title || item.kind} ${expanded === index ? l('접기','Collapse') : l('펼치기','Expand')}`}
+                onClick={()=>setExpanded(expanded === index ? null : index)}>{expanded === index ? l('접기','Collapse') : l('펼치기','Expand')}</button>
+            </div>
+          {expanded === index && <fieldset disabled={!canEditContent} className="mt-3 min-w-0 space-y-3 border-t border-outline-variant pt-3">
+            <label className="block">{l('활동 이름','Activity name')}<input className={field} value={item.title} onChange={e=>updateItem(index,{...item,title:e.target.value})}/></label>
             {item.config.block && item.config.block.type !== 'recall' && <label className="block">{l('학습 내용','Activity text')}
-              <textarea rows={4} className={field} value={item.config.block.text} onChange={e=>updateItem({...item,config:{...item.config,block:{...item.config.block!,text:e.target.value}}})}/></label>}
+              <textarea rows={4} className={field} value={item.config.block.text} onChange={e=>updateItem(index,{...item,config:{...item.config,block:{...item.config.block!,text:e.target.value}}})}/></label>}
             {item.content.lines?.map((line,i)=><label className="block" key={i}>{l('대사','Line')} {i+1}
-              <input className={field} value={line.en} onChange={e=>updateItem({...item,content:{...item.content,lines:item.content.lines!.map((ln,j)=>j===i?{...ln,en:e.target.value}:ln)}})}/></label>)}
+              <input className={field} value={line.en} onChange={e=>updateItem(index,{...item,content:{...item.content,lines:item.content.lines!.map((ln,j)=>j===i?{...ln,en:e.target.value}:ln)}})}/></label>)}
             {(item.content.questions.length>0 || item.config.block?.type==='recall') && <QuestionEditor items={item.content.questions} en={en}
-              maxQuestions={Math.max(100,item.content.questions.length)} onChange={questions=>updateItem({...item,content:{...item.content,questions}})}/>}
-            <button type="button" className={button} disabled={items.length<=1} onClick={()=>{setItems(items.filter((_,i)=>i!==selected));select(Math.max(0,selected-1));}}>{l('이 활동 빼기','Remove activity')}</button>
-          </div>}
-          <button type="button" className={button} onClick={()=>{setItems([...items,newBlock('recall')]);select(items.length);}}>{l('문제 활동 추가','Add a question activity')}</button>
-        </section>}
+              maxQuestions={Math.max(100,item.content.questions.length)} onChange={questions=>updateItem(index,{...item,content:{...item.content,questions}})}/>}
+            {canEditContent && <button type="button" className={button} disabled={items.length<=1} onClick={()=>{setItems(items.filter((_,i)=>i!==index));setExpanded(null);}}>{l('이 활동 빼기','Remove activity')}</button>}
+          </fieldset>}
+          </li>)}
+          </ol>
+          {canEditContent && <button type="button" className={button+' w-full text-primary'} disabled={items.length>=60} onClick={()=>setAdding(true)}>{l('+ 활동 추가','+ Add activity')}</button>}
+          {adding && canEditContent && <PublishedActivityPicker classId={original.classId} en={en} onClose={()=>setAdding(false)}
+            onAdd={next=>{setItems(current=>[...current,next]);setExpanded(null);setAdding(false);setError('');}}/>}
+        </section>
         <div className="flex flex-wrap gap-2">
           <button type="button" className={button+' bg-primary text-white'} onClick={()=>void save()}>{copying?l('새 숙제로 재발행','Reissue as new homework'):l('수정 저장','Save changes')}</button>
           {!copying && <button type="button" className={button} onClick={switchToCopy}>{l('새 숙제로 재발행하기','Reissue as a new assignment')}</button>}

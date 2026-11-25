@@ -72,6 +72,7 @@ export interface HwItemContent {
 }
 
 export interface HwItemConfig {
+  materialList?: { id: string; name: string; kind: 'word' | 'sentence'; version: string };
   grammarWordSource?: import('../grammarCoreWords').GrammarWordReference;
   /** Versioned homework activity, while preserving the legacy item and player contracts. */
   block?: import('./blocks').HomeworkBlock;

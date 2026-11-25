@@ -1829,6 +1829,12 @@ const blankQuestion = (): HwQuestion => ({
   gen: "block-v1",
 });
 
+function editableStyles(q: HwQuestion): string[] {
+  const basic = q.qtype === "choice" ? ["meaning", "reverse", "listen", "picture", "blank"]
+    : q.qtype === "order" ? ["sentence", "letters"] : ["spell", "blank"];
+  return q.style && !basic.includes(q.style) ? [...basic, q.style] : basic;
+}
+
 export function QuestionEditor({
   items,
   onChange,
@@ -1937,12 +1943,7 @@ export function QuestionEditor({
                 })
               }
             >
-              {(q.qtype === "choice"
-                ? ["meaning", "reverse", "listen", "picture", "blank"]
-                : q.qtype === "order"
-                  ? ["sentence", "letters"]
-                  : ["spell", "blank"]
-              ).map((style) => (
+              {editableStyles(q).map((style) => (
                 <option key={style} value={style}>
                   {en
                     ? style
@@ -1957,7 +1958,7 @@ export function QuestionEditor({
                           sentence: "문장 순서",
                           letters: "글자 순서",
                         } as Record<string, string>
-                      )[style]}
+                      )[style] ?? MEMORY_METHODS[style as MemoryMethod]?.name[0] ?? SOLO_GAME_NAMES[style as SoloGame]?.[0] ?? style}
                 </option>
               ))}
             </select>
