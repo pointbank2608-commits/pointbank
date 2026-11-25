@@ -1,17 +1,23 @@
-import { useCallback, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useRef, useState, type ReactNode, type Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 import { grammarBoardContent, grammarPoint, type GrammarBoardContent, type GrammarPoint } from '../lib/grammar';
 import { PresentSyncContext } from '../lib/presentSync';
 import AccessibleDialog from './AccessibleDialog';
-import GrammarBoard, { type GrammarBoardEditor, type GrammarField } from './GrammarBoard';
+import GrammarBoard, { type GrammarBoardEditor, type GrammarBoardPosition, type GrammarField } from './GrammarBoard';
 import './GrammarContentEditor.css';
 
 type TextRange = { key: GrammarField; index?: number };
 
-export default function GrammarContentEditor({ point, themeId, inline, onClose, onSave, onSaveCopy, saveLabel }: {
+export default function GrammarContentEditor({ point, themeId, inline, initialPosition, onPositionChange,
+  initialRevealAll, initialShowKo, titleRef, onClose, onSave, onSaveCopy, saveLabel }: {
   point: GrammarPoint;
   themeId?: string | null;
   inline?: boolean;
+  initialPosition?: GrammarBoardPosition;
+  initialRevealAll?: boolean;
+  initialShowKo?: boolean;
+  onPositionChange?: (position: GrammarBoardPosition) => void;
+  titleRef?: Ref<HTMLInputElement>;
   onClose: () => void;
   onSave: (content: GrammarBoardContent) => Promise<void> | void;
   onSaveCopy?: (content: GrammarBoardContent) => Promise<void>;
@@ -35,6 +41,9 @@ export default function GrammarContentEditor({ point, themeId, inline, onClose, 
   const fieldButton = useRef<HTMLButtonElement>(null);
   function change(key: GrammarField, value: string, index = 0) {
     setDraft(prev => {
+      if (key === 'prompt' || key === 'hint' || key === 'answer' || key === 'followUp') {
+        return { ...prev, steps: prev.steps?.map((step, i) => i === index ? { ...step, [key]: value } : step) };
+      }
       if (key === 'rule' || key === 'detail' || key === 'usage') return { ...prev, [key]: value.split('\n') };
       if (key === 'en' || key === 'ko') {
         const prop = key === 'en' ? 'examples' : 'translations';
@@ -89,9 +98,10 @@ export default function GrammarContentEditor({ point, themeId, inline, onClose, 
       setDraft(prev => ({ ...prev, pitfalls: [...(prev.pitfalls ?? []), { wrong: '', right: '', why: '' }] }));
     },
   };
+  const removable = selected && ['en', 'ko', 'wrong', 'right', 'why'].includes(selected.key);
   function remove() {
     const i = selected?.index;
-    if (i === undefined) return;
+    if (!removable || i === undefined) return;
     setDraft(prev => selected?.key === 'en' || selected?.key === 'ko'
       ? { ...prev, examples: prev.examples.filter((_, j) => j !== i), translations: prev.translations?.filter((_, j) => j !== i) }
       : { ...prev, pitfalls: prev.pitfalls?.filter((_, j) => j !== i) });
@@ -134,15 +144,21 @@ export default function GrammarContentEditor({ point, themeId, inline, onClose, 
     finally { saving.current = false; setBusy(false); }
   }
   const body = <section aria-label={t('myGrammar.edit')} className="grammar-visual-editor space-y-2">
+    <label className="grid gap-1 font-bold">{t('myGrammar.grammarTitle')}
+      <input ref={titleRef} className="w-full rounded-lg border p-2 font-normal" value={draft.name}
+        onChange={event => change('name', event.target.value)} />
+    </label>
     <p className="text-sm text-on-surface-variant">{t('myGrammar.editHint')}</p>
-    <div className="aspect-video w-full" onClickCapture={e => {
+    <div className={inline ? 'aspect-video w-full max-w-3xl' : 'aspect-video w-full'} onClickCapture={e => {
       if ((e.target as Element).closest('button:not(.grammar-field)')) setSelected(null);
     }}>
       <PresentSyncContext.Provider value={null}>
-        <GrammarBoard point={{ ...point, ...draft }} themeId={themeId} keyboard={false} editor={editor} />
+        <GrammarBoard point={{ ...point, ...draft }} themeId={themeId} keyboard={false} editor={editor}
+          initialPosition={initialPosition} onPositionChange={onPositionChange}
+          initialRevealAll={initialRevealAll} initialShowKo={initialShowKo} />
       </PresentSyncContext.Provider>
     </div>
-    {draft.steps && <details className="rounded-lg border p-3">
+    {draft.steps && draft.steps.length !== 6 && <details className="rounded-lg border p-3">
       <summary className="cursor-pointer font-bold">{t('myGrammar.sixSteps')}</summary>
       {draft.steps.map((step, index) => <fieldset key={index} className="my-3 grid gap-2">
         <legend className="font-bold">{index + 1}. {t('myGrammar.stage' + (index + 1))}</legend>
@@ -159,7 +175,7 @@ export default function GrammarContentEditor({ point, themeId, inline, onClose, 
     <footer className="flex flex-wrap items-center gap-2">
       {selected && <><span className="text-sm">{selected.index !== undefined && (selected.index + 1) + '. '}{t('myGrammar.' + selected.key)}</span>
         {!editing && <button type="button" className="rounded-lg border px-2 py-1" onClick={() => setEditing(true)}>{t('common.edit')}</button>}
-        {selected.index !== undefined && <button type="button" className="rounded-lg border px-2 py-1" onClick={remove}>{t('myGrammar.remove')}</button>}
+        {removable && <button type="button" className="rounded-lg border px-2 py-1" onClick={remove}>{t('myGrammar.remove')}</button>}
       </>}
       <button type="button" className="ml-auto px-2 py-2" disabled={busy} onClick={onClose}>{t('common.cancel')}</button>
       {onSaveCopy && <button type="button" className="rounded-lg border px-3 py-2 font-bold text-primary" disabled={busy}

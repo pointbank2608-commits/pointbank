@@ -26,6 +26,8 @@ import {useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import MyGrammarLibrary from '/src/components/MyGrammarLibrary';
 import LessonActivityPicker from '/src/components/LessonActivityPicker';
+import LessonSlideSorter from '/src/components/LessonSlideSorter';
+import {ToastProvider} from '/src/context/ToastContext';
 import {lessonGameSources} from '/src/lib/lessonGameContent';
 import GrammarBoard from '/src/components/GrammarBoard';
 import {grammarSlidePoint} from '/src/lib/grammar';
@@ -35,8 +37,12 @@ await i18n.changeLanguage('ko');
 function App() {
   const [pick, setPick] = useState(false);
   const [slide, setSlide] = useState(null);
+  const [editingLesson, setEditingLesson] = useState(false);
+  if (editingLesson) return <ToastProvider><LessonSlideSorter academyId="${academy}" classId={null}
+    lessonName="test" slides={[slide]} onChange={slides=>setSlide(slides[0])} wordListId="" wordLists={[]}/></ToastProvider>;
   return <><button onClick={()=>{setPick(true);setSlide(null)}}>활동 추가 열기</button>
     <button onClick={()=>setSlide({kind:'grammar',id:'sample',grammarId:'m-modals'})}>기본 문법 열기</button>
+    {slide && <button onClick={()=>setEditingLesson(true)}>수업 수정 열기</button>}
     {slide ? <div data-testid="classroom-board" style={{width:'100%',aspectRatio:'16/9'}}><GrammarBoard point={grammarSlidePoint(slide)} /></div>
     : !pick && <MyGrammarLibrary/>}
     {pick && <LessonActivityPicker academyId="${academy}" storageKey="test" slides={[]} cards={[]} entries={[]}
@@ -122,6 +128,33 @@ try {
   assert.equal(rows.size,2);
   await imported.first().click();
   await page.getByRole('heading',{name:'1 / 6 · 언제 쓸까?'}).waitFor();
+  await page.getByRole('button',{name:'수업 수정 열기'}).click();
+  const detail = page.locator('[data-lesson-slide-detail]');
+  const button = name => detail.getByRole('button',{name,exact:true});
+  await button('다음').click();
+  await button('힌트').click();
+  await button('문법 내용 수정').click();
+  await detail.getByRole('heading',{name:'2 / 6 · 어떻게 말할까?'}).waitFor();
+  await button('2. 힌트').waitFor();
+  const title = detail.getByRole('textbox',{name:'문법 제목',exact:true});
+  await detail.getByRole('button',{name:/^문법 제목 수정/}).click();
+  assert.equal(await title.evaluate(el => el === document.activeElement),true);
+  await title.fill('취소할 제목');
+  await button('취소').click();
+  assert.equal(await detail.getByRole('button',{name:'문법 제목 수정 · '+name}).count(),1);
+  await detail.getByRole('button',{name:/^문법 제목 수정/}).click();
+  assert.equal(await title.inputValue(),name);
+  assert.equal(await title.evaluate(el => el === document.activeElement),true);
+  const renamed = '부탁하고 거절하기';
+  await title.fill(renamed);
+  await button('2. 칠판 질문').dblclick();
+  await detail.getByRole('textbox',{name:'2. 칠판 질문'}).fill('문을 닫아 달라고 어떻게 부탁할까요?');
+  await button('이 슬라이드에 적용').click();
+  await detail.getByRole('heading',{name:'2 / 6 · 어떻게 말할까?'}).waitFor();
+  await detail.getByText('문을 닫아 달라고 어떻게 부탁할까요?',{exact:true}).waitFor();
+  await detail.getByRole('button',{name:'문법 제목 수정 · '+renamed}).waitFor();
+  await page.locator('[data-slide-id="slide-1"]').getByText(renamed,{exact:true}).last().waitFor();
+  await detail.locator('.aspect-video').getByText(renamed,{exact:true}).first().waitFor();
   enabled=false; await page.reload();
   await openPicker();
   assert.equal(await create.count(),0);

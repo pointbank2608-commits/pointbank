@@ -24,7 +24,7 @@ import {
   rectSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useImperativeHandle, useMemo, useRef, useState, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import LessonPowerPointImport from './LessonPowerPointImport';
@@ -76,7 +76,7 @@ import { extractYoutubeId } from '../lib/youtube';
 import GameImagePicker from './GameImagePicker';
 import WebSlideView from './WebSlideView';
 import { GameEmbedContext } from '../context/GameEmbedContext';
-import GrammarBoard from './GrammarBoard';
+import GrammarBoard, { type GrammarBoardPosition } from './GrammarBoard';
 import ShadowBoard, { SHADOW_REPEATS, SHADOW_SPEEDS, SHADOW_SUBTITLES } from './ShadowBoard';
 import { parseShadowText, shadowSpeakers, toShadowSource } from '../lib/shadowLines';
 import { useClipTakenDown, type VideoClip } from '../lib/videoClips';
@@ -219,6 +219,7 @@ export default function LessonSlideSorter({
   const gameMatches = useMemo(() => new Map(slides.flatMap(slide => slide.kind === 'game'
     ? [[slide.id, resolveLessonGame(slide, slides, gameSources)] as const] : [])), [slides, gameSources]);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const editGrammarTitle = useRef<(() => void) | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(
     initialSelectedId && slides.some((s) => s.id === initialSelectedId) ? initialSelectedId : slides[0]?.id ?? null,
   );
@@ -704,7 +705,14 @@ export default function LessonSlideSorter({
                 {slides.findIndex((s) => s.id === selected.id) + 1}
               </span>
               <span className="material-symbols-outlined text-[20px] text-primary">{slideThumbLabel(selected, t).icon}</span>
-              <span className="min-w-0 flex-1 truncate font-label-md text-label-md text-on-surface">{slideThumbLabel(selected, t).label}</span>
+              {selected.kind === 'grammar' && selected.grammarId ? (
+                <button type="button" onClick={() => editGrammarTitle.current?.()}
+                  aria-label={t('myGrammar.editTitle', { name: slideThumbLabel(selected, t).label })}
+                  className="flex min-w-0 flex-1 items-center gap-1 rounded text-left font-label-md text-label-md hover:text-primary">
+                  <span className="truncate">{slideThumbLabel(selected, t).label}</span>
+                  <span aria-hidden="true" className="material-symbols-outlined text-[18px] text-primary">edit</span>
+                </button>
+              ) : <span className="min-w-0 flex-1 truncate font-label-md text-label-md text-on-surface">{slideThumbLabel(selected, t).label}</span>}
               <button type="button" onClick={() => {
                 setReplaceTargetId(null);
                 setInsertAfterId(selected.id);
@@ -752,6 +760,7 @@ export default function LessonSlideSorter({
               phonicsTopic={selected.kind === 'phonicsGame' ? lessonPhonicsTopic(slides, selected) : undefined}
               academyId={academyId} classId={classId} onClose={() => setPreviewOpen(false)} />}
             <SlideDetail
+              editGrammarTitle={editGrammarTitle}
               sentenceList={sentenceList}
               key={selected.id}
               slide={selected}
@@ -995,6 +1004,7 @@ function SlideThumb({
 }
 
 function SlideDetail({
+  editGrammarTitle,
   sentenceList,
   phonicsEntries,
   slide,
@@ -1014,6 +1024,7 @@ function SlideDetail({
   worksheetReplacementOpen,
   onWorksheetReplacementChange,
 }: {
+  editGrammarTitle: RefObject<(() => void) | null>;
   phonicsEntries: PhonicsBankEntry[];
   slide: LessonSlide;
   sentenceList?: WordList;
@@ -1119,6 +1130,8 @@ function SlideDetail({
     if (!slide.grammarId) return <GrammarPickerPanel onPick={grammarId => onUpdate({ grammarId })} />;
     return (
       <GrammarSlideDetail
+        key={slide.grammarId}
+        editGrammarTitle={editGrammarTitle}
         slide={slide}
         academyId={academyId}
         classId={classId}
@@ -2198,6 +2211,7 @@ function ShadowSlideForm({ initial, onAdd, onChange }: { initial?: ShadowDraft; 
 
 /** 문법 슬라이드 상세 — 칠판 미리보기, 문법 바꾸기, 수업 단어장 예문, 배경, 문장 배열하기 게임 붙이기. */
 function GrammarSlideDetail({
+  editGrammarTitle,
   slide,
   academyId,
   classId,
@@ -2207,6 +2221,7 @@ function GrammarSlideDetail({
   onUpdate,
   onInsertAfter,
 }: {
+  editGrammarTitle: RefObject<(() => void) | null>;
   slide: Extract<LessonSlide, { kind: 'grammar' }>;
   academyId: string;
   classId: string | null;
@@ -2223,6 +2238,22 @@ function GrammarSlideDetail({
   const cards = useGrammarCards(slide.words ?? rawCards);
   const point = useMemo(() => grammarSlidePoint(slide) ?? GRAMMAR_POINTS[0], [slide.grammarId, slide.content]);
   const [contentMode, setContentMode] = useState<'edit' | 'library' | null>(null);
+  const [position, setPosition] = useState<GrammarBoardPosition>();
+  const titleInput = useRef<HTMLInputElement>(null);
+  const focusTitleOnOpen = useRef(false);
+  useImperativeHandle(editGrammarTitle, () => () => {
+    if (titleInput.current) titleInput.current.focus();
+    else {
+      focusTitleOnOpen.current = true;
+      setContentMode('edit');
+    }
+  }, []);
+  useEffect(() => {
+    if (contentMode === 'edit' && focusTitleOnOpen.current) {
+      titleInput.current?.focus();
+      focusTitleOnOpen.current = false;
+    }
+  }, [contentMode]);
   const generated = useMemo(
     () => (slide.useWordList ? buildWordListSentences(point, cards, 6, slide.seed ?? 0) : []),
     [point, cards, slide.useWordList, slide.seed],
@@ -2269,6 +2300,8 @@ function GrammarSlideDetail({
           <GrammarBoard
             point={point}
             extra={generated}
+            initialPosition={position}
+            onPositionChange={setPosition}
             themeId={slide.boardTheme ?? 'green'}
             keyboard={false}
             initialRevealAll={!!slide.revealAll}
@@ -2281,6 +2314,8 @@ function GrammarSlideDetail({
         </div>
       </>}
       {contentMode && <GrammarContentEditor inline={contentMode === 'edit'} point={point} themeId={slide.boardTheme} onClose={() => setContentMode(null)}
+        titleRef={titleInput} initialPosition={position} onPositionChange={contentMode === 'edit' ? setPosition : undefined}
+        initialRevealAll={slide.revealAll} initialShowKo={slide.showKo}
         onSaveCopy={contentMode === 'edit' ? saveGrammarCopy : undefined}
         saveLabel={t(contentMode === 'edit' ? 'myGrammar.apply' : 'myGrammar.save')}
         onSave={async content => {

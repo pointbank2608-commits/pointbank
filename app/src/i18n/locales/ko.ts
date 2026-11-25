@@ -4054,6 +4054,7 @@ const ko = {
     formatHint: '한 줄에 카드 하나: 단서 | 정답 문장 | 해석(선택) — 지금 {{count}}장',
   },
   myGrammar: {
+    grammarTitle: '문법 제목', editTitle: '문법 제목 수정 · {{name}}',
     aiCreate: "문법 뚝딱 만들기",
     generateAndSave: "문법 블록 만들고 저장",
     audience: "대상 학교급",

@@ -2,11 +2,19 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useSyncedSubState } from '../lib/presentSync';
 import { useTranslation } from 'react-i18next';
 import { BOARD_FONTS, boardSlideStyle, boardTheme } from '../lib/boardThemes';
-import { grammarLevelTag, parseMarked, plainText, type GeneratedSentence, type GrammarPoint } from '../lib/grammar';
+import { grammarLevelTag, parseMarked, plainText, type GeneratedSentence, type GrammarPoint, type GrammarTeachingStep } from '../lib/grammar';
 import { speak, speakSequence } from '../lib/speech';
 import { CanvasStageBox } from './CanvasSlideView';
 
-export type GrammarField = 'name' | 'pattern' | 'explain' | 'rule' | 'en' | 'ko' | 'usage' | 'detail' | 'tip' | 'wrong' | 'right' | 'why';
+export type GrammarField = 'name' | 'pattern' | 'explain' | 'rule' | 'en' | 'ko' | 'usage' | 'detail' | 'tip' | 'wrong' | 'right' | 'why' | keyof GrammarTeachingStep;
+export interface GrammarBoardPosition {
+  view: 'lesson' | 'examples' | 'pitfalls' | 'explain';
+  step: number;
+  hintOpen: boolean;
+  answerOpen: boolean;
+  showKo: boolean;
+  shown: number;
+}
 export interface GrammarBoardEditor {
   field: (key: GrammarField, value: string, display: ReactNode, index?: number) => ReactNode;
   addExample: () => void;
@@ -31,6 +39,8 @@ export default function GrammarBoard({
   initialRevealAll = false,
   onCue,
   editor,
+  initialPosition,
+  onPositionChange,
 }: {
   point: GrammarPoint;
   /** 우리 단어장으로 만든 예문 */
@@ -46,6 +56,8 @@ export default function GrammarBoard({
   initialRevealAll?: boolean;
   onCue?: (action: 'shown' | 'hint' | 'revealed', stageIndex: number) => void;
   editor?: GrammarBoardEditor;
+  initialPosition?: GrammarBoardPosition;
+  onPositionChange?: (position: GrammarBoardPosition) => void;
 }) {
   const { t } = useTranslation();
   const th = boardTheme(themeId ?? 'green') ?? boardTheme('green')!;
@@ -54,13 +66,13 @@ export default function GrammarBoard({
     ...extra.map((g) => ({ marked: g.marked, mine: true, ko: null as string | null })),
   ];
   const startShown = !interactive || initialRevealAll ? lines.length : 1;
-  const [shown, setShown] = useState(startShown);
+  const [shown, setShown] = useState(Math.min(initialPosition?.shown ?? startShown, lines.length));
   // 예문 / 틀리기 쉬운 것(✗ → ✓) / 설명(이럴 때 써요·쉽게 이해하기) 화면
-  const startView = point.steps?.length === 6 && !editor && !initialRevealAll && !initialShowKo ? 'lesson' : 'examples';
-  const [view, setView] = useState<'lesson' | 'examples' | 'pitfalls' | 'explain'>(startView);
-  const [step, setStep] = useState(0);
-  const [hintOpen, setHintOpen] = useState(false);
-  const [answerOpen, setAnswerOpen] = useState(false);
+  const startView = point.steps?.length === 6 && !initialRevealAll && !initialShowKo ? 'lesson' : 'examples';
+  const [view, setView] = useState<GrammarBoardPosition['view']>(initialPosition?.view ?? startView);
+  const [step, setStep] = useState(initialPosition?.step ?? 0);
+  const [hintOpen, setHintOpen] = useState(initialPosition?.hintOpen ?? false);
+  const [answerOpen, setAnswerOpen] = useState(initialPosition?.answerOpen ?? false);
   const lesson = point.steps?.[step];
   const cue = useRef(onCue);
   cue.current = onCue;
@@ -76,7 +88,10 @@ export default function GrammarBoard({
   const pitfalls = point.pitfalls ?? [];
   const hasExplain = !!(point.usage?.length || point.detail?.length);
   // 예문 해석(초보자용) — 켜면 예문 아래에 작게 한국어가 붙는다.
-  const [showKo, setShowKo] = useState(initialShowKo);
+  const [showKo, setShowKo] = useState(initialPosition?.showKo ?? initialShowKo);
+  useEffect(() => {
+    onPositionChange?.({ view, step, hintOpen, answerOpen, showKo, shown });
+  }, [onPositionChange, view, step, hintOpen, answerOpen, showKo, shown]);
   const translations = point.translations ?? [];
   const shownRef = useRef(shown);
   shownRef.current = shown;
@@ -91,13 +106,16 @@ export default function GrammarBoard({
   });
 
   const resetExampleCount = editor ? 0 : point.examples.length;
+  const resetKey = JSON.stringify([point.id, interactive, resetExampleCount, extra.length, initialRevealAll, initialShowKo]);
+  const previousKey = useRef(resetKey);
   useEffect(() => {
+    if (previousKey.current === resetKey) return;
+    previousKey.current = resetKey;
     setShown(startShown);
     setView(startView);
     moveTo(0);
     setShowKo(initialShowKo);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [point.id, interactive, resetExampleCount, extra.length, initialRevealAll, initialShowKo]);
+  }, [resetKey, startShown, startView, initialShowKo]);
 
   // → · Space · PageDown(클리커): 예문을 하나씩 꺼낸다. 다 꺼냈으면 그냥 흘려보내서 발표 진행바가
   // 다음 슬라이드로 넘긴다. ← · PageUp 은 반대. capture 단계에서 먼저 받아 처리한 키만 전파를 막는다.
@@ -240,13 +258,13 @@ export default function GrammarBoard({
           </div>
           {view === 'lesson' && lesson ? <section key={step} className="mt-[2cqh] min-h-0 flex-1 space-y-[2cqh] overflow-y-auto pb-[9cqh]" style={{ fontFamily: BOARD_FONTS.sans }}>
             <h2 className="font-bold" style={{ fontSize: '4.8cqh', color: th.accent }}>{step + 1} / 6 · {t('myGrammar.stage' + (step + 1))}</h2>
-            <p className="whitespace-pre-line leading-snug" style={{ fontSize: '4.2cqh' }}><Marked text={lesson.prompt} /></p>
+            <p className="whitespace-pre-line leading-snug" style={{ fontSize: '4.2cqh' }}>{field('prompt', lesson.prompt, <Marked text={lesson.prompt} />, step)}</p>
             {hintOpen && <p className="whitespace-pre-line rounded-[1cqh] p-[1.4cqh]" style={{ background: th.chip, fontSize: '3.2cqh' }}>
-              <strong>{t('myGrammar.hint')} · </strong><Marked text={lesson.hint} />
+              <strong>{t('myGrammar.hint')} · </strong>{field('hint', lesson.hint, <Marked text={lesson.hint} />, step)}
             </p>}
             {answerOpen && <div className="space-y-[1cqh] whitespace-pre-line" style={{ fontSize: '3.4cqh' }}>
-                <div className="pt-[1cqh]"><strong className="block" style={{ color: th.accent, fontSize: '2.6cqh' }}>{t('myGrammar.answer')}</strong><Marked text={lesson.answer} /></div>
-                <div className="mt-[2cqh] border-t pt-[1.3cqh]" style={{ borderColor: th.muted }}><strong className="block" style={{ color: th.accent, fontSize: '2.6cqh' }}>{t('myGrammar.followUp')}</strong><Marked text={lesson.followUp} /></div>
+                <div className="pt-[1cqh]"><strong className="block" style={{ color: th.accent, fontSize: '2.6cqh' }}>{t('myGrammar.answer')}</strong>{field('answer', lesson.answer, <Marked text={lesson.answer} />, step)}</div>
+                <div className="mt-[2cqh] border-t pt-[1.3cqh]" style={{ borderColor: th.muted }}><strong className="block" style={{ color: th.accent, fontSize: '2.6cqh' }}>{t('myGrammar.followUp')}</strong>{field('followUp', lesson.followUp, <Marked text={lesson.followUp} />, step)}</div>
             </div>}
           </section> : <>
           <div className="mt-[2cqh] font-bold leading-tight" style={{ fontSize: '6.4cqh' }}>
@@ -368,7 +386,7 @@ export default function GrammarBoard({
         </div>
         {interactive && (
           <div className="absolute bottom-[2.5cqh] right-[3cqh] flex items-center gap-[1cqh]" style={{ fontSize: '2.4cqh' }}>
-            {point.steps?.length === 6 && !editor && <BoardButton icon={view === 'lesson' ? undefined : 'menu_book'}
+            {point.steps?.length === 6 && <BoardButton icon={view === 'lesson' ? undefined : 'menu_book'}
               label={t(view === 'lesson' ? 'grammar.backToExamples' : 'myGrammar.sixSteps')}
               onClick={() => setView(view === 'lesson' ? 'examples' : 'lesson')} />}
             {view === 'lesson' && <>
