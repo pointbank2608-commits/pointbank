@@ -11,6 +11,8 @@ import { QuestionEditor } from './HomeworkBlockEditor';
 import PublishedActivityPicker from './PublishedActivityPicker';
 
 type Mode = 'edit' | 'reissue';
+type Activity = HomeworkDraft['items'][number];
+type ActivityRow = { key: string; item: Activity };
 const field = 'mt-1 block min-h-11 w-full rounded-xl border border-outline-variant bg-white px-3 py-2';
 const button = 'min-h-11 rounded-xl border border-outline-variant px-4 font-bold';
 
@@ -24,8 +26,8 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
   const [mode, setMode] = useState(initialMode);
   const [title, setTitle] = useState('');
   const [day, setDay] = useState('');
-  const [items, setItems] = useState<HomeworkDraft['items']>([]);
-  const [expanded, setExpanded] = useState<number | null>(null);
+  const [rows, setRows] = useState<ActivityRow[]>([]);
+  const [expanded, setExpanded] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
   const [targets, setTargets] = useState<string[]>([]);
@@ -48,7 +50,9 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
       const roster = await fetchStudentsOfClass(data.classId);
       if (!active) return;
       const dueDay = data.due ? kstToday(new Date(data.due)) : '';
-      setOriginal(data); setTitle(data.title); setItems(data.items); setExpanded(null); setAdding(false);
+      setOriginal(data); setTitle(data.title);
+      setRows(data.items.map((item, index) => ({ key: String(index), item })));
+      setExpanded(null); setAdding(false);
       setMode(initialMode);
       setDay(initialMode === 'reissue' && data.due && Date.parse(data.due) <= Date.now() ? addDays(kstToday(), 1) : dueDay);
       setStudents(roster); setTargets(roster.filter(s => data.students.includes(s.id)).map(s => s.id));
@@ -60,8 +64,15 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
     setMode('reissue'); setError('');
     if (day && day <= kstToday()) setDay(addDays(kstToday(), 1));
   }
-  function updateItem(index: number, next: HomeworkDraft['items'][number]) {
-    setItems(current => current.map((row, i) => i === index ? next : row));
+  function updateItem(index: number, next: Activity) {
+    setRows(current => current.map((row, i) => i === index ? { ...row, item: next } : row));
+  }
+  function moveActivity(from: number, to: number) {
+    if (!canEditContent || from === to || to < 0 || to >= rows.length) return;
+    const next = [...rows];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setRows(next);
   }
   async function save() {
     if (!original || lock.current) return;
@@ -72,7 +83,8 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
       setError(l('학생을 선택하고 마감일을 오늘 이후로 정하거나 비워 주세요.', 'Select students and choose today or a later due date, or clear it.'));
       return;
     }
-    if (copying || original.items !== items) {
+    const items = rows.map(row => row.item);
+    if (copying || items.length !== original.items.length || items.some((item, i) => item !== original.items[i])) {
       const issues = validateItems(items);
       if (issues.length) { setError(issues[0]); return; }
       if (original.shortRepeat && !items.some(i => i.config.block?.type === 'recall' && i.content.questions.length)) {
@@ -118,9 +130,9 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
             <input type="checkbox" checked={targets.includes(s.id)} onChange={e=>setTargets(e.target.checked ? [...targets,s.id] : targets.filter(x=>x!==s.id))}/>{s.name}</label>)}</div>
         </fieldset>}
         <section className="space-y-3" aria-label={l('선택된 활동','Selected activities')}>
-          <h3 className="font-bold">{l('선택된 활동','Selected activities')} ({items.length})</h3>
+          <h3 className="font-bold">{l('선택된 활동','Selected activities')} ({rows.length})</h3>
           <ol className="divide-y divide-outline-variant rounded-xl border border-outline-variant">
-          {items.map((item,index) => <li key={index} className="p-3">
+          {rows.map(({key,item},index) => <li key={key} className="p-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0"><strong className="break-words">{index+1}. {item.title || item.kind}</strong>
                 <div className="flex flex-wrap gap-x-2 text-sm text-on-surface-variant">
@@ -128,10 +140,20 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
                   {item.content.questions.length > 0 && <span>{l(`문제 ${item.content.questions.length}개`, `${item.content.questions.length} questions`)}</span>}
                 </div>
               </div>
-              <button type="button" className={button+' shrink-0'} aria-expanded={expanded === index} aria-label={`${index+1}. ${item.title || item.kind} ${expanded === index ? l('접기','Collapse') : l('펼치기','Expand')}`}
-                onClick={()=>setExpanded(expanded === index ? null : index)}>{expanded === index ? l('접기','Collapse') : l('펼치기','Expand')}</button>
+              <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">
+                {canEditContent && rows.length > 1 && <label className="flex flex-col text-xs font-bold text-on-surface-variant">
+                  {l('순서','Order')}
+                  <select className="min-h-11 rounded-xl border border-outline-variant bg-white px-2 text-sm"
+                    aria-label={l(`${index+1}. ${item.title || item.kind} 순서`, `Position of ${index+1}. ${item.title || item.kind}`)}
+                    value={index} onChange={e=>moveActivity(index,Number(e.target.value))}>
+                    {rows.map((_, i) => <option key={i} value={i}>{l(`${i+1}번째`, String(i+1))}</option>)}
+                  </select>
+                </label>}
+                <button type="button" className={button+' shrink-0'} aria-expanded={expanded === key} aria-label={`${index+1}. ${item.title || item.kind} ${expanded === key ? l('접기','Collapse') : l('펼치기','Expand')}`}
+                  onClick={()=>setExpanded(expanded === key ? null : key)}>{expanded === key ? l('접기','Collapse') : l('펼치기','Expand')}</button>
+              </div>
             </div>
-          {expanded === index && <fieldset disabled={!canEditContent} className="mt-3 min-w-0 space-y-3 border-t border-outline-variant pt-3">
+          {expanded === key && <fieldset disabled={!canEditContent} className="mt-3 min-w-0 space-y-3 border-t border-outline-variant pt-3">
             <label className="block">{l('활동 이름','Activity name')}<input className={field} value={item.title} onChange={e=>updateItem(index,{...item,title:e.target.value})}/></label>
             {item.config.block && item.config.block.type !== 'recall' && <label className="block">{l('학습 내용','Activity text')}
               <textarea rows={4} className={field} value={item.config.block.text} onChange={e=>updateItem(index,{...item,config:{...item.config,block:{...item.config.block!,text:e.target.value}}})}/></label>}
@@ -139,13 +161,13 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
               <input className={field} value={line.en} onChange={e=>updateItem(index,{...item,content:{...item.content,lines:item.content.lines!.map((ln,j)=>j===i?{...ln,en:e.target.value}:ln)}})}/></label>)}
             {(item.content.questions.length>0 || item.config.block?.type==='recall') && <QuestionEditor items={item.content.questions} en={en}
               maxQuestions={Math.max(100,item.content.questions.length)} onChange={questions=>updateItem(index,{...item,content:{...item.content,questions}})}/>}
-            {canEditContent && <button type="button" className={button} disabled={items.length<=1} onClick={()=>{setItems(items.filter((_,i)=>i!==index));setExpanded(null);}}>{l('이 활동 빼기','Remove activity')}</button>}
+            {canEditContent && <button type="button" className={button} disabled={rows.length<=1} onClick={()=>{setRows(rows.filter(row=>row.key!==key));setExpanded(null);}}>{l('이 활동 빼기','Remove activity')}</button>}
           </fieldset>}
           </li>)}
           </ol>
-          {canEditContent && <button type="button" className={button+' w-full text-primary'} disabled={items.length>=60} onClick={()=>setAdding(true)}>{l('+ 활동 추가','+ Add activity')}</button>}
+          {canEditContent && <button type="button" className={button+' w-full text-primary'} disabled={rows.length>=60} onClick={()=>setAdding(true)}>{l('+ 활동 추가','+ Add activity')}</button>}
           {adding && canEditContent && <PublishedActivityPicker classId={original.classId} en={en} onClose={()=>setAdding(false)}
-            onAdd={next=>{setItems(current=>[...current,next]);setExpanded(null);setAdding(false);setError('');}}/>}
+            onAdd={next=>{const row = {key: crypto.randomUUID(), item: next}; setRows(current=>[...current,row]);setExpanded(null);setAdding(false);setError('');}}/>}
         </section>
         <div className="flex flex-wrap gap-2">
           <button type="button" className={button+' bg-primary text-white'} onClick={()=>void save()}>{copying?l('새 숙제로 재발행','Reissue as new homework'):l('수정 저장','Save changes')}</button>
