@@ -91,7 +91,16 @@ assert.equal(expired.charges[0].channelKey, 'expected-channel');
 assert.equal(expired.writes[0][1].p_next_charge_on, '2026-12-16');
 
 assert.equal(activeTrial.writes[0][1].p_student_count, 3);
-assert.equal((await fixture({ studentCount: 0 }).call({ action: 'quote' })).amountKrw, 9900);
+for (const [studentCount, monthlyTotal] of [[0, 9900], [1, 14800], [2, 19700], [10, 58900]]) {
+  const account = fixture({ studentCount });
+  const quote = await account.call({ action: 'quote' });
+  assert.equal(quote.amountKrw, monthlyTotal);
+  const result = await account.call({ ...quote, action: 'start-subscription', pricingVersion: 'per_student_v1', billingKey: 'test' });
+  assert.equal(result.scheduled, '2026-11-17');
+  assert.equal(account.writes[0][1].p_student_count, studentCount);
+  assert.equal(account.writes[0][1].p_amount_krw, monthlyTotal);
+  assert.equal(account.charges.length, 0);
+}
 const paid = fixture({ plan: 'paid', nextBilling: '2026-12-16' });
 assert.equal((await paid.call({ action: 'quote' })).amountKrw, 9900);
 await paid.call({ action: 'change-card', billingKey: 'test' });
