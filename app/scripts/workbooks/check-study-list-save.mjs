@@ -28,6 +28,7 @@ try {
     grant select on public.academies to authenticated;
   `);
   await db.exec(readFileSync(new URL('../../../supabase/145_save_study_lists.sql', import.meta.url), 'utf8'));
+  await db.exec(readFileSync(new URL('../../../supabase/149_transfer_word_list_items.sql', import.meta.url), 'utf8'));
   await db.exec(readFileSync(new URL('../../../supabase/080c_free_wordlist_limit.sql', import.meta.url), 'utf8'));
   await db.query('insert into academies(id,plan) values($1,$2)', [academy, 'paid']);
   const river = { id: 'old-river', word: 'river', meaning: '강', image_url: '/river.webp', example: 'A river flows.' };
@@ -80,12 +81,48 @@ try {
   assert.equal((await read(fresh)).items.length, 1);
   assert.equal((await read(sentences)).items.length, 1);
   await assert.rejects(save([{ id: foreign, kind: 'word', append: true, items: additions }]), /study_list_missing/);
+  const transfer = async (source, target, ids, move) => (await db.query('select transfer_word_list_items($1,$2,$3,$4) as moved', [source, target, ids, move])).rows[0].moved;
+  const move = (source, target, ids) => transfer(source, target, ids, true);
+  await assert.rejects(move(words, words, [river.id]), /invalid_study_lists/);
+  await assert.rejects(move(words, foreign, [river.id]), /study_list_missing/);
+  await assert.rejects(move(words, sentences, [river.id]), /study_list_missing/);
+  await save([{ id: fresh, kind: 'word', append: true, items: [{ ...river, id: 'copy', example: 'Different example' }] }]);
+  assert.equal(await move(words, fresh, [river.id, edited[1].id]), 1);
+  assert.deepEqual((await read(words)).items, [river, edited[2]]);
+  assert.deepEqual((await read(fresh)).items.at(-1), edited[1]);
+  assert.equal(await move(words, fresh, [river.id, edited[1].id]), 0);
+  await db.exec('begin');
+  const bank = (id, meaning, image_url = null) => ({ id, word: 'bank', meaning, image_url });
+  const replace = (id, items) => db.query('update word_lists set items=$1 where id=$2', [JSON.stringify(items), id]);
+  const original = [bank('b1', '은행'), bank('b2', '강둑'), { ...bank('b3', '강둑'), word: ' BANK ' }];
+  await replace(words, original);
+  await replace(fresh, []);
+  const allBankIds = original.map(item => item.id);
+  await transfer(words, fresh, allBankIds, false);
+  const [combined] = (await read(fresh)).items;
+  assert.notEqual(combined.id, 'b1');
+  assert.deepEqual((await read(fresh)).items, [{ ...bank(combined.id, '은행 / 강둑') }]);
+  await transfer(words, fresh, allBankIds, false);
+  assert.deepEqual((await read(fresh)).items, [combined]);
+  assert.deepEqual((await read(words)).items, original);
+  await replace(fresh, [bank('dest', '은행')]);
+  await replace(words, [bank('photo', '둑', '/word-bank-images/river.png')]);
+  await move(words, fresh, ['photo']);
+  assert.deepEqual((await read(words)).items, []);
+  assert.deepEqual((await read(fresh)).items, [bank('dest', '은행 / 둑', '/word-bank-images/river.png')]);
+  await replace(words, [bank('same', '강둑', '/word-bank-images/river.webp'), bank('other', '은행', '/money.webp'), bank('plain', '기울이다')]);
+  await move(words, fresh, ['same', 'other', 'plain']);
+  assert.deepEqual((await read(fresh)).items, [
+    bank('dest', '은행 / 둑 / 강둑', '/word-bank-images/river.png'), bank('other', '은행', '/money.webp'), bank('plain', '기울이다'),
+  ]);
+  assert.deepEqual((await read(words)).items, []);
+  await db.exec('rollback');
   await db.exec('reset role');
   await db.query("update academies set plan='free' where id=$1", [academy]);
   await db.exec('set role authenticated');
   await assert.rejects(save([{ id: words, kind: 'word', append: true,
     items: Array.from({ length: 11 }, (_, index) => ({ id: 'free-' + index, word: 'word ' + index, meaning: '뜻' })) }]), /10개/);
-  assert.deepEqual((await read(words)).items, edited);
+  assert.deepEqual((await read(words)).items, [river, edited[2]]);
   await assert.rejects(save([{ id: sentences, kind: 'sentence', append: true,
     items: [{ id: 'readonly', word: 'A new sentence.', meaning: '새 문장' }] }]), /읽기 전용/);
   await assert.rejects(db.query('select * from save_study_lists($1,$2)', [otherAcademy, JSON.stringify(request)]), /study_list_access_denied/);

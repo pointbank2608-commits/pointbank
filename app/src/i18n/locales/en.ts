@@ -2908,6 +2908,7 @@ const en: Ko = {
     empty: 'No word lists yet.',
     academyWide: 'Academy-wide',
     createButton: 'New word list',
+    confirmEmpty: 'Create an empty word list?',
     createdToast: 'Created the word list.',
     namePlaceholder: 'List name (e.g. Week 3 Reading)',
     rename: 'Rename',

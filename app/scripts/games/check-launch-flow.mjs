@@ -177,7 +177,9 @@ try {
  assert.equal(await page.evaluate(()=>window.__workspace.writes[2].name),'아이스크림 가게 2');
  console.log('ok real video duration, independent interactive sample, optional native game name, rename, sequential default and unambiguous menu-board stage');
  await page.goto(fixture+'?start=/wordlists');await page.getByRole('button',{name:'+ 단어장 만들기',exact:false}).click();
+ page.once('dialog', dialog => dialog.accept());
  await page.getByRole('button',{name:'새 단어장 만들기',exact:true}).click();await page.getByText('새 단어장',{exact:true}).first().waitFor();
+ page.once('dialog', dialog => dialog.accept());
  await page.getByRole('button',{name:'+ 단어장 만들기',exact:false}).click();await page.getByLabel('이름 (선택)',{exact:true}).fill('   ');await page.getByRole('button',{name:'새 단어장 만들기',exact:true}).click();await page.getByText('새 단어장 2',{exact:true}).waitFor();
  await page.getByRole('button',{name:'+ 문장 모음 만들기',exact:false}).click();await page.getByRole('button',{name:'새 문장 모음 만들기',exact:true}).click();await page.getByText('새 문장 모음',{exact:true}).first().waitFor();
  console.log('ok word/sentence material creation with blank/whitespace names and numbered defaults, without registering a class');

@@ -6,6 +6,7 @@ import { build } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { chromium } from '../../node_modules/homework-test-tools/node_modules/@playwright/test/index.mjs';
+import { PGlite } from '../../node_modules/homework-test-tools/node_modules/@electric-sql/pglite/dist/index.js';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const apiExports = [...readFileSync(new URL('../../src/lib/api.ts', import.meta.url), 'utf8')
@@ -28,6 +29,7 @@ const fixture = `
 const api = `
   const lists = async () => (await fetch('${origin}/word_lists')).json();
   const mocks = {fetchAllWordLists: async (_academy, kind='word') => (await lists()).filter(row => kind==='all' || (row.kind || 'word')===kind), fetchWordLists: lists,
+    createWordList: async draft => (await fetch('${origin}/word_lists', {method:'POST',body:JSON.stringify(draft)})).json(),
     createCurriculumLesson: async draft => (await fetch('${origin}/curriculum_lessons', {method:'POST',body:JSON.stringify(draft)})).json(),
     wordListKindOf: l => l.kind || 'word', fetchPhonicsBankResult: async () => ({entries: [], mediaAvailable: false})};
   ${apiExports.map(name => `export const ${name} = (...args) => (mocks.${name} || (async () => []))(...args);`).join('\n')}
@@ -73,7 +75,16 @@ const aiSaveAttempts = [];
 const appendRequests = [];
 let lostAppendResponse = true;
 let browser;
+const transferDb = new PGlite();
 try {
+  await transferDb.exec(`
+    create role anon; create role authenticated; create schema auth;
+    create function auth.uid() returns uuid language sql as $$select '00000000-0000-4000-8000-000000000001'::uuid$$;
+    create function public.my_academy_id() returns uuid language sql as $$select auth.uid()$$;
+    create function public.is_staff() returns boolean language sql as $$select true$$;
+    create table word_lists (id uuid primary key, academy_id uuid default auth.uid(), kind text, items jsonb, updated_at timestamptz);
+  `);
+  await transferDb.exec(readFileSync(new URL('../../../supabase/149_transfer_word_list_items.sql', import.meta.url), 'utf8'));
   browser = await chromium.launch({ channel: 'chrome', headless: true });
   const pdfFixture = await browser.newPage();
   const pageColors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
@@ -98,7 +109,26 @@ try {
       json, status, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' },
     });
     if (request.method() === 'OPTIONS') return respond(null);
+    if (pathname === '/word_lists' && request.method() === 'POST') {
+      const draft = request.postDataJSON();
+      const row = { id: 'new-word-list', name: draft.name, items: draft.items, kind: draft.kind, academy_id: draft.academyId, class_id: draft.classId };
+      lists.push(row);
+      return respond(row);
+    }
     if (pathname === '/word_lists') return respond(lists);
+    if (pathname.endsWith('/transfer_word_list_items')) {
+      const { p_source, p_target, p_item_ids, p_move } = request.postDataJSON();
+      const source = lists.find(list => list.id === p_source);
+      const target = lists.find(list => list.id === p_target);
+      const [from, to] = [crypto.randomUUID(), crypto.randomUUID()];
+      await transferDb.query('insert into word_lists(id,kind,items) values ($1,$2,$3),($4,$5,$6)',
+        [from, source.kind, JSON.stringify(source.items), to, target.kind, JSON.stringify(target.items)]);
+      const result = await transferDb.query('select transfer_word_list_items($1,$2,$3,$4) as count', [from, to, p_item_ids, p_move]);
+      for (const [id, list] of [[from, source], [to, target]]) {
+        list.items = (await transferDb.query('select items from word_lists where id=$1', [id])).rows[0].items;
+      }
+      return respond(result.rows[0].count);
+    }
     if (pathname.endsWith('/save_study_lists')) {
       const input = request.postDataJSON();
       assert.equal(input.p_academy_id, 'academy');
@@ -462,8 +492,8 @@ try {
 
   savedPhoto[0].group_name = 'Review';
   await go('/wordlists?list=' + imageTarget.id);
-  await page.getByRole('button', { name: '기존 목록에 추가하기', exact: true }).click();
-  const appendDialog = page.getByRole('dialog', { name: '기존 목록에 추가하기', exact: true });
+  await page.getByRole('button', { name: '다른 단어장으로 복사', exact: true }).click();
+  const appendDialog = page.getByRole('dialog');
   const wordDestination = appendDialog.getByLabel('단어장 저장 위치');
   await wordDestination.selectOption(savedPhoto[0].id);
   assert.equal(await wordDestination.locator(`option[value="${imageTarget.id}"]`).count(), 0);
@@ -486,32 +516,57 @@ try {
   assert.equal(savedPdf[0].items.length, 1);
   await page.getByText('강가를 함께 걸어요.', { exact: true }).waitFor();
   assert.equal(uploadCount, 0);
-  const emptyList = { ...savedPhoto[0], id: 'new-word-list', name: 'New word list', items: [] };
-  lists.push(emptyList);
+  await go('/wordlists');
+  await page.getByRole('button', { name: '+ 단어장 만들기' }).click();
+  const nameField = page.getByLabel('이름 (선택)', { exact: true });
+  await nameField.fill('새 빈 목록');
+  const createButton = page.getByRole('button', { name: '새 단어장 만들기', exact: true });
+  const before = lists.length;
+  const confirmations = [];
+  for (const accept of [false, true]) {
+    page.once('dialog', async dialog => {
+      confirmations.push(dialog.message());
+      if (accept) await dialog.accept(); else await dialog.dismiss();
+    });
+    await createButton.click();
+    if (!accept) {
+      assert.equal(lists.length, before);
+      assert.equal(await nameField.inputValue(), '새 빈 목록');
+    }
+  }
+  await page.getByText('새 빈 목록', { exact: true }).waitFor();
+  assert.deepEqual(confirmations, ['빈 단어장으로 만들겠습니까?', '빈 단어장으로 만들겠습니까?']);
+  assert.equal(lists.length, before + 1);
+  const emptyList = lists.find(list => list.name === '새 빈 목록');
+  assert.deepEqual(emptyList.items, []);
   await go('/wordlists?list=' + emptyList.id);
+  await page.getByRole('button', { name: '직접 입력', exact: true }).waitFor();
   const importButton = page.getByRole('button', { name: '다른 단어장에서 불러오기', exact: true });
-  const importDialog = page.getByRole('dialog', { name: '다른 단어장에서 불러오기' });
-  const sourceList = importDialog.getByLabel('불러올 단어장');
-  await importButton.click();
-  await sourceList.selectOption(imageTarget.id);
-  assert.equal(await sourceList.locator(`option[value="${emptyList.id}"], option[value="${zooSentences.id}"]`).count(), 0);
-  await importDialog.getByLabel('전체 선택').uncheck();
-  await importDialog.getByLabel('river · 강', { exact: true }).check();
-  await importDialog.getByRole('button', { name: '선택한 항목 추가' }).click();
-  await importDialog.waitFor({ state: 'hidden' });
-  assert.equal(emptyList.items.length, 1);
-  assert.notEqual(emptyList.items[0].id, originalItem.id);
-  assert.deepEqual(emptyList.items[0], { ...originalItem, id: emptyList.items[0].id });
+  assert.equal(await importButton.count(), 0);
+  await go('/wordlists?list=' + imageTarget.id);
+  await page.getByRole('button', { name: '다른 단어장으로 복사', exact: true }).click();
+  assert.equal(await importButton.count(), 0);
+  await wordDestination.selectOption(emptyList.id);
+  await appendDialog.getByRole('button', { name: '선택한 항목 추가' }).click();
+  await appendDialog.waitFor({ state: 'hidden' });
+  assert.deepEqual(emptyList.items.map(item => item.word), [...new Set(imageTarget.items.map(item => item.word))]);
+  assert.equal(emptyList.items.find(item => item.word === 'forest').meaning, '숲 / 초록 숲');
+  await go('/wordlists?list=' + emptyList.id);
+  await page.getByRole('button', { name: '다른 단어장으로 이동' }).click();
+  const moveDialog = page.getByRole('dialog', { name: '다른 단어장으로 이동' });
+  await moveDialog.getByLabel('단어장 저장 위치').selectOption(savedPhoto[0].id);
+  const moveButton = moveDialog.getByRole('button', { name: '선택한 단어 이동' });
+  assert.equal(await moveButton.isDisabled(), true);
+  await moveDialog.getByLabel('forest · 숲 / 초록 숲', { exact: true }).check();
+  await moveButton.click();
+  await moveDialog.waitFor({ state: 'hidden' });
+  await page.getByText('· 숲속 / 숲 / 초록 숲', { exact: true }).waitFor();
   await go('/wordlists?list=' + emptyList.id);
   await page.getByText('· 강', { exact: true }).waitFor();
-  await importButton.click();
-  await sourceList.selectOption(imageTarget.id);
-  await importDialog.getByRole('button', { name: '선택한 항목 추가' }).click();
-  await importDialog.waitFor({ state: 'hidden' });
-  assert.deepEqual(emptyList.items.map(item => item.word), imageTarget.items.map(item => item.word));
-  assert.deepEqual(imageTarget.items[0], originalItem);
+  assert.equal(await page.getByText('· 숲 / 초록 숲', { exact: true }).count(), 0);
   assert.deepEqual(errors, []);
   console.log('PASS PDF selected-page pixels and limits, original page mapping, AI append retries, mixed save, list-to-list copies, metadata, and reopening');
 } finally {
   await browser?.close();
+  await transferDb.close();
 }

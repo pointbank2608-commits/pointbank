@@ -135,6 +135,7 @@ try {
   await page.evaluate(()=>{history.pushState({},'','/wordlists');dispatchEvent(new PopStateEvent('popstate'));});
   await page.getByRole('button',{name:/단어장 만들기$/}).click();
   await page.getByPlaceholder('단어장 이름 (예: 9월 3주차 리딩)',{exact:true}).fill('반 없이 만든 원본');
+  page.once('dialog', dialog => dialog.accept());
   await page.getByRole('button',{name:'새 단어장 만들기',exact:true}).click();
   await page.getByText('반 없이 만든 원본',{exact:true}).first().waitFor();
   console.log('ok create a reusable word list without registering a class');

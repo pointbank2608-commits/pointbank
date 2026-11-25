@@ -2905,6 +2905,7 @@ const ko = {
     empty: '아직 만든 단어장이 없습니다.',
     academyWide: '학원 전체',
     createButton: '새 단어장 만들기',
+    confirmEmpty: '빈 단어장으로 만들겠습니까?',
     createdToast: '단어장을 만들었습니다.',
     namePlaceholder: '단어장 이름 (예: 9월 3주차 리딩)',
     rename: '이름 변경',
