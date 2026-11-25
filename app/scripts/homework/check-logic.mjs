@@ -404,6 +404,14 @@ try {
     assert.equal(items[0].content.videoId, 'abcdefghijk');
     assert.equal(build.estimateMinutes(items), 8);
   });
+  await test('published estimates follow the visible flashcards, edited questions and required rounds', () => {
+    const deck = { kind:'worksheet', config:{block:{method:'flip',count:26,text:'one | 하나\n'.repeat(12)+' | ' }}, content:{questions:[]} };
+    const quiz = { kind:'quiz', config:{}, content:{questions:Array(3).fill({style:'spell'})} };
+    assert.equal(build.estimateMinutes([deck]),2);
+    assert.equal(build.estimateMinutes([deck,quiz],2),8);
+    quiz.content.questions.pop();
+    assert.equal(build.estimateMinutes([deck,quiz],2),6);
+  });
   await test('shadowing homework: content questions only come from the lines that were actually included', () => {
     const lines = [
       { s: 10, e: 14, en: 'Hello, my name is Polly the baby.' },

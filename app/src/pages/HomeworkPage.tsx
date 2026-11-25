@@ -83,6 +83,13 @@ export default function HomeworkPage() {
       setList([]);
     }
   }, [classId, t]);
+  function publicationChanged(newId?: string) {
+    if (newId) {
+      setOpenId(null);
+      setShareId(newId);
+    }
+    void reload();
+  }
 
   useEffect(() => {
     setList(null);
@@ -250,9 +257,9 @@ export default function HomeworkPage() {
         <div className="space-y-3">
           {groups.map((g) =>
             g.rows.length > 1 || g.rows[0].kind === 'custom' ? (
-              <CustomGroup key={g.key} rows={g.rows} onChanged={() => void reload()} shareId={shareId} openId={openId} setShareId={setShareId} setOpenId={setOpenId} renderOpen={(hw) => renderPanels(hw)} />
+              <CustomGroup key={g.key} rows={g.rows} onChanged={publicationChanged} shareId={shareId} openId={openId} setShareId={setShareId} setOpenId={setOpenId} renderOpen={(hw) => renderPanels(hw)} />
             ) : (
-              <HomeworkCard key={g.key} hw={g.rows[0]} shareOpen={shareId === g.rows[0].id} resultsOpen={openId === g.rows[0].id} onShare={() => setShareId(shareId === g.key ? null : g.key)} onResults={() => setOpenId(openId === g.key ? null : g.key)} onChanged={() => void reload()}>
+              <HomeworkCard key={g.key} hw={g.rows[0]} shareOpen={shareId === g.rows[0].id} resultsOpen={openId === g.rows[0].id} onShare={() => setShareId(shareId === g.key ? null : g.key)} onResults={() => setOpenId(openId === g.key ? null : g.key)} onChanged={publicationChanged}>
                 {renderPanels(g.rows[0])}
               </HomeworkCard>
             ),
@@ -307,7 +314,7 @@ function HomeworkCard({
   resultsOpen: boolean;
   onShare: () => void;
   onResults: () => void;
-  onChanged: () => void;
+  onChanged: (newId?: string) => void;
   children: React.ReactNode;
   compact?: boolean;
 }) {
@@ -394,10 +401,10 @@ function HomeworkCard({
       </div>
       {children}
       {publicationMode && <PublishedHomeworkDialog id={hw.id} initialMode={publicationMode}
-        onClose={()=>setPublicationMode(null)} onSaved={newId=>{
+        onClose={()=>setPublicationMode(null)} onSaved={(newId,code)=>{
           setPublicationMode(null);
-          notify(newId ? (en?'New homework assigned.':'새 숙제로 재발행했어요.') : (en?'Changes saved.':'숙제를 수정했어요.'));
-          onChanged();
+          notify(newId ? (en?`Homework reissued. New code: ${code}`:`재발행했어요. 새 숙제 번호는 ${code}예요.`) : (en?'Changes saved.':'숙제를 수정했어요.'));
+          onChanged(newId);
         }}/>}
     </div>
   );
@@ -412,7 +419,7 @@ function CustomGroup({
   renderOpen,
   onChanged,
 }: {
-  onChanged: () => void;
+  onChanged: (newId?: string) => void;
   rows: HomeworkOverviewRow[];
   shareId: string | null;
   openId: string | null;

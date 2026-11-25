@@ -572,15 +572,29 @@ export function presetPlan(minutes: HwDuration, cards: FullCardItem[], hasClip: 
 }
 
 /** 예상 시간(분) — 문제마다 대략 걸리는 초를 더한다(5·10·15분 버튼 아래 안내와 확인 화면) */
-export function estimateMinutes(items: HwItemDraft[]): number {
+export function estimateMinutes(items: HwItemDraft[], rounds = 1): number {
   let sec = 0;
   for (const it of items) {
     if (it.config.watch) sec += 240 * Math.max(1, Number(it.config.targetViews) || 1);
     else if (it.kind === 'shadowing') sec += (it.content.lines?.length ?? 0) * 45;
+    else if (!it.content.questions.length && it.config.block) {
+      const block = it.config.block;
+      if (block.method === 'flip') {
+        // FlipDeck presents one card per line with a non-empty front.
+        const cards = (block.text ?? '').split('\n').filter(line => line.split('|')[0].trim());
+        sec += Math.max(1, cards.length) * 10;
+      } else if (block.type === 'video') {
+        sec += Math.max(0, block.end - block.start) || 60;
+      } else if (block.type === 'speak') {
+        sec += 30 + 10 * Math.max(1, block.stages?.length ?? 1) * Math.max(1, block.repeats || 1);
+      } else {
+        sec += 60;
+      }
+    }
     for (const q of it.content.questions)
       sec += q.style === 'match' ? 12 : q.style === 'sentence' ? 40 : q.style === 'letters' ? 30 : q.style === 'spell' ? 35 : q.style === 'blank' ? 30 : q.style === 'content' ? 25 : 20;
   }
-  return Math.max(1, Math.round(sec / 60));
+  return Math.max(1, Math.round(sec * rounds / 60));
 }
 
 export const countQuestions = (items: HwItemDraft[]) => items.reduce((n, it) => n + it.content.questions.length, 0);

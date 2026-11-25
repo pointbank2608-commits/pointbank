@@ -5,6 +5,7 @@ import { fetchStudentsOfClass } from '../../../lib/api';
 import type { Student } from '../../../lib/types';
 import { assignDraft, loadPublication, revisePublication, type PublishedHomework } from '../../../lib/homework/blockApi';
 import { newDraft, validateItems, type HomeworkDraft } from '../../../lib/homework/blocks';
+import { estimateMinutes } from '../../../lib/homework/build';
 import { guidedDeadline } from '../../../lib/homework/deadline';
 import { addDays, kstToday } from '../../wordMemoryProject/model';
 import { QuestionEditor } from './HomeworkBlockEditor';
@@ -17,7 +18,7 @@ const field = 'mt-1 block min-h-11 w-full rounded-xl border border-outline-varia
 const button = 'min-h-11 rounded-xl border border-outline-variant px-4 font-bold';
 
 export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSaved }: {
-  id: string; initialMode: Mode; onClose: () => void; onSaved: (newId?: string) => void;
+  id: string; initialMode: Mode; onClose: () => void; onSaved: (newId?: string, code?: string) => void;
 }) {
   const { i18n } = useTranslation();
   const en = i18n.language.startsWith('en');
@@ -32,6 +33,9 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
   const [students, setStudents] = useState<Student[]>([]);
   const [targets, setTargets] = useState<string[]>([]);
   const [error, setError] = useState('');
+  const [needsReload, setNeedsReload] = useState(false);
+  const errorRef = useRef<HTMLDivElement>(null);
+  const recipientsRef = useRef<HTMLLegendElement>(null);
   const [busy, setBusy] = useState(false);
   const [reload, setReload] = useState(0);
   const lock = useRef(false);
@@ -39,11 +43,21 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
   const copying = mode === 'reissue';
   const heading = copying ? l('숙제 재발행', 'Reissue homework') : l('발행한 숙제 수정', 'Edit published homework');
   const originalDay = original?.due ? kstToday(new Date(original.due)) : '';
+  const items = rows.map(row => row.item);
+  const rounds = original?.shortRepeat?.minimum ?? 1;
+  const duration = (minutes: number) => l(`약 ${minutes}분`, `about ${minutes} min`);
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
+  useEffect(() => {
+    if (copying && original && initialMode === 'edit') recipientsRef.current?.focus();
+  }, [copying, initialMode, original]);
 
   useEffect(() => {
     let active = true;
     setOriginal(undefined);
     setError('');
+    setNeedsReload(false);
     (async () => {
       const data = await loadPublication(id);
       const roster = await fetchStudentsOfClass(data.classId);
@@ -76,13 +90,13 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
   async function save() {
     if (!original || lock.current) return;
     const name = title.trim();
+    setNeedsReload(false);
     if (!name) { setError(l('숙제 이름을 입력해 주세요.', 'Enter a homework title.')); return; }
     const due = original.due && day === originalDay && (!copying || Date.parse(original.due) > Date.now()) ? original.due : guidedDeadline(day);
     if (copying && (!targets.length || (due && Date.parse(due) <= Date.now()))) {
       setError(l('학생을 선택하고 마감일을 오늘 이후로 정하거나 비워 주세요.', 'Select students and choose today or a later due date, or clear it.'));
       return;
     }
-    const items = rows.map(row => row.item);
     if (copying || items.length !== original.items.length || items.some((item, i) => item !== original.items[i])) {
       const issues = validateItems(items);
       if (issues.length) { setError(issues[0]); return; }
@@ -99,13 +113,14 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
           ...newDraft(), title: name, items, shortRepeat: original.shortRepeat ?? undefined,
         }};
         const result = await assignDraft(original.classId, receipt.current.draft, recipients, due || '', receipt.current.request);
-        onSaved(result.id);
+        onSaved(result.id, result.code);
       } else {
         await revisePublication(id, original.version, name, due || null, items, rows.map(row => original.itemIds.includes(row.key) ? row.key : null));
         onSaved();
       }
     } catch (cause) {
       const msg = String((cause as {message?: string})?.message);
+      setNeedsReload(msg.includes('publication_changed'));
       setError(msg.includes('publication_changed') ? l('다른 창에서 숙제가 변경됐어요. 최신 내용을 다시 불러와 주세요.', 'This homework has changed. Reload the latest version.')
         : l('저장하지 못했어요. 연결과 입력 내용을 확인한 뒤 다시 시도해 주세요.', 'Could not save. Check your connection and entries, then retry.'));
     } finally { lock.current = false; setBusy(false); }
@@ -123,12 +138,21 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
         <label className="block">{l('숙제 이름','Title')}<input className={field} value={title} onChange={e=>setTitle(e.target.value)} /></label>
         <label className="block">{l('마감일 (선택)','Due date (optional)')}<input type="date" className={field} min={copying ? kstToday() : undefined} value={day} onChange={e=>setDay(e.target.value)} /></label>
         {original.closed && !copying && <p>{l('닫힌 숙제예요. 학생에게 다시 내려면 재발행해 주세요.', 'This assignment is closed. Reissue it to assign it again.')}</p>}
-        {copying && <fieldset><legend className="font-bold">{l('대상 학생','Recipients')}</legend>
+        {copying && <fieldset><legend tabIndex={-1} ref={recipientsRef} className="font-bold">{l('대상 학생','Recipients')}</legend>
           <div className="flex flex-wrap gap-2">{students.map(s=><label className="flex min-h-11 items-center gap-2 px-2" key={s.id}>
             <input type="checkbox" checked={targets.includes(s.id)} onChange={e=>setTargets(e.target.checked ? [...targets,s.id] : targets.filter(x=>x!==s.id))}/>{s.name}</label>)}</div>
         </fieldset>}
         <section className="space-y-3" aria-label={l('선택된 활동','Selected activities')}>
-          <h3 className="font-bold">{l('선택된 활동','Selected activities')} ({rows.length})</h3>
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <h3 className="font-bold">{l('선택된 활동','Selected activities')} ({rows.length})</h3>
+            <p className="font-bold text-deep-navy">{l('전체 예상 시간','Estimated total')} · {duration(estimateMinutes(items, rounds))}</p>
+          </div>
+          {rounds > 1 && <p className="text-sm text-on-surface-variant">
+            {l(`필수 ${rounds}회 기준 · 1회 ${duration(estimateMinutes(items))}`, `${rounds} required rounds · ${duration(estimateMinutes(items))} per round`)}
+          </p>}
+          {original.shortRepeat?.threshold != null && <p className="text-sm text-on-surface-variant">
+            {l(`정답률이 ${original.shortRepeat.threshold}% 이하면 추가 반복 시간이 필요해요.`, `Allow extra time for more rounds if accuracy is ${original.shortRepeat.threshold}% or lower.`)}
+          </p>}
           <ol className="divide-y divide-outline-variant rounded-xl border border-outline-variant">
           {rows.map(({key,item},index) => <li key={key} className="p-3">
             <div className="flex items-center justify-between gap-3">
@@ -136,6 +160,7 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
                 <div className="flex flex-wrap gap-x-2 text-sm text-on-surface-variant">
                   {item.config.materialList && <span>{item.config.materialList.name}</span>}
                   {item.content.questions.length > 0 && <span>{l(`문제 ${item.content.questions.length}개`, `${item.content.questions.length} questions`)}</span>}
+                  <span>{duration(estimateMinutes([item]))}</span>
                 </div>
               </div>
               <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">
@@ -169,12 +194,12 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
           {adding && <PublishedActivityPicker classId={original.classId} en={en} onClose={()=>setAdding(false)}
             onAdd={next=>{const row = {key: crypto.randomUUID(), item: next}; setRows(current=>[...current,row]);setExpanded(null);setAdding(false);setError('');}}/>}
         </section>
-        <div className="flex flex-wrap gap-2">
-          <button type="button" className={button+' bg-primary text-white'} onClick={()=>void save()}>{copying?l('새 숙제로 재발행','Reissue as new homework'):l('수정 저장','Save changes')}</button>
-          {!copying && <button type="button" className={button} onClick={switchToCopy}>{l('새 숙제로 재발행하기','Reissue as a new assignment')}</button>}
+        <div className="sticky bottom-0 flex flex-wrap items-center gap-2 border-t border-outline-variant bg-white py-2">
+          <button type="button" className={button+' bg-primary text-white'} onClick={()=>void save()}>{busy ? l('저장 중…','Saving…') : copying?l(`학생 ${targets.length}명에게 재발행`,`Reissue to ${targets.length} students`):l('수정 저장','Save changes')}</button>
+          {!copying && <button type="button" className={button} onClick={switchToCopy}>{l('재발행 설정 열기','Open reissue settings')}</button>}
         </div>
       </fieldset>}
-      {error && <div role="alert" className="space-y-2"><p>{error}</p><button type="button" className={button} disabled={busy} onClick={()=>setReload(n=>n+1)}>{l('최신 내용 다시 불러오기','Reload latest version')}</button></div>}
+      {error && <div role="alert" tabIndex={-1} ref={errorRef} className="space-y-2"><p>{error}</p>{(!original || needsReload) && <button type="button" className={button} disabled={busy} onClick={()=>setReload(n=>n+1)}>{l('최신 내용 다시 불러오기','Reload latest version')}</button>}</div>}
     </div>
   </AccessibleDialog>;
 }
