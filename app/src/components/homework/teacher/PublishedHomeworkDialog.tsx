@@ -38,7 +38,6 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
   const receipt = useRef<{ key: string; request: string; draft: HomeworkDraft } | null>(null);
   const copying = mode === 'reissue';
   const heading = copying ? l('숙제 재발행', 'Reissue homework') : l('발행한 숙제 수정', 'Edit published homework');
-  const canEditContent = copying || !original?.started;
   const originalDay = original?.due ? kstToday(new Date(original.due)) : '';
 
   useEffect(() => {
@@ -51,7 +50,7 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
       if (!active) return;
       const dueDay = data.due ? kstToday(new Date(data.due)) : '';
       setOriginal(data); setTitle(data.title);
-      setRows(data.items.map((item, index) => ({ key: String(index), item })));
+      setRows(data.items.map((item, index) => ({ key: data.itemIds[index], item })));
       setExpanded(null); setAdding(false);
       setMode(initialMode);
       setDay(initialMode === 'reissue' && data.due && Date.parse(data.due) <= Date.now() ? addDays(kstToday(), 1) : dueDay);
@@ -68,7 +67,7 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
     setRows(current => current.map((row, i) => i === index ? { ...row, item: next } : row));
   }
   function moveActivity(from: number, to: number) {
-    if (!canEditContent || from === to || to < 0 || to >= rows.length) return;
+    if (from === to || to < 0 || to >= rows.length) return;
     const next = [...rows];
     const [moved] = next.splice(from, 1);
     next.splice(to, 0, moved);
@@ -102,13 +101,12 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
         const result = await assignDraft(original.classId, receipt.current.draft, recipients, due || '', receipt.current.request);
         onSaved(result.id);
       } else {
-        await revisePublication(id, original.version, name, due || null, items);
+        await revisePublication(id, original.version, name, due || null, items, rows.map(row => original.itemIds.includes(row.key) ? row.key : null));
         onSaved();
       }
     } catch (cause) {
       const msg = String((cause as {message?: string})?.message);
-      setError(msg.includes('publication_started') ? l('편집 중 학생이 시작했어요. 변경한 내용으로 재발행할 수 있어요.', 'A student has started. Reissue your edited copy.')
-        : msg.includes('publication_changed') ? l('다른 창에서 숙제가 변경됐어요. 최신 내용을 다시 불러와 주세요.', 'This homework has changed. Reload the latest version.')
+      setError(msg.includes('publication_changed') ? l('다른 창에서 숙제가 변경됐어요. 최신 내용을 다시 불러와 주세요.', 'This homework has changed. Reload the latest version.')
         : l('저장하지 못했어요. 연결과 입력 내용을 확인한 뒤 다시 시도해 주세요.', 'Could not save. Check your connection and entries, then retry.'));
     } finally { lock.current = false; setBusy(false); }
   }
@@ -120,7 +118,7 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
       {!original && !error && <p role="status">{l('숙제를 불러오는 중…','Loading homework…')}</p>}
       {original && <fieldset disabled={busy} className="min-w-0 space-y-4">
         <p>{copying ? l('원본과 학습 기록을 보관하고, 선택한 학생에게 새 숙제 번호로 배정해요.', 'Keep the original and its results. Selected students receive a new assignment code.')
-          : original.started ? l('학생이 시작한 숙제는 이름과 마감일을 수정할 수 있어요. 문제를 바꾸려면 재발행해 주세요.', 'Students have started. You can edit the title and deadline, or reissue to change the activities.')
+          : original.started ? l('활동을 추가하거나 빼고 저장하면 진행 중인 학생은 다음에 열 때 새 구성을 봐요. 이미 제출한 학생의 결과는 보관돼요.', 'Students still working will see the revised activities when they reopen the homework. Submitted results are preserved.')
           : l('기존 숙제 번호와 대상 학생을 유지하면서 내용을 수정해요.', 'Save changes to the existing assignment for the same students.')}</p>
         <label className="block">{l('숙제 이름','Title')}<input className={field} value={title} onChange={e=>setTitle(e.target.value)} /></label>
         <label className="block">{l('마감일 (선택)','Due date (optional)')}<input type="date" className={field} min={copying ? kstToday() : undefined} value={day} onChange={e=>setDay(e.target.value)} /></label>
@@ -141,7 +139,7 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
                 </div>
               </div>
               <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">
-                {canEditContent && rows.length > 1 && <label className="flex flex-col text-xs font-bold text-on-surface-variant">
+                {rows.length > 1 && <label className="flex flex-col text-xs font-bold text-on-surface-variant">
                   {l('순서','Order')}
                   <select className="min-h-11 rounded-xl border border-outline-variant bg-white px-2 text-sm"
                     aria-label={l(`${index+1}. ${item.title || item.kind} 순서`, `Position of ${index+1}. ${item.title || item.kind}`)}
@@ -153,7 +151,10 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
                   onClick={()=>setExpanded(expanded === key ? null : key)}>{expanded === key ? l('접기','Collapse') : l('펼치기','Expand')}</button>
               </div>
             </div>
-          {expanded === key && <fieldset disabled={!canEditContent} className="mt-3 min-w-0 space-y-3 border-t border-outline-variant pt-3">
+            <button type="button" className="min-h-11 px-2 text-sm font-bold text-error disabled:opacity-40"
+              disabled={rows.length <= 1} aria-label={l(`${index+1}. ${item.title || item.kind} 빼기`, `Remove ${index+1}. ${item.title || item.kind}`)}
+              onClick={()=>{setRows(rows.filter(row=>row.key!==key));if(expanded===key)setExpanded(null);}}>{l('활동 빼기','Remove activity')}</button>
+          {expanded === key && <fieldset className="mt-3 min-w-0 space-y-3 border-t border-outline-variant pt-3">
             <label className="block">{l('활동 이름','Activity name')}<input className={field} value={item.title} onChange={e=>updateItem(index,{...item,title:e.target.value})}/></label>
             {item.config.block && item.config.block.type !== 'recall' && <label className="block">{l('학습 내용','Activity text')}
               <textarea rows={4} className={field} value={item.config.block.text} onChange={e=>updateItem(index,{...item,config:{...item.config,block:{...item.config.block!,text:e.target.value}}})}/></label>}
@@ -161,12 +162,11 @@ export default function PublishedHomeworkDialog({ id, initialMode, onClose, onSa
               <input className={field} value={line.en} onChange={e=>updateItem(index,{...item,content:{...item.content,lines:item.content.lines!.map((ln,j)=>j===i?{...ln,en:e.target.value}:ln)}})}/></label>)}
             {(item.content.questions.length>0 || item.config.block?.type==='recall') && <QuestionEditor items={item.content.questions} en={en}
               maxQuestions={Math.max(100,item.content.questions.length)} onChange={questions=>updateItem(index,{...item,content:{...item.content,questions}})}/>}
-            {canEditContent && <button type="button" className={button} disabled={rows.length<=1} onClick={()=>{setRows(rows.filter(row=>row.key!==key));setExpanded(null);}}>{l('이 활동 빼기','Remove activity')}</button>}
           </fieldset>}
           </li>)}
           </ol>
-          {canEditContent && <button type="button" className={button+' w-full text-primary'} disabled={rows.length>=60} onClick={()=>setAdding(true)}>{l('+ 활동 추가','+ Add activity')}</button>}
-          {adding && canEditContent && <PublishedActivityPicker classId={original.classId} en={en} onClose={()=>setAdding(false)}
+          <button type="button" className={button+' w-full text-primary'} disabled={rows.length>=60} onClick={()=>setAdding(true)}>{l('+ 활동 추가','+ Add activity')}</button>
+          {adding && <PublishedActivityPicker classId={original.classId} en={en} onClose={()=>setAdding(false)}
             onAdd={next=>{const row = {key: crypto.randomUUID(), item: next}; setRows(current=>[...current,row]);setExpanded(null);setAdding(false);setError('');}}/>}
         </section>
         <div className="flex flex-wrap gap-2">

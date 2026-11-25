@@ -40,6 +40,7 @@ export interface HomeworkSummary {
     status: 'none' | 'doing' | 'done';
     answered: number;
     correct: number;
+    submitted_total?: number | null;
     minutes: number | null;
     retries: number;
     /** 042: 이 숙제로 포인트를 받았나(042 전에는 없음) */

@@ -86,7 +86,8 @@ export default function HomeworkResults({
     return classCards.filter((c) => set.has(c.word.toLowerCase()));
   };
   // 반 평균: 끝낸 학생의 점수·시간
-  const avgPct = totalQ > 0 && done.length > 0 ? Math.round((100 * done.reduce((n, s) => n + s.correct, 0)) / (done.length * totalQ)) : null;
+  const gradedQuestions = done.reduce((n, s) => n + (s.submitted_total ?? totalQ), 0);
+  const avgPct = gradedQuestions > 0 ? Math.round((100 * done.reduce((n, s) => n + s.correct, 0)) / gradedQuestions) : null;
   const withMin = done.filter((s) => s.minutes !== null);
   const avgMin = withMin.length ? Math.round(withMin.reduce((n, s) => n + (s.minutes ?? 0), 0) / withMin.length) : null;
 
@@ -211,7 +212,7 @@ export default function HomeworkResults({
                 </span>
               )}
               <span className="ml-auto flex items-center gap-3 text-base tabular-nums">
-                <b>{s.status === 'none' ? '–' : totalQ === 0 ? t('studentHw.activityCompletion', { defaultValue: '활동 완료 확인' }) : `${s.correct} / ${totalQ}`}</b>
+                <b>{s.status === 'none' ? '–' : (s.submitted_total ?? totalQ) === 0 ? t('studentHw.activityCompletion', { defaultValue: '활동 완료 확인' }) : `${s.correct} / ${s.submitted_total ?? totalQ}`}</b>
                 <span className="text-on-surface-variant">{s.minutes === null ? '' : t('studentHw.minutes', { n: s.minutes })}</span>
               </span>
             </div>

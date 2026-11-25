@@ -501,6 +501,58 @@ try {
     await rejects(`select hw_publication('${original.id}')`,/bad_class|not_found/);
     await db.exec(`set test.academy='${a}'`);
   });
+  await test("editing started homework keeps linked evidence, submitted results and the same student links", async () => {
+    await db.exec("alter table homework_attempts add column if not exists rewarded_at timestamptz");
+    await db.exec(readFileSync(resolve(sqlRoot, "152_edit_homework_activities.sql"), "utf8"));
+    const recall = blocks.newBlock('recall');
+    recall.content.questions = [{id:'road',qtype:'text',style:'spell',prompt:'길',correct:'road',word:'road'}];
+    const quiz = {...recall,title:'Second quiz'};
+    const classmate = crypto.randomUUID();
+    await db.query(`insert into students(id,academy_id,class_id,name) values('${classmate}','${a}','${c}','Synthetic C')`);
+    const issued = await value(`select hw_assign_draft('${c}',${json({...draft,items:[recall,quiz]})},
+      array['${student}'::uuid,'${classmate}'::uuid],null,'${crypto.randomUUID()}') v`);
+    const read = () => value(`select hw_publication('${issued.id}') v`);
+    const original = await read();
+    const [first,second] = original.itemIds;
+    const start = who => value(`insert into homework_attempts(assignment_id,student_id) values('${issued.id}','${who}') returning token v`);
+    const working = await start(student);
+    const submitted = await start(classmate);
+    const answer = (key,item) => db.query(`select hw_submit('${key}','${item}',0,'road','${crypto.randomUUID()}',1)`);
+    const complete = (key,item) => db.query(`select hw_progress('${key}','${item}','item_complete','{}','${crypto.randomUUID()}')`);
+    const state = key => value(`select hw_state('${key}') v`);
+    for (const item of original.itemIds) {
+      await answer(submitted,item); await complete(submitted,item);
+      await answer(working,item); await complete(working,item);
+    }
+    assert.deepEqual(await value(`select hw_finish('${submitted}') v`),{score:2,total:2});
+    const next = [{...quiz,title:'New activity',content:{questions:[...quiz.content.questions,{...quiz.content.questions[0],id:'more'}]}},original.items[1]];
+    const edit = (ids) => `select hw_edit_activities('${issued.id}',${q(original.version)},'Revised',null,${json(next)},${ids})`;
+    await rejects(edit(`array['${second}','${second}']::uuid[]`),/bad_items/);
+    await rejects(edit(`array[null,'${crypto.randomUUID()}']::uuid[]`),/bad_items/);
+    const save = edit(`array[null,'${second}']::uuid[]`);
+    await db.query(save); await db.query(save);
+    const current = await read();
+    assert.equal(current.itemIds[1],second);
+    assert.deepEqual((await state(submitted)).items.map(i=>i.id),[first,second]);
+    assert.deepEqual((await state(working)).items.map(i=>i.id),current.itemIds);
+    assert.deepEqual((await state(working)).answers.map(i=>i.item_id),[second]);
+    assert.deepEqual(await value(`select hw_finish('${submitted}') v`),{score:2,total:2});
+    await rejects(`select hw_finish('${working}')`,/incomplete/);
+    await rejects(`select hw_submit('${working}','${first}',0,'road','${crypto.randomUUID()}',1)`,/not_found/);
+    assert.equal(await value(`select count(*)::int v from homework_answers where item_id='${first}'`),2);
+    assert.equal(await value(`select count(*)::int v from learning_events where item_id='${first}' and event_type='answer'`),2);
+    const report = await value(`select hw_assignment_summary('${issued.id}') v`);
+    assert.equal(report.students.find(s=>s.student_id===student).answered,1);
+    assert.equal(report.students.find(s=>s.student_id===classmate).submitted_total,2);
+    const results = await value(`select hw_block_results('${issued.id}') v`);
+    assert.deepEqual(results.filter(row=>row.student_id===classmate).map(row=>row.item_id),[first,second]);
+    await answer(working,current.itemIds[0]);
+    await db.query(`select hw_submit('${working}','${current.itemIds[0]}',1,'wrong','${crypto.randomUUID()}',1)`);
+    await complete(working,current.itemIds[0]);
+    assert.deepEqual(await value(`select hw_finish('${working}') v`),{score:2,total:3});
+    assert.equal(await value(`select code v from homework_assignments where id='${issued.id}'`),issued.code);
+    assert.equal(await value("select has_function_privilege('anon','hw_edit_activities(uuid,text,text,timestamptz,jsonb,uuid[])','execute') v"),false);
+  });
   await test("manual rollback compiles and retains draft/submission data", async () => {
     await db.exec(
       readFileSync(
