@@ -8,6 +8,7 @@ import ClassChipRow from '../components/ClassChipRow';
 import HomeworkResults from '../components/homework/teacher/HomeworkResults';
 import HomeworkSharePanel from '../components/homework/teacher/HomeworkSharePanel';
 import HomeworkBlockEditor from '../components/homework/teacher/HomeworkBlockEditor';
+import PublishedHomeworkDialog from '../components/homework/teacher/PublishedHomeworkDialog';
 import type { CheckType } from '../lib/homework/guided';
 import HomeworkComposer from '../components/homework/teacher/HomeworkComposer';
 import AdaptiveHomeworkComposer from '../components/homework/teacher/AdaptiveHomeworkComposer';
@@ -310,9 +311,11 @@ function HomeworkCard({
   children: React.ReactNode;
   compact?: boolean;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { notify } = useToast();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [publicationMode, setPublicationMode] = useState<'edit'|'reissue'|null>(null);
+  const en = i18n.language.startsWith('en');
   const pastDue = !!hw.due_at && new Date(hw.due_at).getTime() < Date.now();
   const btn = 'flex min-h-11 items-center gap-1 rounded-full px-4 text-base font-bold';
   return (
@@ -349,6 +352,8 @@ function HomeworkCard({
           </div>
         </div>
         <div className="flex flex-wrap gap-1.5">
+          <button type="button" className={btn} onClick={()=>setPublicationMode('edit')}>{en?'Edit':'수정'}</button>
+          <button type="button" className={btn} onClick={()=>setPublicationMode('reissue')}>{en?'Reissue':'재발행'}</button>
           <button type="button" aria-expanded={shareOpen} onClick={onShare} className={`${btn} bg-secondary-container/60 text-on-surface hover:bg-secondary-container`}>
             <span className="material-symbols-outlined text-[18px]">qr_code_2</span>
             {t('studentHw.share')}
@@ -388,6 +393,12 @@ function HomeworkCard({
         </div>
       </div>
       {children}
+      {publicationMode && <PublishedHomeworkDialog id={hw.id} initialMode={publicationMode}
+        onClose={()=>setPublicationMode(null)} onSaved={newId=>{
+          setPublicationMode(null);
+          notify(newId ? (en?'New homework assigned.':'새 숙제로 재발행했어요.') : (en?'Changes saved.':'숙제를 수정했어요.'));
+          onChanged();
+        }}/>}
     </div>
   );
 }

@@ -10,6 +10,20 @@ async function rpc<T>(name: string, args: Record<string, unknown>): Promise<T> {
 }
 export const listDrafts = (classId: string) =>
   rpc<HomeworkDraft[]>("hw_drafts", { p_class: classId });
+export interface PublishedHomework {
+  version: string;
+  classId: string;
+  title: string;
+  due: string | null;
+  closed: string | null;
+  started: boolean;
+  students: string[];
+  items: HomeworkDraft["items"];
+  shortRepeat: HomeworkDraft["shortRepeat"] | null;
+}
+export const loadPublication = (id: string) => rpc<PublishedHomework>("hw_publication", { p_assignment: id });
+export const revisePublication = (id: string, version: string, title: string, due: string | null, items: HomeworkDraft["items"]) =>
+  rpc<void>("hw_revise_publication", { p_assignment: id, p_version: version, p_title: title, p_due: due, p_items: items });
 export const saveDraft = (classId: string, draft: HomeworkDraft) =>
   rpc<HomeworkDraft>("hw_save_draft", { p_class: classId, p_draft: draft });
 export const assignDraft = (

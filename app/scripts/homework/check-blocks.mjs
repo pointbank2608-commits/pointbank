@@ -470,6 +470,37 @@ try {
     assert.equal(await count('retry_answer'),10);
     assert.equal(await count('assignment_complete'),1);
   });
+  await test("published homework edits preserve codes and attempts; reissue creates a separate assignment", async () => {
+    await db.exec(readFileSync(resolve(sqlRoot, "151_edit_published_homework.sql"), "utf8"));
+    const original = await value(`select hw_assign_draft('${c}',${json(draft)},array['${student}'::uuid],now()-interval '1 day','${crypto.randomUUID()}') v`);
+    const read = () => value(`select hw_publication('${original.id}') v`);
+    const previous = await read();
+    assert.deepEqual(previous.students,[student]);
+    const revised = structuredClone(previous.items);
+    revised[0].config.block.text='Revised study material';
+    const due='2027-03-02T14:59:59.999Z';
+    const apply = (version,title,content) => `select hw_revise_publication('${original.id}',${q(version)},${q(title)},'${due}',${json(content)})`;
+    await db.query(apply(previous.version,'Extended',revised));
+    await db.query(apply(previous.version,'Extended',revised));
+    const latest = await read();
+    assert.deepEqual(latest.items,revised);
+    assert.equal(Date.parse(latest.due),Date.parse(due));
+    assert.equal(await value(`select code v from homework_assignments where id='${original.id}'`),original.code);
+    await rejects(apply(previous.version,'Stale',previous.items), /publication_changed/);
+    await db.query(`insert into homework_attempts(assignment_id,student_id) values('${original.id}','${student}')`);
+    await rejects(apply(latest.version,'Changed',previous.items),/publication_started/);
+    await db.query(apply(latest.version,'Updated title',revised));
+    const copyRequest=crypto.randomUUID();
+    const copy=`select hw_assign_draft('${c}',${json({...draft,items:previous.items})},array['${student}'::uuid],'${due}','${copyRequest}') v`;
+    const issued=await value(copy);
+    assert.notEqual(issued.code,original.code);
+    assert.deepEqual(await value(copy),issued);
+    assert.equal((await read()).started,true);
+    assert.equal(await value(`select has_function_privilege('anon','public.hw_publication(uuid)','execute') v`),false);
+    await db.exec(`set test.academy='${otherA}'`);
+    await rejects(`select hw_publication('${original.id}')`,/bad_class|not_found/);
+    await db.exec(`set test.academy='${a}'`);
+  });
   await test("manual rollback compiles and retains draft/submission data", async () => {
     await db.exec(
       readFileSync(
