@@ -40,3 +40,14 @@
 .classroom-question-editor .vq-primary{background:#0866ff!important;color:white!important}
 .vq-classroom .tv-player.tv-player[data-classroom-activities=true]:has(.tv-question-marker){height:100%!important}
 .tv-player[data-classroom-activities=true],.episode-classroom-stage{overflow-anchor:none}
+.tv-player.tv-player dialog.tv-popup.tv-classroom-settings {
+  position:fixed; inset:0; margin:auto; box-sizing:border-box;
+  width:min(560px,calc(100% - 24px)); max-width:none;
+  max-height:calc(100dvh - 24px); padding:0; gap:0; overflow:hidden;
+  grid-template-rows:auto minmax(0,1fr);
+}
+.tv-classroom-settings::backdrop { background:rgb(12 27 47 / 25%) }
+.tv-classroom-settings>header { padding:8px 16px; border-bottom:1px solid #dbe5f0 }
+.tv-classroom-settings>header button { min-width:40px; min-height:40px }
+.tv-classroom-settings-body { display:grid; gap:12px; padding:12px 16px; min-height:0; overflow:auto; overscroll-behavior:contain }
+.tv-classroom-settings-body fieldset { min-inline-size:0 }
