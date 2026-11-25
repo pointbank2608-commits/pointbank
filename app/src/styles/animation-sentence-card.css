@@ -1,0 +1,61 @@
+/* Use the classroom player's existing sentence slot, between the video and timeline. */
+.tv-sentence:has(> .animation-sentence-host) { display:flex }
+.animation-sentence-host { display:flex; width:100%; min-width:0; min-height:0 }
+.animation-sentence-card {
+  display:flex; flex-direction:column; min-width:0; width:100%; min-height:0; overflow:auto;
+  padding:8px 14px; gap:6px; color:#173456; background:white; overscroll-behavior:contain;
+}
+.animation-sentence-card header {
+  display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:6px 12px;
+}
+.animation-sentence-card header h2 { font-size:clamp(16px,1.8cqw,23px); font-weight:750; line-height:1.25 }
+.animation-sentence-card .episode-progress { grid-column:3; justify-self:end; font-size:16px }
+.animation-line-speakers,.animation-sentence-actions,.animation-sentence-exits {
+  display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:5px;
+}
+.animation-line-speakers span,.animation-sentence-card button,.animation-sentence-card select {
+  border:1px solid #a7c4e9; border-radius:8px; background:white; color:#19477f;
+  padding:5px 10px; line-height:1.25; font-weight:650; min-height:34px;
+}
+.animation-line-speakers span { display:grid;place-content:center; min-height:30px }
+.animation-line-speakers [data-current],.animation-sentence-card button[aria-pressed=true] {
+  color:#115cbe; background:#e5f0ff; border-color:#4389e6;
+}
+.animation-sentence-card button:disabled { opacity:.35 }
+.animation-sentence-card button.sentence-primary { background:#1269d9; border-color:#1269d9; color:white }
+.animation-sentence-content {
+  display:grid; min-width:0; min-height:36px; overflow:auto; padding-block:5px; overscroll-behavior:contain;
+  align-items:safe center; flex:1 1 auto;
+}
+.animation-sentence-content[data-navigation] { grid-template-columns:auto minmax(0,1fr) auto; gap:8px }
+.animation-sentence-content>button { position:sticky; top:0; align-self:center; padding-inline:8px }
+.animation-sentence-text { text-align:center; overflow-wrap:anywhere; min-width:0 }
+.animation-sentence-text h3,.animation-sentence-text .episode-answer-slots {
+  font:700 clamp(24px,3cqw,40px)/1.22 Andika,sans-serif; color:#152f50;
+}
+.animation-sentence-text h3 em { font-style:normal; color:#1966c9 }
+.animation-sentence-text p { color:#536b85; font-size:clamp(15px,1.55cqw,20px); line-height:1.35 }
+.animation-sentence-text .episode-scramble { gap:4px }
+.animation-sentence-text .episode-answer-slots { padding:2px; background:transparent; gap:5px }
+.animation-sentence-text .episode-answer-slots span {
+  padding:2px 8px; background:#edf5ff; border:1px dashed #82a9d8; font-size:.75em;
+}
+.animation-sentence-text .episode-choice-row button { font-size:clamp(16px,1.9cqw,23px) }
+.animation-sentence-card footer {
+  display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:4px 8px;
+}
+.animation-sentence-actions { grid-column:2 }
+.animation-sentence-card footer>label { grid-column:1; justify-self:start; font-size:14px }
+.animation-sentence-exits { grid-column:3; justify-self:end; flex-wrap:nowrap }
+@container (max-width:850px) {
+  .animation-sentence-card footer { display:flex; flex-wrap:wrap; justify-content:center }
+  .animation-sentence-exits { margin-left:auto }
+  .animation-sentence-actions { margin-left:auto }
+}
+@container (max-width:600px) {
+  .animation-sentence-card { padding:6px 8px; gap:4px }
+  .animation-sentence-card header { grid-template-columns:minmax(0,1fr) auto }
+  .animation-sentence-card .episode-progress { grid-column:2; grid-row:1 }
+  .animation-line-speakers { grid-column:1/-1; grid-row:2 }
+  .animation-sentence-content[data-navigation] { gap:4px }
+}

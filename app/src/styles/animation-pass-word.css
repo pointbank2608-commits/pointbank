@@ -1,8 +1,21 @@
-.animation-pass-word{display:grid;grid-template-rows:auto minmax(48px,1fr);gap:12px;min-width:0;height:clamp(118px,21dvh,210px);min-height:118px;flex:1 1 auto}
-.animation-pass-word .animation-pass-speeds{display:flex;justify-content:center;gap:8px}
-.animation-pass-word .animation-pass-speeds button[aria-pressed=true]{background:#e5efff;color:#145ac0;border-color:#247cff}
+.animation-pass-word{display:grid;grid-template-rows:minmax(48px,1fr);min-width:0;height:clamp(118px,21dvh,210px);min-height:118px;flex:1 1 auto}
+.animation-activity-window[data-layout=pass] .animation-pass-speeds{display:flex;justify-content:center;gap:8px}
+.animation-activity-window[data-layout=pass] .animation-pass-speeds button[aria-pressed=true]{background:#e5efff;color:#145ac0;border-color:#247cff}
 .animation-pass-word .animation-pass-track{position:relative;overflow:hidden;min-width:0;min-height:0;contain:paint;background:#edf3fb;border-radius:12px}
 .animation-pass-word .animation-pass-track>p{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;font-size:18px}
 .animation-pass-word .animation-pass-moving{position:absolute;left:0;top:50%;display:block;white-space:nowrap;font:700 clamp(38px,5cqw,64px)/1.2 Andika,sans-serif;visibility:hidden;transform:translate(-100%,-50%)}
 .animation-pass-word[data-phase=running] .animation-pass-moving{visibility:visible}
 .animation-pass-word[data-phase=answer] .animation-pass-moving{visibility:visible;left:50%;transform:translate(-50%,-50%);max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:center}
+
+.animation-activity-window[data-layout=pass]{container-type:inline-size}
+.animation-activity-window[data-layout=pass]>header {justify-content:flex-start;gap:7px}
+.animation-activity-window[data-layout=pass]>header h2 {margin-right:0}
+.animation-activity-window[data-layout=pass] .episode-progress {margin-left:auto}
+.animation-activity-window[data-layout=pass] .animation-pass-speeds button {padding-inline:8px}
+@container (max-width:560px) {
+  .animation-activity-window[data-layout=pass]>header {flex-wrap:wrap}
+  .animation-activity-window[data-layout=pass] .animation-pass-speeds {order:1;flex-basis:100%}
+  .animation-activity-window[data-layout=pass] .animation-pass-speeds button {min-height:34px;padding-block:4px}
+  .animation-activity-window[data-layout=pass] .animation-window-body {padding:6px 10px}
+  .animation-activity-window[data-layout=pass] .animation-pass-word {height:clamp(54px,15dvh,150px);min-height:48px}
+}

@@ -46,23 +46,26 @@ export default function AnimationMissingCards({words,onClose,onList,observe}:{
   }
   const guessing=phase==='guess',answered=phase==='answer';
   const board=guessing?remaining:answered&&missing?[missing]:deck;
-  const footer=pool.length>=2&&<>
-    <small>{phase==='setup'?t('episodeActivities.missingHint'):phase==='memory'?t('episodeActivities.remember'):guessing?t('episodeActivities.guess'):''}</small>
-    {phase==='setup'&&<button className="episode-primary" onClick={()=>start(0)}>{t('episodeActivities.start')}</button>}
+  const setup=phase==='setup'&&pool.length>=2;
+  const footer=pool.length>=2&&phase!=='setup'&&<>
+    <small>{phase==='memory'?t('episodeActivities.remember'):guessing?t('episodeActivities.guess'):''}</small>
     {guessing&&<button onClick={()=>{setPhase('answer');observe?.('revealed');}}>{t('animationPass.answer')}</button>}
     {answered&&<button onClick={()=>round+1<total?start(round+1):onList()}>{t(round+1<total?'episodeActivities.nextRound':'episodeActivities.list')}</button>}
   </>;
   return <AnimationActivityWindow title="What’s Missing?" label="What’s Missing?" onClose={onClose} onList={onList}
+    layout={setup?'missing-setup':undefined}
+    headerActions={setup&&<button className="episode-primary" onClick={()=>start(0)}>{t('episodeActivities.start')}</button>}
     progress={total?t('episodeActivities.round',{number:round+1,total}):undefined} footer={footer}>
     {pool.length<2?<p>{t('episodeActivities.few')}</p>:<div className="episode-missing">
       {phase==='setup'&&<div className="episode-missing-settings">
         <div>{t('episodeActivities.cards')} {sizes.map(n=><button key={n} aria-pressed={size===n} onClick={()=>setWanted(n)}>{t('episodeActivities.cardCount',{count:n})}</button>)}</div>
         <div>{t('episodeActivities.memory')} {[3,5].map(n=><button key={n} aria-pressed={seconds===n} onClick={()=>setSeconds(n)}>{t('episodeActivities.seconds',{count:n})}</button>)}</div>
       </div>}
-      {phase==='prompt'?<div className="episode-missing-prompt" role="status"><strong>?</strong>What’s Missing?</div>:
+      {setup?<div className="episode-setup-board"><div className="episode-missing-grid" data-columns={size>6?4:3} data-phase="setup">
+        {Array.from({length:size},(_,i)=><span key={i} className="episode-card-back"/>)}
+      </div></div>:phase==='prompt'?<div className="episode-missing-prompt" role="status"><strong>?</strong>What’s Missing?</div>:
       <div className="episode-missing-grid" data-columns={answered?1:size>6?4:3} data-phase={phase} aria-busy={phase==='memory'&&!ready}>
-        {phase==='setup'?Array.from({length:size},(_,i)=><span key={i} className="episode-card-back"/>):
-        board.map(card=><div key={card.word} className="episode-picture-card">
+        {board.map(card=><div key={card.word} className="episode-picture-card">
           {card.imageUrl&&!failed.has(card.imageUrl)&&<img src={card.imageUrl} alt=""
             onLoad={()=>setLoaded(previous=>new Set(previous).add(card.imageUrl!))}
             onError={()=>setFailed(previous=>new Set(previous).add(card.imageUrl!))}/>}

@@ -35,10 +35,10 @@ export default function AnimationPracticeScramble({en,ko,observe}:{en:string;ko:
     if(order.length+1===words.length)observe?.();
   }
   return <div className="episode-scramble" data-result={complete?(correct?'correct':'wrong'):undefined}>
-    {ko&&<h3>{ko}</h3>}
-    <p>{t('episodeActivities.orderHint')}</p>
+    {ko&&<p lang="ko">{ko}</p>}
     <div className="episode-answer-slots">{prefix} {words.map((_,i)=>i<order.length?
       <button key={i} onClick={()=>setOrder(order.filter((__,slot)=>slot!==i))}>{words[order[i]]}</button>:<span key={i}>{i+1}</span>)} {suffix}</div>
+    <p>{t('episodeActivities.orderHint')}</p>
     <div className="episode-choice-row">{cards.map(id=><button key={id} disabled={order.includes(id)} onClick={()=>add(id)}>{words[id]}</button>)}</div>
     {complete&&<strong role="status">{t(correct?'episodeActivities.correct':'episodeActivities.wrong')}</strong>}
     {order.length>0&&<button onClick={()=>setOrder([])}>{t('episodeActivities.retry')}</button>}

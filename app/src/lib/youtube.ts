@@ -37,6 +37,10 @@ export interface YoutubePlayer {
   setVolume?: (volume:number) => void;
   getVolume?: () => number;
   getAvailablePlaybackRates?: () => number[];
+  loadModule?: (module:'captions') => void;
+  unloadModule?: (module:'captions') => void;
+  getOption?: (module:'captions',option:'track') => {languageCode?:string}|undefined;
+  setOption?: (module:'captions',option:'track',value:{languageCode?:string}) => void;
   destroy: () => void;
 }
 

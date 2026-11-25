@@ -27,11 +27,11 @@ export default function AnimationPassWord({words,observe,onList,onClose}:{onList
   <button disabled={state.phase!=='finished'&&state.phase!=='answer'} onClick={()=>{setState(value=>({...value,phase:'answer'}));observe?.('revealed');}}>{t('animationPass.answer')}</button>
   <button aria-label={t('animationPass.next')} disabled={state.index===words.length-1} onClick={()=>setState(value=>({...value,index:value.index+1,phase:'idle'}))}>{t('episodeActivities.next')} →</button>
  </>;
- return <AnimationActivityWindow title={t('episodeActivities.pass')} label="Pass the Word" onClose={onClose} onList={onList} footer={footer} progress={words.length?((state.index+1)+' / '+words.length):undefined}>
- {!words.length?<p role="status">{t('animationPass.empty')}</p>:<div className="animation-pass-word" data-phase={state.phase}>
-  <div className="animation-pass-speeds" aria-label={t('animationPass.speed')}>
+ const speeds=words.length>0&&<div className="animation-pass-speeds" aria-label={t('animationPass.speed')}>
    {(['fast','normal','slow'] as const).map(speed=><button key={speed} aria-pressed={state.speed===speed} onClick={()=>{setState(value=>({...value,speed,run:value.run+1,phase:'running'}));observe?.('shown');}}>{t(`animationPass.${speed}`)}</button>)}
-  </div>
+  </div>;
+ return <AnimationActivityWindow layout="pass" headerActions={speeds} title={t('episodeActivities.pass')} label="Pass the Word" onClose={onClose} onList={onList} footer={footer} progress={words.length?((state.index+1)+' / '+words.length):undefined}>
+ {!words.length?<p role="status">{t('animationPass.empty')}</p>:<div className="animation-pass-word" data-phase={state.phase}>
   <div ref={track} className="animation-pass-track" aria-label={t('animationPass.track')}>
    {state.phase==='idle'&&<p>{t('animationPass.waiting')}</p>}
    <span ref={word} className="animation-pass-moving" lang="en" aria-hidden={state.phase!=='answer'}>{current}</span>

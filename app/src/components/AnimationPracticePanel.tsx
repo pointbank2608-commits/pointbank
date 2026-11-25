@@ -1,4 +1,5 @@
 import {createPortal} from 'react-dom';
+import AnimationSentenceCard from './AnimationSentenceCard';
 import AnimationActivityWindow from './AnimationActivityWindow';
 import AnimationPracticeScramble from './AnimationPracticeScramble';
 import AnimationActivityMenu from './AnimationActivityMenu';
@@ -40,9 +41,10 @@ export default function AnimationPracticePanel({slide,lines,time,listen,pause,se
  const marked=line?.en.indexOf('**')??-1;
  const blank=marked>=0?(line?.en.slice(0,marked).trim().split(/\s+/).filter(Boolean).length??0):Math.min(1,tokens.length-1);
  const selectedExample=expression?.examples[example];
- const stem=expression?.text.split(/…|\.{3}/)[0].trim()??'';
+ const stem=expression?.text.split(/…|\.{3}|\+/)[0].trim()??'';
  function parts(answer:string) {
-   const prefix=stem&&answer.toLowerCase().startsWith(stem.toLowerCase())?answer.slice(0,stem.length):'';
+   const normalize=(value:string)=>value.toLowerCase().replace(/[‘’]/g,"'");
+   const prefix=stem&&normalize(answer).startsWith(normalize(stem))?answer.slice(0,stem.length):'';
    return [prefix,answer.slice(prefix.length).trim()];
  }
  function nextLine() {
@@ -54,24 +56,31 @@ export default function AnimationPracticePanel({slide,lines,time,listen,pause,se
      };run();
    }else move(index+1,false);
  }
- const footer=line&&<>
-   <button disabled={index===0} onClick={()=>move(index-1,false)}>← {t('episodeActivities.previous')}</button>
-   {mode==='expression'&&selectedExample?<button onClick={()=>{pause();observe?.('audio');speak(selectedExample.answer);}}>{t('episodeActivities.listen')}</button>:
-    mode!=='scramble'&&line.start!==undefined&&line.end!==undefined&&<button onClick={()=>play(line)}>{t(phase==='speak'?'episodeActivities.repeat':'episodeActivities.listen')}</button>}
-   <button disabled={index===candidates.length-1} onClick={nextLine}>{t('episodeActivities.next')} →</button>
+ const hasAudio=line?.start!==undefined&&line.end!==undefined;
+ const listenButton=line&&mode!=='scramble'&&(hasAudio||selectedExample)&&
+   <button className="sentence-primary" onClick={()=>{
+     if(mode==='expression'&&selectedExample){pause();observe?.('audio');speak(selectedExample.answer);}
+     else play(line);
+   }}>{t(phase==='speak'&&mode!=='expression'?'episodeActivities.repeat':'episodeActivities.listen')}</button>;
+ const roleSelector=mode==='role'&&speakers.length>0&&<label>{t('episodeActivities.myRole')} <select value={actor} onChange={event=>{pause();setActor(event.target.value);}}>
+     <option value="">—</option>{speakers.map(s=><option key={s} value={s!}>{s}</option>)}
+   </select></label>;
+ const actions=line&&mode!=='scramble'&&<>
+   {mode==='expression'&&expression?.examples.map((e,i)=><button key={e.answer} aria-pressed={example===i} onClick={()=>{pause();setExample(i);}}>{parts(e.answer)[1]}</button>)}
+   {listenButton}
+   {mode==='cloze'&&<button aria-pressed={answer} onClick={()=>{pause();setAnswer(true);observe?.('revealed');}}>{t('animationPass.answer')}</button>}
  </>;
- return <AnimationActivityWindow title={t('episodeActivities.'+mode)} label="문장 연습 패널" onList={leave} onClose={()=>{pause();onClose();}}
-    progress={line?((index+1)+' / '+candidates.length):undefined} footer={footer}>
+ const speakerLabels=mode==='role'&&<div className="animation-line-speakers">{speakers.map(s=>
+   <span key={s} data-current={s===line?.speaker || undefined}>{s===line?.speaker?'✓ ':''}{s}</span>
+ )}</div>;
+ return <AnimationSentenceCard host={captionHost} title={t('episodeActivities.'+mode)} speakers={speakerLabels}
+   progress={line?((index+1)+' / '+candidates.length):undefined} hasNavigation={!!line}
+   previous={index>0?()=>move(index-1,false):undefined} next={index<candidates.length-1?nextLine:undefined}
+   actions={actions} roleSelector={roleSelector} onList={leave} onClose={()=>{pause();onClose();}}>
    {!line?<p role="status">{mode==='expression'?'이 챕터에는 등록된 표현 바꾸기 문장이 없어요.':'이 활동에 사용할 대사가 없어요.'}</p>:
-   <div className="episode-practice-content">
-     {mode==='scramble'&&<AnimationPracticeScramble key={index+english} en={english} ko={line.ko} observe={()=>observe?.('submitted')}/>}
-     {mode==='cloze'&&<><p>{t('episodeActivities.blankHint')}</p><div className="episode-sentence-board"><h3 lang="en">{tokens.map((token,i)=>i===blank&&!answer?'____':token).join(' ')}</h3>{answer&&<p>{line.ko}</p>}</div>
-       <button aria-pressed={answer} onClick={()=>{pause();setAnswer(true);observe?.('revealed');}}>{t('animationPass.answer')}</button></>}
-     {mode==='expression'&&expression&&<><p>{t('episodeActivities.changeHint')}</p><div className="episode-sentence-board">
-       <h3 lang="en">{parts(selectedExample?.answer??english)[0]} <em>{parts(selectedExample?.answer??english)[1]}</em></h3><p>{selectedExample?.situation??expression.explanation}</p></div>
-       <div className="episode-choice-row">{expression.examples.map((e,i)=><button key={e.answer} aria-pressed={example===i} onClick={()=>{pause();setExample(i);}}>{parts(e.answer)[1]}</button>)}</div></>}
-     {mode==='role'&&<><div className="episode-choice-row">{t('episodeActivities.myRole')} {speakers.map(s=><button key={s} aria-pressed={(actor||speakers[0])===s} onClick={()=>{pause();setActor(s!);}}>{s}</button>)}</div>
-       <div className="episode-sentence-board"><small>{line.speaker}{line.speaker&&(actor||speakers[0])===line.speaker?' · '+t('episodeActivities.myTurn'):''}</small><h3 lang="en">{english}</h3><p>{line.ko}</p></div></>}
-   </div>}
- </AnimationActivityWindow>;
+    mode==='scramble'?<AnimationPracticeScramble key={index+english} en={english} ko={line.ko} observe={()=>observe?.('submitted')}/>:
+    mode==='cloze'?<><p>{t('episodeActivities.blankHint')}</p><h3 lang="en">{tokens.map((token,i)=>i===blank&&!answer?'____':token).join(' ')}</h3>{answer&&<p>{line.ko}</p>}</>:
+    mode==='expression'?<><p>{t('episodeActivities.changeHint')}</p><h3 lang="en">{parts(selectedExample?.answer??english)[0]} <em>{parts(selectedExample?.answer??english)[1]}</em></h3><p>{selectedExample?.situation??expression?.explanation}</p></>:
+    <><h3 lang="en">{english}</h3><p>{line.ko}</p></>}
+ </AnimationSentenceCard>;
 }
