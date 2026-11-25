@@ -27,12 +27,13 @@ const fixture = `
   </Routes></BrowserRouter>);
 `;
 const api = `
+  export { removeWordListItems } from '/src/lib/api.ts?bulk-delete';
   const lists = async () => (await fetch('${origin}/word_lists')).json();
   const mocks = {fetchAllWordLists: async (_academy, kind='word') => (await lists()).filter(row => kind==='all' || (row.kind || 'word')===kind), fetchWordLists: lists,
     createWordList: async draft => (await fetch('${origin}/word_lists', {method:'POST',body:JSON.stringify(draft)})).json(),
     createCurriculumLesson: async draft => (await fetch('${origin}/curriculum_lessons', {method:'POST',body:JSON.stringify(draft)})).json(),
     wordListKindOf: l => l.kind || 'word', fetchPhonicsBankResult: async () => ({entries: [], mediaAvailable: false})};
-  ${apiExports.map(name => `export const ${name} = (...args) => (mocks.${name} || (async () => []))(...args);`).join('\n')}
+  ${apiExports.filter(name => name !== 'removeWordListItems').map(name => `export const ${name} = (...args) => (mocks.${name} || (async () => []))(...args);`).join('\n')}
 `;
 const bundle = await build({
   root, configFile: false, logLevel: 'error',
@@ -74,6 +75,8 @@ const extractionRequests = [];
 const aiSaveAttempts = [];
 const appendRequests = [];
 let lostAppendResponse = true;
+let concurrentEdit = true;
+const addedByTeacher = { id: 'other-edit', word: 'lake', meaning: '호수', image_url: null, category: null };
 let browser;
 const transferDb = new PGlite();
 try {
@@ -116,6 +119,18 @@ try {
       return respond(row);
     }
     if (pathname === '/word_lists') return respond(lists);
+    if (pathname === '/rest/v1/word_lists' && ['GET', 'PATCH'].includes(request.method()) && searchParams.has('id')) {
+      const list = lists.find(row => 'eq.' + row.id === searchParams.get('id'));
+      if (request.method() === 'GET') return respond({ items: list.items, updated_at: list.updated_at ?? '2026-01-01T00:00:00Z' });
+      if (concurrentEdit) {
+        list.items.push(addedByTeacher);
+        list.updated_at = '2026-01-02T00:00:00Z';
+        concurrentEdit = false;
+      }
+      if (searchParams.get('updated_at') !== 'eq.' + list.updated_at) return respond({ code: 'PGRST116', message: 'Row version changed' }, 406);
+      Object.assign(list, request.postDataJSON());
+      return respond({ items: list.items });
+    }
     if (pathname.endsWith('/transfer_word_list_items')) {
       const { p_source, p_target, p_item_ids, p_move } = request.postDataJSON();
       const source = lists.find(list => list.id === p_source);
@@ -492,15 +507,18 @@ try {
 
   savedPhoto[0].group_name = 'Review';
   await go('/wordlists?list=' + imageTarget.id);
+  const deleteButton = page.getByRole('button', { name: '선택한 단어 삭제', exact: true });
+  await deleteButton.waitFor();
+  assert.equal(await deleteButton.isDisabled(), true);
+  await page.getByRole('checkbox', { name: 'river · 강', exact: true }).check();
   await page.getByRole('button', { name: '다른 단어장으로 복사', exact: true }).click();
   const appendDialog = page.getByRole('dialog');
   const wordDestination = appendDialog.getByLabel('단어장 저장 위치');
   await wordDestination.selectOption(savedPhoto[0].id);
   assert.equal(await wordDestination.locator(`option[value="${imageTarget.id}"]`).count(), 0);
   assert.equal(await wordDestination.locator(`option[value="${zooSentences.id}"]`).count(), 0);
-  await appendDialog.getByRole('checkbox', { name: '전체 선택', exact: true }).uncheck();
-  await appendDialog.getByRole('checkbox', { name: 'river · 강', exact: true }).check();
-  await appendDialog.getByRole('button', { name: '선택한 항목 추가', exact: true }).click();
+  assert.equal(await appendDialog.getByRole('checkbox').count(), 0);
+  await appendDialog.getByRole('button', { name: '선택한 단어 복사', exact: true }).click();
   await appendDialog.waitFor({ state: 'hidden' });
   assert.equal(savedPhoto[0].items.length, 3);
   assert.equal(imageTarget.items.length, 4);
@@ -544,26 +562,44 @@ try {
   const importButton = page.getByRole('button', { name: '다른 단어장에서 불러오기', exact: true });
   assert.equal(await importButton.count(), 0);
   await go('/wordlists?list=' + imageTarget.id);
+  await page.getByRole('checkbox', { name: '전체 선택', exact: true }).check();
   await page.getByRole('button', { name: '다른 단어장으로 복사', exact: true }).click();
   assert.equal(await importButton.count(), 0);
   await wordDestination.selectOption(emptyList.id);
-  await appendDialog.getByRole('button', { name: '선택한 항목 추가' }).click();
+  await appendDialog.getByRole('button', { name: '선택한 단어 복사' }).click();
   await appendDialog.waitFor({ state: 'hidden' });
   assert.deepEqual(emptyList.items.map(item => item.word), [...new Set(imageTarget.items.map(item => item.word))]);
   assert.equal(emptyList.items.find(item => item.word === 'forest').meaning, '숲 / 초록 숲');
   await go('/wordlists?list=' + emptyList.id);
+  await page.getByRole('checkbox', { name: 'forest · 숲 / 초록 숲', exact: true }).check();
   await page.getByRole('button', { name: '다른 단어장으로 이동' }).click();
   const moveDialog = page.getByRole('dialog', { name: '다른 단어장으로 이동' });
   await moveDialog.getByLabel('단어장 저장 위치').selectOption(savedPhoto[0].id);
   const moveButton = moveDialog.getByRole('button', { name: '선택한 단어 이동' });
-  assert.equal(await moveButton.isDisabled(), true);
-  await moveDialog.getByLabel('forest · 숲 / 초록 숲', { exact: true }).check();
   await moveButton.click();
   await moveDialog.waitFor({ state: 'hidden' });
   await page.getByText('· 숲속 / 숲 / 초록 숲', { exact: true }).waitFor();
   await go('/wordlists?list=' + emptyList.id);
   await page.getByText('· 강', { exact: true }).waitFor();
   assert.equal(await page.getByText('· 숲 / 초록 숲', { exact: true }).count(), 0);
+  await go('/wordlists?list=' + imageTarget.id);
+  const keep = page.getByRole('checkbox', { name: 'river · 강', exact: true });
+  await page.getByRole('checkbox', { name: '전체 선택', exact: true }).check();
+  await keep.uncheck();
+  const deleteCount = imageTarget.items.length - 1;
+  for (const accept of [false, true]) {
+    page.once('dialog', async dialog => {
+      assert.equal(dialog.message(), `‘${imageTarget.name}’에서 선택한 단어 ${deleteCount}개를 삭제할까요?`);
+      if (accept) await dialog.accept(); else await dialog.dismiss();
+    });
+    await deleteButton.click();
+    if (!accept) assert.equal(imageTarget.items.length, deleteCount + 1);
+  }
+  await page.getByRole('button', { name: '다시 저장하기', exact: true }).click();
+  await page.getByText('0개 선택됨', { exact: true }).waitFor();
+  await go('/wordlists?list=' + imageTarget.id);
+  await keep.waitFor();
+  assert.deepEqual(imageTarget.items, [originalItem, addedByTeacher]);
   assert.deepEqual(errors, []);
   console.log('PASS PDF selected-page pixels and limits, original page mapping, AI append retries, mixed save, list-to-list copies, metadata, and reopening');
 } finally {

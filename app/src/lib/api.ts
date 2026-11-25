@@ -1089,6 +1089,19 @@ export async function updateWordListItems(id: string, items: WordListItem[]) {
   if (error) throw new Error(error.message);
 }
 
+export async function removeWordListItems(id: string, selectedIds: Set<string>): Promise<WordListItem[]> {
+  const current = unwrap(await supabase.from('word_lists').select('items, updated_at').eq('id', id)
+    .single<Pick<WordList, 'items' | 'updated_at'>>());
+  if (!current) throw new Error('study_list_missing');
+  const items = current.items.filter(item => !selectedIds.has(item.id));
+  if (items.length === current.items.length) return fixLegacyImageUrls(items);
+  // Retry against the latest list if another teacher saves between the read and write.
+  const saved = unwrap(await supabase.from('word_lists').update({ items, updated_at: new Date().toISOString() })
+    .eq('id', id).eq('updated_at', current.updated_at).select('items').single<Pick<WordList, 'items'>>());
+  if (!saved) throw new Error('study_list_changed');
+  return fixLegacyImageUrls(saved.items);
+}
+
 export async function renameWordList(id: string, name: string) {
   const { error } = await supabase
     .from('word_lists')

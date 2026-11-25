@@ -76,7 +76,7 @@ export default function LessonWordListModal({
         {list ? (
           <>
             <p className="font-caption text-caption text-on-surface-variant">{t('curriculum.wordListTools.editHint')}</p>
-            <WordListEditor list={list} onChange={(items) => onItemsChange(list.id, items)} />
+            <WordListEditor key={list.id} list={list} onChange={(items) => onItemsChange(list.id, items)} />
           </>
         ) : (
           <div className="space-y-3">

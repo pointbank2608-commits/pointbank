@@ -19,7 +19,7 @@ export default function WordListAppendDialog({ academy, owner, list: source, act
   const words = wordListKindOf(source) === 'word';
   const title = t(moving ? 'aiMaterials.moveWords' :
     words ? 'aiMaterials.copyWords' : 'aiMaterials.appendToExisting');
-  const [selected, setSelected] = useState(() => new Set(moving ? [] : source.items.map(item => item.id)));
+  const [selected, setSelected] = useState(() => new Set(source.items.map(item => item.id)));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
   const pending = useRef<AiMaterialList | undefined>(undefined);
@@ -50,11 +50,11 @@ export default function WordListAppendDialog({ academy, owner, list: source, act
       <button type="button" className="textbook-button" disabled={busy} onClick={onClose}>{t('common.cancel')}</button>
     </header>
     <form onSubmit={save} className="ai-materials-form">
-      <p className="textbook-note">{t(moving ? 'aiMaterials.moveHelp' : words ? 'aiMaterials.copyHelp' : 'aiMaterials.appendHelp')}</p>
+      <p className="textbook-note">{words ? t('wordLists.transferSelected', { count: selected.size }) : t('aiMaterials.appendHelp')}</p>
       {words && <p className="textbook-note">{t('aiMaterials.mergeByImage')}</p>}
       <StudyListDestination academy={academy} kind={wordListKindOf(source)} value={target}
         onChange={setTarget} excludeId={source.id} allowNew={false} disabled={frozen} />
-      <fieldset disabled={frozen}>
+      {!words && <fieldset disabled={frozen}>
         <legend>{source.name}</legend>
         <label className="textbook-check"><input type="checkbox" checked={selected.size === source.items.length}
           onChange={event => setSelected(new Set(event.target.checked ? source.items.map(item => item.id) : []))} />{t('aiMaterials.selectAll')}</label>
@@ -64,13 +64,12 @@ export default function WordListAppendDialog({ academy, owner, list: source, act
             if (event.target.checked) next.add(item.id); else next.delete(item.id);
             return next;
           })} />
-          {words && item.image_url && <img src={item.image_url} alt="" className="h-10 w-10 rounded object-contain" />}
           <span>{item.word}{item.meaning && ` · ${item.meaning}`}</span>
         </label>)}
-      </fieldset>
+      </fieldset>}
       {error && <p role="alert" className="textbook-error">{t('aiMaterials.saveFailed')}</p>}
       <button type="submit" className="textbook-button textbook-primary" disabled={busy || !target || !selected.size}>
-        {t(busy ? 'textbook.saving' : frozen ? 'aiMaterials.retrySave' : moving ? 'aiMaterials.moveSelected' : 'aiMaterials.appendSelected')}
+        {t(busy ? 'textbook.saving' : frozen ? 'aiMaterials.retrySave' : moving ? 'aiMaterials.moveSelected' : words ? 'wordLists.copySelected' : 'aiMaterials.appendSelected')}
       </button>
     </form>
   </AccessibleDialog>;

@@ -35,6 +35,7 @@ import {
   renameWordList,
   restoreDeletedWordList,
   updateWordListItems,
+  removeWordListItems,
   type ContentRevision,
 } from '../lib/api';
 import WordListHistoryModal from '../components/WordListHistoryModal';
@@ -204,14 +205,16 @@ function CategoryPickerModal({
 export function WordListEditor({ list, onChange, onTransfer, maxWords, saveItems = updateWordListItems }: {
   list: WordList; onChange: (items: WordListItem[]) => void;
   maxWords?: number;
-  onTransfer?: (action: WordListAction) => void;
+  onTransfer?: (action: WordListAction, items: WordListItem[]) => void;
   saveItems?: (id: string, items: WordListItem[]) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const { notify } = useToast();
   const savingRef = useRef(false);
   const [saving, setSaving] = useState(false);
-  const [failedSave, setFailedSave] = useState<{ items: WordListItem[]; onSuccess?: () => void } | null>(null);
+  const [failedSave, setFailedSave] = useState<{ retry: () => void } | null>(null);
+  const [checked, setChecked] = useState<Set<string>>(new Set());
+  const selected = list.items.filter(item => checked.has(item.id));
   const [tab, setTab] = useState<'manual' | 'dictionary' | 'category' | 'lyrics'>('manual');
   const [word, setWord] = useRecoverableField(`word-list:${list.id}:word`);
   const [meaning, setMeaning] = useRecoverableField(`word-list:${list.id}:meaning`);
@@ -234,23 +237,29 @@ export function WordListEditor({ list, onChange, onTransfer, maxWords, saveItems
     }
   }, [tab, dictionary, phonics]);
 
-  async function persist(next: WordListItem[], onSuccess?: () => void) {
+  async function runSave(write: () => Promise<WordListItem[]>, onSuccess?: () => void) {
     if (savingRef.current) return;
-    if (maxWords !== undefined && next.length > maxWords) { notify(t('trial.changeLists'), 'error'); return; }
     savingRef.current = true;
     setSaving(true);
     setFailedSave(null);
     try {
-      await saveItems(list.id, next);
-      onChange(next);
+      onChange(await write());
       onSuccess?.();
       notify(t('wordLists.savedToast'));
     } catch {
-      setFailedSave({ items: next, onSuccess });
+      setFailedSave({ retry: () => void runSave(write, onSuccess) });
     } finally {
       savingRef.current = false;
       setSaving(false);
     }
+  }
+
+  function persist(next: WordListItem[], onSuccess?: () => void) {
+    if (maxWords !== undefined && next.length > maxWords) { notify(t('trial.changeLists'), 'error'); return; }
+    return runSave(async () => {
+      await saveItems(list.id, next);
+      return next;
+    }, onSuccess);
   }
 
   function addManual() {
@@ -283,8 +292,13 @@ export function WordListEditor({ list, onChange, onTransfer, maxWords, saveItems
     addDrafts(entries.map(toWordListDraft));
   }
 
-  function removeItem(id: string) {
-    void persist(list.items.filter((i) => i.id !== id));
+  function removeChecked() {
+    if (!selected.length || !window.confirm(t('wordLists.confirmRemoveSelected', { count: selected.length, name: list.name }))) return;
+    if (saveItems !== updateWordListItems) {
+      void persist(list.items.filter(item => !checked.has(item.id)), () => setChecked(new Set()));
+      return;
+    }
+    void runSave(() => removeWordListItems(list.id, checked), () => setChecked(new Set()));
   }
 
   // 사전(word_bank)과 파닉스(phonics_bank)를 같이 찾는다 — mat·ram·wag 같은 CVC 낱말은 파닉스에만 있다(2026-10-03 제보).
@@ -324,33 +338,43 @@ export function WordListEditor({ list, onChange, onTransfer, maxWords, saveItems
       {failedSave && <div role="alert" className="mb-3 rounded-xl bg-error-container p-4 text-on-error-container">
         <p>{t('classroomUx.saveFailed')}</p>
         <div className="mt-2 flex flex-wrap gap-2">
-          <button type="button" onClick={() => void persist(failedSave.items, failedSave.onSuccess)} className="min-h-11 rounded-lg bg-surface-container-lowest px-4 font-semibold">{t('classroomUx.retrySave')}</button>
+          <button type="button" onClick={failedSave.retry} className="min-h-11 rounded-lg bg-surface-container-lowest px-4 font-semibold">{t('classroomUx.retrySave')}</button>
           <button type="button" onClick={() => setFailedSave(null)} className="min-h-11 rounded-lg px-4">{t('common.cancel')}</button>
         </div>
       </div>}
       <fieldset disabled={saving || !!failedSave} className="min-w-0 disabled:opacity-60">
-      {onTransfer && list.items.length > 0 && <div className="mb-3 flex flex-wrap gap-2">
-        <button type="button" className="textbook-button" onClick={() => onTransfer('copy')}>{t('aiMaterials.copyWords')}</button>
-        <button type="button" className="textbook-button" onClick={() => onTransfer('move')}>{t('aiMaterials.moveWords')}</button>
+      {list.items.length > 0 && <div className="mb-3 flex flex-wrap items-center gap-2">
+        <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 px-2">
+          <input type="checkbox" className="accent-primary" checked={selected.length === list.items.length}
+            ref={input => { if (input) input.indeterminate = selected.length > 0 && selected.length < list.items.length; }}
+            onChange={event => setChecked(new Set(event.target.checked ? list.items.map(item => item.id) : []))} />
+          {t('aiMaterials.selectAll')}
+        </label>
+        <span aria-live="polite" className="text-sm text-on-surface-variant">{t('wordLists.categoryModalSelected', { count: selected.length })}</span>
+        {onTransfer && <>
+          <button type="button" className="textbook-button disabled:opacity-50" disabled={!selected.length} onClick={() => onTransfer('copy', selected)}>{t('aiMaterials.copyWords')}</button>
+          <button type="button" className="textbook-button disabled:opacity-50" disabled={!selected.length} onClick={() => onTransfer('move', selected)}>{t('aiMaterials.moveWords')}</button>
+        </>}
+        <button type="button" className="textbook-button text-error disabled:opacity-50" disabled={!selected.length} onClick={removeChecked}>{t('wordLists.removeSelected')}</button>
       </div>}
       {list.items.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-3">
           {list.items.map((i) => (
-            <span
+            <label
               key={i.id}
-              className="flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-full bg-surface-container-low font-caption text-caption text-on-surface"
+              className={`flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 font-caption text-caption text-on-surface ${checked.has(i.id) ? 'border-primary bg-primary/10' : 'border-transparent bg-surface-container-low'}`}
             >
+              <input type="checkbox" className="accent-primary" checked={checked.has(i.id)} onChange={event => {
+                const isChecked = event.target.checked;
+                setChecked(prev => {
+                  const next = new Set(prev);
+                  if (isChecked) next.add(i.id); else next.delete(i.id);
+                  return next;
+                });
+              }} />
               {i.image_url && <img src={i.image_url} alt="" className="w-4 h-4 rounded-full object-cover" />}
               {i.word} <span className="text-on-surface-variant">· {i.meaning}</span>
-              <button
-                type="button"
-                onClick={() => removeItem(i.id)}
-                aria-label={t('classroomUx.removeWord', { word: i.word })}
-                className="ml-0.5 min-w-11 min-h-11 flex items-center justify-center rounded-full hover:bg-error hover:text-on-error text-on-surface-variant"
-              >
-                ✕
-              </button>
-            </span>
+            </label>
           ))}
         </div>
       )}
@@ -1086,7 +1110,7 @@ function TeachingMaterialsPage() {
                 ) : (
                   <WordListEditor
                     list={list}
-                    onTransfer={action => setAppendDialog({ scope: accountScope.current, list, action })}
+                    onTransfer={(action, items) => setAppendDialog({ scope: accountScope.current, list: { ...list, items }, action })}
                     onChange={(items) => setLists((prev) => prev.map((l) => (l.id === list.id ? { ...l, items } : l)))}
                   />
                 )}
