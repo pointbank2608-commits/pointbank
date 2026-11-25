@@ -1,0 +1,38 @@
+.billing-comparison {
+  container-type: inline-size;
+  overflow: hidden;
+  border: 1px solid #dbe1e9;
+  border-radius: 16px;
+  background: white;
+  color: #16253a;
+}
+.billing-comparison-header {
+  padding: 22px clamp(20px, 4cqi, 36px);
+  border-bottom: 1px solid #dbe1e9;
+}
+.billing-comparison-header h2 { font-size: 1.5rem; font-weight: 750; }
+.billing-comparison-header p, .billing-plan-note { margin-top: 6px; color: #526176; font-size: .9375rem; }
+.billing-plan { display: grid; gap: 18px; padding: 26px clamp(20px, 4cqi, 36px) 32px; min-width: 0; word-break: keep-all; overflow-wrap: anywhere; }
+.billing-plan + .billing-plan { border-top: 1px solid #dbe1e9; }
+.billing-plan-price h3 { display: flex; align-items: center; gap: 8px; font-size: 1.375rem; font-weight: 750; }
+.billing-plan-rate { margin-top: 6px; font-size: 1.125rem; font-weight: 600; }
+.billing-plan-first { margin-top: 12px; color: #34445a; font-size: .9375rem; }
+.billing-plan-primary, .billing-plan-current {
+  display: flex; align-items: center; justify-content: center; min-height: 46px;
+  width: 100%; border-radius: 8px; padding: 10px 14px; font-weight: 700; text-align: center;
+}
+.billing-plan-primary { color: white; background: #2056c9; }
+.billing-plan-primary:hover { background: #1947a8; }
+.billing-plan-primary:focus-visible { outline: 3px solid #4268c3; outline-offset: 3px; }
+.billing-plan-primary:disabled, .billing-plan-current { background: #edf0f4; color: #526176; }
+.billing-plan-action:empty { display: none; }
+.billing-plan-features h4 { margin-bottom: 13px; font-weight: 700; }
+.billing-plan-features ul { display: grid; gap: 10px; }
+.billing-plan-features li { display: grid; grid-template-columns: 16px 1fr; gap: 10px; line-height: 1.55; }
+.billing-plan-features li span { font-weight: 650; }
+@container (min-width: 35rem) {
+  .billing-plan-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 18px; }
+  .billing-plan { grid-row: span 3; grid-template-rows: subgrid; }
+  .billing-plan + .billing-plan { border-top: 0; border-left: 1px solid #dbe1e9; }
+  .billing-plan-action:empty { display: block; }
+}

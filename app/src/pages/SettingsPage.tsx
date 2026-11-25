@@ -15,7 +15,6 @@ import {
   removeAcademyLogo,
   renameClass,
   setClassSchedule,
-  rotateInviteCode,
   updateAcademy,
   updateMyDisplayName,
   updatePresetHomeworkFlag,
@@ -45,14 +44,12 @@ export default function SettingsPage() {
   const [newPresetDelta, setNewPresetDelta] = useState('');
   const [newPresetHomework, setNewPresetHomework] = useState(false);
   const [newClassName, setNewClassName] = useState('');
-  const [inviteCode, setInviteCode] = useState(academy?.invite_code ?? '');
   const [logoBusy, setLogoBusy] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setName(academy?.name ?? '');
     setUnit(academy?.point_unit ?? '');
-    setInviteCode(academy?.invite_code ?? '');
   }, [academy]);
 
   useEffect(() => {
@@ -72,7 +69,6 @@ export default function SettingsPage() {
     void loadPresets();
   }, [loadPresets]);
 
-  const isOwner = profile?.role === 'owner';
 
   /* ---------- 핸들러 ---------- */
 
@@ -152,18 +148,6 @@ export default function SettingsPage() {
     if (ok) await reloadClasses();
   }
 
-  async function handleRotate() {
-    if (!confirm(t('settings.rotateConfirm'))) return;
-    try {
-      const code = await rotateInviteCode();
-      setInviteCode(code);
-      notify(t('settings.rotateToast'));
-      await refresh();
-    } catch (err) {
-      notify(err instanceof Error ? err.message : String(err), 'error');
-    }
-  }
-
   async function handleLogoSelect(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = ''; // 같은 파일을 다시 선택해도 change 가 발생하도록
@@ -192,13 +176,6 @@ export default function SettingsPage() {
     if (!confirm(t('settings.logoRemoveConfirm'))) return;
     const ok = await run(() => removeAcademyLogo(academy.id), t('settings.logoRemovedToast'));
     if (ok) await refresh();
-  }
-
-  function copy(text: string, what: string) {
-    navigator.clipboard
-      .writeText(text)
-      .then(() => notify(t('settings.copiedToast', { what })))
-      .catch(() => notify(t('settings.copyFailedToast'), 'error'));
   }
 
   /* ---------- 렌더 ---------- */
@@ -496,30 +473,6 @@ export default function SettingsPage() {
         <p className="font-caption text-caption text-on-surface-variant">{t('settings.studentLoginHint')}</p>
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
-        <h4 className="font-title-md text-title-md text-on-surface mb-1.5">{t('settings.inviteTitle')}</h4>
-        <p className="font-caption text-caption text-on-surface-variant mb-3">
-          {t('settings.inviteHint')}
-          {isOwner ? '' : t('settings.inviteHintOwnerOnly')}
-        </p>
-        <div className="flex items-center gap-3 flex-wrap">
-          <span
-            title={t('settings.inviteCopyHint')}
-            onClick={() => copy(inviteCode, t('settings.inviteCodeLabel'))}
-            className="cursor-pointer px-4 py-2 rounded-lg bg-secondary-container text-on-secondary-container font-title-md text-title-md tracking-wider"
-          >
-            {inviteCode}
-          </span>
-          {isOwner && (
-            <button
-              onClick={() => void handleRotate()}
-              className="px-4 py-2 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors"
-            >
-              {t('settings.rotateInvite')}
-            </button>
-          )}
-        </div>
-      </div>
 
       </>}
       <AccountDataSection />

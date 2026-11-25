@@ -204,7 +204,6 @@ export interface AdminAcademyDetail {
     billing_failure_count: number;
     card_brand: string | null;
     card_last4: string | null;
-    invite_code: string;
     point_unit: string;
   };
   members: { id: string; display_name: string; role: string; created_at: string; email: string; last_sign_in_at: string | null }[];

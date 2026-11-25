@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { confirmStudentLimit, cancelBilling, changeSubscriptionCard, fetchBillingHistory, fetchStudentsOfAcademy, fetchSubscriptionQuote, startMonthlySubscription, type SubscriptionQuote } from '../lib/api';
-import { BASE_FEE_KRW, monthlyFee } from '../lib/planLimits';
+import { monthlyFee } from '../lib/planLimits';
+import '../styles/billing-plans.css';
 import { issueBillingKey } from '../lib/portone';
 import type { BillingHistoryRow } from '../lib/types';
 
@@ -18,7 +19,7 @@ function formatDate(iso: string): string {
 
 export default function BillingPage() {
   const { t } = useTranslation();
-  const { academy, profile, isPaid, refresh } = useAuth();
+  const { academy, profile, isPaid, refresh, trial } = useAuth();
   const { notify, run } = useToast();
   const [studentCount, setStudentCount] = useState<number | null>(null);
   const [history, setHistory] = useState<BillingHistoryRow[]>([]);
@@ -106,6 +107,11 @@ export default function BillingPage() {
   }
 
 
+  const quoteStatus = <div role="status" className="text-sm text-on-surface-variant">
+    {t(quoteFailed ? 'billing.quoteFailed' : 'billing.quoteLoading')}
+    {quoteFailed && <button type="button" className="ml-2 text-primary underline" onClick={() => setQuoteVersion(v => v + 1)}>{t('billing.retryQuote')}</button>}
+  </div>;
+
   return (
     <div className="space-y-6">
       <Link
@@ -115,23 +121,45 @@ export default function BillingPage() {
         {t('billing.backToSettings')}
       </Link>
 
-      <h2 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-navy">
-        {t('settings.billingTitle')}
-      </h2>
-
-      <p className="text-on-surface-variant">{t('landing.pricingDesc')}</p>
-      <section className="grid gap-4 sm:grid-cols-2" aria-label={t('settings.billingTitle')}>
-        {(['Free','Paid'] as const).map(plan => <article key={plan} className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5">
-          <h3 className="font-bold">{t(`landing.pricing${plan}Name`)}</h3>
-          <p className="my-2 text-xl font-bold">{t(`landing.pricing${plan}Price`)}</p>
-          {plan === 'Paid' && <p>{t('landing.pricingPaidVat')}</p>}
-          <ul className="mt-3 list-disc space-y-1 pl-5">{(['F1','F2','F3'] as const).map(key =>
-            <li key={key}>{t(`landing.pricing${plan}${key}`)}</li>)}</ul>
-        </article>)}
+      <section className="billing-comparison" aria-labelledby="plan-comparison-title">
+        <header className="billing-comparison-header">
+          <h2 id="plan-comparison-title">{t('settings.billingTitle')}</h2>
+          <p>{t('landing.pricingDesc')}</p>
+        </header>
+        <div className="billing-plan-grid">
+          {(['Free', 'Paid'] as const).map(plan => {
+            const paid = plan === 'Paid';
+            const features = paid ? ['allGames', 'materials', 'attendance', 'homework'] : ['fixedGames', 'chosenGames', 'samples', 'wordList'];
+            return <article key={plan} className="billing-plan" aria-labelledby={`plan-${plan}`}>
+              <div className="billing-plan-price">
+                <h3 id={`plan-${plan}`}>{paid && <span className="material-symbols-outlined text-primary" aria-hidden="true">auto_awesome</span>}{t(`landing.pricing${plan}Name`)}</h3>
+                <p className="billing-plan-rate">{t(paid ? 'landing.pricingPaidPrice' : 'billing.compare.freeRate')}</p>
+                {paid && <p className="billing-plan-note">{t('landing.pricingPaidVat')}</p>}
+                {paid && isOwner && !hasSubscription && (currentQuote
+                  ? <p className="billing-plan-first">{t('billing.compare.first', { count: currentQuote.studentCount, date: formatDate(currentQuote.firstChargeOn), amount: formatKrw(currentQuote.amountKrw) })}</p>
+                  : quoteStatus)}
+              </div>
+              <div className="billing-plan-action">
+                {!paid && !isPaid && <span className="billing-plan-current">{t(trial.active ? 'billing.compare.trial' : 'billing.currentPlanTitle')}</span>}
+                {paid && (isOwner && !hasSubscription
+                  ? <button type="button" className="billing-plan-primary" disabled={busy || !currentQuote} onClick={() => void handleBillingAction()}>
+                      {currentQuote ? t('billing.startSubscriptionButton', { amount: formatKrw(currentQuote.amountKrw) }) : t('billing.compare.upgrade')}
+                    </button>
+                  : hasSubscription && isOwner
+                    ? <a className="billing-plan-primary" href="#subscription-management">{t('billing.compare.manage')}</a>
+                    : isPaid && <span className="billing-plan-current">{t('billing.currentPlanTitle')}</span>)}
+              </div>
+              <div className="billing-plan-features">
+                <h4>{t(paid ? 'billing.compare.paidFeatures' : 'billing.compare.freeFeatures')}</h4>
+                <ul>{features.map(feature => <li key={feature}><span aria-hidden="true">✓</span>{t(`billing.compare.${feature}`)}</li>)}</ul>
+              </div>
+            </article>;
+          })}
+        </div>
       </section>
 
       {!isOwner ? <p>{t('billing.ownerOnly')}</p> : <>
-      <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
+      <div id="subscription-management" className="scroll-mt-20 bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="font-title-md text-title-md text-on-surface">{t('billing.currentPlanTitle')}</h4>
           <span
@@ -175,22 +203,16 @@ export default function BillingPage() {
           </div>
         ) : (
           <div className="space-y-2 font-body-md text-body-md text-on-surface-variant">
-            <p>{t('billing.freePlanPitch', { base: formatKrw(BASE_FEE_KRW) })}</p>
+            <p>{t('billing.freePlanPitch')}</p>
           </div>
         )}
 
         {!hasSubscription && currentQuote ? (
           <div className="space-y-1 rounded-lg bg-surface-container-low px-4 py-3 font-body-md text-body-md text-on-surface">
-            <p className="font-semibold">{t('billing.firstChargeSummary', { date: formatDate(currentQuote.firstChargeOn), amount: formatKrw(currentQuote.amountKrw) })}</p>
             <p>{t(currentQuote.chargeNow ? 'billing.firstChargeToday' : 'billing.firstChargeAfterTrial')}</p>
             <p>{t('billing.recurringConsent', { amount: formatKrw(currentQuote.amountKrw) })}</p>
           </div>
-        ) : !currentQuote ? (
-          <div role="status" className="font-body-md text-body-md text-on-surface-variant">
-            {t(quoteFailed ? 'billing.quoteFailed' : 'billing.quoteLoading')}
-            {quoteFailed && <button type="button" className="ml-2 text-primary underline" onClick={() => setQuoteVersion((version) => version + 1)}>{t('billing.retryQuote')}</button>}
-          </div>
-        ) : null}
+        ) : hasSubscription && !currentQuote ? quoteStatus : null}
 
         <div className="flex items-start gap-2 rounded-lg bg-tertiary-container/40 px-3 py-2.5 font-caption text-caption text-on-surface">
           <span aria-hidden="true">⚠️</span>
@@ -198,16 +220,14 @@ export default function BillingPage() {
         </div>
 
         <div className="flex flex-wrap gap-2 pt-2">
-          <button
+          {hasSubscription && <button
             type="button"
             onClick={() => void handleBillingAction()}
-            disabled={busy || (!hasSubscription && !currentQuote)}
+            disabled={busy}
             className="px-5 py-2.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md disabled:opacity-60 hover:bg-primary-container transition-colors"
           >
-            {hasSubscription ? t('billing.changeCardButton') : currentQuote
-              ? t('billing.startSubscriptionButton', { amount: formatKrw(currentQuote.amountKrw) })
-              : t('landing.pricingPaidName')}
-          </button>
+            {t('billing.changeCardButton')}
+          </button>}
 
           {hasSubscription && academy?.plan_status === 'active' && (
             <button
@@ -239,12 +259,11 @@ export default function BillingPage() {
           <p className="font-body-md text-body-md text-on-surface-variant">{t('billing.historyEmpty')}</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[390px] border-collapse text-left whitespace-nowrap">
+            <table className="w-full min-w-[320px] border-collapse text-left whitespace-nowrap">
               <thead>
                 <tr className="border-b border-outline-variant/60 text-on-surface-variant">
                   <th className="py-2 pr-4 font-label-md text-label-md">{t('billing.colDate')}</th>
                   <th className="py-2 pr-4 font-label-md text-label-md">{t('billing.colStudents')}</th>
-                  <th className="py-2 pr-4 font-label-md text-label-md">{t('billing.colTeachers')}</th>
                   <th className="py-2 pr-4 font-label-md text-label-md">{t('billing.colAmount')}</th>
                   <th className="py-2 pr-4 font-label-md text-label-md">{t('billing.colStatus')}</th>
                 </tr>
@@ -254,13 +273,6 @@ export default function BillingPage() {
                   <tr key={row.id} className="border-b border-outline-variant/30">
                     <td className="py-2 pr-4">{formatDate(row.billed_at)}</td>
                     <td className="py-2 pr-4 tabular-nums">{row.student_count}</td>
-                    <td className="py-2 pr-4 tabular-nums">
-                      {row.teacher_count ?? (
-                        <abbr title={t('billing.teacherCountUnavailable')}>
-                          {row.status === 'success' ? t('billing.teacherCountMinimum') : '—'}
-                        </abbr>
-                      )}
-                    </td>
                     <td className="py-2 pr-4 tabular-nums">{formatKrw(row.amount_krw)}</td>
                     <td className="py-2 pr-4">
                       <span

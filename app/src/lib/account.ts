@@ -20,11 +20,6 @@ export async function myDeletionRequest(): Promise<string | null> {
   return (data as string | null) ?? null;
 }
 
-export async function deleteMyTeacherAccount(): Promise<void> {
-  const { error } = await supabase.rpc('delete_my_teacher_account');
-  if (error) throw new Error(error.message);
-}
-
 /** 유예 14일 중 남은 날 수(오늘 삭제되면 0) */
 export function deletionDaysLeft(requestedAt: string): number {
   const due = Date.parse(requestedAt) + 14 * 86_400_000;

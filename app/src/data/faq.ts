@@ -279,20 +279,10 @@ export const FAQ: FaqItem[] = [
     category: 'billing',
     q: { ko: '구독 해지·결제 실패는 어떻게 하나요?', en: 'How do I cancel or fix a failed payment?' },
     a: {
-      ko: '설정 → 결제에서 원장님이 해지할 수 있어요(남은 기간까지는 계속 사용). 결제가 실패하면 화면 위에 안내가 뜨니 카드를 다시 등록해 주세요. 그래도 안 되면 결제 문의를 남겨 주세요.',
-      en: 'The owner can cancel in Settings → Billing (you keep access until the period ends). If a payment fails, a notice appears — re-register your card, or send a billing inquiry.',
+      ko: '내 계정의 설정 → 결제에서 해지할 수 있어요(남은 기간까지는 계속 사용). 결제가 실패하면 화면 위에 안내가 뜨니 카드를 다시 등록해 주세요. 그래도 안 되면 결제 문의를 남겨 주세요.',
+      en: 'You can cancel in Settings → Billing (you keep access until the period ends). If a payment fails, a notice appears — re-register your card, or send a billing inquiry.',
     },
     link: '/settings/billing',
-  },
-  {
-    id: 'account-teacher',
-    category: 'account',
-    q: { ko: '다른 선생님을 우리 학원에 초대하려면요?', en: 'How do I invite another teacher?' },
-    a: {
-      ko: '설정에 있는 학원 초대 코드를 알려 주세요. 선생님이 가입할 때 "선생님으로 합류"에 코드를 넣으면 같은 학원으로 들어와요.',
-      en: 'Share the academy invite code from Settings. The teacher enters it under "Join as teacher" when signing up.',
-    },
-    link: '/settings',
   },
   {
     id: 'account-privacy',

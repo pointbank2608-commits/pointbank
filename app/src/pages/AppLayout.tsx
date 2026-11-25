@@ -6,7 +6,6 @@ import { NoticeOverlays, NotificationBell } from '../components/NoticeCenter';
 import { LAST_PAGE_KEY } from '../lib/support';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import AcademyCodeButton from '../components/AcademyCodeButton';
 import MaterialsPenButton from '../components/MaterialsPenButton';
 import BoardReturnPill from '../components/board/BoardReturnPill';
 import CoachTip from '../components/CoachTip';
@@ -118,8 +117,6 @@ function AppLayoutInner() {
           ))}
         </ul>
       )}
-
-      {isStaff && hasFullAccess && <AcademyCodeButton />}
 
       <div className="mx-5 mb-4 mt-4 hidden text-center [@media(min-height:820px)]:block">
         <img src="/ui2/m-pencil.webp" alt="" aria-hidden width={669} height={654} loading="lazy" draggable={false} className="mx-auto h-[7.5rem] w-auto select-none" />

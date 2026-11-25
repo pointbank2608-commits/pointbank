@@ -227,6 +227,7 @@ export default function AdminAcademyDetailPage() {
 
   if (!d) return <p className="text-on-surface-variant">{msg ?? t('common.loading')}</p>;
   const a = d.academy;
+  const teacher = d.members.find(member => member.role === 'owner');
   const box = 'rounded-xl bg-surface-container-lowest p-4 shadow-sm space-y-2';
 
   return (
@@ -256,21 +257,20 @@ export default function AdminAcademyDetailPage() {
 
       <div className="grid gap-4 md:grid-cols-2">
         <section className={box}>
-          <h2 className="font-title-md text-title-md">{t('adminOps.people')}</h2>
-          {d.members.map((m) => (
-            <div key={m.id} className="flex flex-wrap items-center gap-2 font-body-sm text-body-sm">
-              <span className="rounded-full bg-surface-container px-2 py-0.5 font-caption text-caption">{m.role === 'owner' ? t('adminOps.owner') : t('adminOps.teacher')}</span>
-              <span className="font-bold">{m.display_name}</span>
-              <a href={`mailto:${m.email}`} className="text-primary hover:underline">
-                {m.email}
+          <h2 className="font-title-md text-title-md">{t('adminOps.accountContact')}</h2>
+          {teacher && (
+            <div className="flex flex-wrap items-center gap-2 font-body-sm text-body-sm">
+              <span className="font-bold">{teacher.display_name}</span>
+              <a href={`mailto:${teacher.email}`} className="text-primary hover:underline">
+                {teacher.email}
               </a>
               <span className="text-on-surface-variant">
-                {m.last_sign_in_at ? t('adminOps.lastActive', { date: new Date(m.last_sign_in_at).toLocaleDateString() }) : t('adminOps.neverActive')}
+                {teacher.last_sign_in_at ? t('adminOps.lastActive', { date: new Date(teacher.last_sign_in_at).toLocaleDateString() }) : t('adminOps.neverActive')}
               </span>
             </div>
-          ))}
+          )}
           <div className="font-caption text-caption text-on-surface-variant">
-            {t('adminOps.joined', { date: new Date(a.created_at).toLocaleDateString() })} · {t('adminOps.inviteCode')} {a.invite_code}
+            {t('adminOps.joined', { date: new Date(a.created_at).toLocaleDateString() })}
           </div>
         </section>
 

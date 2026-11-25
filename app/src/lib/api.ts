@@ -412,12 +412,6 @@ export async function updateAcademy(
   if (error) throw new Error(error.message);
 }
 
-export async function rotateInviteCode(): Promise<string> {
-  const { data, error } = await supabase.rpc('rotate_invite_code');
-  if (error) throw new Error(error.message);
-  return data as string;
-}
-
 /** 학원 로고를 올리고 academies.logo_url 을 갱신한 뒤 새 URL을 돌려준다. */
 export async function uploadAcademyLogo(academyId: string, image: Blob): Promise<string> {
   const path = `${academyId}/logo.png`;
@@ -480,15 +474,6 @@ export async function createAcademy(name: string, pointUnit: string, displayName
   const { data, error } = await supabase.rpc('create_academy', {
     p_name: name,
     p_point_unit: pointUnit,
-    p_display_name: displayName,
-  });
-  if (error) throw new Error(error.message);
-  return data as string;
-}
-
-export async function joinAsTeacher(inviteCode: string, displayName: string) {
-  const { data, error } = await supabase.rpc('join_academy_as_teacher', {
-    p_invite_code: inviteCode,
     p_display_name: displayName,
   });
   if (error) throw new Error(error.message);

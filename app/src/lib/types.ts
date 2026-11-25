@@ -4,7 +4,6 @@ export interface Academy {
   id: string;
   name: string;
   point_unit: string;
-  invite_code: string;
   logo_url: string | null;
   created_at: string;
   plan: 'free' | 'paid';
@@ -68,7 +67,6 @@ export interface BillingHistoryRow {
   period_start: string;
   period_end: string;
   student_count: number;
-  teacher_count: number | null;
   amount_krw: number;
   status: 'success' | 'failed';
   portone_payment_id: string | null;
@@ -140,7 +138,6 @@ export interface AdminAcademyRow {
   academy_id: string;
   name: string;
   point_unit: string;
-  invite_code: string;
   created_at: string;
   owner_count: number;
   teacher_count: number;

@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import {
   cancelAcademyDeletion,
-  deleteMyTeacherAccount,
   deletionDaysLeft,
   exportAcademyData,
   myDeletionRequest,
@@ -13,13 +12,11 @@ import {
 
 const card = 'bg-surface-container-lowest rounded-xl p-5 shadow-card space-y-3';
 
-/** 설정 맨 아래 "계정·데이터" — 데이터 내려받기, 원장은 학원 삭제 요청(14일 유예), 선생님은 내 계정 삭제 */
 export default function AccountDataSection() {
   const { t } = useTranslation();
-  const { academy, profile, signOut } = useAuth();
+  const { academy, profile } = useAuth();
   const { notify } = useToast();
   const isOwner = profile?.role === 'owner';
-  const isTeacher = profile?.role === 'teacher';
   const [requestedAt, setRequestedAt] = useState<string | null>(null);
   const [confirmText, setConfirmText] = useState('');
   const [busy, setBusy] = useState(false);
@@ -75,19 +72,6 @@ export default function AccountDataSection() {
     }
   }
 
-  async function deleteMe() {
-    setBusy(true);
-    try {
-      await deleteMyTeacherAccount();
-      await signOut();
-    } catch (e) {
-      notify(e instanceof Error ? e.message : String(e), 'error');
-      setBusy(false);
-    }
-  }
-
-  const expected = isOwner ? academy.name : t('account.confirmWord');
-
   return (
     <div className={card}>
       <h4 className="font-title-md text-title-md text-on-surface">{t('account.title')}</h4>
@@ -116,26 +100,26 @@ export default function AccountDataSection() {
         </div>
       )}
 
-      {((isOwner && !requestedAt) || isTeacher) && (
+      {isOwner && !requestedAt && (
         <div className="space-y-2 border-t border-outline-variant/40 pt-3">
-          <p className="font-label-md text-label-md font-bold text-error">{isOwner ? t('account.deleteAcademy') : t('account.deleteMe')}</p>
+          <p className="font-label-md text-label-md font-bold text-error">{t('account.deleteAcademy')}</p>
           <p className="whitespace-pre-line font-caption text-caption text-on-surface-variant">
-            {isOwner ? t('account.deleteAcademyHint') : t('account.deleteMeHint')}
+            {t('account.deleteAcademyHint')}
           </p>
           <input
             value={confirmText}
             onChange={(e) => setConfirmText(e.target.value)}
-            placeholder={t('account.typeToConfirm', { text: expected })}
+            placeholder={t('account.typeToConfirm', { text: academy.name })}
             className="w-full max-w-sm rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2 text-sm outline-none focus:border-error"
           />
           <div>
             <button
               type="button"
-              disabled={busy || confirmText.trim() !== expected}
-              onClick={() => void (isOwner ? requestDelete() : deleteMe())}
+              disabled={busy || confirmText.trim() !== academy.name}
+              onClick={() => void requestDelete()}
               className="rounded-full border border-error px-4 py-1.5 font-label-md text-label-md text-error disabled:opacity-40"
             >
-              {isOwner ? t('account.requestDelete') : t('account.confirmDeleteMe')}
+              {t('account.requestDelete')}
             </button>
           </div>
         </div>

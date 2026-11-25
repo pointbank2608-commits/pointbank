@@ -11,7 +11,7 @@ import {
 
 /**
  * 학원·회원(2026-10-18) — 검색·필터·정렬을 모두 서버에서 처리한다(학원 1만 곳에서도 한 번에 50곳만 읽음).
- * 학원 이름·원장/선생님 이메일·이름으로 찾고, 자주 쓰는 조건은 저장한다. 목록의 줄 수 = 오늘 할 일 카드의 숫자(같은 서버 조건).
+ * 학원 이름·선생님 이메일·이름으로 찾고, 자주 쓰는 조건은 저장한다. 목록의 줄 수 = 오늘 할 일 카드의 숫자(같은 서버 조건).
  * 요금제 변경·삭제 같은 개별 조치는 학원 상세에서 사유와 함께 한다(목록에서 바로 누르지 않는다).
  */
 const FILTERS: AcademyFilterKey[] = [
@@ -206,7 +206,6 @@ export default function AdminAcademiesPage() {
                     <td className="max-w-[14rem] px-3 py-2">
                       <div className="truncate">{r.owner_name ?? '–'}</div>
                       <div className="truncate font-caption text-[12px] text-on-surface-variant">{r.owner_email ?? '–'}</div>
-                      <div className="font-caption text-[12px] text-on-surface-variant">{t('adminV2.academies.members', { owners: r.owner_count, teachers: r.teacher_count })}</div>
                     </td>
                     <td className="px-3 py-2">
                       <EntitlementBadge value={r.entitlement} />
