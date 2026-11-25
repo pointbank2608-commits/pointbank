@@ -201,9 +201,10 @@ function CategoryPickerModal({
   );
 }
 
-export function WordListEditor({ list, onChange, maxWords, saveItems = updateWordListItems }: {
+export function WordListEditor({ list, onChange, onImport, maxWords, saveItems = updateWordListItems }: {
   list: WordList; onChange: (items: WordListItem[]) => void;
   maxWords?: number;
+  onImport?: () => void;
   saveItems?: (id: string, items: WordListItem[]) => Promise<void>;
 }) {
   const { t } = useTranslation();
@@ -369,6 +370,9 @@ export function WordListEditor({ list, onChange, maxWords, saveItems = updateWor
         >
           {t('wordLists.tabManual')}
         </button>
+        {onImport && <button type="button" onClick={onImport} className="px-3 py-1 rounded-md font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low">
+          {t('aiMaterials.importFromList')}
+        </button>}
         <button
           type="button"
           onClick={() => setTab('category')}
@@ -580,7 +584,7 @@ function TeachingMaterialsPage() {
     return () => { current = false; };
   }, [academy?.id]);
   const [aiDialog, setAiDialog] = useState<{ scope: string; mode: 'source' | 'topic' } | null>(null);
-  const [appendSource, setAppendSource] = useState<{ scope: string; list: WordList } | null>(null);
+  const [appendDialog, setAppendDialog] = useState<{ scope: string; list: WordList; pickSource: boolean } | null>(null);
   const [savedTeaching, setSavedTeaching] = useState<(SavedAiMaterials & { scope: string }) | null>(null);
   const [launchListId, setLaunchListId] = useState<string | null>(null);
   const [launchBusy, setLaunchBusy] = useState(false);
@@ -833,11 +837,11 @@ function TeachingMaterialsPage() {
             setSavedTeaching(result.lessonId || result.workbookPath ? { ...result, scope: aiDialog.scope } : null);
             notify(t('aiMaterials.saved'));
           }} />}
-      {academy?.id && profile?.id && appendSource?.scope === accountScope.current &&
-        <WordListAppendDialog key={appendSource.scope + appendSource.list.id} academy={academy.id} owner={profile.id}
-          source={appendSource.list} onClose={() => setAppendSource(null)} onSaved={id => {
-            if (appendSource.scope !== accountScope.current) return;
-            setAppendSource(null);
+      {academy?.id && profile?.id && appendDialog?.scope === accountScope.current &&
+        <WordListAppendDialog key={appendDialog.scope + appendDialog.list.id} academy={academy.id} owner={profile.id}
+          list={appendDialog.list} pickSource={appendDialog.pickSource} onClose={() => setAppendDialog(null)} onSaved={id => {
+            if (appendDialog.scope !== accountScope.current) return;
+            setAppendDialog(null);
             setParams({ list: id });
             void load();
             notify(t('aiMaterials.appended'));
@@ -1068,7 +1072,7 @@ function TeachingMaterialsPage() {
               )}
               {openId === list.id && <>
                 {list.items.length > 0 && <button type="button" className="textbook-button mt-3"
-                  onClick={() => setAppendSource({ scope: accountScope.current, list })}>
+                  onClick={() => setAppendDialog({ scope: accountScope.current, list, pickSource: false })}>
                   <span className="material-symbols-outlined" aria-hidden="true">playlist_add</span>{t('aiMaterials.appendToExisting')}
                 </button>}
                 {wordListKindOf(list) === 'sentence' ? (
@@ -1079,6 +1083,7 @@ function TeachingMaterialsPage() {
                 ) : (
                   <WordListEditor
                     list={list}
+                    onImport={() => setAppendDialog({ scope: accountScope.current, list, pickSource: true })}
                     onChange={(items) => setLists((prev) => prev.map((l) => (l.id === list.id ? { ...l, items } : l)))}
                   />
                 )}
