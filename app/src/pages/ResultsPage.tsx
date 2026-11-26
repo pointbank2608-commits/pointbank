@@ -2,7 +2,7 @@ import { useFeature } from '../lib/features';
 import ClassroomHeader from '../components/ClassroomHeader';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import ClassChipRow from '../components/ClassChipRow';
 import ClassStatsPanel from '../components/homework/teacher/ClassStatsPanel';
 import { useAuth } from '../context/AuthContext';
@@ -41,7 +41,8 @@ export default function ResultsPage() {
   const [myStudentId, setMyStudentId] = useState<string | null>(null);
   const [resetting, setResetting] = useState(false);
   // 선생님: 포인트 결과 / 학생 스탯(Classbank Student) 두 보기
-  const [view, setView] = useState<'points' | 'stats'>('points');
+  const { state } = useLocation();
+  const [view, setView] = useState<'points' | 'stats'>(() => state?.initialView === 'stats' ? 'stats' : 'points');
   const soloOpen = useFeature('solo');
   const homeworkOpen = useFeature('homework');
   const statsOpen = soloOpen || homeworkOpen;

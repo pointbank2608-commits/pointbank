@@ -70,6 +70,7 @@ export default function StaffNav({ onNavigate }: Props) {
                     <li key={c.to}>
                       <Link
                         to={c.to}
+                        state={pathname === '/homework' && c.to === '/results' ? { initialView: 'stats' } : undefined}
                         onClick={onNavigate}
                         aria-current={on ? 'page' : undefined}
                         className={`flex items-center gap-2.5 rounded-[12px] py-2.5 pl-12 pr-4 font-label-md text-[15px] font-semibold transition-all ${
