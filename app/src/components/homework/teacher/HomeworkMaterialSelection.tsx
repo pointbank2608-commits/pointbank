@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Material } from '../../../lib/homework/materialPlan';
 import type { CatalogueMaterial, HomeworkEpisode } from '../../../lib/homework/materialSources';
@@ -24,7 +24,6 @@ type Props = {
   onChoose: (source: Material) => void;
   onConfigure: (source: Material, change: ContentSelection) => void;
   onRetry: () => void;
-  onExpandedChange: (expanded: boolean) => void;
 };
 
 function CategoryArt({kind}:{kind:Kind}) {
@@ -57,7 +56,18 @@ function Contents({source,settings,onConfigure,en}:{source:Material;settings:Con
     })} disabled={selectedCount===fullCount}>{en?'Select all':'전체 선택'}</button>
       <button type="button" onClick={()=>onConfigure(source,{cardIds:[],lineIds:[]})} disabled={!selectedCount}>{en?'Clear all':'전체 해제'}</button></div>}
     {source.scene && <p className="hw-source-section">{en?'Selected scene':'선택한 장면'} · {source.name}</p>}
-    {source.cards.map(c=>row(c.id,c.word,c.meaning,chosenCards,'cardIds'))}
+    {source.cards.map(c=>{
+      if (source.kind!=='sentence' || c.meaning?.trim()) return row(c.id,c.word,c.meaning,chosenCards,'cardIds');
+      const meaning=settings.meanings?.[c.id] ?? '';
+      return <div className="hw-source-entry" key={'cardIds'+c.id}>
+        <input type="checkbox" aria-label={c.word} checked={chosenCards.has(c.id)} onChange={()=>toggleItem(chosenCards,c.id,'cardIds')}/>
+        <span lang="en">{c.word}</span>
+        <div className="hw-sentence-meaning"><input type="text" aria-label={c.word+(en?' · Korean meaning':' · 한글 뜻')}
+          placeholder={en?'Enter Korean meaning':'한글 뜻 입력'} value={meaning}
+          onChange={event=>onConfigure(source,{meanings:{...settings.meanings,[c.id]:event.target.value}})}/>
+          {!meaning.trim() && <small>{en?'Meaning is missing':'뜻이 비어 있어요'}</small>}</div>
+      </div>;
+    })}
     {!!source.scene?.lines.length && <p className="hw-source-section">{en?'Dialogue':'대사'}</p>}
     {source.scene?.lines.map(line=>row(dialogueKey(line),line.speaker ? line.speaker+' · '+line.en : line.en,line.ko || '',chosenLines,'lineIds'))}
   </div>;
@@ -121,13 +131,10 @@ export default function HomeworkMaterialSelection(props: Props) {
   const en=i18n.language.startsWith('en');
   const [expanded,setExpanded]=useState<string[]>(()=>Object.keys(props.selected));
   const hasAnimation=props.categories.includes('scene');
-  const editing=!hasAnimation && expanded.some(key=>!!props.selected[key]);
-  useEffect(()=>{props.onExpandedChange(editing);},[props.onExpandedChange,editing]);
   return <div className="hw-source-studio">
-    {editing ? <button type="button" className="hw-small-action" onClick={()=>setExpanded([])}>{en?'Choose material types':'자료 유형 선택'}</button> :
     <div className="hw-category-grid">{kinds.map(kind=><label key={kind} className={'hw-category'+(props.categories.includes(kind)?' is-selected':'')}>
       <input type="checkbox" checked={props.categories.includes(kind)} onChange={()=>props.onCategory(kind)}/>
-      <CategoryArt kind={kind}/><strong>{t(category[kind])}</strong></label>)}</div>}
+      <CategoryArt kind={kind}/><strong>{t(category[kind])}</strong></label>)}</div>
     {hasAnimation && props.catalogue.scene && !props.failed.includes('scene') && <HomeworkEpisodeBrowser
       episodes={props.episodes} view={props.episodeView} onView={props.onEpisodeView} next={props.next} en={en}
       selected={chapter=>!!props.selected[sourceKey(chapter)]} onChoose={props.onChoose}/>}

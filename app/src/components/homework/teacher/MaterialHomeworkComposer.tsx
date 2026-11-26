@@ -75,18 +75,17 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
   const { t, i18n } = useTranslation('materialHomework');
   const en = i18n.language.startsWith('en');
   const cache = `classbank.hw.materials.v1.${ownerId}.${academyId}.${classId}`;
-  const [form, setForm] = useState<Form>(() => restore(cache));
+  const [form, setForm] = useState<Form>(fresh);
   const targetClass = form.recipientClass || classId;
   const receiptKey = cache + '.sending';
-  const [pending, setPending] = useState<MaterialDispatch | null>(() => {
+  const [pending, setPending] = useState<MaterialDispatch | null>(null);
+  const [receipt,setReceipt] = useState<MaterialDispatch | null>(() => {
     try {
       const saved: MaterialDispatch | null = JSON.parse(localStorage.getItem(receiptKey) || 'null');
-      return saved?.request === form.request && saved.classId === targetClass && saved.studentIds.length > 0 ? saved : null;
+      return saved?.request && saved.studentIds.length > 0 ? saved : null;
     } catch { return null; }
   });
-  const [expanded, setExpanded] = useState(false);
   const [notice, setNotice] = useState('');
-  const [storageFailed, setStorageFailed] = useState(false);
   const [catalogue, setCatalogue] = useState<Catalogue>({});
   const [episodes,setEpisodes] = useState<HomeworkEpisode[]>([]);
   const [episodeView,setEpisodeView] = useState({id:'',series:'',query:''});
@@ -108,8 +107,9 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
   const [error, setError] = useState('');
   const lock = useRef(false);
   useEffect(() => {
-    try { localStorage.setItem(cache, JSON.stringify(form)); setStorageFailed(false); } catch { setStorageFailed(true); }
-  }, [cache, form]);
+    // Unsent drafts from older versions are no longer restored. Keep attempted dispatches for idempotent retries.
+    try { if (!localStorage.getItem(receiptKey)) localStorage.removeItem(cache); } catch { /* The new draft lives in memory. */ }
+  }, [cache, receiptKey]);
   useEffect(() => {
     let active = true;
     setFailed([]);
@@ -137,12 +137,6 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
     setError('');
     setForm(old => ({ ...old, ...patch }));
   }
-  useEffect(() => {
-    if (!storageFailed) return;
-    const beforeUnload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
-    window.addEventListener('beforeunload', beforeUnload);
-    return () => window.removeEventListener('beforeunload', beforeUnload);
-  }, [storageFailed]);
   const materials = useMemo(() => kinds.flatMap(kind => catalogue[kind] ?? []), [catalogue]);
   const selected = useMemo(() => materials.filter(m => form.categories.includes(m.kind) && form.selected[keyOf(m)]).map(m => selectHomeworkMaterial(m, form.selected[keyOf(m)])), [materials, form.categories, form.selected]);
   const selectedKeys = Object.keys(form.selected);
@@ -181,7 +175,7 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
     if (!gameUsesMaterial && !finalPlan.covered.has(keyOf(plan.material)) && !form.selected[keyOf(plan.material)].activities.length) {
       issues.push(t('chooseActivity',{name:plan.material.name}));
     }
-    issues.push(...plan.issues);
+    if (plan.material.kind!=='sentence') issues.push(...plan.issues);
   }
   if (items.length) {
     if (new Set(items.map(item => item.config.block?.groupKey)).size > 60 ||
@@ -202,14 +196,14 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
   const generatedTitle = [names.join(' · '), typeTitle].filter(Boolean).join(' · ').slice(0,120);
   const title = form.titleEdited || form.title ? form.title : generatedTitle;
   const assignmentTitle = title.trim();
-  const configValid = !missing.length && !issues.length && (items.length > 0 || frequent.length > 0);
+  const configValid = !missing.length && !issues.length && plans.every(plan=>!plan.issues.length) && (items.length > 0 || frequent.length > 0);
   const ready = configValid && !!assignmentTitle && !invalidDue && targets.length > 0;
   const step = pending ? 2 : form.step;
-  const heading = step === 0 ? t(expanded ? 'selectContent' : 'choose') : t(step === 1 ? 'configure' : 'sendHeading');
+  const heading = t(step === 0 ? 'choose' : step === 1 ? 'configure' : 'sendHeading');
   const sourceValid = selected.some(m=>m.kind!=='scene' || m.cards.length || m.scene?.lines.length || (!form.selected[keyOf(m)].cardIds && !form.selected[keyOf(m)].lineIds))
     && !missing.length && !emptySources.length;
   const dismissal = () => {
-    if ((!storageFailed || window.confirm(t('leaveUnsaved'))) && !busy) onClose();
+    if (!busy) onClose();
   };
 
   function choose(m: Material) {
@@ -258,19 +252,14 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
         payload = { classId:targetClass, request: form.request, studentIds: targets, due: items.length ? form.due : '', project,
           draft: items.length ? { ...newDraft(), title: assignmentTitle, items } : null };
         // Preserve the exact randomized questions and request across a lost response or reload.
-        try { localStorage.setItem(receiptKey, JSON.stringify(payload)); }
+        const previous = localStorage.getItem(receiptKey);
+        if (previous && JSON.parse(previous).request !== payload.request) throw Error(t('pending'));
+        try { localStorage.setItem(cache,JSON.stringify(form)); localStorage.setItem(receiptKey, JSON.stringify(payload)); }
         catch { throw Error(t('retryNote')); }
         setPending(payload);
       }
       const result = await dispatchMaterials(payload);
-      if (portion.index + 1 < portion.count) {
-        const remaining = Object.fromEntries(Object.entries(form.selected).filter(([key]) => key.startsWith('word/') || key.startsWith('sentence/')));
-        const next = { ...form, request: crypto.randomUUID(), selected: remaining,
-          categories: form.categories.filter(kind => kind === 'word' || kind === 'sentence'), part: portion.index + 1 };
-        localStorage.setItem(cache, JSON.stringify(next));
-      } else {
-        localStorage.removeItem(cache);
-      }
+      localStorage.removeItem(cache);
       localStorage.removeItem(receiptKey);
       onCreated(result, payload.classId);
     } catch (cause) {
@@ -279,6 +268,8 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
       // the commit status unknown; retry that exact payload before editing it.
       if (/^[0-9A-Z]{5}$/.test((cause as {code?:string})?.code ?? '')) {
         localStorage.removeItem(receiptKey);
+        localStorage.removeItem(cache);
+        setReceipt(null);
         setPending(null);
       }
       setError(`${t('sendError')}${detail ? ' (' + detail + ')' : ''}`);
@@ -299,22 +290,29 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
     <nav className="hw-breadcrumb" aria-label={t('path')}><span>{t('ourClass')}</span><span aria-hidden>›</span>
       <button type="button" onClick={dismissal} disabled={busy}>{t('homework')}</button><span aria-hidden>›</span><span>{t('newHomework')}</span></nav>
     <h1>{heading}</h1>
-    {step === 0 && <p className="hw-intro">{t(expanded ? 'contentHelp' : 'chooseHelp')}</p>}
+    {step === 0 && <p className="hw-intro">{t('chooseHelp')}</p>}
+    {receipt && !pending && <button type="button" onClick={()=>{
+      setForm({...restore(cache),recipientClass:receipt.classId,students:receipt.studentIds,step:2});
+      setPending(receipt);
+    }}>{en?'Review previous dispatch attempt':'이전 발송 요청 확인'}</button>}
     {pending && !busy && <p role="status">{t('pending')}</p>}
-    {storageFailed && <p role="alert">{t('storageFailed')}</p>}
     {notice && <p role="status">{notice}</p>}
     <fieldset className="hw-studio-body" disabled={busy || !!pending}>
       {step === 0 && <>
         <HomeworkMaterialSelection catalogue={catalogue} categories={form.categories} selected={form.selected}
           episodes={episodes} episodeView={episodeView} onEpisodeView={setEpisodeView} next={nextButton}
           failed={failed} onCategory={category} onChoose={choose} onConfigure={configure}
-          onRetry={()=>setRevision(n=>n+1)} onExpandedChange={setExpanded}/>
+          onRetry={()=>setRevision(n=>n+1)}/>
         {!!missing.length && <p role="status">{t('missing')}</p>}
         {!!emptySources.length && <p role="status">{t('emptySelection')}</p>}
       </>}
       {step === 1 && <>
-        {plans.map(plan => <MaterialOptions key={keyOf(plan.material)} material={plan.material} settings={form.selected[keyOf(plan.material)]}
-          onChange={patch => configure(plan.material,patch)} onPreview={()=>setPreview(plan.items)} canPreview={!!plan.items.length&&!plan.issues.length}/>)}
+        {plans.map(plan => <div key={keyOf(plan.material)}><MaterialOptions material={plan.material} settings={form.selected[keyOf(plan.material)]}
+          onChange={patch => configure(plan.material,patch)} onPreview={()=>setPreview(plan.items)} canPreview={!!plan.items.length&&!plan.issues.length}/>
+          {plan.material.kind==='sentence' && !!plan.issues.length && <div role="status" className="hw-studio-issue">
+            {plan.issues.map(issue=><p key={issue}>{issue}</p>)}
+            <button type="button" onClick={()=>edit({step:0})}>{en?'Edit selected sentences':'선택한 문장 보완하기'}</button>
+          </div>}</div>)}
         {frequent.length > 0 && <details className="hw-plan-row"><summary><strong>{t('categoryFrequent')} {t('nItems',{n:recurrentCards.length})}</strong>
           <span className="hw-checked-plan"><span className="hw-plan-check" aria-hidden="true">✓</span>{t('dailySummary',{n:threshold || '—'})}</span><span className="hw-small-action"><span className="material-symbols-outlined" aria-hidden="true">edit</span>{t('edit')}</span></summary><div className="hw-plan-fields">
           <p>{frequent.map(m => m.name).join(' · ')}</p>
@@ -322,8 +320,8 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
             {[5,10,15].map(n => <option key={n} value={n}>{t('nItems',{n})}</option>)}<option value="custom">{t('custom')}</option></select></label>
           {form.daily === 'custom' && <label>{t('limit')}<input type="number" min={1} max={recurrentCards.length} step={1} value={form.custom} onChange={e => edit({ custom: e.target.value })}/></label>}
           <p>{t('reviewHelp')}</p></div></details>}
-        {!missing.length && <MaterialReviewGames materials={portion.ordinary} enabled={form.gameEnabled} games={form.games} en={en}
-          onEnabled={value=>edit({gameEnabled:value})} onGames={games=>edit({games})}/>}
+        {!missing.length && <MaterialReviewGames materials={portion.ordinary} games={form.games} en={en}
+          onGames={games=>edit({games,gameEnabled:games.length>0})}/>}
         {!!portion.ordinary.length && <details className="hw-extra"><summary>{t('moreConfig')}</summary><div className="hw-plan-fields">
         {selected.some(m => m.kind === 'word' || m.kind === 'sentence') && <div className="hw-portion-choices" aria-label={t('portions')}>
           {[0,10,20].map(n => <button type="button" key={n} aria-pressed={form.portion === n} onClick={() => edit({ portion: n, part: 0 })}>{n ? t('each',{n}) : t('whole')}</button>)}
@@ -336,7 +334,7 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
             <label>{t('count')}<select value={form.count} onChange={e => edit({ count: Number(e.target.value) as Form['count'] })}>
               {[5,10,15,0].map(n => <option value={n} key={n}>{n ? t('nItems',{n}) : t('all')}</option>)}</select></label></>}
         </section>}
-        {items.length > 0 && !issues.length && <>
+        {items.length > 0 && configValid && <>
           <p>{t('estimatedPart',{n:estimateMinutes(items)})}</p>
           <button type="button" onClick={() => setPreview(items)}>{t('previewAll')}</button>
         </>}

@@ -15,7 +15,9 @@ export interface CatalogueMaterial extends Material {
 export function savedMaterials(lists: WordList[]): Material[] {
   return lists.map(list => ({
     id: list.id, name: list.name, kind: list.kind === 'sentence' ? 'sentence' : 'word',
-    cards: wordListToCards(list).filter(card => card.word.trim()),
+    cards: wordListToCards(list).filter(card => card.word?.trim()).map(card => ({
+      ...card, meaning: card.meaning ?? '',
+    })),
   }));
 }
 

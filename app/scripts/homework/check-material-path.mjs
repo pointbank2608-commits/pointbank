@@ -27,6 +27,19 @@ try {
   const {selectHomeworkMaterial,dialogueKey}=await vite.ssrLoadModule('/src/lib/homework/materialSelection.ts');
   const vocabulary = { id:'road', name:'Road', kind:'word', cards:[wordCards[0]] };
   const sentences = { id:'map', name:'Map', kind:'sentence', cards:[sentenceCards[0]] };
+  const untranslated = {...sentences,cards:sentenceCards.slice(0,6).map(c=>({...c,meaning:''}))};
+  const listeners = buildMaterialPlan(untranslated,{activities:['listen']},[]);
+  assert.deepEqual(listeners.issues,[]);
+  assert.deepEqual(listeners.items.map(i=>i.config.block.text),untranslated.cards.map(c=>c.word));
+  const repaired = selectHomeworkMaterial(untranslated,{
+    cardIds:[sentenceCards[0].id],meanings:{[sentenceCards[0].id]:sentenceCards[0].meaning},
+  });
+  const repairedPlan = buildMaterialPlan(repaired,{activities:['listen','order']},[]);
+  assert.deepEqual(repairedPlan.issues,[]);
+  assert.equal(repairedPlan.items[0].config.block.translation,sentenceCards[0].meaning);
+  assert.equal(repairedPlan.items[1].content.questions[0].prompt,sentenceCards[0].meaning);
+  assert.ok(untranslated.cards.every(c=>c.meaning===''));
+  assert.equal(buildMaterialPlan(untranslated,{activities:['order']},[]).issues.length,1);
   const only = (material, settings) => {
     const plan = buildMaterialPlan(material, settings, wordCards);
     assert.deepEqual(plan.issues, []);
@@ -95,7 +108,12 @@ try {
   assert.equal(selectHomeworkMaterial(source,{}).cards.length,12);
   assert.equal(selectHomeworkMaterial(source,{cardIds:[]}).cards.length,0);
   const wordPlan = buildMaterialPlan(selectHomeworkMaterial(source,{cardIds:selectedWordIds}), { activities:['choice'] }, wordCards);
-  const sentencePlan = buildMaterialPlan({ id:'test-sentences', name:'Family Road Trip', kind:'sentence', cards:sentenceCards }, { activities:['hide'], mask:1 }, []);
+  const issuedSentences = { id:'test-sentences', name:'Family Road Trip', kind:'sentence',
+    cards:sentenceCards.map((card,index)=>index===0 ? {...card,meaning:''} : card) };
+  const sentencePlan = buildMaterialPlan(selectHomeworkMaterial(issuedSentences,{
+    meanings:{[sentenceCards[0].id]:sentenceCards[0].meaning},
+  }), { activities:['hide'], mask:1 }, []);
+  assert.equal(issuedSentences.cards[0].meaning,'');
   assert.deepEqual([...wordPlan.issues, ...sentencePlan.issues], []);
   const draft = { id:id(), revision:0, title:'Family Road Trip', template:false, items:[...wordPlan.items,...sentencePlan.items] };
   await pupil();

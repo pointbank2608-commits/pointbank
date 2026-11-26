@@ -1,5 +1,10 @@
 .material-review-games {container-type:inline-size; padding:16px; border:1px solid #cfd9e8; border-radius:12px; background:white; color:#172d52}
 .material-review-heading {display:flex; align-items:center; gap:9px; cursor:pointer}
+.material-review-heading button {margin-left:auto}
+.hw-review-picker[open] {width:min(760px,94vw); max-height:90dvh; box-sizing:border-box; padding:16px; display:flex; flex-direction:column; gap:10px; overflow:auto;}
+.hw-review-picker header,.hw-review-picker footer {display:flex; align-items:center; justify-content:space-between; gap:8px;}
+.hw-review-picker footer {justify-content:flex-end}
+.hw-review-picker .material-review-grid {min-height:80px; flex:1 1 auto;}
 .material-review-heading input {width:19px; height:19px; accent-color:#0648f5}
 .material-review-heading span {margin-left:auto; font-size:14px; color:#637189}
 .material-review-games .activity-game-filters {margin-top:14px}

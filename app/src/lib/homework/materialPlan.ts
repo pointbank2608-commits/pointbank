@@ -32,7 +32,8 @@ export function spellingExercise(word: string, mode: Settings['spelling'] = 'fir
 
 function gradedQuestion(card: FullCardItem, activity: Activity, settings: Settings, pool: FullCardItem[]): HwQuestion | null {
   const {word,meaning} = card;
-  if (!word.trim() || !meaning.trim() || word.includes('/')) return null;
+  const needsMeaning = activity !== 'write' || settings.writing === 'full';
+  if (!word.trim() || (needsMeaning && !meaning.trim()) || word.includes('/')) return null;
   if (activity === 'choice') {
     // Exclude alternative senses of the same headword from the distractors.
     const other = pool.filter(c => c.word.trim().toLowerCase() !== word.trim().toLowerCase());
@@ -67,6 +68,7 @@ export function buildMaterialPlan(material: Material, settings: Settings, pool: 
   }
   for (const activity of activitiesByKind[material.kind].filter(a => settings.activities.includes(a))) {
     const startCount = items.length;
+    const issueCount = issues.length;
     const groupKey = JSON.stringify([material.kind,material.id,activity,activity === 'dub' ? settings.role : activity === 'spell' ? settings.spelling : activity === 'hide' ? settings.mask : activity === 'write' ? settings.writing : null]);
     const make = (type:BlockType) => {
       const item = newBlock(type);
@@ -76,7 +78,14 @@ export function buildMaterialPlan(material: Material, settings: Settings, pool: 
     };
     if (['choice','spell','order','write'].includes(activity)) {
       const questions = material.cards.map(c=>gradedQuestion(c,activity,settings,pool));
-      if (questions.some(q=>!q)) issues.push(material.name+' · '+labels[activity]+'에 필요한 뜻, 보기 또는 영어 문장을 확인해 주세요.');
+      const invalid = material.cards.filter((_,index)=>!questions[index]);
+      if (invalid.length && material.kind==='sentence') {
+        const needsMeaning = activity==='order' || settings.writing==='full';
+        const untranslated = invalid.filter(c=>needsMeaning && !c.meaning.trim());
+        if (untranslated.length) issues.push('한글 뜻 입력이 필요한 문장 · '+untranslated.map(c=>c.word).join(' / '));
+        const unusable = invalid.filter(c=>!untranslated.includes(c));
+        if (unusable.length) issues.push(labels[activity]+'에 쓸 영어 문장을 확인해 주세요 · '+unusable.map(c=>c.word).join(' / '));
+      } else if (invalid.length) issues.push(material.name+' · '+labels[activity]+'에 필요한 뜻, 보기 또는 영어 문장을 확인해 주세요.');
       const valid = questions.filter((q):q is HwQuestion=>!!q);
       for (let p=0;p<valid.length;p+=100) {
         const item = make('recall');
@@ -102,7 +111,7 @@ export function buildMaterialPlan(material: Material, settings: Settings, pool: 
       }
     } else {
       for (const card of material.cards) {
-        if (!card.word.trim() || !card.meaning.trim()) {
+        if (!card.word.trim() || (material.kind!=='sentence' && !card.meaning.trim())) {
           issues.push(material.name+' · '+(card.word||labels[activity])+'의 영어와 한글 뜻이 필요해요.');
           continue;
         }
@@ -114,7 +123,7 @@ export function buildMaterialPlan(material: Material, settings: Settings, pool: 
         items.push(item);
       }
     }
-    if (items.length===startCount) issues.push(material.name+' · '+labels[activity]+'에 사용할 자료가 없어요.');
+    if (items.length===startCount && issues.length===issueCount) issues.push(material.name+' · '+labels[activity]+'에 사용할 자료가 없어요.');
   }
   return {items,issues:[...new Set(issues)]};
 }
