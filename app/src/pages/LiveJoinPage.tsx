@@ -422,11 +422,12 @@ const FALLBACK_POLL_MS = 2_000;
 const KEY_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
 const KBD_PREF_KEY = 'classbank.live.keyboard';
 
-function readKbdPref(): 'screen' | 'device' {
+function readKbdPref(fallback: 'screen' | 'device'): 'screen' | 'device' {
   try {
-    return localStorage.getItem(KBD_PREF_KEY) === 'device' ? 'device' : 'screen';
+    const saved = localStorage.getItem(KBD_PREF_KEY);
+    return saved === 'device' || saved === 'screen' ? saved : fallback;
   } catch {
-    return 'screen';
+    return fallback;
   }
 }
 
@@ -442,17 +443,20 @@ export function TextAnswer({
   disabled,
   onSubmit,
   light = false,
+  sentence = false,
 }: {
   text: string;
   setText: (v: string | ((prev: string) => string)) => void;
   disabled: boolean;
   onSubmit: () => void;
   light?: boolean;
+  sentence?: boolean;
 }) {
   const { t } = useTranslation();
-  const [mode, setMode] = useState<'screen' | 'device'>(readKbdPref);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const type = useCallback((ch: string) => setText((prev) => (prev + ch).slice(0, 60)), [setText]);
+  const maxLength = sentence ? 300 : 60;
+  const [mode, setMode] = useState(() => readKbdPref(sentence ? 'device' : 'screen'));
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
+  const type = useCallback((ch: string) => setText((prev) => (prev + ch).slice(0, maxLength)), [setText, maxLength]);
   const back = useCallback(() => setText((prev) => prev.slice(0, -1)), [setText]);
 
   // 실물 키보드(블루투스 키보드·노트북)
@@ -462,13 +466,13 @@ export function TextAnswer({
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === 'Backspace') back();
       else if (e.key === 'Enter') onSubmit();
-      else if (e.key.length === 1 && /[a-zA-Z '\-.]/.test(e.key)) type(e.key.toLowerCase());
+      else if (e.key.length === 1 && (sentence || /[a-zA-Z '\-.]/.test(e.key))) type(e.key.toLowerCase());
       else return;
       e.preventDefault();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [mode, disabled, back, type, onSubmit]);
+  }, [mode, disabled, back, type, onSubmit, sentence]);
 
   function switchMode(next: 'screen' | 'device') {
     try {
@@ -484,6 +488,15 @@ export function TextAnswer({
   const key = `flex h-14 min-w-0 flex-1 items-center justify-center rounded-xl ${light ? 'bg-[#f3ecd9] ring-1 ring-[#d9d3c3]' : 'bg-white'} text-2xl font-bold text-deep-navy shadow-[0_3px_0_#9aa3b5] active:translate-y-0.5 active:shadow-none disabled:opacity-50 [touch-action:manipulation]`;
 
   if (mode === 'device') {
+    const fieldProps = {
+      value: text, maxLength,
+      onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setText(e.target.value.slice(0, maxLength)),
+      ref: (node: HTMLInputElement | HTMLTextAreaElement | null) => { inputRef.current = node; },
+      autoFocus: !sentence, autoCapitalize: 'none', autoCorrect: 'off', spellCheck: false, autoComplete: 'off',
+      enterKeyHint: 'send' as const, placeholder: t('liveQuiz.typeHere'),
+      'aria-label': t('liveQuiz.typeHere'),
+      className: `w-full scroll-my-4 rounded-2xl border-2 ${light ? 'border-[#d9d3c3]' : 'border-white/30'} bg-white px-4 py-4 text-center text-2xl font-bold text-deep-navy outline-none focus:border-warm-yellow`,
+    };
     return (
       <form
         className="flex flex-1 flex-col gap-3 p-4"
@@ -492,19 +505,12 @@ export function TextAnswer({
           onSubmit();
         }}
       >
-        <input
-          ref={inputRef}
-          value={text}
-          onChange={(e) => setText(e.target.value.slice(0, 60))}
-          autoFocus
-          autoCapitalize="none"
-          autoCorrect="off"
-          spellCheck={false}
-          autoComplete="off"
-          enterKeyHint="send"
-          placeholder={t('liveQuiz.typeHere')}
-          className={`w-full rounded-2xl border-2 ${light ? 'border-[#d9d3c3]' : 'border-white/30'} bg-white px-4 py-4 text-center text-2xl font-bold text-deep-navy outline-none focus:border-warm-yellow`}
-        />
+        {sentence ? <textarea {...fieldProps} rows={2} onKeyDown={event => {
+          if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
+            event.preventDefault();
+            onSubmit();
+          }
+        }} /> : <input {...fieldProps} />}
         <button
           type="submit"
           disabled={!text.trim() || disabled}
