@@ -200,7 +200,7 @@ export default function MaterialStudyCard({ item, api, preview, onSensor, onDone
         if (!back) { sensor.current?.('revealed'); setProgress(p => ({ ...p, meaningSeen: true })); }
         setBack(!back);
       }}>{back ? block.translation : block.text}</button>
-      <p className="text-center text-base">카드를 눌러 {back ? '영어 단어' : '한글 뜻'}를 보세요.</p>
+      <p className="text-center text-base">카드를 눌러 {back ? '영어 단어를' : '한글 뜻을'} 보세요.</p>
     </>}
     {!video && !flip && <section className="grid min-h-36 place-content-center gap-3 rounded-3xl bg-white p-5 text-center ring-1 ring-outline-variant">
       {method !== 'say' && <p className="break-words text-3xl font-bold">{visibleEnglish}</p>}
