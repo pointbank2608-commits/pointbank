@@ -20,6 +20,7 @@ export interface GrammarBoardEditor {
 
 export interface GrammarBoardProps {
   point: GrammarPoint;
+  mode?: 'prepare' | 'classroom';
   /** 우리 단어장으로 만든 예문 */
   extra?: GeneratedSentence[];
   themeId?: string | null;

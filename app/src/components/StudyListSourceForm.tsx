@@ -85,7 +85,7 @@ export default function StudyListSourceForm({ academy, busy, onBusy, onDraft, on
         title: files[0].name.replace(/\.[^.]+$/, '') || files[0].name, options,
         original: { files, first: isPdf ? start : 1, unclearPages: items.unclearPages } });
     } catch (err) {
-      setError(err instanceof Error && [...extractionErrors, 'noStudyItems','noGrammarSource','incompleteGrammar'].includes(err.message)
+      setError(err instanceof Error && [...extractionErrors, 'noStudyItems','noGrammarSource','incompleteGrammar','ambiguousGrammar'].includes(err.message)
         ? err.message : 'extractionFailed');
     } finally {
       onBusy(false);

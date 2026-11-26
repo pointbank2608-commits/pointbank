@@ -16,7 +16,7 @@ export default function WorkshopSheet({grade,step,total,title,topic,prompt,map,c
     <progress max={total} value={step+1} aria-label="수업 진행"/>
     <div className="workshop-body" key={step}>
       <div className="workshop-chapter"><span>{step+1} / {total}단계</span><small className="workshop-topic">{topic}</small></div>
-      <h2>{title}</h2><div className="workshop-prompt">{prompt}</div>{children}
+      <h2>{title}</h2>{prompt && <div className="workshop-prompt">{prompt}</div>}{children}
     </div>
     {footer && <footer>{footer}</footer>}
   </div>{open && map && <AccessibleDialog label="장면 지도" onClose={()=>setOpen(false)}>

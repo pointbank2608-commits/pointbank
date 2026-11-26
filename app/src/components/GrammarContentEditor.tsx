@@ -177,7 +177,7 @@ export default function GrammarContentEditor({ point, themeId, inline, initialPo
       if ((e.target as Element).closest('button:not(.grammar-field)')) setSelected(null);
     }}>
       <PresentSyncContext.Provider value={null}>
-        <GrammarBoard point={{ ...point, ...draft }} themeId={themeId} keyboard={false} editor={editor}
+        <GrammarBoard point={{ ...point, ...draft }} mode="prepare" themeId={themeId} keyboard={false} editor={editor}
           initialPosition={initialPosition} onPositionChange={trackPosition} requestedStage={requestedStage}
           initialRevealAll={initialRevealAll} initialShowKo={initialShowKo} />
       </PresentSyncContext.Provider>

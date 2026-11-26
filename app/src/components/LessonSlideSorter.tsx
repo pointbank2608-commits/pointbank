@@ -2302,6 +2302,7 @@ function GrammarSlideDetail({
         <div className={point.workshop ? 'workshop-reading' : 'aspect-video w-full max-w-3xl'}>
           <GrammarBoard
             point={point}
+            mode="prepare"
             extra={generated}
             initialPosition={position}
             onPositionChange={setPosition}

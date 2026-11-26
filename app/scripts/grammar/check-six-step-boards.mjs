@@ -47,7 +47,11 @@ import LessonSlideSorter from '/src/components/LessonSlideSorter';
 import {ToastProvider} from '/src/context/ToastContext';
 import {lessonGameSources} from '/src/lib/lessonGameContent';
 import GrammarBoard from '/src/components/GrammarBoard';
-import {grammarSlidePoint} from '/src/lib/grammar';
+import LessonSlideContent from '/src/components/LessonSlideContent';
+import SoloPlayer from '/src/components/solo/SoloPlayer';
+import {buildSoloGrammarLesson} from '/src/lib/soloLessons';
+import {PresentSyncContext} from '/src/lib/presentSync';
+import {GRAMMAR_POINTS, grammarSlidePoint} from '/src/lib/grammar';
 import i18n from '/src/i18n';
 import '/src/tailwind.css';
 await i18n.changeLanguage('ko');
@@ -55,12 +59,29 @@ function App() {
   const [pick, setPick] = useState(false);
   const [slide, setSlide] = useState(null);
   const [editingLesson, setEditingLesson] = useState(false);
+  const [solo, setSolo] = useState(false);
+  const [catalogId, setCatalogId] = useState(GRAMMAR_POINTS[0].id);
+  const [remoteOpen, setRemoteOpen] = useState(false);
+  if (location.search === '?watch') return <>
+    <button onClick={()=>setRemoteOpen(!remoteOpen)}>교사 공개 상태 변경</button>
+    <div style={{height:'75vh'}}><PresentSyncContext.Provider value={{role:'student', remote:{step:5,modelOpen:remoteOpen}, report:()=>{}}}>
+      <GrammarBoard mode="classroom" point={GRAMMAR_POINTS[0]}/>
+    </PresentSyncContext.Provider></div>
+  </>;
+  if (location.search === '?catalog') {
+    const point = GRAMMAR_POINTS.find(p => p.id === catalogId);
+    return <><select aria-label="검사할 문법" value={catalogId} onChange={e=>setCatalogId(e.target.value)}>
+      {GRAMMAR_POINTS.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select>
+      <div style={{height:'calc(100dvh - 96px)'}}><GrammarBoard mode="classroom" point={point} initialPosition={{step:1}}/></div></>;
+  }
+  if (solo) return <SoloPlayer steps={buildSoloGrammarLesson(grammarSlidePoint(slide)).steps} startAt={5} api={{}} onExit={()=>setSolo(false)}/>;
   if (editingLesson) return <ToastProvider><LessonSlideSorter academyId="${academy}" classId={null}
     lessonName="test" slides={[slide]} onChange={slides=>setSlide(slides[0])} wordListId="" wordLists={[]}/></ToastProvider>;
   return <><button onClick={()=>{setPick(true);setSlide(null)}}>활동 추가 열기</button>
     <button onClick={()=>setSlide({kind:'grammar',id:'sample',grammarId:'this-is',content:{name:'선생님의 지도 수업',examples:['This is my map.'],pattern:'This is / That is',explain:'두 지도를 가리켜요.'}})}>기본 문법 열기</button>
     {slide && <button onClick={()=>setEditingLesson(true)}>수업 수정 열기</button>}
-    {slide ? <div data-testid="classroom-board" style={{width:'100%',aspectRatio:'16/9'}}><GrammarBoard point={grammarSlidePoint(slide)} initialShowKo initialRevealAll /></div>
+    {slide && <button onClick={()=>setSolo(true)}>개별수업 마지막 과제 열기</button>}
+    {slide ? <div data-testid="classroom-board" style={{position:'relative',height:'calc(100dvh - 96px)'}}><LessonSlideContent slide={slide} words={[]} fill lessonName="수업" attendance={null} onGrammarCue={(action,index)=>{(window.grammarCues??=[]).push([action,index])}}/></div>
     : !pick && <MyGrammarLibrary/>}
     {pick && <LessonActivityPicker academyId="${academy}" storageKey="test" slides={[]} cards={[]} entries={[]}
       gameSources={lessonGameSources([],null,[])} lessonName="test" sourceName="" selected={null}
@@ -160,6 +181,7 @@ try {
   await page.getByRole('heading',{name:'교실에서 만나는 can'}).waitFor();
   await page.getByRole('button',{name:'수업 수정 열기'}).click();
   const detail = page.locator('[data-lesson-slide-detail]');
+  if (process.env.GRAMMAR_PREP_PNG) await detail.getByRole('navigation',{name:'수업 준비 한눈에 보기'}).screenshot({path:process.env.GRAMMAR_PREP_PNG});
   const button = name => detail.getByRole('button',{name,exact:true});
   const map = detail.locator('.grammar-atlas');
   assert.equal(await map.getByRole('button').count(),6);
@@ -221,6 +243,13 @@ try {
   await detail.getByLabel('그림 설명',{exact:true}).fill('선생님이 바꾼 장면 그림');
   await button('내 문법에 저장하고 이 슬라이드에 적용').click();
   await button('문법 내용 수정').waitFor();
+  const overview=detail.getByRole('navigation',{name:'수업 준비 한눈에 보기'});
+  await overview.getByText(draft.goal).waitFor();
+  for (const panel of draft.steps[1].practice.panels) await overview.getByText(panel.chunks.join(' '),{exact:true}).waitFor();
+  await overview.getByText(draft.workshop.scenes.high.task).waitFor();
+  await overview.getByRole('button',{name:/마지막 과제/}).click();
+  await detail.getByRole('heading',{name:draft.steps[5].practice.title}).waitFor();
+  await overview.getByRole('button',{name:/비교할 예문/}).click();
   await detail.getByRole('heading',{name:'지우의 부탁, 민서의 대답'}).waitFor();
   await detail.getByText('문을 닫아 달라고 어떻게 부탁할까요?',{exact:true}).waitFor();
   await detail.getByRole('button',{name:'문법 제목 수정 · '+renamed}).waitFor();
@@ -235,6 +264,11 @@ try {
   const board=page.getByTestId('classroom-board');
   await board.getByRole('button',{name:'다음 단계'}).click();
   await board.getByAltText('선생님이 바꾼 장면 그림').waitFor();
+  for(const [width,height] of [[1024,768],[1280,720],[1366,768],[1920,1080]]) {
+    await page.setViewportSize({width,height});
+    await checkComparison(board, 'photo '+width);
+  }
+  await page.setViewportSize({width:1366,height:768});
   await board.getByRole('button',{name:'다음 단계'}).click();
   const order=board.locator('.grammar-order');
   for(const chunk of draft.steps[2].practice.assembly) await order.getByRole('button',{name:chunk,exact:true}).click();
@@ -249,12 +283,23 @@ try {
   await board.locator('button[data-correct=true]').click();
   await board.getByRole('textbox').fill("Sorry, I can't. My class starts now.");
   await board.getByRole('button',{name:'다음 단계'}).click();
-  assert.equal(await board.getByRole('button',{name:'내 답과 예시 비교하기'}).isDisabled(),true);
+  assert.equal(await board.getByRole('textbox').count(),0);
   assert.equal(await board.getByRole('button',{name:'예문 보기'}).count(),0);
-  await board.getByRole('textbox').fill("Can you move this chair? Sorry, I can't. I have a class now.");
-  await board.getByRole('button',{name:'내 답과 예시 비교하기'}).click();
+  await board.getByRole('button',{name:'예시 답 보기'}).click();
   await board.getByRole('heading',{name:'심화 연습 · 1 / 3'}).waitFor();
+  assert.deepEqual(await page.evaluate(()=>window.grammarCues.filter(([action,i])=>i===5 && action!=='shown')),[['revealed',5]]);
   assert.equal(await board.getByRole('button',{name:'다음 단계'}).isDisabled(),true);
+  await page.getByRole('button',{name:'개별수업 마지막 과제 열기'}).click();
+  const solo=page.getByRole('region',{name:'문법 수업'});
+  const compare=solo.getByRole('button',{name:'내 답과 예시 비교하기'});
+  await compare.waitFor();
+  assert.equal(await solo.locator('.question-model').count(),0);
+  await solo.getByRole('textbox').fill('   ');
+  assert.ok(await compare.isDisabled());
+  await solo.getByRole('textbox').fill("Can you move this chair?");
+  await compare.click();
+  await solo.locator('.question-model').waitFor();
+  await page.reload();
   await page.getByRole('button',{name:'기본 문법 열기'}).click();
   await page.getByRole('heading',{name:'교실에서 만나는 This is와 That is'}).waitFor();
   await page.getByRole('button',{name:'수업 수정 열기'}).click();
@@ -284,5 +329,37 @@ try {
   assert.equal(await board.locator('summary').count(),0);
   assert.equal(await board.getByRole('button',{name:'장면 지도 열기'}).count(),0);
   assert.deepEqual(errors,[]);
-  console.log(points.length+' catalog boards, '+points.length*6+' stages; Chrome PDF → save retry → reload → import → all six stages passed.');
+  await page.goto(origin+'/scripts/games/focus.html?catalog');
+  const catalog=page.getByRole('combobox',{name:'검사할 문법'});
+  for (const point of points) {
+    await catalog.selectOption(point.id);
+    await checkComparison(page.locator('.workshop-board'),point.id);
+    if (point.id === 'do-you-can-you' && process.env.GRAMMAR_CLASSROOM_PNG)
+      await page.locator('.workshop-board').screenshot({path:process.env.GRAMMAR_CLASSROOM_PNG});
+  }
+  await page.goto(origin+'/scripts/games/focus.html?watch');
+  const follow=page.getByRole('region',{name:'문법 수업'});
+  await follow.getByRole('button',{name:'예시 답 보기'}).waitFor();
+  assert.ok(await follow.getByRole('button',{name:'예시 답 보기'}).isDisabled());
+  await page.getByRole('button',{name:'교사 공개 상태 변경'}).click();
+  await follow.locator('.question-model').waitFor();
+  await page.getByRole('button',{name:'교사 공개 상태 변경'}).click();
+  await follow.getByRole('button',{name:'예시 답 보기'}).waitFor();
+  assert.deepEqual(errors,[]);
+  console.log(points.length+' catalog boards, '+points.length*6+' stages; photo fixture, preparation, projected pairs, oral reveal, follow view and solo writing passed.');
 } finally { await browser.close(); }
+
+async function checkComparison(board, label) {
+  const pair = board.locator('.grammar-scene-grid .scene-sentence');
+  await pair.first().waitFor();
+  const visible = await pair.evaluateAll(sentences => {
+    const body = sentences[0].closest('.workshop-body');
+    const frame = body.getBoundingClientRect();
+    return sentences.length === 2 && body.scrollTop === 0 && sentences.every(sentence => {
+      const box = sentence.getBoundingClientRect();
+      return box.top >= frame.top && box.bottom <= Math.min(frame.bottom, innerHeight) &&
+        box.left >= frame.left && box.right <= frame.right + 1;
+    });
+  });
+  assert.ok(visible, label+' comparison must show both complete sentences before scrolling');
+}

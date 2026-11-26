@@ -77,7 +77,7 @@ export const GRAMMAR_POINTS = [...grammarData as unknown as GrammarPoint[], { ..
   ...point, name: point.name + ' — ' + point.goal,
 }));
 
-export type GrammarBoardContent = Pick<GrammarPoint, 'name' | 'pattern' | 'explain' | 'examples' | 'translations' | 'rule' | 'usage' | 'detail' | 'pitfalls' | 'tip' | 'steps' | 'audience' | 'workshop'>;
+export type GrammarBoardContent = Pick<GrammarPoint, 'name' | 'goal' | 'pattern' | 'explain' | 'examples' | 'translations' | 'rule' | 'usage' | 'detail' | 'pitfalls' | 'tip' | 'steps' | 'audience' | 'workshop'>;
 
 // Early workshop snapshots store the scene comparison in the exercise bank.
 // Bring it into the comparison stage unless the teacher already supplied choices.
@@ -95,9 +95,9 @@ function comparisonStep(step: GrammarTeachingStep, workshop: Workshop) {
 }
 
 export function grammarBoardContent(point: GrammarPoint): GrammarBoardContent {
-  const { name, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip, steps, audience, workshop } =
+  const { name, goal, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip, steps, audience, workshop } =
     workshopSnapshot(point, grammarPoint(point.id));
-  return { name, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip, audience, workshop,
+  return { name, goal, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip, audience, workshop,
     steps: steps?.map((step,i) => i===1 ? comparisonStep(step, workshop) : step) };
 }
 

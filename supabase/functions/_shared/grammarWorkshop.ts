@@ -1,7 +1,25 @@
 export type School = 'elementary' | 'middle' | 'high';
 export interface SceneLine { label: string; chunks: string[]; glosses?:string[]; meaning: string; image?: string; setting?:string; response?:string; rationale?:string }
 export interface TransferScene { opening: string; task: string; model: string }
-export interface DrillChoice { prompt: string; options: string[]; correct: number; reason: string }
+export interface DrillChoice { prompt: string; options: string[]; correct: number; reason: string; previousPrompt?:string; previousVersion?:string }
+export function choiceVersion(q:DrillChoice):string {
+  const text=JSON.stringify([q.prompt,q.options,q.correct,q.reason]);
+  let hash=2166136261;
+  for(let i=0;i<text.length;i++)hash=Math.imul(hash^text.charCodeAt(i),16777619);
+  return (hash>>>0).toString(36);
+}
+export function refreshCatalogChoices(saved:Workshop, catalog?:Workshop):Workshop {
+  if (!catalog || saved===catalog) return saved;
+  const revised=new Map(catalog.choices.filter(q=>q.previousVersion).map(q=>[q.previousVersion,q]));
+  let changed=false;
+  const choices=saved.choices.map(q=>{
+    const update=revised.get(choiceVersion(q));
+    if (!update || update.previousPrompt!==q.prompt) return q;
+    changed=true;
+    return update;
+  });
+  return changed?{...saved,choices}:saved;
+}
 export interface DrillModel { en: string; ko: string }
 export interface WorkshopSource {
   map: string[];
@@ -13,6 +31,7 @@ export interface WorkshopSource {
   repairs: { wrong: string; right: string; reason: string }[];
 }
 export interface Workshop {
+  meaningChoices?: DrillChoice[];
   interpretation?:DrillChoice;
   reading?:DrillChoice;
   overrides?: Record<string,ExtensionQuestion>;
@@ -62,20 +81,31 @@ export function compileWorkshop(source: WorkshopSource, grade: number, count = 5
   return {steps,workshop};
 }
 
-export interface ExtensionQuestion { kind:'choice'|'order'|'write'; title:string; prompt:string; answer:string; reason:string; options?:string[] }
+export interface ExtensionQuestion { kind:'choice'|'order'|'write'; title:string; prompt:string; answer:string; reason:string; options?:string[]; previousPrompt?:string }
+export function meaningChoices(workshop:Workshop):DrillChoice[] {
+  if (workshop.meaningChoices) return workshop.meaningChoices;
+  return workshop.models.flatMap((m,i)=>{
+    const other=workshop.models.find(x=>x.en!==m.en && x.ko!==m.ko);
+    if (!other) return [];
+    const correct=i%2;
+    return [{prompt:m.en,options:correct?[other.ko,m.ko]:[m.ko,other.ko],correct,reason:m.en+' → '+m.ko}];
+  });
+}
 export function extensionPool(workshop: Workshop): ExtensionQuestion[] {
   const {grade, models, choices, repairs}=workshop;
   const school=schoolOf(grade);
   const rotate=<T,>(items:T[])=>items.length ? [...items.slice(grade % items.length), ...items.slice(0,grade % items.length)] : [];
   const groups:ExtensionQuestion[][]=[];
-  const choiceItems:ExtensionQuestion[]=rotate(choices).map(c=>({kind:'choice',title:school==='elementary'?'빈자리 채우기':'문맥 빈칸',prompt:c.prompt,answer:c.options[c.correct],options:c.options,reason:c.reason}));
+  const choiceItems:ExtensionQuestion[]=rotate(choices).map(c=>({kind:'choice',
+    title:c.prompt.includes('_')?(school==='elementary'?'빈자리 채우기':'문맥 빈칸'):'문맥에 맞는 표현',
+    prompt:c.prompt,previousPrompt:c.previousPrompt,answer:c.options[c.correct],options:c.options,reason:c.reason}));
   const ordering:ExtensionQuestion[]=rotate(models).filter(m=>m.en.trim().split(/\s+/).length>=3).map(m=>({kind:'order',title:'순서 맞추기',prompt:m.ko,answer:m.en,reason:m.ko}));
+  const meanings=rotate(meaningChoices(workshop)).map(q=>({kind:'choice' as const,
+    title:school==='high'?'문맥 속 의미 추론':'문장과 뜻 짝짓기',
+    prompt:school==='high'?'다음 발언의 의미로 알맞은 것을 고르세요.\n'+q.prompt:q.prompt,
+    options:q.options,answer:q.options[q.correct],reason:q.reason}));
   if(school==='elementary') {
-    const matches:ExtensionQuestion[]=rotate(models).flatMap((m,i)=>{
-      const other=models.find(x=>x.ko!==m.ko && x.en!==m.en);
-      if (!other) return [];
-      return [{kind:'choice',title:'문장과 뜻 짝짓기',prompt:m.en,options:i%2?[m.ko,other.ko]:[other.ko,m.ko],answer:m.ko,reason:m.en+' → '+m.ko}];
-    });
+    const matches=meanings;
     if(grade<=3) groups.push(matches,ordering,choiceItems);
     else if(grade<=5) groups.push(ordering,matches,choiceItems);
     else groups.push(choiceItems,ordering,matches);
@@ -87,11 +117,7 @@ export function extensionPool(workshop: Workshop): ExtensionQuestion[] {
     else groups.push(writing,repair,choiceItems);
     if(school==='middle') groups.push(ordering);
     if(school==='high') {
-      groups.unshift(rotate(models).flatMap(m=>{
-        const other=models.find(x=>x.en!==m.en && x.ko!==m.ko);
-        return other?[{kind:'choice' as const,title:'문맥 속 의미 추론',prompt:'다음 발언의 의미로 알맞은 것을 고르세요.\n'+m.en,
-          options:m.en.length%2?[m.ko,other.ko]:[other.ko,m.ko],answer:m.ko,reason:m.ko}]:[];
-      }));
+      groups.unshift(meanings);
     }
   }
   const result:ExtensionQuestion[]=[];
@@ -110,5 +136,5 @@ export function extensionPool(workshop: Workshop): ExtensionQuestion[] {
     const item=g[i];
     if(item && !seen.has(item.prompt)){seen.add(item.prompt);result.push(item);}
   }
-  return result.map(item=>workshop.overrides?.[item.kind+'|'+item.prompt]??item);
+  return result.map(item=>workshop.overrides?.[item.kind+'|'+(item.previousPrompt??item.prompt)]??item);
 }

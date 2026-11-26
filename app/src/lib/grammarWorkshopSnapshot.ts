@@ -1,9 +1,11 @@
-import { stageTitles, type SceneLine, type Workshop } from '../../../supabase/functions/_shared/grammarWorkshop';
+import { refreshCatalogChoices, stageTitles, type SceneLine, type Workshop } from '../../../supabase/functions/_shared/grammarWorkshop';
 import type { GrammarPoint, GrammarTeachingStep } from './grammar';
 import type { GuidedPractice } from '../data/doYouCanYou';
 
 // Upgrade on read. A teacher's stored copy is written only by the normal Save action.
 export function workshopSnapshot(point:GrammarPoint, catalog?:GrammarPoint | null):GrammarPoint & {workshop:Workshop} {
+  if (point.workshop && catalog?.workshop && point.workshop!==catalog.workshop)
+    point={...point,workshop:refreshCatalogChoices(point.workshop,catalog.workshop)};
   const saved=point.steps ?? [];
   const atlas=saved[0]?.practice;
   if(point.workshop && saved.length===6 && atlas?.map?.length &&

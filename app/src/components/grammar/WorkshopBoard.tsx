@@ -5,20 +5,27 @@ import { useSyncedSubState } from '../../lib/presentSync';
 import WorkshopSheet from './WorkshopSheet';
 import type { GrammarBoardProps } from '../GrammarBoard';
 import GuidedPracticePanel from './GuidedPracticePanel';
+import GrammarPrepOverview from './GrammarPrepOverview';
 import './workshop-board.css';
 
-export default function WorkshopBoard({point, workshop, interactive = true, keyboard = interactive,
+export default function WorkshopBoard({point, workshop, mode, interactive = true, keyboard = interactive,
   editor, initialPosition, onPositionChange, requestedStage, onCue, className = ''}: GrammarBoardProps & {workshop: Workshop}) {
   const last = (point.steps?.length ?? 1) - 1;
   const [step, setStep] = useState(Math.max(0, Math.min(last, initialPosition?.step ?? 0)));
+  const [modelOpen, setModelOpen] = useState(false);
   const lesson = classroomStep(point, step);
   const cue = useRef(onCue);
   cue.current = onCue;
-  const follower = useSyncedSubState({step, view: 'lesson'}, remote => {
+  const follower = useSyncedSubState({step, view: 'lesson', modelOpen}, remote => {
     setStep(Math.max(0, Math.min(last, Number(remote.step) || 0)));
+    setModelOpen(remote.modelOpen === true);
   });
+  function goToStep(index: number) {
+    setStep(index);
+    setModelOpen(false);
+  }
   useEffect(() => {
-    if (requestedStage) setStep(requestedStage.index);
+    if (requestedStage) goToStep(requestedStage.index);
   }, [requestedStage]);
   useEffect(() => {
     cue.current?.('shown', step);
@@ -34,23 +41,30 @@ export default function WorkshopBoard({point, workshop, interactive = true, keyb
       if (!direction || next < 0 || next > last) return;
       event.preventDefault();
       event.stopPropagation();
-      setStep(next);
+      goToStep(next);
     };
     document.addEventListener('keydown', handle, true);
     return () => document.removeEventListener('keydown', handle, true);
   }, [keyboard, follower, step, last]);
   if (!lesson?.practice) return null;
   const grade = workshop.grade;
+  const presentComparison = mode === 'classroom' && step === 1 && !!lesson.practice.panels?.length;
+  const classroomReview = mode === 'classroom' && step === last ? {
+    open: modelOpen,
+    onOpen: follower ? undefined : () => { setModelOpen(true); onCue?.('revealed', step); },
+  } : undefined;
   const prompt = parseMarked(lesson.prompt).map((part, i) => part.strong ? <strong key={i}>{part.text}</strong> : part.text);
-  return <WorkshopSheet grade={grade} step={step} total={last+1} title={lesson.practice.title}
-    className={className} map={interactive?point.steps?.[0].practice:undefined} onMap={()=>onCue?.('hint',step)}
+  return <>{mode === 'prepare' && <GrammarPrepOverview point={point} onStage={goToStep}/>}
+    <WorkshopSheet grade={grade} step={step} total={last+1} title={lesson.practice.title}
+    className={presentComparison ? className+' workshop-comparison' : className} map={interactive?point.steps?.[0].practice:undefined} onMap={()=>onCue?.('hint',step)}
     topic={(step!==last || editor) && (editor?editor.field('name',point.name,point.name):point.name.split(' — ')[0])}
-    prompt={editor?editor.field('prompt',lesson.prompt,prompt,step):prompt}
+    prompt={presentComparison ? undefined : editor?editor.field('prompt',lesson.prompt,prompt,step):prompt}
     footer={interactive && <>
-      <button type="button" disabled={step===0 || follower} onClick={()=>setStep(step-1)}>이전 단계</button>
-      <button type="button" disabled={step===last || follower} onClick={()=>setStep(step+1)}>다음 단계</button></>}>
+      <button type="button" disabled={step===0 || follower} onClick={()=>goToStep(step-1)}>이전 단계</button>
+      <button type="button" disabled={step===last || follower} onClick={()=>goToStep(step+1)}>다음 단계</button></>}>
     <div inert={!interactive}><GuidedPracticePanel practice={lesson.practice} workshop={workshop}
+      classroomReview={classroomReview} comparisonPrompt={presentComparison ? prompt : undefined}
       review={[lesson.answer,lesson.followUp].join('\n\n')} onHelp={()=>onCue?.('hint',step)}
       onReveal={()=>{onCue?.('submitted',step);onCue?.('revealed',step);}}/></div>
-  </WorkshopSheet>;
+  </WorkshopSheet></>;
 }

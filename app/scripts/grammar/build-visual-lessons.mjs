@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import ts from 'typescript';
+import {groundCatalogChoices} from './catalog-choice-evidence.mjs';
 const root=new URL('../../../',import.meta.url);
 const file=path=>new URL(path,root);
 const read=path=>fs.readFileSync(file(path),'utf8');
@@ -9,7 +10,7 @@ async function sharedModule(name) {
  const js=ts.transpileModule(read('supabase/functions/_shared/'+name+'.ts'),{compilerOptions:{target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.ESNext}}).outputText;
  return import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
 }
-const {compileWorkshop,extensionPool}=await sharedModule('grammarWorkshop');
+const {compileWorkshop,extensionPool,choiceVersion}=await sharedModule('grammarWorkshop');
 const {canMap}=await sharedModule('canMap');
 const intentions=new Map(read('app/scripts/grammar/scene-intentions.txt').trim().split(/\r?\n/).map(line=>{
  const [id,...entries]=line.split('|');
@@ -150,6 +151,7 @@ function build(p,b,grade) {
    }
    seen.add(normalize(variant.model));
  }
+ groundCatalogChoices(p.id,source,b,choiceVersion);
  const lesson=compileWorkshop(source,grade);
  lesson.steps[0].practice.title=p.id==='i-can'?'수영장에서 만나는 can':
    p.id==='this-is'?'교실에서 만나는 This is와 That is':p.goal || '지우와 민서의 수영 이야기';

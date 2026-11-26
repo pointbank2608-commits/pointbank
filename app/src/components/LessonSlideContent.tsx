@@ -203,6 +203,7 @@ export default function LessonSlideContent({
         <GrammarBoard
           key={slide.id}
           point={point}
+          mode="classroom"
           onCue={onGrammarCue}
           extra={extra}
           themeId={slide.boardTheme ?? 'green'}

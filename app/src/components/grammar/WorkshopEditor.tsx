@@ -43,7 +43,7 @@ export default function WorkshopEditor({draft,setDraft,onUploading,index,onStage
   const originals=extensionPool({...workshop,overrides:undefined}).slice(0,workshop.count);
   const drillNumber=Math.min(drillIndex,originals.length-1);
   const originalDrill=originals[drillNumber];
-  const drillKey=originalDrill ? originalDrill.kind+'|'+originalDrill.prompt : '';
+  const drillKey=originalDrill ? originalDrill.kind+'|'+(originalDrill.previousPrompt??originalDrill.prompt) : '';
   const drill=workshop.overrides?.[drillKey]??originalDrill;
   const updateWorkshop=(fn:(w:Workshop)=>Workshop)=>setDraft(old=>({...old,workshop:fn(old.workshop!)}));
   function changeDrill(patch:Partial<ExtensionQuestion>) {
@@ -82,6 +82,7 @@ export default function WorkshopEditor({draft,setDraft,onUploading,index,onStage
     <label>편집할 단계 <select disabled={uploading} value={index} onChange={e=>onStage(Number(e.target.value))}>
       {stageTitles.map((title,i)=><option value={i} key={title}>{i+1}. {title}</option>)}</select></label>
     <TextField label="장면 제목" value={practice.title} onChange={value=>editPractice(p=>({...p,title:value}))}/>
+    {index===0 && <TextField label="수업 목표" value={draft.goal ?? draft.explain} onChange={goal=>setDraft(prev=>({...prev,goal}))}/>}
     <TextField label={index===0?'이 학교급의 시작 장면':'화면 설명'} value={index===0?scene.opening:step.prompt}
       onChange={v=>index===0?editScene('opening',v):editStep('prompt',v)}/>
     {index===5&&<><TextField label="이 학교급의 마지막 과제" value={scene.task} onChange={v=>editScene('task',v)}/>

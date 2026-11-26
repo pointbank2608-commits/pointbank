@@ -171,7 +171,7 @@ export default function GrammarPage() {
         {/* 선택한 문법 */}
         <div className="min-w-0 flex-1 space-y-4">
           <div className={point.workshop ? 'workshop-reading' : 'aspect-video w-full'}>
-            <GrammarBoard key={`${point.id}:${seed}:${extra.length}`} point={point} extra={extra} themeId={themeId} />
+            <GrammarBoard key={`${point.id}:${seed}:${extra.length}`} point={point} mode="prepare" extra={extra} themeId={themeId} />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" onClick={() => navigate(`/materials/grammar-workbook?topic=${encodeURIComponent(point.id)}`)} className="rounded-full border-2 border-primary px-5 py-2 font-label-md text-label-md text-primary hover:bg-primary/10">
@@ -315,7 +315,7 @@ export default function GrammarPage() {
             </button>
           </div>
           <div className="min-h-0 flex-1">
-            <GrammarBoard point={point} extra={extra} themeId={themeId} />
+            <GrammarBoard point={point} mode="classroom" extra={extra} themeId={themeId} />
           </div>
         </div>
       )}

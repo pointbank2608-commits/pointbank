@@ -1,16 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { GuidedPractice } from '../../data/doYouCanYou';
 import { WordOrder, WorkshopExercises } from './WorkshopExercises';
 import type { SceneLine, Workshop } from '../../../../supabase/functions/_shared/grammarWorkshop';
 import './guided-practice.css';
 
-function SceneCard({panel, title, onHelp}:{panel:SceneLine; title?:string; onHelp?:()=>void}) {
+function SceneCard({panel, title, onHelp, sentenceFirst = false}:{panel:SceneLine; title?:string; onHelp?:()=>void; sentenceFirst?:boolean}) {
   return <article className="grammar-scene-card">
     {panel.image && <img src={panel.image} alt=""/>}{title && panel.label!==title && <p className="scene-speaker">{panel.label}</p>}
-    <h3>{title || panel.label}</h3>{panel.setting && <p>{panel.setting}</p>}
+    <h3>{title || panel.label}</h3>{!sentenceFirst && panel.setting && <p>{panel.setting}</p>}
     <div className="scene-sentence">{panel.chunks.map((chunk,j)=><span className="grammar-chunk" data-role={/^(can|must|may|should|do|does|did)$/i.test(chunk)?'helper':/^(I|you|we|she|he|it|they)$/i.test(chunk)?'person':undefined} key={j}>
       <b lang="en">{chunk}</b>{panel.glosses?.[j]&&<small>{panel.glosses[j]}</small>}</span>)}</div>
-    <p>{panel.meaning}</p>{panel.response && <p><b>상대의 반응</b> · {panel.response}</p>}
+    <p>{panel.meaning}</p>{sentenceFirst && panel.setting && <p>{panel.setting}</p>}
+    {panel.response && <p><b>상대의 반응</b> · {panel.response}</p>}
     {panel.rationale && <details onToggle={e=>{if(e.currentTarget.open)onHelp?.();}}><summary>왜 이런 뜻일까?</summary><p>{panel.rationale}</p></details>}
   </article>;
 }
@@ -28,7 +29,11 @@ export function SceneMap({practice,onHelp}:{practice:GuidedPractice;onHelp?:()=>
   </div>;
 }
 
-export default function GuidedPracticePanel({ practice, review, onHelp, onReveal, workshop }: { practice: GuidedPractice; review?: string; onHelp?: () => void; onReveal?: () => void; workshop?: Workshop }) {
+export default function GuidedPracticePanel({ practice, review, onHelp, onReveal, workshop, classroomReview, comparisonPrompt }: {
+  practice: GuidedPractice; review?: string; onHelp?: () => void; onReveal?: () => void; workshop?: Workshop;
+  classroomReview?: {open: boolean; onOpen?: () => void};
+  comparisonPrompt?: ReactNode;
+}) {
   const [picked, setPicked] = useState<number | null>(null);
   const [drafts, setDrafts] = useState<string[]>([]);
   const [reviewing, setReviewing] = useState(false);
@@ -43,21 +48,32 @@ export default function GuidedPracticePanel({ practice, review, onHelp, onReveal
       <p>{explanation}</p>
     </details>;
   const artwork = practice.image && <img src={practice.image} alt={practice.imageDescription ?? ''} className="max-h-48 rounded-lg object-contain" />;
-  if (practice.independentPrompts) return <div className="guided-practice">{artwork}
-    {practice.independentPrompts.map((label, index) => <label className="question-draft" key={label}>{label}
-      <textarea rows={2} value={drafts[index] ?? ''} onChange={event => {
-        const next = [...drafts];
-        next[index] = event.target.value;
-        setDrafts(next);
-      }} />
-    </label>)}
-    {reviewing ? <><p className="question-model">{review}</p>{practice.why.map(why)}{workshop && <WorkshopExercises workshop={workshop} onReveal={onReveal}/>}</> :
-      <button type="button" disabled={!practice.independentPrompts.every((_, i) => drafts[i]?.trim())}
-        onClick={() => { setReviewing(true); onReveal?.(); }}>내 답과 예시 비교하기</button>}
-  </div>;
-  return <div className="guided-practice">{artwork}
+  if (practice.independentPrompts) {
+    const canOpen = classroomReview ? !!classroomReview.onOpen : practice.independentPrompts.every((_, i) => drafts[i]?.trim());
+    const openReview = classroomReview ? classroomReview.onOpen : () => { setReviewing(true); onReveal?.(); };
+    return <div className="guided-practice">{artwork}
+      {classroomReview && <strong>내 답을 말로 들려주세요.</strong>}
+      {practice.independentPrompts.map((task, index) => classroomReview
+        ? <p className="whitespace-pre-line" key={index}>{task}</p>
+        : <label className="question-draft" key={index}>{task}
+            <textarea rows={2} value={drafts[index] ?? ''} onChange={event => {
+              const next = [...drafts];
+              next[index] = event.target.value;
+              setDrafts(next);
+            }}/>
+          </label>)}
+      {(classroomReview?.open ?? reviewing) ? <>
+        <p className="question-model">{review}</p>{practice.why.map(why)}
+        {workshop && <WorkshopExercises workshop={workshop} onReveal={onReveal}/>}
+      </> : <button type="button" disabled={!canOpen} onClick={openReview}>
+        {classroomReview ? '예시 답 보기' : '내 답과 예시 비교하기'}
+      </button>}
+    </div>;
+  }
+  return <div className="guided-practice">{!comparisonPrompt && artwork}
     {practice.map?.length && <SceneMap practice={practice} onHelp={onHelp}/>}
-    {!practice.map?.some(entry=>entry.panelIndex!==undefined) && !!practice.panels?.length && <div className="grammar-scene-grid">{practice.panels.map((panel,i)=><SceneCard key={i} panel={panel} onHelp={onHelp}/>)}</div>}
+    {!practice.map?.some(entry=>entry.panelIndex!==undefined) && !!practice.panels?.length && <div className="grammar-scene-grid">{practice.panels.map((panel,i)=><SceneCard key={i} panel={panel} sentenceFirst={!!comparisonPrompt} onHelp={onHelp}/>)}</div>}
+    {comparisonPrompt && <><div className="workshop-prompt">{comparisonPrompt}</div>{artwork}</>}
     {practice.why.map(why)}
     {practice.assembly ? <><p>{practice.question}</p><WordOrder words={practice.assembly} reason={practice.question} onReveal={onReveal}/></> : practice.choices.length>0 && <fieldset>
       <legend>{practice.question}</legend>

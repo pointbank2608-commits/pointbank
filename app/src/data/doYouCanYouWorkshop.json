@@ -517,22 +517,26 @@
         "reason": "상대가 그 행동을 할 수 있는지 궁금해요."
       },
       {
-        "prompt": "Can you ____ soccer?",
+        "prompt": "“나는 수영할 수 있어요.”라는 뜻으로 완성하세요.\nI ____",
         "options": [
-          "play",
-          "plays"
+          "can swim.",
+          "can't skate."
         ],
         "correct": 0,
-        "reason": "Can you 뒤에는 동사원형을 씁니다."
+        "reason": "I can swim.는 “나는 수영할 수 있어요.”라는 뜻이에요. I can't skate.는 “나는 스케이트를 못 타요.”라는 다른 내용을 전해요.",
+        "previousPrompt": "Can you ____ soccer?",
+        "previousVersion": "11qvjzp"
       },
       {
-        "prompt": "My brother is a baby. He ____ walk.",
+        "prompt": "동생은 아직 첫걸음을 떼기 전이에요.\nMy brother is a baby. He ____ walk.",
         "options": [
           "can",
           "can't"
         ],
         "correct": 1,
-        "reason": "아기라서 걸을 수 없으므로 can't를 씁니다."
+        "reason": "아기라서 걸을 수 없으므로 can't를 씁니다.",
+        "previousPrompt": "My brother is a baby. He ____ walk.",
+        "previousVersion": "1lp2sxs"
       },
       {
         "prompt": "A fish can ____ in the water.",
@@ -544,31 +548,37 @@
         "reason": "조동사 can 뒤에는 주어가 3인칭 단수여도 동사원형을 씁니다."
       },
       {
-        "prompt": "I have no pen. I ____ write my name.",
+        "prompt": "종이에 서명해야 하는데 쓸 도구가 전혀 없어서 서명을 못 해요.\nI have no pen. I ____ write my name.",
         "options": [
           "can",
           "can't"
         ],
         "correct": 1,
-        "reason": "펜이 없어서 쓸 수 없으므로 can't를 씁니다."
+        "reason": "펜이 없어서 쓸 수 없으므로 can't를 씁니다.",
+        "previousPrompt": "I have no pen. I ____ write my name.",
+        "previousVersion": "4knwuj"
       },
       {
-        "prompt": "They ____ make a snowman. There is a lot of snow.",
+        "prompt": "아이들이 눈 뭉치는 법을 배워 이제 스스로 눈사람을 만들 수 있어요.\nThey ____ make a snowman. There is a lot of snow.",
         "options": [
           "can",
           "can't"
         ],
         "correct": 0,
-        "reason": "눈이 많아서 눈사람을 만들 수 있으므로 can을 씁니다."
+        "reason": "눈이 많아서 눈사람을 만들 수 있으므로 can을 씁니다.",
+        "previousPrompt": "They ____ make a snowman. There is a lot of snow.",
+        "previousVersion": "1dohvo9"
       },
       {
-        "prompt": "Can she jump rope? — No, she ____.",
+        "prompt": "다음 뜻을 그대로 전할 문장을 고르세요.\n“그들은 빨리 달릴 수 없어요.”",
         "options": [
-          "can",
-          "can't"
+          "I can't skate.",
+          "They can't run fast."
         ],
         "correct": 1,
-        "reason": "No로 대답했으므로 can't를 씁니다."
+        "reason": "They can't run fast.는 “그들은 빨리 달릴 수 없어요.”라는 뜻이에요. I can't skate.는 “나는 스케이트를 못 타요.”라는 다른 내용을 전해요.",
+        "previousPrompt": "Can she jump rope? — No, she ____.",
+        "previousVersion": "t9x35p"
       },
       {
         "prompt": "We can ____ a song together.",
@@ -581,13 +591,15 @@
         "reason": "can 뒤에는 항상 동사원형이 옵니다."
       },
       {
-        "prompt": "____ you open the door? It is too heavy.",
+        "prompt": "“너는 축구를 할 수 있니?”라는 뜻으로 완성하세요.\nCan you ____",
         "options": [
-          "Can",
-          "Are"
+          "bake bread?",
+          "play soccer?"
         ],
-        "correct": 0,
-        "reason": "능력을 묻거나 부탁할 때는 Can을 씁니다."
+        "correct": 1,
+        "reason": "Can you play soccer?는 “너는 축구를 할 수 있니?”라는 뜻이에요. Can you bake bread?는 “빵을 구울 줄 아니?”라는 다른 내용을 전해요.",
+        "previousPrompt": "____ you open the door? It is too heavy.",
+        "previousVersion": "7vo9j"
       }
     ],
     "repairs": [

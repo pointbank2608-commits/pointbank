@@ -18,7 +18,7 @@ const models = [
 ].map(([en,ko])=>({en,ko}));
 const choices = [
   makeChoice('지우가 상자를 혼자 들기 힘들어 옆 친구를 봐요. 지금 지우가 원하는 것은?', ['친구의 평소 습관을 알기','지금 함께 들어 주기'],1,'무거운 상자가 바로 앞에 있어요. 지금 도움이 필요한 장면이에요.'),
-  makeChoice('친구가 Can you help me? 하고 물었어요. 함께할 시간이 있어요. 어떻게 답할까요?', ['Sure.','Sorry, I can’t.'],0,'함께할 수 있으니 Sure(물론이지)로 부탁을 받아 줘요.'),
+  makeChoice('친구가 Can you help me? 하고 물었어요. 시간이 있어서 부탁을 들어주기로 했어요. 어떻게 답할까요?', ['Sure.','Sorry, I can’t.'],0,'함께할 수 있으니 Sure(물론이지)로 부탁을 받아 줘요.'),
   makeChoice('민서는 지금 수업에 들어가야 해서 도울 수 없어요. 알맞은 대답은?', ["Sure. No problem.","I'm sorry, but I can't. I have a class now."],1,'수업에 들어가야 한다는 사정이 두 번째 문장에 담겼어요.'),
   makeChoice('Can you ___ the window? 에서 창문을 열어 달라고 하려면?', ['opens','open','opening'],1,'can이 있는 질문에서 행동을 나타내는 말은 기본 모양인 open이에요.'),
   makeChoice('창문이 닫힌 교실에서 “Can I open the window?”라고 말했어요. 창문을 열 사람은?', ['말하는 나','듣는 친구'],0,'I는 나예요. 내가 열어도 되는지 친구에게 물어요.'),
@@ -83,6 +83,7 @@ export function photoRequestLesson(printed: {en:string;ko:string}[], grade:numbe
   lesson.steps[2].practice.why=[['우리말은 행동이 끝에 오는데 영어는 어디에 놓아요?', '먼저 Can you please로 말을 듣는 사람에게 부탁해요. 다음에 '+a.verb+'('+a.verbKo+')로 원하는 행동을 말하고, '+a.object+'('+a.objectKo+')로 그 대상을 붙여요.']];
   const explain='부탁할 때는 누가 행동할지 먼저 생각해요. 상대에게 해 달라면 Can you로 시작해요. 내가 직접 해도 되는지 물으면 Can I로 시작해요.';
   return {...lesson,name:'Can you please …? · 도움을 부탁하고 이유를 들어 거절하기',audience:schoolOf(grade),
+    goal:'상대에게 도움을 부탁하고, 부탁을 들어주기 어려울 때 이유를 말해요.',
     pattern:"Can you please …? / Sure. / I’m sorry, but I can’t.", explain,rule:[because],usage:source.map,detail:[scene,because],
     examples:[request,'Sure. No problem.',refusal],translations:[a.sentenceKo,'물론이지. 도와줄게.','미안하지만 못 해. 나 지금 바빠.'],
     tip:because,pitfalls:repairs.map(r=>({...r,why:r.reason}))};

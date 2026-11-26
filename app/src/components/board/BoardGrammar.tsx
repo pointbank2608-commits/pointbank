@@ -26,7 +26,7 @@ export default function BoardGrammar() {
         </div>
         <div className="relative min-h-0 flex-1">
           <div className="absolute inset-0">
-            <GrammarBoard key={point.id} point={point} themeId="green" />
+            <GrammarBoard key={point.id} point={point} mode="classroom" themeId="green" />
           </div>
         </div>
       </div>
