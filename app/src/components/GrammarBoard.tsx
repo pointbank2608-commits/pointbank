@@ -258,6 +258,13 @@ export default function GrammarBoard({
           </div>
           {view === 'lesson' && lesson ? <section key={step} className="mt-[2cqh] min-h-0 flex-1 space-y-[2cqh] overflow-y-auto pb-[9cqh]" style={{ fontFamily: BOARD_FONTS.sans }}>
             <h2 className="font-bold" style={{ fontSize: '4.8cqh', color: th.accent }}>{step + 1} / 6 · {t('myGrammar.stage' + (step + 1))}</h2>
+            {step === 0 && point.audience && <div className="space-y-[0.8cqh] rounded-[1cqh] p-[1.6cqh]" style={{ background: th.chip, fontSize: '3.2cqh' }}>
+              <p>{field('explain', point.explain, <Marked text={point.explain} />)}</p>
+              {point.examples[0] && <div>
+                <p className="font-bold">{field('en', point.examples[0], <Marked text={point.examples[0]} />, 0)}</p>
+                {point.translations?.[0] && <p>{field('ko', point.translations[0], <Marked text={point.translations[0]} />, 0)}</p>}
+              </div>}
+            </div>}
             <p className="whitespace-pre-line leading-snug" style={{ fontSize: '4.2cqh' }}>{field('prompt', lesson.prompt, <Marked text={lesson.prompt} />, step)}</p>
             {hintOpen && <p className="whitespace-pre-line rounded-[1cqh] p-[1.4cqh]" style={{ background: th.chip, fontSize: '3.2cqh' }}>
               <strong>{t('myGrammar.hint')} · </strong>{field('hint', lesson.hint, <Marked text={lesson.hint} />, step)}

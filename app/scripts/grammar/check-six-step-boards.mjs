@@ -162,6 +162,10 @@ try {
   await imported.first().click();
   await page.getByRole('heading',{name:'1 / 6 · 언제 쓸까?'}).waitFor();
   for (let index=0;index<6;index++) {
+    if (index === 0) {
+      const opening = await page.getByTestId('classroom-board').innerText();
+      for (const text of [draft.explain, draft.examples[0], draft.translations[0]]) assert.ok(opening.includes(text.replaceAll('**','')));
+    }
     await page.getByRole('button',{name:'힌트',exact:false}).click();
     await page.getByText(draft.steps[index].hint,{exact:false}).last().waitFor();
     await page.getByRole('button',{name:'예시 답과 이유',exact:false}).click();
