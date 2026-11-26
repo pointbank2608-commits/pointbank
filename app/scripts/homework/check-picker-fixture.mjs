@@ -6,6 +6,7 @@ import {wordCards,sentenceCards} from './material-fixture.mjs';
 // No browser process, external database, or real user account is needed.
 globalThis.window={};
 globalThis.sessionStorage={getItem:()=>null};
+globalThis.WebSocket ??= class {constructor(){throw Error('No realtime connection expected in the picker');}};
 const row=(kind,cards,cls='C')=>({id:kind+cls,academy_id:'A',class_id:cls,
   name:'Family Road Trip',kind,updated_at:'2026-11-26T00:00:00Z',
   items:cards.map(c=>({id:c.id,word:c.word,meaning:c.meaning,image_url:c.imageUrl,category:null}))});
@@ -13,6 +14,8 @@ const lists=[row('word',wordCards),row('sentence',sentenceCards),row('word',word
 const server=await createGuidedServer(5549,{academy:'A',client:'export const supabase={}',
   seed:{lists},handle:(_req,_res,next)=>next()});
 try{
+  // This module instantiates a second Supabase client at import time, also in the guided three-step test.
+  await server.ssrLoadModule('/src/lib/remote.ts');
   const api=await server.ssrLoadModule('/src/lib/api.ts');
   const {wordListToCards}=await server.ssrLoadModule('/src/lib/gameFromWords.ts');
   const {memoryItemFromCards}=await server.ssrLoadModule('/src/lib/homework/memory.ts');
