@@ -1,0 +1,40 @@
+.workshop-board { container-type: size; width: 100%; height: 100%; min-height: 0; }
+.workshop-sheet {
+  display: flex; flex-direction: column; height: 100%; overflow: hidden;
+  padding: 2cqw 3cqw; border: 1px solid #cbd8cc; border-radius: 2cqw;
+  background: #fffef8; color: #163431; font-size: clamp(3px, 2cqw, 32px);
+  line-height: 1.55; word-break: keep-all; overflow-wrap: anywhere;
+}
+.workshop-sheet header, .workshop-sheet footer { display: flex; justify-content: space-between; align-items: center; gap: .6em; }
+.workshop-sheet header { border-bottom: 2px solid #204c44; padding-bottom: .4em; }
+.workshop-sheet progress { flex: none; width: 100%; height: .3em; margin: .65em 0; accent-color: #177361; }
+.workshop-sheet progress { appearance: none; border: 0; background: #d4d6d3; }
+.workshop-sheet progress::-webkit-progress-bar { background: #d4d6d3; }
+.workshop-sheet progress::-webkit-progress-value { background: #27796a; }
+.workshop-sheet progress::-moz-progress-bar { background: #27796a; }
+.workshop-body { flex: 1; min-height: 0; overflow: auto; padding: 0 .4em .5em 0; }
+.workshop-topic { color: #4c635e; font-size: .9em; }
+.workshop-chapter {display:flex;justify-content:space-between;align-items:baseline;gap:1em}
+.workshop-chapter small{text-align:right}
+.workshop-sheet h2 { font-size: 2.6em; font-weight: 750; letter-spacing: -.045em; line-height: 1.22; margin: .3em 0; }
+.workshop-prompt { white-space: pre-line; margin-bottom: .65em; }
+.workshop-sheet header button, .workshop-sheet footer button {
+  border: 1px solid #7a9990; border-radius: .55em; padding: .35em .8em; background: white;
+}
+.workshop-sheet footer { border-top: 1px solid #cbd8cc; padding-top: .55em; }
+.workshop-sheet footer button:last-child { background: #175e51; color: white; }
+.workshop-sheet button:disabled { opacity: .48; }
+.workshop-sheet .guided-practice details, .workshop-sheet .grammar-scene-grid article { border: 1px solid #cbd8cc; background: white; }
+.workshop-sheet .guided-practice fieldset { background: #f0f6f1; border-color: #cbd8cc; }
+.workshop-sheet :focus-visible { outline: 3px solid #a56803; outline-offset: 2px; }
+@media (max-width: 600px) {
+  .aspect-video:has(> .workshop-board) { aspect-ratio: auto; height: min(76dvh, 40rem); }
+  .workshop-sheet { font-size: clamp(3px, 4cqw, 16px); }
+}
+.workshop-reading {width:100%;max-width:980px;margin-inline:auto}
+.workshop-reading .workshop-board {container-type:inline-size;height:auto}
+.workshop-reading .workshop-sheet {height:auto;overflow:visible;font-size:clamp(16px,2cqw,18px);padding:clamp(16px,4.3cqw,42px);border-radius:24px}
+.workshop-reading .workshop-body {flex:none;overflow:visible;padding:0}
+.workshop-reading .workshop-sheet progress {height:4px;margin:12px 0 18px}
+.workshop-reading .workshop-sheet footer {margin-top:24px;padding-top:16px}
+.workshop-reading .workshop-sheet header button,.workshop-reading .workshop-sheet footer button {min-height:44px}

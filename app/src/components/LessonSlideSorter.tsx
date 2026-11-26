@@ -2299,7 +2299,7 @@ function GrammarSlideDetail({
   return (
     <div className="space-y-3">
       {contentMode !== 'edit' && <>
-        <div className="aspect-video w-full max-w-3xl">
+        <div className={point.workshop ? 'workshop-reading' : 'aspect-video w-full max-w-3xl'}>
           <GrammarBoard
             point={point}
             extra={generated}
@@ -2325,6 +2325,7 @@ function GrammarSlideDetail({
           const source=await storeGrammar(content,contentMode==='edit');
           onUpdate({ content,librarySource:source });
         }} />}
+      {!point.workshop && <>
       <div className="flex flex-wrap gap-x-5 gap-y-2 rounded-xl border border-outline-variant/50 bg-surface-container-low p-3">
         <div className="w-full font-label-md text-label-md text-on-surface">{t('curriculum.grammarSlide.startTitle')}</div>
         <label className="flex items-center gap-1.5 font-label-md text-label-md text-on-surface">
@@ -2344,6 +2345,7 @@ function GrammarSlideDetail({
           <GrammarExplainCard point={point} />
         </div>
       </details>
+      </>}
       <div className="flex flex-wrap items-center gap-2">
         <select
           value={point.id}
@@ -2370,6 +2372,7 @@ function GrammarSlideDetail({
           {creating ? t('grammar.creatingGame') : t('curriculum.grammarSlide.addUnscramble')}
         </button>
       </div>
+      {!point.workshop && <>
       <div className="space-y-2 rounded-xl border border-outline-variant/50 bg-surface-container-low p-3">
         <div className="font-label-md text-label-md text-on-surface">{t('grammar.wordListTitle')}</div>
         {!point.slots ? (
@@ -2412,6 +2415,7 @@ function GrammarSlideDetail({
         <div className="font-label-md text-label-md text-on-surface">{t('grammar.boardTitle')}</div>
         <BoardThemeChips value={slide.boardTheme ?? 'green'} onChange={(th) => onUpdate({ boardTheme: th?.id ?? 'green' })} />
       </div>
+      </>}
     </div>
   );
 }

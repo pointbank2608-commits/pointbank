@@ -19,7 +19,8 @@ try {
   const std = await server.ssrLoadModule('/src/lib/soloStandard.ts');
   const points = solo.SOLO_GRAMMAR_POINTS;
   const minutesOf = (steps) => steps.reduce((n, s) => n + board.secondsOf(s), 0) / 60;
-  const built = points.map((p) => ({ p, lesson: cur.buildStagedGrammarLesson(p), bank: bankMod.soloGrammarBank(p.id) }));
+  const legacyPoints = points.map(({steps, workshop, ...point}) => point);
+  const built = legacyPoints.map((p) => ({ p, lesson: cur.buildStagedGrammarLesson(p), bank: bankMod.soloGrammarBank(p.id) }));
   const withBank = built.filter((b) => b.bank.has);
   const mins = withBank.map((b) => minutesOf(b.lesson.steps));
   console.log(`     개별수업 문법 ${points.length}개 중 문제 은행이 있는 것 ${withBank.length}개, 예상 시간 ${Math.min(...mins).toFixed(0)}~${Math.max(...mins).toFixed(0)}분 (평균 ${(mins.reduce((a, b) => a + b, 0) / mins.length).toFixed(0)}분)`);
@@ -74,6 +75,13 @@ try {
       const heads = x.l.steps.filter((s) => s.t === 'intro' && /^\d+\./.test(s.title));
       const sum = heads.reduce((n, h) => n + Number(/^(\d+)분/.exec(h.text)[1]), 0);
       assert.ok(Math.abs(sum - x.l.minutes) <= heads.length, `${x.p.id} ${sum} vs ${x.l.minutes}`);
+    }
+  });
+  await test('수업 길이 설정과 관계없이 같은 여섯 단계만 제공한다', () => {
+    for(const p of points){
+      const expected=solo.buildSoloGrammarLesson(p);
+      assert.deepEqual(cur.buildStagedGrammarLesson(p),expected,p.id);
+      assert.deepEqual(std.buildStandardGrammarLesson(p,[]),expected,p.id);
     }
   });
   await test('모든 학년의 기본 수업에 여섯 단계와 선택한 수만큼의 심화 문제가 저장된다', () => {

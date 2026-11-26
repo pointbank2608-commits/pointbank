@@ -1,10 +1,11 @@
 export type School = 'elementary' | 'middle' | 'high';
-export interface SceneLine { label: string; chunks: string[]; glosses?:string[]; meaning: string; image?: string }
+export interface SceneLine { label: string; chunks: string[]; glosses?:string[]; meaning: string; image?: string; setting?:string; response?:string; rationale?:string }
 export interface TransferScene { opening: string; task: string; model: string }
 export interface DrillChoice { prompt: string; options: string[]; correct: number; reason: string }
 export interface DrillModel { en: string; ko: string }
 export interface WorkshopSource {
   map: string[];
+  mapScenes?: SceneLine[];
   scene: string; pair: SceneLine[]; why: string; because: string; misconception:string;
   clue: DrillChoice; apply: DrillChoice; reading: DrillChoice;
   elementary: TransferScene; middle: TransferScene; high: TransferScene;
@@ -44,12 +45,12 @@ export function compileWorkshop(source: WorkshopSource, grade: number, count = 5
   const interpret:DrillChoice={prompt:scene+'\nA. '+whole(first)+'\nB. '+whole(second)+'\n두 표현을 문맥에 맞게 설명한 것을 고르세요.',
     options:[because,source.misconception],correct:0,reason:because};
   if(first.meaning.length%2){interpret.options.reverse();interpret.correct=1;}
-  const mapQuestions=map.map(line => {
+  const mapQuestions=map.map((line,index) => {
     const parts=line.split(/[:：]/);
-    return {label:parts[0].trim(), text:parts.slice(1).join(':').trim() || line};
+    return {label:parts[0].trim(), text:parts.slice(1).join(':').trim() || line, ...(source.mapScenes?.[index] ? {panelIndex:index} : {})};
   });
   const steps=[
-    {...opening,practice:{...opening.practice,map:mapQuestions,panels:[first],question:'',choices:[] as [string,string][],correct:0}},
+    {...opening,practice:{...opening.practice,map:mapQuestions,panels:source.mapScenes ?? [first],question:'',choices:[] as [string,string][],correct:0}},
     {...compare,practice:{...compare.practice,panels:pair,question:'',choices:[] as [string,string][],correct:0}},
     {...assemble,practice:{...assemble.practice,why:[['어떤 덩어리부터 읽으면 돼요?',first.chunks.join(' → ')+' 순서로 이으면 “'+first.meaning+'”라는 뜻이에요. '+because]] as [string,string][],assembly:first.chunks,question:first.meaning,choices:[] as [string,string][],correct:0}},
     {...find,prompt:clue.prompt,practice:{...find.practice,panels:[second],why:[['어떤 단서로 고르나요?',clue.reason]] as [string,string][],...choice(clue),question:'장면에 맞는 답을 골라 보세요.'}},

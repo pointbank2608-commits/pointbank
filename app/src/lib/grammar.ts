@@ -3,6 +3,7 @@ import grammarData from '../data/grammarPoints.json';
 import { doYouCanYou, type GuidedPractice } from '../data/doYouCanYou';
 import doYouWorkshop from '../data/doYouCanYouWorkshop.json';
 import { schoolOf, type Workshop } from '../../../supabase/functions/_shared/grammarWorkshop';
+import { workshopSnapshot } from './grammarWorkshopSnapshot';
 import { fetchWordBank } from './api';
 import type { FullCardItem, GrammarSlide, WordBankEntry } from './types';
 
@@ -78,8 +79,26 @@ export const GRAMMAR_POINTS = [...grammarData as unknown as GrammarPoint[], { ..
 
 export type GrammarBoardContent = Pick<GrammarPoint, 'name' | 'pattern' | 'explain' | 'examples' | 'translations' | 'rule' | 'usage' | 'detail' | 'pitfalls' | 'tip' | 'steps' | 'audience' | 'workshop'>;
 
-export function grammarBoardContent({ name, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip, steps, audience, workshop }: GrammarPoint): GrammarBoardContent {
-  return { name, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip, steps, audience, workshop };
+// Early workshop snapshots store the scene comparison in the exercise bank.
+// Bring it into the comparison stage unless the teacher already supplied choices.
+function comparisonStep(step: GrammarTeachingStep, workshop: Workshop) {
+  const practice = step.practice;
+  const check = workshop.interpretation;
+  if (!practice || !('choices' in practice) || practice.choices.length || !check) return step;
+  const [first, second] = practice.panels ?? [];
+  const refusal = first?.chunks.includes('please') && second?.chunks.some(chunk => chunk.includes("I'm busy now"));
+  const clue = refusal
+    ? 'please(좀) 뒤에서 친구에게 해 달라는 행동을 찾아보세요. 대답에서 now(지금)는 친구의 평소 실력과 지금 사정 중 어느 쪽을 알려 줄까요?'
+    : '두 장면의 영어 조각 아래에 있는 뜻을 다시 읽어 보세요. 고른 설명이 두 장면에 모두 들어맞나요?';
+  const choices = check.options.map((label, index): [string,string] => [label, index === check.correct ? check.reason : clue]);
+  return {...step, practice: {...practice, question:'두 장면에서 전하려는 뜻을 알맞게 설명한 것은 무엇인가요?', choices, correct:check.correct}};
+}
+
+export function grammarBoardContent(point: GrammarPoint): GrammarBoardContent {
+  const { name, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip, steps, audience, workshop } =
+    workshopSnapshot(point, grammarPoint(point.id));
+  return { name, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip, audience, workshop,
+    steps: steps?.map((step,i) => i===1 ? comparisonStep(step, workshop) : step) };
 }
 
 export function classroomStep(point: GrammarPoint, index: number) {
@@ -87,6 +106,7 @@ export function classroomStep(point: GrammarPoint, index: number) {
   if (!step || !point.workshop) return step;
   const scene = point.workshop.scenes[schoolOf(point.workshop.grade)];
   if (index === 0) return { ...step, prompt: scene.opening };
+  if (index === 1) return comparisonStep(step, point.workshop);
   if (index === 5 && step.practice?.independentPrompts) return { ...step, answer: scene.model,
     practice: { ...step.practice, independentPrompts: [scene.task] } };
   return step;
@@ -95,10 +115,10 @@ export function classroomStep(point: GrammarPoint, index: number) {
 export function grammarSlidePoint(slide: GrammarSlide): GrammarPoint | null {
   const base = grammarPoint(slide.grammarId);
   if (!slide.content) return base;
-  if (base) return { ...base, ...slide.content, steps: slide.content.steps, workshop:slide.content.workshop };
+  if (base) return workshopSnapshot({ ...base, ...slide.content, steps: slide.content.steps, workshop:slide.content.workshop }, base);
   const stage = slide.content.audience ?? 'middle';
-  return { id: slide.grammarId, level: 0, grade: { elementary: '초등', middle: '중등', high: '고등' }[stage],
-    stage, band: 'entry', slots: null, ...slide.content };
+  return workshopSnapshot({ id: slide.grammarId, level: 0, grade: { elementary: '초등', middle: '중등', high: '고등' }[stage],
+    stage, band: 'entry', slots: null, ...slide.content });
 }
 
 export function grammarPoint(id: string | null | undefined): GrammarPoint | null {

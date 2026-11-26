@@ -159,8 +159,7 @@ export function buildStandardWordLesson(title: string, words: FullCardItem[]): B
  * 영상·더빙은 뺀다. 예문 속 낱말은 사전에서 찾아 4~6개를 먼저 만난다.
  */
 export function buildStandardGrammarLesson(point: GrammarPoint, bank: WordBankEntry[]): Built {
-  const workshop=point.workshop?buildSoloGrammarLesson(point):undefined;
-  const base=buildSoloGrammarLesson(workshop?{...point,steps:undefined,workshop:undefined}:point);
+  const base = buildSoloGrammarLesson(point);
   if (base.steps[0]?.t === 'rule' && base.steps[0].practice) return base;
   const gbank = soloGrammarBank(point.id);
   const steps: SoloStep[] = [];
@@ -180,8 +179,7 @@ export function buildStandardGrammarLesson(point: GrammarPoint, bank: WordBankEn
   }
 
   steps.push(stage(n++, '오늘의 문법', 7, '규칙을 보고 예문을 읽어요'));
-  if(workshop)steps.push(...workshop.steps);
-  else if (rule) steps.push(rule);
+  if (rule) steps.push(rule);
   for (const e of examples.slice(0, 4)) steps.push({ t: 'example', sentence: e.sentence, ko: e.ko });
 
   const check = base.steps.filter((s) => s.t === 'translatePick' || s.t === 'pickCorrect');

@@ -153,6 +153,7 @@ export default function SoloCatalogModal({
   const [stagePass, setStagePass] = useState<SoloPass | null>(DEFAULT_STAGED_PASS);
   const stagedOpts = { games: gameSlots, pass: stagePass };
   async function buildChosenGrammar(point:GrammarPoint){
+    if(point.workshop)return buildBasicGrammarLesson(point);
     if(stages)return buildStagedGrammarLesson(point,stagedOpts);
     if(standard)return buildStandardGrammarLesson(point,await loadWordBank());
     return buildBasicGrammarLesson(point);
@@ -269,13 +270,13 @@ export default function SoloCatalogModal({
         icon: 'rule',
         title: p.name,
         desc: grammarLevelTag(p),
-        minutes: stages ? 40 : standard ? 50 : guided ? 12+Math.ceil((grammarCounts[grammarGrade]??5)*0.8) : 25,
+        minutes: guided ? 12+Math.ceil((grammarCounts[grammarGrade]??5)*0.8) : stages ? 40 : standard ? 50 : 25,
         haystack: `${p.name} ${p.pattern ?? ''} ${grammarLevelTag(p)}`,
         levels: p.stage === 'elementary' ? ['elementary'] : p.stage === 'middle' ? ['middle'] : p.stage === 'high' ? ['high'] : ['elementary', 'middle', 'high'],
         build: async () => ({
           lessons: [await buildChosenGrammar(forClass(p))],
           level: grammarLevelTag(p),
-          source: `solo-grammar-${p.id}${stages ? '-stages' : standard ? '-std' : ''}`,
+          source: `solo-grammar-${p.id}${guided ? '' : stages ? '-stages' : standard ? '-std' : ''}`,
         }),
       });
     }
@@ -927,6 +928,7 @@ export default function SoloCatalogModal({
 
   const canBack = !!videoDraft || !!pending || (!q && view.id !== 'home');
   const showCatalogFilters = !pending && !videoDraft;
+  const showLengthOptions = showCatalogFilters && !(view.id === 'purpose' && view.purpose === 'grammar');
   const goBack = () => {
     if (videoDraft) setVideoDraft(null);
     else if (pending) setPending(null);
@@ -967,7 +969,7 @@ export default function SoloCatalogModal({
           </div>
         )}
 
-        {showCatalogFilters && (
+        {showLengthOptions && (
           <div className="space-y-1 rounded-xl border border-outline-variant/50 bg-surface-container-low p-2.5" role="radiogroup" aria-label={t('solo.lengthTitle')}>
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-label-md text-label-md font-bold text-on-surface">{t('solo.lengthTitle')}</span>
@@ -980,8 +982,8 @@ export default function SoloCatalogModal({
             <p className="font-caption text-caption text-on-surface-variant">{t(`solo.lengthHint_${mode}`)}</p>
           </div>
         )}
-        {showCatalogFilters && stages && <StagedGameSlots academyId={academyId} classId={classId ?? null} slots={gameSlots} onChange={setGameSlots} />}
-        {showCatalogFilters && stages && (
+        {showLengthOptions && stages && <StagedGameSlots academyId={academyId} classId={classId ?? null} slots={gameSlots} onChange={setGameSlots} />}
+        {showLengthOptions && stages && (
           <div className="space-y-1 rounded-xl border border-outline-variant/50 bg-surface-container-low p-2.5" role="radiogroup" aria-label={t('solo.stagePassTitle')}>
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-label-md text-label-md font-bold text-on-surface">{t('solo.stagePassTitle')}</span>

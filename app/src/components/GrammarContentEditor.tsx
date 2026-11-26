@@ -143,7 +143,7 @@ export default function GrammarContentEditor({ point, themeId, inline, initialPo
       setError('심화 문제의 보기와 정답, 풀이를 확인해 주세요.');return;
     }
     if (draft.workshop && Object.values(draft.workshop.scenes).some(scene=>Object.values(scene).some(v=>!v.trim())) ||
-        draft.steps?.some(({ prompt, hint, answer, followUp,practice },i) => [prompt, hint, ...(draft.workshop && i===5?[]:[answer]), followUp,
+        draft.steps?.some(({ prompt, hint, answer, followUp,practice },i) => [prompt, ...(draft.workshop ? (i===5 ? [followUp] : []) : [hint,answer,followUp]),
           ...(practice?.assembly??[]), ...(practice?.map?.flatMap(entry=>[entry.label,entry.text])??[]), ...(practice?.why.flat()??[]), ...(practice?.panels?.flatMap(p=>[p.meaning,p.label,...p.chunks])??[]),
           ...(practice && 'choices'in practice?practice.choices.flat():[])].some(value => !value.trim()))) {
       setError(t('myGrammar.stepsRequired')); return;
@@ -173,7 +173,7 @@ export default function GrammarContentEditor({ point, themeId, inline, initialPo
         onChange={event => change('name', event.target.value)} />
     </label>
     <p className="text-sm text-on-surface-variant">{t('myGrammar.editHint')}</p>
-    <div className={inline ? 'aspect-video w-full max-w-3xl' : 'aspect-video w-full'} onClickCapture={e => {
+    <div className={draft.workshop ? 'workshop-reading' : inline ? 'aspect-video w-full max-w-3xl' : 'aspect-video w-full'} onClickCapture={e => {
       if ((e.target as Element).closest('button:not(.grammar-field)')) setSelected(null);
     }}>
       <PresentSyncContext.Provider value={null}>

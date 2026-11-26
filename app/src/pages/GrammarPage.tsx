@@ -170,7 +170,7 @@ export default function GrammarPage() {
 
         {/* 선택한 문법 */}
         <div className="min-w-0 flex-1 space-y-4">
-          <div className="aspect-video w-full">
+          <div className={point.workshop ? 'workshop-reading' : 'aspect-video w-full'}>
             <GrammarBoard key={`${point.id}:${seed}:${extra.length}`} point={point} extra={extra} themeId={themeId} />
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -195,6 +195,7 @@ export default function GrammarPage() {
               {creating ? t('grammar.creatingGame') : t('grammar.toUnscramble')}
             </button>
           </div>
+          {!point.workshop && <>
           <div className="space-y-1.5 rounded-xl bg-surface-container-lowest p-4 shadow-sm">
             <div className="font-label-md text-label-md text-on-surface">{t('grammar.boardTitle')}</div>
             <BoardThemeChips value={themeId} onChange={(th) => setThemeId(th?.id ?? 'green')} />
@@ -297,6 +298,7 @@ export default function GrammarPage() {
               </>
             )}
           </div>
+          </>}
         </div>
       </div>
 

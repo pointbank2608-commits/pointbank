@@ -11,8 +11,16 @@
 .guided-practice .question-model { white-space: pre-line; }
 .guided-practice button:disabled { opacity: .55; cursor: default; }
 .grammar-scene-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,12em),1fr));gap:.65em;margin:.65em 0}
-.grammar-scene-grid article{background:#f5f8f1;color:#213b34;border-radius:.65em;padding:.7em}
-.grammar-scene-grid img{float:right;width:3em;height:3em;object-fit:contain;border-radius:.5em}
+.grammar-scene-card{display:flow-root;background:white;color:#163431;border:1px solid #cbd8cc;border-radius:14px;padding:1em}
+.grammar-scene-card img{float:right;width:4.8em;height:4.8em;object-fit:cover;border-radius:.85em;margin:0 0 .4em .6em}
+.grammar-scene-card h3{font-weight:700;font-size:1.25em}
+.grammar-scene-card .scene-speaker{color:#47665d;font-size:.9em;margin:0}
+.scene-sentence{margin:.55em 0 .35em;font-size:1.22em}
+.grammar-map-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45em;margin:.8em 0}
+.guided-practice .grammar-map-options button{text-align:start;background:white;margin:0;padding:.5em .8em;border-color:#7a9990}
+.grammar-map-options small{display:block}
+.guided-practice .grammar-map-options button[aria-pressed=true]{background:#175e51;color:white;box-shadow:none}
+@media(max-width:600px){.grammar-map-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .grammar-chunk{display:inline-block;color:#203b32;background:#d6eadf;border-radius:.35em;padding:.08em .35em;margin:.2em .1em}
 .grammar-chunk[data-role=helper]{background:#ffe4a8}
 .grammar-chunk[data-role=person]{background:#d6e9fa}

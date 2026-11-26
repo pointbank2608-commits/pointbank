@@ -6,7 +6,7 @@
       "answer": "Do you swim every week?는 매주 실제로 수영하는지 묻는 말이에요. 요즘 쉬는 지우는 “No, I don’t.”라고 답해요. Can you swim on your own?은 혼자 할 수 있는지 묻기 때문에 같은 지우도 “Yes, I can.”이라고 답해요.",
       "followUp": "이 쓰임을 내 말로 설명해 보세요.",
       "practice": {
-        "title": "쓰임 지도",
+        "title": "지우와 민서의 수영 이야기",
         "why": [
           [
             "수영할 줄 아는 지우가 “Do you swim every week?”에는 왜 아니라고 할까요?",
@@ -15,53 +15,49 @@
         ],
         "map": [
           {
-            "label": "능력 · 할 줄 아니?",
-            "text": "Can you swim? 수영할 줄 아는지 궁금해요."
+            "label": "평소 습관",
+            "text": "매주 수영하니?",
+            "panelIndex": 0
           },
           {
-            "label": "허락 · 해도 돼?",
-            "text": "Can I swim now? 내가 물에 들어가도 되는지 물어요."
-          },
-          {
-            "label": "허락해 주기",
-            "text": "You can swim now. 이제 수영해도 돼요."
-          },
-          {
-            "label": "부탁 · 해 줄래?",
-            "text": "Can you pass my towel? 수건을 건네줄 행동을 기다려요."
-          },
-          {
-            "label": "도움 제안",
-            "text": "Can I carry your bag? 내가 가방을 들어 줄지 물어요."
-          },
-          {
-            "label": "가능성",
-            "text": "Wet floors can be slippery. 젖은 바닥은 미끄러울 수 있어요."
-          },
-          {
-            "label": "매주 수영하니?",
-            "text": "Do you swim every week?"
-          },
-          {
-            "label": "혼자 수영할 줄 아니?",
-            "text": "Can you swim on your own?"
-          },
-          {
-            "label": "평소 생활",
-            "text": "Do you swim?"
-          },
-          {
-            "label": "능력",
-            "text": "Can you swim?"
+            "label": "할 줄 아는지",
+            "text": "혼자 수영할 줄 아니?",
+            "panelIndex": 1
           },
           {
             "label": "부탁",
-            "text": "Can you help me?"
+            "text": "해 줄래?",
+            "panelIndex": 2
+          },
+          {
+            "label": "능력",
+            "text": "할 줄 아니?",
+            "panelIndex": 3
+          },
+          {
+            "label": "허락 구하기",
+            "text": "해도 돼요?",
+            "panelIndex": 4
+          },
+          {
+            "label": "허락해 주기",
+            "text": "해도 돼.",
+            "panelIndex": 5
+          },
+          {
+            "label": "도움 제안",
+            "text": "내가 해 줄까?",
+            "panelIndex": 6
+          },
+          {
+            "label": "일반적 가능성",
+            "text": "그럴 수 있어.",
+            "panelIndex": 7
           }
         ],
         "panels": [
           {
-            "label": "장면 A",
+            "label": "평소 습관",
             "chunks": [
               "Do",
               "you",
@@ -69,11 +65,140 @@
             ],
             "meaning": "매주 수영하니?",
             "image": "/word-bank-images/swim.webp",
+            "setting": "민서는 매주 물에서 연습하고 지우는 요즘 쉬어도 혼자 헤엄쳐요.",
+            "response": "지우가 요즘 수영장에 안 간다고 답해요.",
+            "rationale": "Do you swim every week?는 매주 실제로 수영하는지 묻는 말이에요. 요즘 쉬는 지우는 “No, I don’t.”라고 답해요. Can you swim on your own?은 혼자 할 수 있는지 묻기 때문에 같은 지우도 “Yes, I can.”이라고 답해요.",
             "glosses": [
               "평소 습관을 물어요",
               "너는",
               "매주 수영하니"
             ]
+          },
+          {
+            "label": "할 줄 아는지",
+            "chunks": [
+              "Can",
+              "you",
+              "swim on your own?"
+            ],
+            "meaning": "혼자 수영할 줄 아니?",
+            "image": "/word-bank-images/swim.webp",
+            "setting": "민서는 매주 물에서 연습하고 지우는 요즘 쉬어도 혼자 헤엄쳐요.",
+            "response": "지우가 자주 가지 않아도 혼자 수영할 줄 안다고 답해요.",
+            "rationale": "Do you swim every week?는 매주 실제로 수영하는지 묻는 말이에요. 요즘 쉬는 지우는 “No, I don’t.”라고 답해요. Can you swim on your own?은 혼자 할 수 있는지 묻기 때문에 같은 지우도 “Yes, I can.”이라고 답해요.",
+            "glosses": [
+              "능력을 물어요",
+              "너는",
+              "혼자 수영할 줄 아니"
+            ]
+          },
+          {
+            "label": "지우 → 민서",
+            "setting": "수영을 마친 지우의 두 손이 젖었어요. 수건은 민서 옆에 있어요.",
+            "chunks": [
+              "Can",
+              "you",
+              "pass my towel?"
+            ],
+            "glosses": [
+              "해 줄 수 있을까",
+              "네가",
+              "내 수건을 건네다"
+            ],
+            "meaning": "내 수건 좀 건네줄래?",
+            "image": "/word-bank-images/pool.webp",
+            "response": "민서가 수건을 건네요.",
+            "rationale": "지우는 민서의 실력을 조사하지 않아요. 지금 필요한 수건을 받아야 하니 행동을 부탁해요."
+          },
+          {
+            "label": "수영 선생님 → 지우",
+            "setting": "첫 수업이에요. 선생님이 지우에게 어느 반이 맞을지 알아봐요.",
+            "chunks": [
+              "Can",
+              "you",
+              "swim?"
+            ],
+            "glosses": [
+              "할 줄 아니",
+              "너는",
+              "수영하다"
+            ],
+            "meaning": "너 수영할 줄 아니?",
+            "image": "/word-bank-images/swimming.webp",
+            "response": "Yes, I can. (네, 할 줄 알아요.)",
+            "rationale": "선생님은 누가 옆에서 잡아 주지 않아도 지우가 수영할 수 있는지 궁금해요. 매주 수영장에 다니는지는 이 대답만으로 알 수 없어요."
+          },
+          {
+            "label": "지우 → 수영 선생님",
+            "setting": "지우는 수영할 줄 알아요. 쉬는 시간이 끝나 가자 물가에서 기다려요.",
+            "chunks": [
+              "Can",
+              "I",
+              "swim now?"
+            ],
+            "glosses": [
+              "해도 될까",
+              "내가",
+              "지금 수영하다"
+            ],
+            "meaning": "지금 수영해도 돼요?",
+            "image": "/word-bank-images/pool.webp",
+            "response": "Yes, you can. (응, 이제 들어가도 돼.)",
+            "rationale": "물에 들어갈 사람은 I, 곧 지우예요. 수영할 실력이 있어도 지금 들어가도 되는지는 선생님에게 따로 물어야 해요."
+          },
+          {
+            "label": "수영 선생님 → 지우",
+            "setting": "쉬는 시간이 끝났어요. 선생님이 기다리던 지우에게 말해요.",
+            "chunks": [
+              "You",
+              "can",
+              "swim now."
+            ],
+            "glosses": [
+              "너는",
+              "해도 돼",
+              "지금 수영하다"
+            ],
+            "meaning": "이제 수영해도 돼.",
+            "image": "/word-bank-images/pool.webp",
+            "response": "지우가 물에 들어가요.",
+            "rationale": "조금 전 Can I …? 하고 물은 지우에게 주는 대답이에요. 지우가 자신을 가리킬 때는 I, 선생님이 지우를 부를 때는 you예요."
+          },
+          {
+            "label": "민서 → 지우",
+            "setting": "지우가 무거운 가방을 들고 있어요. 민서가 먼저 손을 내밀어요.",
+            "chunks": [
+              "Can",
+              "I",
+              "carry your bag?"
+            ],
+            "glosses": [
+              "해 줄까",
+              "내가",
+              "네 가방을 들다"
+            ],
+            "meaning": "네 가방 들어 줄까?",
+            "image": "/word-bank-images/carry.webp",
+            "response": "Yes, please. (응, 부탁해.) 지우가 가방을 건네요.",
+            "rationale": "가방을 들겠다는 사람은 I, 곧 민서예요. 민서가 하면 지우가 편해져서 도움을 제안하는 말이 돼요."
+          },
+          {
+            "label": "안전요원 → 수영반",
+            "setting": "안전요원이 물기가 남은 바닥을 가리켜요.",
+            "chunks": [
+              "Wet floors",
+              "can",
+              "be slippery."
+            ],
+            "glosses": [
+              "젖은 바닥은",
+              "그럴 수 있어",
+              "미끄럽다"
+            ],
+            "meaning": "젖은 바닥은 미끄러울 수 있어.",
+            "image": "/word-bank-images/slip.webp",
+            "response": "학생들이 발밑을 살피며 걸어요.",
+            "rationale": "반드시 미끄러진다는 말일까요? 물이 있으면 그런 일이 생길 수 있으니 조심하라는 뜻이에요."
           }
         ],
         "question": "",
@@ -96,7 +221,7 @@
         ],
         "panels": [
           {
-            "label": "장면 A",
+            "label": "평소 습관",
             "chunks": [
               "Do",
               "you",
@@ -104,6 +229,9 @@
             ],
             "meaning": "매주 수영하니?",
             "image": "/word-bank-images/swim.webp",
+            "setting": "민서는 매주 물에서 연습하고 지우는 요즘 쉬어도 혼자 헤엄쳐요.",
+            "response": "지우가 요즘 수영장에 안 간다고 답해요.",
+            "rationale": "Do you swim every week?는 매주 실제로 수영하는지 묻는 말이에요. 요즘 쉬는 지우는 “No, I don’t.”라고 답해요. Can you swim on your own?은 혼자 할 수 있는지 묻기 때문에 같은 지우도 “Yes, I can.”이라고 답해요.",
             "glosses": [
               "평소 습관을 물어요",
               "너는",
@@ -111,7 +239,7 @@
             ]
           },
           {
-            "label": "장면 B",
+            "label": "할 줄 아는지",
             "chunks": [
               "Can",
               "you",
@@ -119,6 +247,9 @@
             ],
             "meaning": "혼자 수영할 줄 아니?",
             "image": "/word-bank-images/swim.webp",
+            "setting": "민서는 매주 물에서 연습하고 지우는 요즘 쉬어도 혼자 헤엄쳐요.",
+            "response": "지우가 자주 가지 않아도 혼자 수영할 줄 안다고 답해요.",
+            "rationale": "Do you swim every week?는 매주 실제로 수영하는지 묻는 말이에요. 요즘 쉬는 지우는 “No, I don’t.”라고 답해요. Can you swim on your own?은 혼자 할 수 있는지 묻기 때문에 같은 지우도 “Yes, I can.”이라고 답해요.",
             "glosses": [
               "능력을 물어요",
               "너는",

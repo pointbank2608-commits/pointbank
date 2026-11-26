@@ -5,8 +5,17 @@ const file=path=>new URL(path,root);
 const read=path=>fs.readFileSync(file(path),'utf8');
 const json=path=>JSON.parse(read(path));
 const write=(path,data)=>fs.writeFileSync(file(path),JSON.stringify(data,null,2)+'\n');
-const moduleText=ts.transpileModule(read('supabase/functions/_shared/grammarWorkshop.ts'),{compilerOptions:{target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.ESNext}}).outputText;
-const {compileWorkshop,extensionPool}=await import('data:text/javascript;base64,'+Buffer.from(moduleText).toString('base64'));
+async function sharedModule(name) {
+ const js=ts.transpileModule(read('supabase/functions/_shared/'+name+'.ts'),{compilerOptions:{target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.ESNext}}).outputText;
+ return import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
+}
+const {compileWorkshop,extensionPool}=await sharedModule('grammarWorkshop');
+const {canMap}=await sharedModule('canMap');
+const intentions=new Map(read('app/scripts/grammar/scene-intentions.txt').trim().split(/\r?\n/).map(line=>{
+ const [id,...entries]=line.split('|');
+ if(entries.length!==2)throw Error('Missing scene intentions: '+id);
+ return [id,entries.map(entry=>entry.split('~'))];
+}));
 const rows=new Map(read('app/scripts/grammar/visual-scenes.txt').trim().split(/\r?\n/).map(line=>{
   const [id,...values]=line.split('|'); if(values.length!==7) throw Error(id); return [id,values];
 }));
@@ -66,6 +75,8 @@ function build(p,b,grade) {
  const pair=[panel('장면 A',en,ko),panel('장면 B',en2,ko2)];
  const art=sceneArt.get(p.id)??pair.find(line=>line.image)?.image;
  for(const [i,line] of pair.entries()){
+   const [intent,response]=intentions.get(p.id)[i];
+   Object.assign(line,{label:intent,setting:scene,response,rationale:because});
    if(!line.image)line.image=art;
    line.glosses=glosses.get(p.id)?.[i];
    if(line.glosses?.length!==line.chunks.length)throw Error('Unmatched meaning chunks: '+p.id);
@@ -93,7 +104,14 @@ function build(p,b,grade) {
   models:b.b.build.map(model).concat(b.buildExtra?.map(model)??[]),
   choices:[...b.choose,...b.b.choose.filter((_,i)=>i!==0&&i!==3)].map(choice),
   repairs:[...b.correct,...b.b.correct].map(r=>({wrong:r.w,right:r.r,reason:r.why}))};
- source.map=[...pair.map(line=>line.meaning+': '+line.chunks.join(' ')),...source.map.filter(s=>/[:：]/.test(s))];
+ source.map=pair.map(line=>line.label+': '+line.meaning);
+ source.mapScenes=pair;
+ if(p.id==='this-is'){
+   source.map.push('사람 소개하기: 이쪽은 내 친구야.');
+   source.mapScenes=[...pair,{label:'지우 → 동아리 친구들',setting:'민서가 지우 옆에 서 있어요. 지우가 처음 만난 친구들에게 민서를 소개해요.',
+     chunks:['This','is','my friend.'],glosses:['이쪽은','~이야','내 친구'],meaning:'이쪽은 내 친구야.',image:'/word-bank-images/friend.webp',
+     response:'친구들이 민서를 보며 반갑다고 인사해요.',rationale:'this가 가리키는 것은 옆에 서 있는 민서예요. 사람을 소개할 때에는 “이것”보다 “이쪽은”이나 “이분은”이 자연스러워요.'}];
+ }
  // Stage five rehearses the communicative goal. A secondary feature such as
  // the article in “That is a desk” must not become the target of this task.
  const target=b.b.review[0];
@@ -113,11 +131,14 @@ function build(p,b,grade) {
  if(['i-can','can-i-may-i','m-modals','do-you-can-you'].includes(p.id)){
    source.clue={prompt:'두 사람이 모두 “Can you open this door?”라고 물어요. 한 사람은 학생의 손목 움직임을 확인하는 치료사이고, 다른 사람은 상자를 든 친구예요. “응, 열 수 있어”라고만 하고 지나가면 누가 여전히 곤란할까요?',
      options:['치료사','상자를 든 친구'],correct:1,reason:'친구의 두 손은 이미 꽉 차 있어요. 친구가 기다린 건 문을 열 수 있다는 말보다 실제로 문을 열어 주는 행동이에요.'};
-   source.map=['능력 · 할 줄 아니?: Can you swim? 수영할 줄 아는지 궁금해요.','허락 · 해도 돼?: Can I swim now? 내가 물에 들어가도 되는지 물어요.','허락해 주기: You can swim now. 이제 수영해도 돼요.','부탁 · 해 줄래?: Can you pass my towel? 수건을 건네줄 행동을 기다려요.','도움 제안: Can I carry your bag? 내가 가방을 들어 줄지 물어요.','가능성: Wet floors can be slippery. 젖은 바닥은 미끄러울 수 있어요.',...source.map];
+   const atlas=canMap({label:'지우 → 민서',setting:'수영을 마친 지우의 두 손이 젖었어요. 수건은 민서 옆에 있어요.',chunks:['Can','you','pass my towel?'],glosses:['해 줄 수 있을까','네가','내 수건을 건네다'],meaning:'내 수건 좀 건네줄래?',image:'/word-bank-images/pool.webp',response:'민서가 수건을 건네요.',rationale:'지우는 민서의 실력을 조사하지 않아요. 지금 필요한 수건을 받아야 하니 행동을 부탁해요.'});
+   const extra=atlas.mapScenes.map((panel,i)=>({panel,entry:atlas.map[i]}))
+    .filter(({panel})=>!pair.some(line=>line.chunks.join(' ')===panel.chunks.join(' ')));
+   source.map.push(...extra.map(item=>item.entry));
+   source.mapScenes=[...pair,...extra.map(item=>item.panel)];
  }
  const otherExamples=(p.examples??[]).flatMap((example,i)=>p.translations?.[i]?
    [clean(example)+'  →  '+clean(p.translations[i])]:[]);
- if(otherExamples.length)source.map.push('또 어디에서 이 표현을 만날까요?: '+otherExamples.join('\n'));
  const normalize=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
  const seen=new Set([...(p.examples??[]),...pair.map(line=>line.chunks.join(' ')),...source.apply.options].map(normalize));
  for(const variant of variants){
@@ -130,6 +151,9 @@ function build(p,b,grade) {
    seen.add(normalize(variant.model));
  }
  const lesson=compileWorkshop(source,grade);
+ lesson.steps[0].practice.title=p.id==='i-can'?'수영장에서 만나는 can':
+   p.id==='this-is'?'교실에서 만나는 This is와 That is':p.goal || '지우와 민서의 수영 이야기';
+ if(otherExamples.length)lesson.steps[0].practice.why.push(['이 밖에 어디에서 이 표현을 만날까요?', [...(p.usage??[]),...otherExamples].join('\n')]);
  if(source.clue.prompt.includes('손목 움직임')) Object.assign(lesson.steps[3].practice,{panels:[],image:'/grammar-scenes/open-door.jpg',imageDescription:'왼쪽은 손목이 회복됐는지 확인하는 치료사, 오른쪽은 양손에 짐을 든 친구가 문 앞에 서 있는 모습.'});
  for(let g=1;g<=12;g++) if(extensionPool({...lesson.workshop,grade:g}).length<15) throw Error('Insufficient exercises: '+p.id);
  return lesson;

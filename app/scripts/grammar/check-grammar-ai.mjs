@@ -16,7 +16,8 @@ const academy='00000000-0000-4000-8000-000000000001';
 const topic=JSON.parse(fs.readFileSync(new URL('../../src/data/grammarPoints.json',import.meta.url)))[0];
 const board={...topic,readable:true,examples:topic.examples.map((en,i)=>({en,ko:topic.translations[i]}))};
 const kit=topic.workshop, scenes=topic.steps[1].practice.panels, why=topic.steps[1].practice.why[0];
-board.source={...kit.scenes,scene:topic.steps[0].prompt,map:topic.usage,pair:scenes.map(p=>({...p,image:''})),
+const panels=scenes.map(p=>({...p,image:'',setting:topic.steps[0].prompt,response:p.meaning,rationale:why[1]}));
+board.source={...kit.scenes,scene:topic.steps[0].prompt,map:panels.map(p=>p.label+': '+p.meaning),mapScenes:panels,pair:panels,
   why:why[0],because:why[1],misconception:'거리에 관계없이 두 말은 늘 같은 뜻이다.',clue:kit.choices[0],apply:kit.choices[1],
   models:kit.models,choices:kit.choices,repairs:kit.repairs,reading:kit.reading};
 let modelOutput=board, access=403, calls=0, family='other';

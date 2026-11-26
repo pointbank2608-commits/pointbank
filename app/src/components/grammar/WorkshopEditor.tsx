@@ -71,6 +71,7 @@ export default function WorkshopEditor({draft,setDraft,onUploading,index,onStage
       })}/>
     <label>편집할 단계 <select disabled={uploading} value={index} onChange={e=>onStage(Number(e.target.value))}>
       {stageTitles.map((title,i)=><option value={i} key={title}>{i+1}. {title}</option>)}</select></label>
+    <TextField label="장면 제목" value={practice.title} onChange={value=>editPractice(p=>({...p,title:value}))}/>
     <TextField label={index===0?'이 학교급의 시작 장면':'화면 설명'} value={index===0?scene.opening:step.prompt}
       onChange={v=>index===0?editScene('opening',v):editStep('prompt',v)}/>
     {index===5&&<><TextField label="이 학교급의 마지막 과제" value={scene.task} onChange={v=>editScene('task',v)}/>
@@ -80,8 +81,10 @@ export default function WorkshopEditor({draft,setDraft,onUploading,index,onStage
     {practice.map?.map((entry,j)=><fieldset key={j}>
       {(['label','text'] as const).map(key=><TextField key={key} label={key==='label'?'쓰임 이름':'쓰임 설명'} value={entry[key]}
         onChange={v=>editPractice(p=>({...p,map:p.map?.map((x,i)=>i===j?{...x,[key]:v}:x)}))}/>)}</fieldset>)}
-    {practice.panels?.map((line,j)=><fieldset key={j} className="grid gap-1 rounded border p-2"><legend>{line.label}</legend>
+    {practice.panels?.map((line,j)=><fieldset key={j} className="grid gap-1 rounded border p-2"><legend>{practice.map?.find(entry=>entry.panelIndex===j)?.label ?? line.label}</legend>
       {imageField(line.label+' 그림',line.image,j)}
+      {(['setting','response','rationale'] as const).map(key=><TextField key={key} label={{setting:'장면에서 벌어진 일',response:'상대의 반응',rationale:'왜 이런 뜻일까?'}[key]}
+        value={line[key]??''} onChange={value=>editPractice(p=>({...p,panels:p.panels?.map((x,i)=>i===j?{...x,[key]:value}:x)}))}/>)}
       {(['label','chunks','glosses','meaning'] as const).map(key=><TextField key={key} label={{label:'장면 제목',chunks:'영어 조각 (줄마다 하나)',glosses:'조각별 우리말 뜻 (같은 순서로 한 줄씩)',meaning:'문장 전체 뜻'}[key]}
         value={key==='chunks'||key==='glosses'?(line[key]??[]).join('\n'):line[key]} onChange={v=>editPractice(p=>({...p,panels:p.panels?.map((x,i)=>i===j?{...x,[key]:key==='chunks'||key==='glosses'?v.split('\n'):v}:x)}))}/>)}</fieldset>)}
     {practice.why.map((pair,j)=><fieldset key={j}>{pair.map((v,k)=><TextField key={k} label={k?'펼쳐 볼 설명':'학생의 왜?'} value={v}
@@ -94,8 +97,7 @@ export default function WorkshopEditor({draft,setDraft,onUploading,index,onStage
       <label><input type="radio" name={'correct-'+index} checked={j===practice.correct} onChange={()=>editPractice(p=>'choices'in p?{...p,correct:j}:p)}/> 정답 보기</label>
       {[label,feedback].map((v,k)=><TextField key={k} label={k?'선택했을 때 설명':'보기'} value={v} onChange={value=>editPractice(p=>'choices'in p?{...p,choices:p.choices.map((c,i)=>i!==j?c:k===0?[value,c[1]]:[c[0],value])}:p)}/>)}</fieldset>)}
     {'writingPrompt' in practice&&<TextField label="직접 쓰기 안내" value={practice.writingPrompt??''} onChange={v=>editPractice(p=>'choices'in p?{...p,writingPrompt:v}:p)}/>}
-    {(['hint','answer','followUp'] as const).filter(key=>index!==5||key==='followUp').map(key=><TextField key={key}
-      label={{hint:'힌트',answer:'예시 답과 이유',followUp:'다음 생각'}[key]} value={step[key]} onChange={v=>editStep(key,v)}/>)}
+    {index===5 && <TextField label="예시를 본 뒤 확인할 점" value={step.followUp} onChange={v=>editStep('followUp',v)}/>}
     {error&&<p role="alert">{error}</p>}
     {drill && <details className="rounded-lg border p-2"><summary>심화 문제 미리보기·수정 ({originals.length}개)</summary>
       <label>문제 선택 <select value={drillNumber} onChange={e=>setDrillIndex(Number(e.target.value))}>

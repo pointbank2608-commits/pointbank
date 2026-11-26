@@ -83,8 +83,7 @@ export const STAGED_MIN_WORDS = 6;
 /** 문법 항목 하나 → 3단계 수업 (워크북 자료·문장 공장·문법별 게임 문제로 단체수업처럼 30분 넘게) */
 export function buildStagedGrammarLesson(point: GrammarPoint, opts: StagedOptions = {}): Built {
   const G = opts.games ?? [];
-  const workshop=point.workshop?buildSoloGrammarLesson(point):undefined;
-  const base=buildSoloGrammarLesson(workshop?{...point,steps:undefined,workshop:undefined}:point);
+  const base = buildSoloGrammarLesson(point);
   if (base.steps[0]?.t === 'rule' && base.steps[0].practice) return base;
   const steps: SoloStep[] = [{ t: 'intro', title: point.name, text: point.tip ?? point.explain }];
   const examples = point.examples.map((e, i) => ({ sentence: plainText(e).trim(), ko: cleanKo((point.translations ?? [])[i] ?? '') })).filter((x) => x.sentence);
@@ -97,8 +96,7 @@ export function buildStagedGrammarLesson(point: GrammarPoint, opts: StagedOption
   // ── 1. 기본 개념 ──
   steps.push(stage(1, '기본 개념', 10, '규칙과 예문을 카드로 배워요', passOf(opts)));
   steps.push(part('강의', '카드를 한 장씩 넘기며 배워요'));
-  if(workshop)steps.push(...workshop.steps);
-  else steps.push({ t: 'rule', title: point.name, pattern: plainText(point.pattern), explain: point.explain, lines: usage.slice(0, 3), tip: '' });
+  steps.push({ t: 'rule', title: point.name, pattern: plainText(point.pattern), explain: point.explain, lines: usage.slice(0, 3), tip: '' });
   for (const e of examples.slice(0, 3)) steps.push({ t: 'example', sentence: e.sentence, ko: e.ko });
   steps.push(part('문제 풀기', '배운 것을 확인해요'));
   steps.push(...pick(questions('translatePick'), 3), ...pick(questions('pickCorrect'), 2));

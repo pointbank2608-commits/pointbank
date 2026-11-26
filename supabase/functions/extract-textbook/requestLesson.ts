@@ -1,4 +1,5 @@
-import { compileWorkshop, schoolOf, type DrillChoice, type WorkshopSource } from '../_shared/grammarWorkshop.ts';
+import { canMap } from '../_shared/canMap.ts';
+import { compileWorkshop, schoolOf, type DrillChoice, type SceneLine, type WorkshopSource } from '../_shared/grammarWorkshop.ts';
 
 // A request can be mistaken for an ability question even when every word has been translated.
 // Keep the contrast and the response sequence intact when a photo teaches this particular goal.
@@ -42,17 +43,17 @@ export function photoRequestLesson(printed: {en:string;ko:string}[], grade:numbe
   const scene=a.place+' 지우는 민서에게 도움을 청해요. 민서는 곧 수업을 시작해요.';
   const why='Can you는 ‘할 줄 아니?’라면서요. 여기서는 왜 부탁이에요?';
   const because='지우 앞에는 지금 해결할 일이 있어요. 민서의 실력을 시험하려는 게 아니라 손을 빌리고 싶은 거예요. you는 부탁을 듣고 행동할 민서예요. please를 넣으면 “좀 해 줄래?”처럼 부드럽게 들려요.';
+  const asking:SceneLine={label:'지우 → 민서',setting:a.place+' 지우가 곁에 있는 민서를 바라봐요.',
+    chunks:['Can','you','please',a.verb,a.object+'?'],glosses:['해 줄 수 있을까','너, 민서가','좀, 정중하게',a.verbKo,a.objectKo],meaning:a.sentenceKo,
+    image:'/word-bank-images/'+a.picture+'.webp',response:'민서가 지금 도와줄 수 있는지 대답해요.',rationale:'you는 지우 앞에 있는 민서예요. please 다음의 '+a.verb+'는 지우가 민서에게 해 달라는 행동이에요. 그래서 이 말은 “'+a.sentenceKo+'”라는 부탁이 돼요.'};
+  const declining:SceneLine={label:'민서 → 지우',setting:'민서는 부탁을 들었어요. 그런데 곧 수업이 시작돼서 자리를 뜰 수 없어요.',
+    chunks:["I'm sorry,",'but',"I can't.","I'm busy now."],glosses:['미안해','그렇지만','지금은 못 해','나 지금 바빠'],meaning:'미안하지만 지금은 못 해. 나 지금 바빠.',
+    image:'/word-bank-images/clock.webp',response:'지우가 민서의 사정을 듣고 다른 친구에게 부탁해요.',
+    rationale:'둘 다 어떤 일을 부탁했는지 이미 알아요. 그래서 I can’t 뒤에 그 행동을 또 말하지 않아도 돼요. now(지금)를 들으면 늘 못 하는 일이 아니라 지금 시간이 없다는 뜻으로 이해할 수 있어요.'};
   const source:WorkshopSource={
     scene,why,because,misconception:'지우는 민서의 실력만 궁금하고, 민서는 지금 돕겠다고 했어요.',
-    map:['지금 도와줄래?: Can you help me? 양손에 짐이 가득한 친구가 묻는다면 손을 빌려 달라는 부탁이에요.',
-      '할 줄 아니?: Can you swim? 수영 반을 정하는 코치는 물에 뜨고 앞으로 나아갈 수 있는지 물어요.',
-      '내가 해도 돼?: Can I sit here? 앉을 사람은 나(I)예요. 그 자리에 앉아도 되는지 허락을 구해요.',
-      '평소에도 하니?: Do you swim on Fridays? 금요일마다 실제로 수영하는 습관이 궁금해요.',
-      '부탁을 받으면?: 도울 수 있으면 Sure. No problem.(물론이지. 도와줄게.) 지금 어렵다면 미안하다는 말과 함께 사정을 한마디 덧붙여요.'],
-    pair:[{label:'지우 → 민서 · 부탁하는 사람',chunks:['Can','you','please',a.verb,a.object+'?'],
-      glosses:['해 줄 수 있을까','너, 민서가','좀, 정중하게',a.verbKo,a.objectKo],meaning:a.sentenceKo,image:'/word-bank-images/'+a.picture+'.webp'},
-      {label:'민서 → 지우 · 부탁받은 사람',chunks:["I'm sorry,",'but',"I can't.","I'm busy now."],
-      glosses:['미안해','그렇지만','나는 해 줄 수 없어','나 지금 바빠'],meaning:'미안하지만 지금은 못 해. 나 지금 바빠.',image:'/word-bank-images/clock.webp'}],
+    ...canMap(asking),
+    pair:[asking,declining],
     clue:makeChoice('두 손에 책을 든 민서가 문 앞에서 “Can you open the door?”라고 해요. 지우가 어떻게 하면 민서가 원하는 일이 이뤄질까요?',
       ['문을 열 줄 안다고 말하고 지나가요.','지금 민서 대신 문을 열어 줘요.'],1,'단서는 두 손에 든 책이에요. 문을 열 수 있냐는 말로 지금 대신 열어 달라고 부탁했어요.'),
     apply:makeChoice('지우가 “Can you carry my bag?” 하고 물어요. 민서는 곧 수업이라 지금 가방을 들어 줄 수 없어요. 민서가 할 말을 골라 보세요.',
@@ -65,11 +66,20 @@ export function photoRequestLesson(printed: {en:string;ko:string}[], grade:numbe
     models,choices,repairs,
   };
   const lesson=compileWorkshop(source,grade,count);
+  lesson.steps[0].practice.title='교실에서 만나는 can';
+  lesson.steps[1].practice.title='지우의 부탁, 민서의 대답';
+  lesson.steps[1].prompt=a.place+' 지우는 무엇을 해 달라는 걸까요? 민서의 대답에서는 지금 도울 수 있는지, 왜 그런지 찾아보세요.';
   if ('panels' in lesson.steps[3].practice) lesson.steps[3].practice.panels=[];
   lesson.steps[3].practice.why.push(['open과 close는 어떻게 달라요?', 'open은 열다, close는 닫다예요. 무엇을 여는지 뒤에 붙여요. the door는 문, the window는 창문이에요.']);
-  lesson.steps[1].practice.why.push(['왜 I can’t 다음에 행동을 다시 말하지 않아도 돼요?', '이미 부탁을 들었기 때문에 둘 다 어떤 행동인지 알아요. 민서가 I can’t라고 하면 “그 일을 지금은 해 줄 수 없어”라는 뜻이에요. I’m busy now는 왜 어려운지 알려 주는 한마디예요.']);
+  const compare=lesson.steps[1].practice;
+  if ('choices' in compare && compare.choices) {
+    compare.question='민서가 “I’m busy now.”라고 덧붙였어요. 지우는 무엇을 알게 됐을까요?';
+    compare.choices=[['민서는 그 일을 할 줄 몰라요.','now(지금)에 주목해 보세요. 민서가 시간이 있을 때도 못 한다고 말했나요?'],['민서는 지금 바빠서 도울 수 없어요.','busy는 ‘바쁜’, now는 ‘지금’이에요. 민서는 지금 도와주기 어려운 이유를 말했어요.']];
+    compare.correct=1;
+  }
   if ('writingPrompt' in lesson.steps[4].practice) lesson.steps[4].practice.writingPrompt='친구의 부탁을 받았어요. 지금 바쁘다는 이유를 넣어 내 말로 거절해 보세요.';
-  lesson.steps[0].practice.why=[['왜 부탁에 please를 붙여요?', 'please는 여기서 “좀”에 가까워요. 상대에게 선택을 주며 정중하게 부탁하는 느낌을 더해요.']];
+  lesson.steps[0].practice.why=[['왜 같은 Can you가 수영장과 교실에서 다르게 들려요?', '코치는 대답을 듣고 반을 정해요. 교실의 지우는 친구가 실제로 도와주기를 바라요. 같은 “할 수 있어?”도 그다음에 어떤 일이 일어나길 바라는지에 따라 뜻이 달라져요.'],
+    ['부탁을 받으면 꼭 도와줘야 해요?', '도울 수 있으면 Sure. No problem. (물론이지. 도와줄게.)이라고 해요. 지금 어렵다면 I’m sorry, but I can’t.라고 말하고 이유를 덧붙일 수 있어요.']];
   lesson.steps[2].practice.why=[['우리말은 행동이 끝에 오는데 영어는 어디에 놓아요?', '먼저 Can you please로 말을 듣는 사람에게 부탁해요. 다음에 '+a.verb+'('+a.verbKo+')로 원하는 행동을 말하고, '+a.object+'('+a.objectKo+')로 그 대상을 붙여요.']];
   const explain='부탁할 때는 누가 행동할지 먼저 생각해요. 상대에게 해 달라면 Can you로 시작해요. 내가 직접 해도 되는지 물으면 Can I로 시작해요.';
   return {...lesson,name:'Can you please …? · 도움을 부탁하고 이유를 들어 거절하기',audience:schoolOf(grade),

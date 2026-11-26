@@ -2,10 +2,12 @@ import type { GrammarPoint, GrammarTeachingStep } from '../lib/grammar';
 import type { SceneLine } from '../../../supabase/functions/_shared/grammarWorkshop';
 
 interface PracticeBase {
+  lessonGrade?:number;
+  lessonTopic?:string;
   image?: string;
   imageDescription?: string;
   panels?: SceneLine[];
-  map?: {label:string; text:string}[];
+  map?: {label:string; text:string; panelIndex?:number}[];
   assembly?: string[];
   title: string;
   why: [question: string, explanation: string][];

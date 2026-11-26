@@ -502,7 +502,7 @@ export function buildSoloGrammarLesson(point: GrammarPoint): { name: string; ste
       const s=classroomStep(point,i)!;
       return ({
       t: 'rule', title: s.practice!.title, pattern: `${i + 1} / 6`, explain: s.prompt,
-      lines: [], practice: s.practice, tip: [s.answer, s.followUp].join('\n\n'),
+      lines: [], practice: {...s.practice!,lessonGrade:point.workshop?.grade,lessonTopic:point.name.split(' — ')[0]}, tip: [s.answer, s.followUp].join('\n\n'),
     });});
     if(point.workshop) for(const item of extensionPool(point.workshop).slice(0,point.workshop.count)){
       if(item.kind==='choice' && item.options) {
