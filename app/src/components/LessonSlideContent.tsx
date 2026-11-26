@@ -62,7 +62,7 @@ export default function LessonSlideContent({
   lessonSlides?: LessonSlide[];
   phonicsObservation?: { lessonId: string; position: number };
   onCanvasAudio?: () => void;
-  onGrammarCue?: (action: 'shown' | 'hint' | 'revealed', stageIndex: number) => void;
+  onGrammarCue?: (action: 'shown' | 'submitted' | 'hint' | 'revealed', stageIndex: number) => void;
   preview?: boolean;
 }) {
   const { t } = useTranslation();

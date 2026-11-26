@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import GuidedPracticePanel from '../grammar/GuidedPracticePanel';
 import { CAILLOU_VIDEO_ID } from '../../lib/caillouVideoCourse';
 import SoloGameStep from './SoloGameStep';
 import SoloReviewGame from './SoloReviewGame';
@@ -150,6 +151,7 @@ export default function SoloPlayer({
   const [idx, setIdx] = useState(() => Math.min(startAt, Math.max(0, steps.length - 1)));
   const [historyAt, setHistoryAt] = useState<number | null>(null);
   const [hintRequest, setHintRequest] = useState(0);
+  const [comparedAt,setComparedAt]=useState<number|null>(null);
   const [phase, setPhase] = useState<Phase>('ask');
   const [wrong, setWrong] = useState<number[]>([]);
   const [shownAnswer, setShownAnswer] = useState<string | null>(null);
@@ -1218,7 +1220,11 @@ export default function SoloPlayer({
             <p className="text-lg text-[#5b6580]">{t('solo.rulePrompt')}</p>
             <h2 className="text-center text-2xl font-bold">{step.title}</h2>
             <div className="w-full rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4 py-4 text-center text-2xl font-bold text-[#3b5bdb]">{step.pattern}</div>
-            <p className="text-center text-lg text-[#5b6580]">{step.explain}</p>
+            <p className="whitespace-pre-line text-center text-lg text-[#5b6580]">{step.explain}</p>
+            {step.practice && <GuidedPracticePanel key={idx} practice={step.practice} review={step.tip} onHelp={() => sensor('hint')} onReveal={() => {
+              sensor('submitted');sensor('revealed');
+              if(step.practice?.independentPrompts)setComparedAt(idx);
+            }} />}
             {!!step.phonemes?.length && <RulePhonemes key={idx} sounds={step.phonemes} onAudio={() => sensor('audio')} />}
             {step.lines.length > 0 && (
               <ul className="w-full list-disc space-y-1.5 rounded-2xl bg-white ring-1 ring-[#eadfc5] py-3 pl-8 pr-4 text-left text-lg text-[#5b6580]">
@@ -1227,8 +1233,10 @@ export default function SoloPlayer({
                 ))}
               </ul>
             )}
-            {step.tip && <p className="text-center text-xl font-bold text-emerald-600">💡 {step.tip}</p>}
-            <button type="button" disabled={busy} onClick={() => void next()} className={`${btn} w-full bg-[#3b5bdb] text-white`}>
+            {step.practice?.independentPrompts ? null : step.practice ? <details key={`answer-${idx}`} className="w-full rounded-xl bg-white p-3" onToggle={e => { if (e.currentTarget.open) sensor('revealed'); }}>
+              <summary>예시 답과 다시 해 보기</summary><p className="mt-2 whitespace-pre-line">{step.tip}</p>
+            </details> : step.tip && <p className="text-center text-xl font-bold text-emerald-600">💡 {step.tip}</p>}
+            <button type="button" disabled={busy || !!step.practice?.independentPrompts && comparedAt!==idx} onClick={() => {setComparedAt(null);void next();}} className={`${btn} w-full bg-[#3b5bdb] text-white`}>
               {t('solo.readIt')}
             </button>
           </>

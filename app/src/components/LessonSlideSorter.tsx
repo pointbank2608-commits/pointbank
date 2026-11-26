@@ -2260,11 +2260,14 @@ function GrammarSlideDetail({
   );
   const possible = useMemo(() => buildWordListSentences(point, cards, 1, 0).length > 0, [point, cards]);
 
-  async function saveGrammarCopy(content: GrammarPreset['content']) {
+  async function storeGrammar(content: GrammarPreset['content'], updateExisting: boolean) {
     if (!profile) throw new Error('Missing account');
     const { grammarId, useWordList, words, seed, boardTheme, showKo, revealAll } = slide;
-    await saveMyGrammar(academyId, profile.id, { grammarId, useWordList, words, seed, boardTheme, showKo, revealAll, content });
+    const previous = slide.librarySource;
+    const source = await saveMyGrammar(academyId, profile.id, { grammarId, useWordList, words, seed, boardTheme, showKo, revealAll, content },
+      updateExisting && previous?.owner===profile.id && previous.academy===academyId ? previous : undefined);
     notify(t('myGrammar.saved'));
+    return source;
   }
 
   async function addUnscrambleSlide() {
@@ -2316,13 +2319,11 @@ function GrammarSlideDetail({
       {contentMode && <GrammarContentEditor inline={contentMode === 'edit'} point={point} themeId={slide.boardTheme} onClose={() => setContentMode(null)}
         titleRef={titleInput} initialPosition={position} onPositionChange={contentMode === 'edit' ? setPosition : undefined}
         initialRevealAll={slide.revealAll} initialShowKo={slide.showKo}
-        onSaveCopy={contentMode === 'edit' ? saveGrammarCopy : undefined}
-        saveLabel={t(contentMode === 'edit' ? 'myGrammar.apply' : 'myGrammar.save')}
+        onSaveCopy={contentMode === 'edit' ? async content=>{await storeGrammar(content,false);} : undefined}
+        saveLabel={contentMode === 'edit' ? '내 문법에 저장하고 이 슬라이드에 적용' : t('myGrammar.save')}
         onSave={async content => {
-          if (contentMode === 'library') {
-            await saveGrammarCopy(content);
-          }
-          onUpdate({ content });
+          const source=await storeGrammar(content,contentMode==='edit');
+          onUpdate({ content,librarySource:source });
         }} />}
       <div className="flex flex-wrap gap-x-5 gap-y-2 rounded-xl border border-outline-variant/50 bg-surface-container-low p-3">
         <div className="w-full font-label-md text-label-md text-on-surface">{t('curriculum.grammarSlide.startTitle')}</div>

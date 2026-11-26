@@ -14,7 +14,7 @@ for (const point of points) {
     assert.ok(step[key]?.trim() && !step[key].includes('undefined'), point.id + ' ' + key);
   }
 }
-assert.equal(new Set(points.map(p => p.steps[4].prompt)).size, points.length);
+assert.equal(new Set(points.map(p => p.steps[1].practice.why[0][0]+'|'+p.steps[1].practice.why[0][1])).size, points.length);
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE ||
   '../../node_modules/homework-test-tools/node_modules/playwright/index.mjs');
 const origin = 'https://grammar-check.invalid';
@@ -63,7 +63,7 @@ const bundle = await build({ root, configFile: false, logLevel:'error',
   }
 }],build:{target:'esnext',write:false,copyPublicDir:false,rollupOptions:{input:resolve(root,'scripts/games/focus.html')}}});
 const assets = new Map(bundle.output.map(file => ['/'+file.fileName, file.type==='chunk'?file.code:file.source]));
-const browser = await chromium.launch({ channel: 'chrome', headless: true });
+const browser = await chromium.launch({ channel: process.env.GRAMMAR_BROWSER_CHANNEL || 'chrome', headless: true });
 try {
   const page = await browser.newPage({viewport:{width:1180,height:850}});
   const pdfPage = await browser.newPage();
@@ -74,12 +74,22 @@ try {
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   await page.route('**/*', async route => {
     const req = route.request(), path = new URL(req.url()).pathname;
+    if(path.includes('/storage/v1/object/') && path.includes('/lesson-slide-images/')){
+      return req.method()==='POST'?route.fulfill({json:{Key:path}}):route.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jG2sAAAAASUVORK5CYII=','base64')});
+    }
     if (path.endsWith('/academy_scan_access')) return route.fulfill({json:{enabled}});
     if (path.endsWith('/teacher_grammar_blocks')) {
       if (req.method()==='POST') {
         const row = req.postDataJSON(); rows.set(row.id,{...row,revision:1});
         // First insert commits, but client loses the success response.
         return ++inserts === 1 ? route.fulfill({status:409,json:{message:'temporary'}}) : route.fulfill({status:201,body:''});
+      }
+      if(req.method()==='PATCH'){
+        const id=new URL(req.url()).searchParams.get('id').slice(3);
+        const patch=req.postDataJSON(); const previous=rows.get(id);
+        assert.equal(patch.revision,previous.revision+1);
+        rows.set(id,{...previous,...patch});
+        return route.fulfill({json:{id,revision:patch.revision}});
       }
       return route.fulfill({json:[...rows.values()]});
     }
@@ -127,14 +137,14 @@ try {
   assert.equal(await page.getByPlaceholder(/문법 찾기/).inputValue(),'');
   assert.equal(rows.size,2);
   await imported.first().click();
-  await page.getByRole('heading',{name:'1 / 6 · 언제 쓸까?'}).waitFor();
+  await page.getByRole('heading',{name:'1 / 6 · 쓰임 지도'}).waitFor();
   await page.getByRole('button',{name:'수업 수정 열기'}).click();
   const detail = page.locator('[data-lesson-slide-detail]');
   const button = name => detail.getByRole('button',{name,exact:true});
   await button('다음').click();
   await button('힌트').click();
   await button('문법 내용 수정').click();
-  await detail.getByRole('heading',{name:'2 / 6 · 어떻게 말할까?'}).waitFor();
+  await detail.getByRole('heading',{name:'2 / 6 · 두 장면 비교하기'}).waitFor();
   await button('2. 힌트').waitFor();
   const title = detail.getByRole('textbox',{name:'문법 제목',exact:true});
   await detail.getByRole('button',{name:/^문법 제목 수정/}).click();
@@ -149,8 +159,14 @@ try {
   await title.fill(renamed);
   await button('2. 칠판 질문').dblclick();
   await detail.getByRole('textbox',{name:'2. 칠판 질문'}).fill('문을 닫아 달라고 어떻게 부탁할까요?');
-  await button('이 슬라이드에 적용').click();
-  await detail.getByRole('heading',{name:'2 / 6 · 어떻게 말할까?'}).waitFor();
+  await detail.getByLabel('대상 학년').selectOption('10');
+  await detail.getByRole('spinbutton').fill('3');
+  assert.equal(await detail.getByLabel('편집할 단계').inputValue(),'1');
+  await detail.getByLabel('단계 그림 추가·교체').setInputFiles({name:'new-map.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jG2sAAAAASUVORK5CYII=','base64')});
+  await detail.getByLabel('그림 설명',{exact:true}).fill('선생님이 바꾼 장면 그림');
+  await button('내 문법에 저장하고 이 슬라이드에 적용').click();
+  await button('문법 내용 수정').waitFor();
+  await detail.getByRole('heading',{name:'2 / 6 · 두 장면 비교하기'}).waitFor();
   await detail.getByText('문을 닫아 달라고 어떻게 부탁할까요?',{exact:true}).waitFor();
   await detail.getByRole('button',{name:'문법 제목 수정 · '+renamed}).waitFor();
   await page.locator('[data-slide-id="slide-1"]').getByText(renamed,{exact:true}).last().waitFor();
@@ -159,25 +175,30 @@ try {
   await openPicker();
   assert.equal(await create.count(),0);
   await page.getByRole('button',{name:'내 문법에서 불러오기'}).click();
-  await imported.first().click();
-  await page.getByRole('heading',{name:'1 / 6 · 언제 쓸까?'}).waitFor();
-  for (let index=0;index<6;index++) {
-    if (index === 0) {
-      const opening = await page.getByTestId('classroom-board').innerText();
-      for (const text of [draft.explain, draft.examples[0], draft.translations[0]]) assert.ok(opening.includes(text.replaceAll('**','')));
-    }
-    await page.getByRole('button',{name:'힌트',exact:false}).click();
-    await page.getByText(draft.steps[index].hint,{exact:false}).last().waitFor();
-    await page.getByRole('button',{name:'예시 답과 이유',exact:false}).click();
-    if (index<5) await page.getByRole('button',{name:/다음$/}).click();
-  }
+  await page.getByRole('button',{name:new RegExp(renamed)}).click();
+  await page.getByRole('heading',{name:'1 / 6 · 쓰임 지도'}).waitFor();
+  const board=page.getByTestId('classroom-board');
+  await board.getByRole('button',{name:/다음$/}).click();
+  await board.getByAltText('선생님이 바꾼 장면 그림').waitFor();
+  await board.getByRole('button',{name:/다음$/}).click();
+  await board.getByRole('button',{name:/다음$/}).click();
+  await board.locator('button[data-correct=false]').first().click();
+  await board.locator('.grammar-wrong').getByText(/아니에요/).or(board.locator('p.grammar-wrong')).first().waitFor();
+  await board.locator('button[data-correct=true]').click();
+  await board.locator('p.grammar-right').waitFor();
+  for(let i=0;i<2;i++)await board.getByRole('button',{name:/다음$/}).click();
+  assert.equal(await board.getByRole('button',{name:'내 답과 예시 비교하기'}).isDisabled(),true);
+  assert.equal(await board.getByRole('button',{name:'예문 보기'}).count(),0);
+  await board.getByRole('textbox').fill('Can I film the show?');
+  await board.getByRole('button',{name:'내 답과 예시 비교하기'}).click();
+  await board.getByRole('heading',{name:'심화 연습 · 1 / 3'}).waitFor();
   assert.equal(await page.getByRole('button',{name:/다음$/}).isDisabled(),true);
   await page.getByRole('button',{name:'기본 문법 열기'}).click();
-  await page.getByRole('heading',{name:'1 / 6 · 언제 쓸까?'}).waitFor();
+  await page.getByRole('heading',{name:'1 / 6 · 쓰임 지도'}).waitFor();
   for (let step=0;step<3;step++) await page.getByRole('button',{name:/다음$/}).click();
   await page.getByRole('button',{name:'힌트',exact:false}).click();
   await page.getByRole('button',{name:'예시 답과 이유',exact:false}).click();
-  assert.match(await page.getByTestId('classroom-board').innerText(), /No problem/);
+  assert.match(await page.getByTestId('classroom-board').innerText(), /손목/);
   if (process.env.GRAMMAR_PREVIEW_PNG) await page.getByTestId('classroom-board').screenshot({path:process.env.GRAMMAR_PREVIEW_PNG});
   assert.deepEqual(errors,[]);
   console.log(points.length+' catalog boards, '+points.length*6+' stages; Chrome PDF → save retry → reload → import → all six stages passed.');

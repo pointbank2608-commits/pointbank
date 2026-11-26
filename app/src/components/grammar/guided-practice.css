@@ -1,0 +1,21 @@
+.guided-practice { text-align: left; line-height: 1.55; }
+.guided-practice details, .guided-practice fieldset { margin: .65em 0; padding: .55em .85em; border: 1px solid currentColor; border-radius: .55em; min-width: 0; }
+.guided-practice summary { cursor: pointer; font-weight: 650; }
+.guided-practice details p{white-space:pre-line}
+.guided-practice legend { padding: 0 .3em; font-weight: 650; }
+.guided-practice p { margin: .5em 0 .2em; }
+.guided-practice button { border: 1px solid currentColor; border-radius: .45em; padding: .45em .7em; margin: .2em .4em .2em 0; color: inherit; background: transparent; font: inherit; cursor: pointer; }
+.guided-practice button[aria-pressed=true] { box-shadow: inset 0 0 0 2px currentColor; font-weight: 700; }
+.guided-practice .question-draft { display: block; margin: 1em 0; font-weight: 600; }
+.guided-practice textarea { display: block; box-sizing: border-box; width: 100%; margin-top: .35em; border: 1px solid #65817b; border-radius: .45em; padding: .5em; background: white; color: #173633; font: inherit; }
+.guided-practice .question-model { white-space: pre-line; }
+.guided-practice button:disabled { opacity: .55; cursor: default; }
+.grammar-scene-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,12em),1fr));gap:.65em;margin:.65em 0}
+.grammar-scene-grid article{background:#f5f8f1;color:#213b34;border-radius:.65em;padding:.7em}
+.grammar-scene-grid img{float:right;width:3em;height:3em;object-fit:contain;border-radius:.5em}
+.grammar-chunk{display:inline-block;color:#203b32;background:#d6eadf;border-radius:.35em;padding:.08em .35em;margin:.2em .1em}
+.grammar-chunk[data-role=helper]{background:#ffe4a8}
+.grammar-chunk[data-role=person]{background:#d6e9fa}
+.grammar-chunk small{display:block;font-size:.72em;line-height:1.3}
+.guided-practice .grammar-right,.guided-practice button[data-correct=true][aria-pressed=true]{background:#165e49;color:white;padding:.45em .65em;border-radius:.4em}
+.guided-practice .grammar-wrong,.guided-practice button[data-correct=false][aria-pressed=true]{background:#92283a;color:white;padding:.45em .65em;border-radius:.4em}

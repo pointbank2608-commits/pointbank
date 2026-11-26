@@ -163,6 +163,7 @@ const evenPick = <T,>(arr: T[], n: number): T[] => (arr.length <= n ? arr : even
  */
 export function buildBasicGrammarLesson(point: Parameters<typeof buildSoloGrammarLesson>[0]): ReturnType<typeof buildSoloGrammarLesson> {
   const base = buildSoloGrammarLesson(point);
+  if (base.steps[0]?.t === 'rule' && base.steps[0].practice) return base;
   const bank = soloGrammarBank(point.id);
   if (!bank.has) return base;
   const tip = point.tip ?? point.explain;

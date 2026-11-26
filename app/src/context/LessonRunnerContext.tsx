@@ -62,7 +62,7 @@ interface RunnerState {
 
 interface RunnerValue {
   recordSlideAudio: () => void;
-  recordGrammarCue: (action: 'shown' | 'hint' | 'revealed', stageIndex: number) => void;
+  recordGrammarCue: (action: 'shown' | 'submitted' | 'hint' | 'revealed', stageIndex: number) => void;
   replaceGame: (type: GameType, templateId: string, state: Record<string, unknown>) => void;
   runner: RunnerState | null;
   preparingCollectionGame: boolean;

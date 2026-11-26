@@ -6,7 +6,7 @@ import { listMyGrammar, saveMyGrammar, type GrammarPreset, type SavedGrammar } f
 import GrammarContentEditor from './GrammarContentEditor';
 import { AiGrammarCreateButton } from './AiGrammarCreator';
 
-export default function MyGrammarLibrary({ onPick, query = '' }: { onPick?: (block: GrammarPreset) => void; query?: string }) {
+export default function MyGrammarLibrary({ onPick, onEdit, query = '' }: { onPick?: (block: GrammarPreset) => void; onEdit?:(block:GrammarPreset)=>void; query?: string }) {
   const { academy, profile } = useAuth();
   const { t } = useTranslation();
   const [refresh, setRefresh] = useState(0);
@@ -54,11 +54,11 @@ export default function MyGrammarLibrary({ onPick, query = '' }: { onPick?: (blo
     {status === 'loading' && <p role="status">{t('common.loading')}</p>}
     {status === 'error' && <p role="alert">{t('myGrammar.loadFailed')} <button type="button" className="text-primary underline" onClick={() => setRefresh(n => n+1)}>{t('guide.retry')}</button></p>}
     {status === 'ready' && !visible.length && <p>{t(search[0] ? 'grammar.noResults' : 'myGrammar.empty')}</p>}
-    <div className="grid gap-2 sm:grid-cols-2">{visible.map(row => <button key={row.id} type="button"
+    <div className="grid gap-2 sm:grid-cols-2">{visible.map(row => <div key={row.id} className="grid gap-1"><button type="button"
       className="rounded-xl border border-outline-variant bg-white p-3 text-left hover:border-primary"
-      onClick={() => onPick ? onPick(structuredClone(row.block)) : setEditor({ block:row.block, previous:row })}>
+      onClick={() => onPick && profile && academy ? onPick({ ...structuredClone(row.block), librarySource:{id:row.id,revision:row.revision,owner:profile.id,academy:academy.id} }) : setEditor({ block:row.block, previous:row })}>
       <strong className="block">{row.block.content.name}</strong><span className="text-sm">{row.block.content.pattern.replaceAll('**','')}</span>
-    </button>)}</div>
+    </button>{onEdit&&profile&&academy&&<button type="button" className="justify-self-end text-sm text-primary" onClick={()=>onEdit({...structuredClone(row.block),librarySource:{id:row.id,revision:row.revision,owner:profile.id,academy:academy.id}})}>문법 내용 수정</button>}</div>)}</div>
     {editor && <GrammarContentEditor point={grammarSlidePoint({ ...editor.block, kind: 'grammar', id: editor.block.grammarId })!} themeId={editor.block.boardTheme} saveLabel={t('myGrammar.save')} onClose={() => setEditor(null)}
       onSave={async content => {
         if (!academy || !profile) throw new Error('Missing account');

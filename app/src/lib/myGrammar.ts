@@ -19,12 +19,13 @@ export async function insertGrammarDraft(academy: string, owner: string, id: str
   if (error) throw error;
 }
 
-export async function saveMyGrammar(academy: string, owner: string, block: GrammarPreset, previous?: SavedGrammar) {
+export async function saveMyGrammar(academy: string, owner: string, block: GrammarPreset, previous?: Pick<SavedGrammar,'id'|'revision'>) {
   const table = supabase.from('teacher_grammar_blocks');
   const query = previous
     ? table.update({ block, revision: previous.revision + 1 }).eq('id', previous.id).eq('revision', previous.revision)
         .eq('owner_id', owner).eq('academy_id', academy)
     : table.insert({ academy_id: academy, owner_id: owner, block });
-  const { error } = await query.select('id').single();
+  const { data, error } = await query.select('id,revision').single();
   if (error) throw error;
+  return {id:String(data.id),revision:Number(data.revision),owner,academy};
 }

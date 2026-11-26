@@ -1,0 +1,170 @@
+this-is|손에 든 지도와 벽에 붙은 지도를 번갈아 가리켜요.|This~is~my map.|이건 내 지도야.|That~is~my map.|저건 내 지도야.|왜 같은 지도인데 첫말이 달라요?|말하는 사람의 손 가까이에 있는지, 떨어진 곳을 가리키는지 보세요. 거리가 달라져요.
+it-is|주머니에서 물건 끝이 보여요. 민서가 꺼내서 보여 줘요.|What~is~this?|이게 뭐야?|It~is~a key.|열쇠야.|왜 대답에서는 it을 써요?|둘 다 눈앞의 같은 물건을 보고 있어요. it은 방금 물은 그 물건을 이어서 가리켜요.
+a-an|간식 꾸러미에서 과일을 하나씩 꺼내요.|It is~a~peach.|복숭아 하나야.|It is~an~apple.|사과 하나야.|왜 둘 다 하나인데 a가 바뀌어요?|apple은 입에서 모음 소리가 바로 나와요. 그 소리 앞에서는 an으로 이어요. 글자보다 소리를 들어요.
+plural|친구가 연필을 더 놓아 개수가 바뀌었어요.|I have~one~pencil.|나는 연필 한 자루가 있어.|I have~two~pencils.|나는 연필 두 자루가 있어.|왜 숫자를 말했는데 끝에도 s가 붙어요?|영어는 셀 수 있는 물건이 둘 이상이면 그 이름도 여러 개 모양으로 바꿔요.
+i-am|자기소개 시간에 이름표와 오늘 기분을 알려 줘요.|I~am~Jiu.|나는 지우야.|I~am~happy.|나는 기뻐.|왜 이름과 기분 앞에 똑같이 am이 와요?|I만으로는 내가 누구인지 어떤 상태인지 말이 끝나지 않아요. am이 나와 그 설명을 이어 줘요.
+he-she-is|단체 사진을 보며 두 사람을 차례로 소개해요.|He~is~my brother.|그는 내 남자 형제야.|She~is~my sister.|그녀는 내 여자 형제야.|사진을 가리키는데 왜 am을 안 써요?|말하는 나를 소개할 때는 I am, 여기서 가리킨 한 사람을 소개할 때는 he is 또는 she is예요.
+i-like|간식 투표에서 좋아하는 음식과 실제로 가진 음식을 구별해요.|I~like~pears.|나는 배를 좋아해.|I~have~a pear.|나는 배 하나가 있어.|좋아하면 지금 가지고 있다는 뜻인가요?|like는 마음을 알려 줘요. 지금 손에 있는지는 have가 알려 줘요. 빈손이어도 배를 좋아할 수 있어요.
+i-have|준비물 확인 때 빈 가방과 물병을 보여 줘요.|I~have~a bottle.|나는 물병이 있어.|I~want~a bottle.|나는 물병을 원해.|갖고 싶다는 말과 이미 있다는 말은 어떻게 달라요?|have를 들으면 물병을 이미 챙겼다고 이해해요. want를 들으면 아직 필요할 수 있어요.
+i-want|가게에서 늘 좋아하는 음식과 오늘 고를 음식을 말해요.|I~like~bread.|나는 빵을 좋아해.|I~want~some rice.|나는 밥을 좀 먹고 싶어.|좋아하는 것과 지금 원하는 것이 달라도 돼요?|like는 평소 마음을, want는 지금 얻거나 하려는 것을 말해요. 빵을 좋아해도 오늘은 밥을 고를 수 있지요.
+i-can|지우는 수영을 배웠지만 쉬는 시간이라 물 밖에서 기다려요.|Can~you~swim?|너 수영할 줄 아니?|Can~I~swim now?|지금 수영해도 돼요?|수영할 줄 아는데 왜 또 물어요?|선생님의 “Can you swim?”에서 you는 지우예요. 수영할 줄 아는지 묻고 있어요. 지우의 “Can I swim now?”에서 I도 지우예요. 지우는 실력을 이미 알고 있고, 지금 들어가도 된다는 선생님의 허락을 기다려요.
+imperative|막 칠한 벤치 앞에 관리인이 안내문 두 장을 붙여요.|Sit~here.|여기에 앉으세요.|Don't~sit~here.|여기에 앉지 마세요.|왜 you가 없어도 내가 해야 할 일을 알아요?|안내문은 읽는 사람에게 바로 행동을 말해요. 맨 앞의 Don't가 그 행동을 멈추라는 신호예요.
+lets|친구가 출발선에서 기다리는 나에게 손짓해요.|Run~to the gate.|문까지 달려.|Let's~run~to the gate.|우리 문까지 달리자.|말한 친구도 같이 달리나요?|Let's에는 말하는 사람과 듣는 사람이 함께 하자는 뜻이 들어 있어요.
+adj-noun|분실물 상자에 같은 모양의 가방 두 개가 있어요.|It is~a red~bag.|빨간 가방이야.|It is~a blue~bag.|파란 가방이야.|왜 색깔을 먼저 말해요?|어떤 가방인지 고르는 단서를 이름 앞에 붙여요. red를 들으면 여러 가방 중 빨간 것을 찾게 돼요.
+how-are-you|보건실에서 친구의 이름과 오늘 상태를 따로 물어요.|Who~are~you?|너는 누구니?|How~are~you?|너는 어떻게 지내?|이름으로 답하면 왜 어색해요?|how는 어떤 상태인지 묻는 말이에요. 피곤하면 I'm tired.라고 지금 몸 상태를 전해요.
+is-it|천에 가린 물건 끝이 보여요. 열쇠인지 추측해요.|It~is~a key.|그건 열쇠야.|Is~it~a key?|그거 열쇠야?|같은 낱말인데 왜 대답을 기다리죠?|알려 줄 때는 It is, 맞는지 확인할 때는 is를 앞으로 옮겨요.
+be-not|운동 직후 얼굴이 빨간 친구가 상태를 바로잡아요.|I~am~sick.|나는 아파.|I~am not~sick.|나는 아프지 않아.|왜 not은 am 뒤에 와요?|I am sick.에서 am이 나와 상태를 잇고 있어요. 그 뒤에 not을 놓으면 그 상태가 아니라고 알려 줘요.
+do-you-like|급식 메뉴 투표를 앞두고 취향을 물어요.|You~like~corn.|너는 옥수수를 좋아해.|Do~you~like corn?|너는 옥수수를 좋아하니?|Do를 꼭 ‘하다’로 읽나요?|이 질문에서 do는 이제 질문한다는 표시예요. 실제로 묻는 마음은 like에 들어 있어요.
+i-dont|우유를 마신다고 잘못 적힌 설문을 고쳐요.|I~drink~milk.|나는 우유를 마셔.|I~don't drink~milk.|나는 우유를 마시지 않아.|왜 not만 붙이지 않아요?|drink처럼 행동을 나타내는 말의 현재 부정에는 do not을 써요. 줄인 모양이 don't예요.
+third-s|경기 방송에서 내가 뛸 때와 다른 선수 한 명이 뛸 때를 말해요.|I~run~fast.|나는 빨리 달려.|She~runs~fast.|그 아이는 빨리 달려.|한 사람인데 왜 s가 붙어요?|여기서 s는 여러 명 표시가 아니에요. 현재 하는 일을 나와 너 이외의 한 사람에 맞춰 말하는 표시예요.
+does-he|민서가 매일 걷는다는 말을 듣고 정말 그런지 확인해요.|She~walks~home.|그 아이는 집까지 걸어가.|Does~she~walk home?|그 아이는 집까지 걸어가니?|walks의 s는 어디 갔나요?|질문 앞의 does가 이미 한 사람의 현재라는 표시를 맡았어요. 행동 말은 기본 모양 walk로 써요.
+there-is|가방을 열어 무엇이 들어 있는지 알려 줘요.|There is~a coin~inside.|안에 동전 하나가 있어.|There are~two coins~inside.|안에 동전 두 개가 있어.|왜 there를 ‘저기’라고 읽지 않아요?|이 문장은 물건이 있다는 소식을 꺼내요. 실제 장소는 inside가, 개수는 a coin과 two coins가 알려 줘요.
+prepositions|책상 위를 찾다가 아래에 놓인 열쇠를 발견해요.|The key~is~on the desk.|열쇠가 책상 위에 있어.|The key~is~under the desk.|열쇠가 책상 아래에 있어.|어느 말이 찾을 곳을 바꿨어요?|책상과 열쇠는 그대로예요. on은 윗면에 닿는 자리, under는 아래쪽을 가리켜요.
+present-progressive|운동 기록과 지금 찍은 영상을 비교해요.|I~run~every day.|나는 매일 달려.|I~am running~now.|나는 지금 달리는 중이야.|왜 running 앞에 am이 필요해요?|달리는 장면이 지금 펼쳐지는 중임을 am과 running이 한 팀으로 전해요.
+wh-questions|분실물을 발견하고 물건 이름과 주인의 위치를 알아봐요.|What~is~it?|그건 뭐야?|Where~is~it?|그건 어디 있어?|왜 같은 it에 다른 대답을 해요?|what은 물건의 정체가 빈칸이고 where는 장소가 빈칸이에요. 필요한 정보가 먼저 나와요.
+possessive|같은 모양의 모자 두 개가 뒤섞였어요.|This is~my~cap.|이건 내 모자야.|Is this~your~cap?|이건 네 모자니?|my와 your는 모자의 성질인가요?|두 말은 주인이 누구인지 알려 줘요. 같은 모자도 주인은 my, 친구는 your라고 부를 수 있어요.
+time-day|약속을 적는데 시계와 달력 중 어디를 봐야 할까요?|What time~is~it?|몇 시야?|What day~is~it?|무슨 요일이야?|왜 Monday로는 첫 질문에 답할 수 없어요?|time은 시계에서 읽는 시각, day는 여기서 달력의 요일을 묻고 있어요.
+how-many|물통의 개수와 안에 남은 물의 양을 확인해요.|How many~bottles~are there?|병이 몇 개 있어?|How much~water~is there?|물이 얼마나 있어?|같은 물인데 왜 many와 much가 달라져요?|병은 하나둘 셀 수 있고 물 자체는 양을 재요. 무엇을 세거나 재는지를 보세요.
+weather|소풍 안내에서 도시 이름과 하늘 상태를 알려 줘요.|It~is~sunny.|날이 맑아.|It~is~windy.|바람이 불어.|여기서 it은 무엇을 가리켜요?|영어 문장의 앞자리를 채워 날씨를 말하게 해 줘요. 앞에서 특정 물건을 찾을 필요가 없어요.
+these-those|손에 쥔 두 장의 카드와 건너편 카드들을 가리켜요.|These~are~my cards.|이것들은 내 카드야.|Those~are~my cards.|저것들은 내 카드야.|왜 this를 쓰지 않아요?|여러 장이어서 가까우면 these, 멀면 those예요. 개수와 거리를 함께 봐요.
+apostrophe-s|급식실에 남은 한 개의 도시락 주인을 찾아요.|This is~Jiu's~box.|이건 지우의 상자야.|These are~boxes.|이것들은 상자들이야.|왜 같은 s처럼 들려도 뜻이 달라요?|이름 끝의 's는 소유자, boxes 끝의 es는 여러 개를 표시해요.
+date-months|행사 달력에서 월과 며칠인지를 함께 읽어요.|It's~May~first.|5월 1일이야.|It's~May~third.|5월 3일이야.|왜 one 대신 first를 읽어요?|달력에서는 그달의 첫째 날, 셋째 날처럼 순서로 날짜를 말해요.
+can-i-may-i|도서관 문 앞에서 내가 들어갈지 상대가 열어 줄지 물어요.|Can~I~come in?|제가 들어가도 될까요?|Can~you~open the door?|문 좀 열어 주실래요?|I와 you만 봐도 무엇을 알 수 있어요?|I면 행동할 사람은 나, you면 듣는 사람이에요. May I come in?도 허락을 구하는 표현이에요.
+and-but|두 동아리의 좋은 점과 서로 다른 점을 덧붙여요.|It is~small~and quiet.|작고 조용해.|It is~small~but noisy.|작지만 시끄러워.|왜 뒤가 예상과 다르면 but을 써요?|and는 정보를 더해요. but은 앞말을 듣고 떠올릴 예상과 다른 방향으로 주의를 돌려요.
+because|결석한 까닭을 궁금해하는 친구에게 설명해요.|I stayed home~because~I was sick.|아파서 집에 있었어.|I was sick,~so~I stayed home.|아팠어. 그래서 집에 있었어.|같은 사건인데 순서가 왜 달라요?|because 다음에는 까닭이, so 다음에는 그 결과가 와요. 어느 쪽을 먼저 알려 줄지 정해요.
+so|비가 내려 운동장 놀이가 취소됐어요.|It rained,~so~we went inside.|비가 와서 우리는 안으로 들어갔어.|We went inside~because~it rained.|비가 와서 안으로 들어갔어.|so 뒤에는 무엇이 따라와요?|무슨 일이 생겼는지 말한 뒤 so로 그 결과를 이어 줘요. 여기서는 실내로 들어간 행동이에요.
+describe|잃어버린 인형을 찾아 특징 두 가지를 전해요.|It~is~small.|작아요.|It~has~long ears.|긴 귀가 있어요.|왜 긴 귀 앞에 is를 쓰면 이상해요?|인형 자체가 귀라는 뜻이 돼요. 전체 상태는 is, 가지고 있는 부분은 has로 말해요.
+frequency|한 달 운동 달력에 표시한 날들을 비교해요.|I~always~walk home.|나는 늘 걸어서 집에 가.|I~sometimes~walk home.|나는 가끔 걸어서 집에 가.|지금 걷는지는 어떻게 아나요?|두 말은 여러 날 중 얼마나 자주 그러는지를 알려 줘요. 지금 이 순간의 모습은 알 수 없어요.
+want-to|메뉴를 보며 원하는 음식과 하고 싶은 일을 말해요.|I want~an apple.|사과 하나를 원해.|I want~to grow~an apple tree.|사과나무를 키우고 싶어.|원하는 게 행동이면 왜 to가 보여요?|want 뒤에 물건 이름은 바로 놓아요. 하고 싶은 행동은 to와 행동의 기본 모양을 묶어 놓아요.
+have-to-should|안전 수칙과 친구의 조언을 따로 들어요.|You~have to~wear a helmet.|헬멧을 꼭 써야 해.|You~should~rest.|쉬는 게 좋겠어.|둘 다 ‘해야 해’처럼 들리는데요?|규칙으로 요구하는 일은 have to, 이 상황에서 좋겠다고 권하는 일은 should로 전할 수 있어요.
+directions|길을 잃은 친구가 갈림길에 멈춰 서 있어요.|Turn~left~at the bank.|은행에서 왼쪽으로 도세요.|Go~straight~past the bank.|은행을 지나 곧장 가세요.|은행을 찾고 나서 무엇을 들어야 해요?|장소는 기준점이에요. turn left와 go straight를 구별해야 다음 발걸음이 달라져요.
+jobs-future|지금 하는 일과 장래희망을 소개해요.|I~am~a student.|나는 학생이야.|I~want to be~a pilot.|나는 조종사가 되고 싶어.|왜 직업 앞에 be가 들어가요?|pilot은 사람의 이름표처럼 쓰는 말이에요. want to be는 앞으로 그런 사람이 되고 싶다는 뜻이에요.
+how-do-you|같은 학교에 오는 친구들의 이동 방법을 조사해요.|How~do you go~to school?|학교에 어떻게 가니?|I go~by bus.|버스를 타고 가.|왜 학교 이름으로 대답하지 않아요?|목적지는 이미 school로 정했어요. 비어 있는 정보는 걷는지, 무엇을 타는지예요.
+countable-uncountable|장보기 목록에서 달걀은 세고 우유는 양을 재요.|We need~two~eggs.|달걀 두 개가 필요해.|We need~some~milk.|우유가 좀 필요해.|왜 milk에 s를 붙이지 않아요?|우유 자체는 한 개 두 개로 나뉘지 않아요. 두 잔이라면 two glasses of milk처럼 잔을 세어요.
+object-pronouns|공을 주는 사람과 받는 사람이 자리를 바꿔요.|She~helps~me.|그 아이가 나를 도와.|I~help~her.|내가 그 아이를 도와.|왜 같은 사람이 she였다가 her가 돼요?|도움을 주는 자리에 서면 she, 도움을 받는 자리에 서면 her로 역할이 달라져요.
+past-be|사진 뒷면에 어제의 장소를 적어요.|I~am~here now.|나는 지금 여기 있어.|I~was~here yesterday.|나는 어제 여기 있었어.|장소가 같은데 왜 was예요?|지금 상태를 말하는 am을 어제 상태를 전하는 was로 바꿔요.
+past-regular|오늘의 계획표 옆에 어제 실제로 한 일을 적어요.|I~walk~to school every day.|나는 매일 걸어서 등교해.|I~walked~to school yesterday.|나는 어제 걸어서 등교했어.|왜 yesterday가 있어도 ed를 써요?|언제인지 알려 주는 말과 행동 말의 시간 표시를 함께 맞춰요. walk는 규칙적으로 ed가 붙어요.
+past-irregular|지난 여행에서 어디에 갔는지 이야기해요.|We~go~there every year.|우리는 매년 거기에 가.|We~went~there last year.|우리는 작년에 거기에 갔어.|왜 goed라고 하지 않아요?|go는 과거가 went로 바뀌는 말이에요. go와 went를 같은 행동의 두 시간으로 묶어 기억해요.
+did-you|사라진 열쇠를 어제 봤는지 물어요.|You~saw~my key.|너는 내 열쇠를 봤어.|Did~you~see my key?|내 열쇠 봤니?|왜 saw가 see로 돌아가요?|질문 맨 앞의 did가 과거를 표시했어요. 뒤에서는 see로 행동만 알려 줘요.
+future|예약표를 보여 주다가 친구 짐을 보고 바로 도와주기로 해요.|I'm going to~visit~Jiu.|지우를 방문할 계획이야.|I'll~carry~that bag.|그 가방은 내가 들게.|둘 다 미래인데 왜 다르게 말해요?|이미 세운 계획에는 be going to가 잘 어울리고, 지금 결정한 도움에는 I'll이 자연스러워요.
+comparative|나란히 세운 두 연필의 길이를 재요.|This pencil~is long.|이 연필은 길어.|This pencil~is longer than~that one.|이 연필이 저것보다 길어.|왜 than 뒤에 다른 연필이 와요?|longer는 두 길이를 비교해요. than 뒤에서 무엇과 비교했는지를 밝혀요.
+superlative|세 탑의 높이를 재고 우승작을 골라요.|This tower~is taller than~mine.|이 탑이 내 것보다 높아.|This tower~is the tallest~of the three.|이 탑이 셋 중 가장 높아.|왜 tallest를 쓸 때는 무리를 알아야 해요?|누구와 견주어 1위인지 정할 범위가 필요해요. 여기서는 세 탑 전체예요.
+sequence|섞인 조리법 카드에서 처음과 마지막을 찾아요.|First,~wash~the rice.|먼저 쌀을 씻어.|Finally,~serve~the rice.|마지막으로 밥을 내놓아.|왜 first와 finally를 바꾸면 안 돼요?|두 말은 행동이 들어갈 자리를 표시해요. 순서를 바꾸면 씻기 전에 밥을 내놓게 돼요.
+i-think|두 팀 중 누가 이길지 각자 의견을 내요.|They~are~ready.|그들은 준비됐어.|I think~they~are ready.|내 생각에는 그들이 준비됐어.|I think를 붙이면 무엇이 달라요?|뒤의 말을 내가 판단한 내용으로 소개해요. 듣는 사람은 다른 생각을 말할 수도 있어요.
+whats-wrong|얼굴을 찡그린 친구에게 어디가 아픈지 물어요.|What's~wrong?|무슨 일이야?|I have~a headache.|머리가 아파.|왜 headache를 가지고 있다고 해요?|I have a headache는 두통이 있다는 영어 표현이에요. 무엇을 소유했다는 뜻으로 낱말마다 읽지 않아요.
+adverb-ly|달리기 영상에서 선수가 어떻게 움직였는지 설명해요.|She is~a quiet~runner.|그 아이는 조용한 주자야.|She~runs~quietly.|그 아이는 조용히 달려.|왜 quiet와 quietly가 달라요?|quiet는 어떤 사람인지, quietly는 달리는 행동이 어떻게 이루어지는지 설명해요.
+m-pronoun-case|지우가 잃어버린 펜을 친구가 돌려줘요.|She~found~my pen.|그 아이가 내 펜을 찾았어.|She~gave it~to me.|그 아이가 그것을 내게 줬어.|왜 my 뒤에는 pen이 있고 me 뒤에는 없어요?|my는 누구의 물건인지 다음 이름을 꾸미고 me는 받는 사람인 나를 직접 가리켜요.
+m-present-vs-progressive|일주일 시간표와 지금 켜진 운동장 카메라를 봐요.|I~play~tennis on Fridays.|나는 금요일마다 테니스를 쳐.|I~am playing~tennis now.|나는 지금 테니스를 치고 있어.|금요일이면 지금도 치는 건가요?|시간표는 반복되는 일, 카메라는 이 순간을 보여 줘요. 한 정보만으로 다른 쪽을 단정할 수 없어요.
+m-past|어제 한 일을 확인하다가 기록을 고쳐요.|I~went~home.|나는 집에 갔어.|I~didn't go~home.|나는 집에 가지 않았어.|왜 didn't went가 아니에요?|did에 이미 과거가 들어 있어요. 부정에서는 뒤의 행동만 기본 모양 go로 돌려놓아요.
+m-modals|친구와 수영장 입장 규칙을 읽고 준비물을 확인해요.|You~can~swim here.|여기서는 수영해도 돼.|You~must~wear a cap.|수모를 꼭 써야 해.|허락과 의무를 어떻게 나눠요?|can은 수영을 허용해요. must는 수모를 쓰는 게 규칙이라는 뜻이에요. should는 조언, may는 허락이나 가능성도 나타내요.
+m-exclamation|놀라운 그림을 보고 두 사람이 다른 말로 감탄해요.|What~a beautiful~picture!|정말 아름다운 그림이네!|How~beautiful~it is!|정말 아름답구나!|둘 다 감탄인데 첫말이 왜 달라요?|What은 여기서 그림이라는 이름까지 묶고 How는 아름다운 정도를 앞세워요.
+m-it-impersonal|창밖과 시계를 번갈아 보며 상황을 전해요.|It~is~cold.|추워.|It~is~noon.|정오야.|it이 무엇인지 찾아야 하나요?|날씨나 시각을 말할 때는 가리킬 물건 없이도 영어 문장 앞에 it을 놓아요.
+m-to-inf-noun|책을 쓰고 싶은 학생이 꿈과 희망을 한 줄씩 적어요.|I want~to write~a book.|나는 책을 쓰고 싶어.|My dream is~to write~a book.|내 꿈은 책을 쓰는 거야.|똑같은 to write a book인데 왜 자리가 달라요?|첫 문장에서는 무엇을 원하는지, 뒤 문장에서는 꿈의 내용이 무엇인지 답해요. 전체를 한 덩어리로 잡아 보세요.
+m-gerund|수영하는 사람을 보며 취미에 관해 말해요.|Swimming~is~fun.|수영하는 것은 재미있어.|She~is swimming~now.|그 아이는 지금 수영하고 있어.|swimming이 보이면 늘 진행 중인가요?|첫 문장은 재미있는 활동의 이름이고, 둘째 문장은 지금 움직이는 장면이에요. 앞뒤의 자리를 봐요.
+m-dative|도서 바자회에서 누가 무엇을 받았는지 적어요.|He~gave me~a book.|그가 내게 책을 줬어.|He~gave a book~to me.|그가 책을 내게 줬어.|왜 두 번째에만 to가 있나요?|받는 사람을 물건 뒤로 보내면 to가 누가 받는지 표시해요.
+m-linking-verbs|수프를 맛보고 향과 맛을 기록해요.|The soup~smells~good.|수프 냄새가 좋아.|The cook~smiles~happily.|요리사가 행복하게 웃어.|왜 smells 뒤에 well을 넣지 않아요?|이 장면에서 설명하는 건 수프의 상태예요. 어떤 동작을 능숙하게 한다는 이야기가 아니에요.
+m-conj-when-if-that|버스 도착을 기다리며 확신과 조건을 나눠 말해요.|I know~that~it is late.|늦는다는 걸 알아.|We will walk~if~it is late.|늦으면 걸어갈 거야.|두 문장의 it is late는 어떤 역할이에요?|that 뒤는 알고 있는 내용, if 뒤는 걷기로 한 조건이에요. when은 어느 때인지 연결해요.
+m-comparison|두 가방의 무게를 비교한 뒤 무게가 같은지 확인해요.|This bag~is heavier than~mine.|이 가방은 내 것보다 무거워.|This bag~is as heavy as~mine.|이 가방은 내 것만큼 무거워.|왜 as 사이에서는 heavier를 안 써요?|as와 as가 같은 정도인지 견주는 틀이라 그 안에는 heavy의 기본 모양을 놓아요.
+m-prep-time|초대장에 만날 시각과 요일을 따로 적어요.|Meet me~at~three.|세 시에 만나.|Meet me~on~Friday.|금요일에 만나.|시간인데 왜 모두 at을 쓰지 않아요?|at은 시계의 한 점, on은 달력 속 하루, in은 한 달이나 한 해 같은 넓은 기간에 써요.
+m-how-questions|기자가 연습 횟수와 한 번 연습하는 시간을 물어요.|How often~do you~practice?|얼마나 자주 연습하니?|How long~do you~practice?|얼마 동안 연습하니?|일주일에 세 번은 어느 질문의 답이에요?|often은 빈도, long은 지속 시간이에요. 같은 연습도 횟수나 분으로 다르게 설명해요.
+m-be-verb|팀 소개 사진에 한 명과 여러 명의 상태를 적어요.|Jiu~is~ready.|지우는 준비됐어.|We~are~ready.|우리는 준비됐어.|ready는 같은데 왜 가운데가 바뀌죠?|앞에서 누구를 소개하는지 따라 연결하는 말이 바뀌어요. 나 하나는 am, 지우 한 명은 is, 우리는 are예요.
+m-general-verb|친구의 습관을 인터뷰한 뒤 기사로 옮겨요.|Do~you~walk to school?|너는 걸어서 등교하니?|She~walks~to school.|그 아이는 걸어서 등교해.|질문에서는 walk인데 기사에서는 왜 walks예요?|기사에서는 나와 너 이외의 한 사람이 평소 하는 일을 말해요. 그 표시가 walks의 s예요.
+m-noun-count|빵집에서 빵의 양과 조각 수를 주문해요.|I want~some~bread.|빵을 좀 원해요.|I want~two slices~of bread.|빵 두 조각을 원해요.|왜 breads가 아니라 slices인가요?|이 주문에서는 bread를 음식의 양으로 보고, 실제로 세는 단위인 slice를 여러 개로 바꿔요.
+m-wh-questions|축제 안내판에서 누가, 어디서 공연하는지 찾아요.|Who~will~sing?|누가 노래할까?|Where~will~Jiu sing?|지우가 어디서 노래할까?|왜 첫 질문에는 Jiu 같은 이름이 없어요?|who 자체가 노래할 사람 자리예요. where는 장소를 묻기 때문에 누가 노래하는지는 따로 적어요.
+m-there-be|동아리방을 처음 찾은 학생에게 안에 있는 것을 알려 줘요.|There is~a drum~inside.|안에 북 하나가 있어.|The drum~is~inside.|그 북은 안에 있어.|왜 순서를 바꾸면 느낌이 달라요?|처음 문장은 북이 있다는 새 소식, 다음 문장은 이미 아는 그 북의 위치예요.
+m-future|비구름을 본 뒤 소풍 준비물에 우산을 더해요.|It~is going to~rain.|비가 올 것 같아.|I~will bring~an umbrella.|내가 우산을 가져올게.|왜 계획이 없어도 going to를 써요?|지금 보이는 구름으로 앞으로 일어날 일을 짐작할 때도 going to를 써요. will은 이 장면에서 방금 한 결정을 전해요.
+m-adj-adv|무대 뒤 평소의 모습과 공연할 때 행동을 설명해요.|She~is usually~quiet.|그 아이는 보통 조용해.|She~usually sings~softly.|그 아이는 보통 부드럽게 노래해.|왜 usually의 자리가 달라요?|보통 be 뒤, 일반 행동 동사 앞에 놓아요. softly는 노래하는 방식을 알려 줘요.
+m-reflexive|거울 앞에서 본 사람과 창밖에서 본 사람을 구별해요.|Jiu~saw her~outside.|지우는 밖에서 다른 여자아이를 봤어.|Jiu~saw herself~in the mirror.|지우는 거울에서 자기 모습을 봤어.|왜 herself를 써요?|본 사람과 보인 사람이 모두 지우예요. 행동이 자신에게 돌아오면 이 모양을 써요.
+m-conj-coordinating|비 오는 날 두 가지 이동 방법 중 하나를 골라요.|We can walk~or~take a bus.|걷거나 버스를 탈 수 있어.|We walked~and~talked.|우리는 걷고 이야기했어.|or와 and를 바꾸면 왜 계획이 바뀌어요?|or는 선택지를 나누고 and는 둘 다 연결해요. but은 예상과 다른 정보, so는 결과를 이어요.
+m-prep-place|학교에 있는 친구와 학교로 향하는 친구의 위치를 봐요.|She~is at~school.|그 아이는 학교에 있어.|She~is going to~school.|그 아이는 학교로 가고 있어.|학교가 같아도 왜 다른 말을 써요?|at은 있는 곳을 찍고 to는 이동의 도착점을 가리켜요. from은 출발점을 알려 줘요.
+m-present-perfect|잃어버린 열쇠가 지금도 없어서 집에 못 들어가요.|I~lost~my key yesterday.|나는 어제 열쇠를 잃어버렸어.|I~have lost~my key.|열쇠를 잃어버려서 지금 없어.|둘 다 과거에 잃어버렸는데 무엇이 달라요?|첫 말은 어제의 일을 보고하고, 둘째는 그 일 때문에 지금 열쇠가 없는 상황과 연결해요.
+m-past-progressive|어제 정전이 일어난 순간의 일기를 써요.|I~was reading~when it went dark.|어두워졌을 때 나는 읽는 중이었어.|I~finished~the book later.|나중에 그 책을 다 읽었어.|왜 첫 문장만 읽다가 멈춘 장면 같나요?|was reading은 그 시점에 진행 중인 모습을 보여 줘요. finished는 끝낸 사건을 찍어요.
+m-passive|창문이 깨진 사건을 두 제목으로 보도해요.|A ball~broke~the window.|공이 창문을 깼어.|The window~was broken~by a ball.|창문이 공에 맞아 깨졌어.|왜 창문이 맨 앞에 와요?|누가 했는지보다 무엇이 그 일을 당했는지에서 이야기를 시작할 수 있어요. was broken이 당한 쪽임을 알려 줘요.
+m-to-inf-adj-adv|도서관에서 필요한 책과 방문 목적을 말해요.|I need~a book~to read.|나는 읽을 책이 필요해.|I came here~to read~a book.|책을 읽으러 여기 왔어.|둘 다 to read인데 무엇을 물어보면 돼요?|어떤 책인지 답하면 책을 꾸며요. 왜 왔는지 답하면 행동의 목적이에요.
+m-gerund-vs-inf|운동 계획표에 ‘끝낸 일’과 ‘하기로 한 일’을 적어요.|I finished~writing~the list.|목록 쓰기를 끝냈어.|I decided~to write~the list.|목록을 쓰기로 했어.|왜 똑같은 ‘쓰기’를 다른 모양으로 써요?|앞말이 뒤에 올 행동의 모양을 정해요. finish writing, decide to write처럼 실제 짝으로 기억해요.
+m-object-complement|공연을 보고 친구의 기분이 어떻게 변했는지 말해요.|The song~made me~happy.|그 노래가 나를 행복하게 했어.|I want~you~to sing.|나는 네가 노래하기를 원해.|왜 me와 you 뒤에 말이 더 필요해요?|누가 어떤 상태가 됐는지, 누구에게 어떤 행동을 원하는지까지 채워야 뜻이 완성돼요.
+m-relative-subject|여러 학생 중 기타를 치는 학생을 찾아요.|The girl~who plays guitar~is Jiu.|기타를 치는 그 아이가 지우야.|The guitar~that sounds bright~is new.|밝은 소리가 나는 기타는 새것이야.|왜 who 뒤에 she가 또 없어요?|who가 기타를 치는 사람 자리까지 맡아서 소녀와 뒷설명을 이어 줘요.
+m-relative-object|전시된 사진 중 내가 찍은 장면을 골라요.|The photo~that I took~is here.|내가 찍은 사진이 여기 있어.|The photo~I took~is here.|내가 찍은 사진이 여기 있어.|왜 that을 빼도 사진이 사라지지 않죠?|I took 뒤의 ‘무엇을’ 자리는 앞의 photo로 이미 이해돼요. 이 자리의 연결 말은 생략할 수 있어요.
+m-have-to|체육관 규칙에 금지와 선택이 따로 쓰여 있어요.|You~must not~run.|뛰면 안 돼.|You~don't have to~run.|꼭 뛸 필요는 없어.|둘 다 부정인데 걸어야 하는 경우는 어느 쪽이에요?|must not은 뛰기를 금지해요. don't have to는 의무가 없어서 뛰어도 되고 걸어도 돼요.
+m-tag-questions|시간표를 들고 친구에게 내가 아는 정보를 확인해요.|It is Tuesday,~isn't it?|화요일이지, 그렇지?|It isn't Tuesday,~is it?|화요일이 아니지, 그렇지?|왜 뒤쪽 질문의 긍정과 부정이 바뀌어요?|앞말을 사실로 생각하고 확인할 때 보통 반대 모양의 짧은 질문을 붙여요.
+m-because-although|비가 와서 취소한 경기와 비에도 열린 경기를 비교해요.|We stopped~because~it rained.|비가 와서 멈췄어.|We played~although~it rained.|비가 왔지만 경기했어.|비가 온 건 같은데 왜 연결 말이 달라요?|because는 행동의 이유, although는 예상과 달랐던 조건을 밝혀요.
+m-superlative-one-of|사진전에서 마음에 드는 여러 작품 중 하나를 가리켜요.|This is~the best~photo.|이게 최고의 사진이야.|This is~one of the best~photos.|이건 최고의 사진들 중 하나야.|하나인데 왜 photos가 여러 개예요?|고른 것은 하나지만 그 하나를 고른 범위는 여러 사진이에요.
+m-comparative-emphasis|두 자전거의 가격표를 보고 얼마나 차이 나는지 말해요.|This bike~is cheaper~than mine.|이 자전거는 내 것보다 싸.|This bike~is much cheaper~than mine.|이 자전거는 내 것보다 훨씬 싸.|왜 much를 cheaper 앞에 붙여요?|이미 비교하는 cheaper의 차이가 크다는 뜻이에요. 비교급 자체에 다시 more를 붙일 필요가 없어요.
+m-if-conditional|내일 비가 오면 소풍 장소를 바꾸기로 해요.|If it rains,~we will~stay inside.|비가 오면 실내에 있을 거야.|We will go out~if it clears up.|날이 개면 나갈 거야.|내일인데 왜 if 뒤는 rains예요?|미래에 대한 조건을 말하는 if절에서는 보통 현재 모양을 써요. 결과 쪽에서 will로 계획을 말해요.
+m-relative-what|상자 안 물건의 이름을 모르는 채 찾은 것을 보여 줘요.|This is~what~I found.|이게 내가 찾은 것이야.|This is~the key~that I found.|이게 내가 찾은 열쇠야.|왜 what 앞에 the key를 또 안 써요?|what 안에 ‘것’이라는 의미가 들어 있어요. key를 이미 말했으면 that 뒤에 설명을 이어요.
+m-relative-adverb|여행 사진 뒤에 장소와 그곳에서 한 일을 적어요.|This is~the park~where we met.|여기가 우리가 만난 공원이야.|This is~the park~that we visited.|여기가 우리가 방문한 공원이야.|왜 장소 이름 뒤에 항상 where가 오지 않아요?|we met에는 어디에서가 비고 we visited에는 무엇을 방문했는지가 비어요. 뒤 문장에서 빠진 역할이 달라요.
+m-participle|놀이터 사진에서 잠든 아기와 부서진 의자를 찾아요.|Look at~the sleeping~baby.|자고 있는 아기를 봐.|Look at~the broken~chair.|부서진 의자를 봐.|왜 한쪽은 ing이고 다른 쪽은 broken이에요?|아기는 직접 자고 있고 의자는 부서진 일을 당한 상태예요. 이름이 그 행동과 맺는 관계를 봐요.
+m-causative|코치가 시킨 연습과 내가 허락한 행동을 비교해요.|She~made me~run.|그 아이가 나를 뛰게 했어.|She~let me~rest.|그 아이가 내가 쉬도록 허락했어.|왜 rest 앞에 to가 없나요?|make와 let 뒤에서는 행동할 사람을 놓고 기본 모양의 행동을 바로 붙여요.
+m-perception|릴레이를 끝까지 본 사람과 지나가다 잠깐 본 사람의 말을 들어요.|I saw~him~cross the road.|그가 길을 건너는 걸 봤어.|I saw~him~crossing the road.|그가 길을 건너고 있는 모습을 봤어.|왜 crossing이 잠깐 본 장면에 어울려요?|기본형은 행동 전체를, ing는 눈에 들어온 진행 장면을 강조해요.
+m-it-to|긴 행동을 소개할 때 듣기 쉬운 순서를 찾아요.|To wait~is~hard.|기다리는 것은 힘들어.|It is hard~to wait.|기다리기는 힘들어.|무엇이 힘든지는 어디에 있어요?|앞의 it은 자리를 먼저 채워요. 실제로 힘든 내용은 뒤의 to wait예요.
+m-too-enough-so|무거운 상자를 실제로 들 수 있는지 시험해요.|It is~too heavy~to lift.|너무 무거워서 들 수 없어.|It is~light enough~to lift.|들 만큼 가벼워.|too와 enough는 결과를 어떻게 바꾸죠?|too heavy는 감당할 선을 넘고 light enough는 들기 위한 조건을 충족해요.
+m-indirect-question|길에서 바로 묻다가 더 긴 질문 안에 장소 질문을 넣어요.|Where~is~the station?|역은 어디에 있나요?|Do you know~where~the station is?|역이 어디 있는지 아세요?|왜 긴 질문 안에서는 is가 뒤로 가요?|바깥의 Do you know가 질문을 맡아요. 안쪽의 내용은 대상 다음에 동사가 와요.
+m-subjunctive|지금 날개가 있다고 상상하며 계획을 말해요.|If I had wings,~I would~fly.|날개가 있다면 날 텐데.|If I get a ticket,~I will~fly.|표를 구하면 비행기를 탈 거야.|지금 상상인데 왜 had를 써요?|현재 사실에서 거리를 둔 상상은 과거 모양으로 표현해요. 실제로 가능한 조건 get과 느낌이 달라요.
+m-past-perfect|극장에 도착했을 때 이미 영화가 시작된 상황을 설명해요.|We~arrived~at eight.|우리는 여덟 시에 도착했어.|The film~had started~before we arrived.|우리가 도착하기 전에 영화가 시작됐었어.|왜 started 앞에 had가 있나요?|도착한 때가 기준점이에요. 그보다 먼저 일어난 일을 한 걸음 더 뒤에서 바라봐요.
+m-passive-advanced|수리점에서 무엇을 고칠 수 있는지 안내해요.|We~can repair~this bike.|우리는 이 자전거를 고칠 수 있어.|This bike~can be repaired~here.|이 자전거는 여기서 수리될 수 있어.|can 뒤에서 왜 repaired만 쓰지 않아요?|수리받는 쪽을 앞에 세워 be repaired가 필요해요. can 다음의 be는 기본 모양을 유지해요.
+m-indefinite-pronouns|딱 두 장의 표와 더미로 쌓인 표에서 한 장씩 골라요.|I chose one;~take the other.|두 장 중 내가 하나 골랐으니 나머지 하나를 가져.|Take~another~ticket.|다른 표를 하나 더 가져.|왜 the other에는 the가 있죠?|둘 중 마지막 한 장이라 어느 것인지 정해졌어요. another는 여럿 중 다른 하나예요.
+m-reported-speech|친구가 어제 한 말을 오늘 다른 사람에게 전해요.|Jiu said,~“I am tired.”|지우는 “나는 피곤해”라고 했어.|Jiu said~she was~tired.|지우는 자기가 피곤하다고 했어.|왜 I가 she로 바뀌어요?|어제 말한 지우와 지금 전달하는 화자가 달라요. 전달하는 사람의 관점에서 누구인지 다시 정해요.
+m-relative-whose|주인이 보이지 않는 개를 찾다가 목줄 색을 단서로 삼아요.|I saw~a dog~whose collar was red.|목줄이 빨간 개를 봤어.|I saw~a dog~that was red.|털빛이 붉은 개를 봤어.|whose가 가리키는 빨간 것은 개예요, 목줄이에요?|whose 뒤의 collar가 그 개의 소유물이에요. 빨갛다는 설명은 목줄에 붙어요.
+pos-overview|연극 대본에서 같은 light가 맡은 일을 찾아요.|Turn on~the light.|불을 켜.|This bag~is light.|이 가방은 가벼워.|같은 철자인데 품사가 달라져요?|첫 light는 켜는 대상의 이름이고 둘째 light는 가방의 상태를 말해요. 문장에서 하는 일이 기준이에요.
+pos-noun|방송에서 사람과 물건, 눈에 보이지 않는 감정의 이름을 불러요.|Music~helps~me.|음악은 내게 도움이 돼.|I~love~music.|나는 음악을 사랑해.|music은 만질 수 없는데 왜 명사예요?|명사는 사람이나 사물뿐 아니라 활동과 생각의 이름도 붙여요. 자리도 앞뒤로 달라질 수 있어요.
+pos-pronoun|안내 방송에서 같은 학생 이름을 두 번 말하지 않아요.|Jiu~has~a ticket.|지우는 표가 있어.|She~keeps~it.|그 아이는 그 표를 간직해.|it과 she는 누구를 대신해요?|앞문장의 지우는 she, 표는 it으로 이어 받아요. 듣는 사람이 대상을 알 때 쓰기 쉬워요.
+pos-verb|사진에 보이는 움직임과 상태를 한 문장씩 붙여요.|The bird~flies.|새가 날아.|The bird~is~small.|새가 작아.|움직이지 않는데 is도 동사예요?|동사는 행동과 상태를 모두 표현해요. 둘째 문장은 새와 그 상태를 연결할 동사가 필요해요.
+pos-adjective|옷가게에서 모양과 색으로 원하는 모자를 골라요.|I want~a red~hat.|나는 빨간 모자를 원해.|The hat~is~red.|그 모자는 빨개.|red는 어디에 있어도 색깔을 알려 주나요?|이 두 문장에서는 각각 이름 앞과 is 뒤에서 같은 모자의 성질을 알려 줘요.
+pos-adverb|경기 기록에서 달리는 방식과 빈도를 찾아요.|She runs~slowly.|그 아이는 천천히 달려.|She~often~runs.|그 아이는 자주 달려.|두 낱말은 어떤 질문에 답해요?|slowly는 어떻게, often은 얼마나 자주인지 보태요. 행동을 더 자세히 그려 줘요.
+pos-preposition|책과 작은 공으로 위치를 바꿔 가며 보여 줘요.|The ball~is under~the book.|공이 책 아래 있어.|The ball~is beside~the book.|공이 책 옆에 있어.|왜 under만 알면 위치가 덜 분명해요?|무엇을 기준으로 아래인지 알아야 해요. 전치사와 뒤 이름이 한 덩어리로 위치를 말해요.
+pos-conjunction|운동을 못 한 두 설명에서 까닭과 결과를 연결해요.|I was ill,~so~I rested.|아파서 쉬었어.|I rested~because~I was ill.|쉬었어, 아팠기 때문이야.|문장을 잇는 말 하나가 무엇을 알려 줘요?|어느 쪽이 이유이고 결과인지 알려 줘요. 같은 사건도 연결 말에 따라 읽는 방향이 달라져요.
+pos-interjection|깜짝 선물을 열고 첫 반응과 뒤 설명을 나눠 읽어요.|Wow!~It's~a camera.|와! 카메라야.|Oh!~I~see.|아! 알겠다.|왜 Wow 하나로도 말이 되죠?|순간의 감정을 바로 소리로 드러내기 때문이에요. 이어지는 문장의 주어나 동사 자리를 차지하지 않아요.
+tense-overview|같은 달리기를 시간표와 생중계, 결승점 뒤에서 봐요.|She~is running~now.|지금 달리고 있어.|She~has finished~the race.|달리기를 다 마친 상태야.|언제인지 알면 시제 선택이 끝나나요?|언제 바라보는지와 그 순간에 진행 중인지 이미 끝난 결과인지도 함께 봐요.
+tense-present|사진 한 장과 여러 날의 일과표를 비교해요.|He~walks~home on Mondays.|그는 월요일마다 걸어서 집에 가.|He~is walking~home now.|그는 지금 걸어서 집에 가고 있어.|월요일마다 간다는 말은 지금도 간다는 뜻인가요?|현재형은 반복되는 일이나 사실에 잘 어울려요. 한 순간을 보여 주려면 지금 진행 중인지를 말해요.
+tense-past|어제 기록한 경기 결과를 전해요.|Our team~wins~often.|우리 팀은 자주 이겨.|Our team~won~yesterday.|우리 팀은 어제 이겼어.|왜 won으로 바꾸면 경기 하나가 떠올라요?|과거형과 yesterday가 끝난 시기의 한 사건을 가리켜요.
+tense-future|기차 도착 전 지금과 한 시간 뒤의 위치를 비교해요.|I'm~at home~now.|지금 집에 있어.|I'll be~at school~soon.|곧 학교에 있을 거야.|왜 will 뒤에는 am을 놓지 않아요?|will이 미래를 맡고 뒤에는 기본 모양 be가 와서 장소를 이어요.
+tense-present-progressive|생방송 화면에서 친구가 종이를 접는 중이에요.|She~makes~paper birds.|그 아이는 종이 새를 만들어.|She~is making~one now.|지금 하나를 만드는 중이야.|완성됐다는 말인가요?|is making은 진행 중인 장면을 가리켜요. 새가 벌써 완성됐는지는 말하지 않았어요.
+tense-past-progressive|어제 종이 울리던 때의 방송 영상을 멈춰요.|We~were singing~at noon.|정오에 우리는 노래 중이었어.|We~sang~after lunch.|점심 뒤에 노래했어.|어제라면 sang만 써도 되지 않아요?|정오의 화면을 멈춰 그때 한창 하던 일을 보여 주려면 were singing이 더 잘 맞아요.
+tense-future-progressive|내일 같은 시각의 여행 장면을 상상해요.|We~will leave~at ten.|우리는 열 시에 떠날 거야.|We~will be flying~at noon.|우리는 정오에 비행 중일 거야.|미래에서 어느 순간을 확대해요?|정오를 기준으로 그때 진행 중일 일을 보여 줘요. 출발 시점을 말하는 첫 문장과 달라요.
+tense-present-perfect|스탬프를 보며 지금까지의 방문 경험을 이야기해요.|I~visited~Jeju last year.|작년에 제주를 방문했어.|I~have visited~Jeju twice.|지금까지 제주를 두 번 방문했어.|횟수를 말할 때 기준은 어느 때예요?|두 번째는 지금까지의 경험을 모아 봐요. 첫 번째는 작년이라는 끝난 시간에 사건을 놓아요.
+tense-past-perfect|도착해 보니 버스가 벌써 떠났어요.|The bus~left~at nine.|버스는 아홉 시에 떠났어.|It~had left~when I arrived.|내가 도착했을 때 벌써 떠났었어.|두 사건 중 무엇이 먼저예요?|도착한 과거 시점에서 더 앞선 출발을 had left로 표시해요.
+tense-future-perfect|금요일 마감 때 완성될 작업을 확인해요.|I~will finish~on Friday.|금요일에 끝낼 거야.|I~will have finished~by Friday.|금요일까지는 다 끝냈을 거야.|by Friday는 금요일 하루만 뜻하나요?|금요일을 끝선으로 삼아 그때까지 완료된 상태를 그려요. 더 일찍 끝내도 돼요.
+tense-present-perfect-progressive|대기 줄에서 지금까지 기다린 시간을 말해요.|I~am waiting~now.|지금 기다리는 중이야.|I~have been waiting~for an hour.|한 시간째 기다리는 중이야.|둘 다 기다리는데 무엇을 더 알게 돼요?|두 번째는 앞서 시작해 지금까지 이어진 시간까지 담아요.
+tense-past-perfect-progressive|어제 버스가 왔을 때 이미 오래 기다렸다고 말해요.|I~was waiting~at five.|다섯 시에 기다리는 중이었어.|I~had been waiting~for an hour when it came.|버스가 왔을 때 한 시간째 기다리던 중이었어.|한 시간의 끝을 어디에 두나요?|지금이 아니라 과거에 버스가 도착한 순간까지 시간을 거슬러 세어요.
+tense-future-perfect-progressive|내년 여름을 기준으로 훈련 기간을 계산해요.|I~will be training~in July.|7월에는 훈련 중일 거야.|By July, I~will have been training~for a year.|7월이면 훈련을 해 온 지 1년이 될 거야.|둘 다 미래인데 왜 for a year가 중요해요?|미래의 어느 날에서 그때까지 이어질 활동의 길이까지 재는 말이에요.
+forms-overview|같은 학생이 뛰는 모습과 공을 던지는 모습을 설명해요.|Jiu~runs.|지우가 뛰어.|Jiu~throws~a ball.|지우가 공을 던져.|왜 둘째 문장에는 공이 필요해요?|행동 말마다 뒤에 필요한 자리가 달라요. 무엇을 던지는지 채워야 장면이 선명해져요.
+forms-1|출발 신호를 듣고 일어나는 일만 짧게 기록해요.|The bell~rang.|종이 울렸어.|The bell~rang~at noon.|종이 정오에 울렸어.|at noon을 빼도 문장이 되나요?|누가 무엇을 했는지는 이미 The bell rang으로 완성돼요. 정오는 덧붙인 시간이에요.
+forms-2|경기가 끝난 선수의 얼굴빛을 읽어요.|Jiu~looks~tired.|지우가 피곤해 보여.|Jiu~is~tired.|지우가 피곤해.|왜 tired가 다른 사람을 가리키지 않죠?|앞의 지우가 어떤 상태인지 보충해요. 뒤의 설명을 지우에게 다시 연결해 보세요.
+forms-3|사진 속 아이가 무엇을 들었는지 찾아요.|Minseo~holds~a cup.|민서는 컵을 들고 있어.|Minseo~holds~a flag.|민서는 깃발을 들고 있어.|컵을 지우면 무엇이 궁금해져요?|누가 들고 있는지는 알아도 든 대상이 빠져요. 그 자리를 목적어라고 불러요.
+forms-4|친구 생일에 무엇이 누구 손으로 갔는지 표시해요.|I~sent Jiu~a card.|나는 지우에게 카드를 보냈어.|I~sent Minseo~a card.|나는 민서에게 카드를 보냈어.|같은 카드인데 무엇이 달라요?|받는 사람 자리만 바뀌었어요. 보내는 물건과 받는 사람을 따로 찾아보세요.
+forms-5|반장 선거 결과를 방송해요.|We~chose~Jiu.|우리는 지우를 골랐어.|We~call Jiu~our leader.|우리는 지우를 우리 대표라고 불러.|We call Jiu our leader에서 대표는 누구죠?|our leader는 지우에게 붙인 이름이에요. 사람 하나와 그 사람에 관한 설명을 연결해요.
+h-modal-perfect|닫힌 가게와 꺼진 불을 보고 어제 있었던 일을 짐작해요.|They~must have left~early.|그들은 일찍 떠났음이 틀림없어.|They~might have left~early.|그들은 일찍 떠났을지도 몰라.|과거 사실이 달라졌나요?|달라진 건 화자가 단서를 보고 얼마나 확신하는지예요. have left는 두 말 모두 이미 일어난 일을 가리켜요.
+h-passive-advanced|공사 안내에서 완료된 보수와 아직 진행 중인 보수를 구분해요.|The road~is being repaired.|도로를 보수하는 중이야.|The road~has been repaired.|도로 보수가 끝난 상태야.|도로가 스스로 고치는 건가요?|두 문장 모두 도로가 보수를 받아요. being은 진행 중인 과정, has been은 현재와 이어지는 완료를 보여 줘요.
+h-have-pp|직접 자전거를 수리했는지 가게에 맡겼는지 설명해요.|I~repaired~my bike.|내가 자전거를 고쳤어.|I had~my bike~repaired.|자전거를 수리받았어.|왜 두 번째에서는 내가 정비사가 아닐 수 있나요?|my bike 뒤의 repaired는 자전거가 받은 일을 말해요. 나는 일을 맡긴 사람이 될 수 있어요.
+h-tense-agreement|친구가 전날 남긴 말을 오늘 독자에게 전달해요.|She said,~“I am busy.”|그 아이는 ‘나는 바빠’라고 말했어.|She said~she was~busy.|그 아이는 자기가 바쁘다고 말했어.|바빴다는 건 지금은 한가하다는 뜻이에요?|was는 말했던 때의 상태에 맞춘 표현이에요. 지금 상황은 별도 정보가 있어야 알아요.
+h-inf-subject-tense|발표를 하는 사람과 더 일찍 연습한 사람을 확인해요.|It is easy~for Jiu~to speak.|지우가 말하기는 쉬워.|Jiu seems~to have practiced.|지우가 이미 연습한 것 같아.|to have practiced는 언제의 일이에요?|그렇게 보이는 시점보다 먼저 연습했어요. for Jiu는 행동을 누가 하는지 밝히는 덩어리예요.
+h-gerund-idioms|여행을 기다리는 마음과 여행하려는 계획을 비교해요.|I look forward~to meeting~you.|널 만나기를 기대해.|I hope~to meet~you.|널 만나기를 바라.|왜 to 바로 뒤가 meeting인 경우가 있죠?|look forward to에서 to는 기다리는 대상을 잇는 전치사예요. 만나는 일이라는 이름 자리에 meeting이 들어가요.
+h-participle-clause|복도를 걷던 학생이 친구를 본 장면을 한 문장으로 줄여요.|While I was walking home,~I saw~Jiu.|집에 걸어가는 동안 지우를 봤어.|Walking home,~I saw~Jiu.|집에 걸어가다가 지우를 봤어.|누가 걸었는지는 어디서 찾아요?|짧아진 앞부분의 주체는 보통 뒤 문장의 주어예요. 여기서는 I가 걷기도 하고 보기도 했어요.
+h-with-absolute|공연장 사진 속 주인공과 주변 상태를 함께 묘사해요.|She sat~with her eyes~closed.|그 아이는 눈을 감은 채 앉았어.|She sat~with her dog~sleeping nearby.|개가 옆에서 자는 가운데 앉았어.|왜 눈은 closed이고 개는 sleeping이에요?|눈은 감긴 상태이고 개는 스스로 자는 중이에요. with 뒤에 놓인 대상과 행동의 관계를 봐요.
+h-emotion-participle|같은 영화를 소개하는 글과 관객 후기를 함께 봐요.|The film~was~exciting.|영화가 신났어.|I~was~excited.|나는 신이 났어.|왜 사람이 늘 ed이고 물건이 늘 ing인 건 아니죠?|감정을 일으키는 쪽인지 느끼는 쪽인지가 기준이에요. 사람도 다른 이를 신나게 하면 exciting일 수 있어요.
+h-relative-nonrestrictive|여러 지원자 중 한 명을 찾을 때와 이미 아는 사람을 소개할 때를 비교해요.|My sister~who lives in Busan~will come.|내 자매 중 부산 사는 사람이 올 거야.|Jiu,~who lives in Busan,~will come.|지우가 올 거야. 지우는 부산에 살아.|쉼표가 독자에게 보내는 신호는 뭐예요?|이미 누구인지 정해졌으면 쉼표 사이에 부가 설명을 끼워 넣을 수 있어요. 골라내는 정보와 구별해요.
+h-prep-relative|토론을 연 장소를 보고서 문장으로 소개해요.|This is the room~in which~we met.|이곳은 우리가 만난 방이야.|This is the room~which~we met in.|이곳은 우리가 만난 방이야.|왜 in이 앞뒤로 움직이나요?|meet in the room의 in이 장소 관계를 맡아요. which와 함께 앞으로 가거나 문장 끝에 남을 수 있어요.
+h-compound-relative|게시문에서 지원 가능한 사람과 제출할 작품의 범위를 봐요.|Whoever applies~can~join.|지원하는 누구든 참여할 수 있어.|Bring~whatever~you make.|네가 만든 건 무엇이든 가져와.|who나 what 뒤의 ever는 무엇을 넓혀요?|특정 사람이나 물건 하나로 좁히지 않아요. 조건에 맞는 누구든, 무엇이든 포함해요.
+h-noun-clause|발표자가 확실히 아는 사실과 아직 모르는 여부를 말해요.|I know~that~she left.|그 아이가 떠났다는 것을 알아.|I wonder~whether~she left.|그 아이가 떠났는지 궁금해.|왜 두 번째에 that을 넣을 수 없어요?|첫 문장은 사실의 내용, 둘째는 떠났다와 안 떠났다 중 어느 쪽인지 열린 질문을 담아요.
+h-correlative|봉사단 신청 명단을 보고 주어와 동사를 맞춰요.|Not only Jiu but also her friends~are~here.|지우뿐 아니라 친구들도 여기 있어.|Not only her friends but also Jiu~is~here.|친구들뿐 아니라 지우도 여기 있어.|사람들은 같은데 동사는 왜 달라요?|이 짝 표현에서는 보통 동사에 가까운 주어에 수를 맞춰요. 바로 앞이 복수 friends인지 한 명 Jiu인지 봐요.
+h-conj-vs-prep|비가 왔다는 정보를 절과 짧은 이름 덩어리로 전해요.|Although~it rained,~we played.|비가 왔지만 경기했어.|Despite~the rain,~we played.|비에도 불구하고 경기했어.|뒤에 주어와 동사가 다 있나요?|although 뒤에는 it rained라는 완성된 절이, despite 뒤에는 the rain이라는 이름 덩어리가 와요.
+h-relative-what-that|발견한 물건이 무엇인지 밝혔는지 보고 연결 말을 결정해요.|I kept~what~she gave me.|그 아이가 준 것을 간직했어.|I kept the letter~that~she gave me.|그 아이가 준 편지를 간직했어.|what을 쓰면 letter도 앞에 둬야 하나요?|what에 ‘것’이 들어 있어요. 편지라고 이미 이름을 붙였으면 that으로 그 편지를 설명해요.
+h-subjunctive-past-perfect|놓친 기차를 떠올리며 어제 행동과 오늘 결과를 상상해요.|If I had left earlier,~I would have caught~the train.|더 일찍 떠났더라면 그 기차를 탔을 텐데.|If I had left earlier,~I would be~there now.|더 일찍 떠났더라면 지금 거기 있을 텐데.|조건이 같은데 결과의 모양이 왜 바뀌죠?|타지 못한 일은 과거, 지금 도착해 있는 상태는 현재예요. 조건과 결과의 시계를 따로 맞춰요.
+h-wish-as-if|지금 못 하는 일과 어제 하지 못한 일을 아쉬워해요.|I wish~I could~swim.|수영할 수 있으면 좋을 텐데.|I wish~I had practiced~yesterday.|어제 연습했더라면 좋았을 텐데.|왜 어제의 아쉬움은 had practiced예요?|지금 바꾸기 어려운 상태보다 더 앞선 끝난 일을 되돌아봐요. 실제로 했다는 보고가 아니에요.
+h-without-its-time|도움을 받은 뒤 그 도움이 없었다면 어땠을지 상상해요.|Without your help,~I would have~failed.|네 도움이 없었다면 실패했을 거야.|If you had not helped,~I would have~failed.|네가 돕지 않았더라면 실패했을 거야.|if가 안 보이는데 조건은 어디 있죠?|Without your help가 ‘네 도움이 없는 경우’를 대신해요. 실제로는 도움을 받았어요.
+h-comparison-advanced|연습 시간을 조금씩 늘리며 달라진 점을 그래프로 봐요.|The more I practice,~the faster~I read.|연습할수록 더 빨리 읽어.|I read~faster than~before.|전보다 더 빨리 읽어.|왜 첫 문장에는 the가 두 번 있어요?|한 양의 변화에 따라 다른 양도 변하는 짝을 만들어요. 이전 기록과 한 번 비교하는 둘째 문장과 달라요.
+h-subjunctive-demand|회의에서 실제 도착 시각과 일찍 오라는 제안을 구별해요.|He suggests~that she~arrive early.|그는 그 아이가 일찍 올 것을 제안해.|He knows~that she~arrives early.|그는 그 아이가 일찍 온다는 걸 알아.|왜 she 다음이 arrive예요?|이 제안은 앞으로 그렇게 하라는 내용이에요. 제안의 that절에서는 기본 모양 arrive 또는 should arrive를 쓸 수 있어요.
+h-inversion|특별한 경험이 한 번도 없었다는 말을 강조해요.|I~have never seen~snow.|나는 눈을 본 적이 없어.|Never~have I seen~snow.|한 번도 나는 눈을 본 적이 없어.|질문도 아닌데 왜 have가 I 앞이에요?|부정 의미인 Never를 맨 앞으로 보낸 강조 문장에서는 조동사와 주어 자리가 바뀌어요.
+h-emphasis|누가 창문을 열었는지 오해를 풀어요.|Jiu~opened~the window.|지우가 창문을 열었어.|It was~Jiu~who opened the window.|창문을 연 사람은 바로 지우였어.|왜 앞은 길어져도 사건은 같아요?|It was와 who 사이에 지우를 놓아 ‘다른 누가 아니라 지우’라는 초점을 만들어요.
+h-agreement|기사에서 주어와 동사 사이에 긴 설명이 끼었어요.|The box of pens~is~heavy.|펜이 든 상자가 무거워.|The pens in the box~are~blue.|상자 안 펜들이 파래.|동사 바로 앞 이름에 맞추면 안 되나요?|무엇이 무겁고 무엇이 파란지 먼저 찾아요. 중심 이름 box와 pens가 동사의 수를 정해요.
+h-article-noun|기사 첫 문장에서 처음 나온 고양이를 다음 문장에서 다시 불러요.|I saw~a~cat.|고양이 한 마리를 봤어.|The~cat~was wet.|그 고양이는 젖어 있었어.|두 문장 모두 한 마리인데 왜 the로 바뀌어요?|처음에는 어떤 고양이인지 모르지만 둘째에서는 독자가 방금 소개한 고양이를 찾을 수 있어요.
+h-quantifiers|행사 뒤 남은 좌석과 남은 시간을 확인해요.|We have~a few~seats.|좌석이 몇 개 있어.|We have~a little~time.|시간이 조금 있어.|왜 둘 다 조금인데 낱말이 달라요?|좌석은 개수로 세고 시간은 남은 양으로 봐요. a few는 셀 수 있는 복수, a little은 양과 어울려요.
+h-pronoun-reference|잃어버린 펜을 돌려받을지 같은 종류를 새로 살지 말해요.|I found~it.|그 펜을 찾았어.|I bought~one.|펜 하나를 샀어.|새로 산 펜도 it이라고 하나요?|it은 앞의 바로 그 물건, one은 같은 종류에 속하는 한 물건을 대신해요.
+h-parallelism|지원서의 취미 목록을 같은 리듬으로 읽어 봐요.|She enjoys~reading and~drawing.|그 아이는 읽기와 그리기를 즐겨.|She likes to~read and~draw.|그 아이는 읽고 그리는 걸 좋아해.|and 양쪽의 모양을 왜 확인해요?|같은 자리를 나눠 맡으니 첫 문장은 활동 이름 둘, 다음은 to에 이어지는 기본형 둘을 맞춰요.
+h-adj-adv-usage|훈련 일지에서 열심히 했다는 말과 거의 안 했다는 말을 구별해요.|He~worked~hard.|그는 열심히 일했어.|He~hardly~worked.|그는 거의 일하지 않았어.|hard에 ly를 붙이면 비슷한 부사가 되나요?|hard 자체가 ‘열심히’라는 부사예요. hardly는 거의 하지 않았다는 전혀 다른 뜻이에요.
+h-ellipsis-insertion|소개문에서 쉼표 사이의 설명을 잠깐 가리고 핵심을 읽어요.|Jiu,~our captain,~smiled.|우리 주장인 지우가 웃었어.|Jiu~smiled.|지우가 웃었어.|our captain을 가려도 왜 뜻이 이어져요?|지우를 다른 이름으로 소개한 덩어리예요. 핵심인 누가 무엇을 했는지는 바깥에 남아요.
+h-negation|설문 결과가 전원 불참인지 일부 불참인지 정확히 전해요.|Not all students~came.|학생 전원이 온 것은 아니야.|No students~came.|아무도 오지 않았어.|첫 문장도 0명이라는 뜻인가요?|Not all은 적어도 한 명이 빠졌다는 말이에요. 실제 온 사람이 몇 명인지는 모릅니다. No students는 0명이에요.
+as-long-as|도서 대출에 붙은 조건 한 가지를 확인해요.|You can borrow it~as long as~you return it.|돌려주기만 하면 빌려도 돼.|You can keep it~as long as~you need it.|필요한 동안은 가지고 있어도 돼.|같은 말이 언제 조건이고 언제 기간이에요?|첫 장면은 빌리는 데 필요한 약속, 둘째는 얼마 동안 가지고 있을지를 말해요. 원하는 정보가 달라요.
+so-that-purpose|뒷자리까지 들리도록 목소리를 높인 이유를 말해요.|She spoke loudly~so that~we could hear.|우리가 들을 수 있도록 크게 말했어.|She spoke~so loudly that~we heard her outside.|너무 크게 말해서 밖에서도 들었어.|so와 that이 떨어져 있으면 무엇을 봐요?|so that은 왜 그렇게 했는지 목표를, so loudly that은 목소리의 정도와 그 결과를 이어요.
+used-to|사진첩 속 옛 취미와 지금 익숙해진 일을 구별해요.|I~used to~swim.|나는 예전에 수영하곤 했어.|I~am used to~swimming.|나는 수영하는 데 익숙해.|둘 다 used to인데 왜 뒤가 달라요?|예전 습관은 used to 뒤에 기본형, 익숙한 활동은 be used to 뒤에 활동 이름인 swimming을 놓아요.
+do-you-can-you|민서는 매주 물에서 연습하고 지우는 요즘 쉬어도 혼자 헤엄쳐요.|Do~you~swim every week?|매주 수영하니?|Can~you~swim on your own?|혼자 수영할 줄 아니?|수영할 줄 아는 지우가 “Do you swim every week?”에는 왜 아니라고 할까요?|Do you swim every week?는 매주 실제로 수영하는지 묻는 말이에요. 요즘 쉬는 지우는 “No, I don’t.”라고 답해요. Can you swim on your own?은 혼자 할 수 있는지 묻기 때문에 같은 지우도 “Yes, I can.”이라고 답해요.

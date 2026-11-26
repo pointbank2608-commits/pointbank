@@ -5,6 +5,8 @@ import { PresentSyncContext } from '../lib/presentSync';
 import AccessibleDialog from './AccessibleDialog';
 import GrammarBoard, { type GrammarBoardEditor, type GrammarBoardPosition, type GrammarField } from './GrammarBoard';
 import './GrammarContentEditor.css';
+import WorkshopEditor from './grammar/WorkshopEditor';
+import {schoolOf} from '../../../supabase/functions/_shared/grammarWorkshop';
 
 type TextRange = { key: GrammarField; index?: number };
 
@@ -29,6 +31,13 @@ export default function GrammarContentEditor({ point, themeId, inline, initialPo
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [uploading,setUploading]=useState(false);
+  const [stageIndex,setStageIndex]=useState(initialPosition?.step??0);
+  const [requestedStage,setRequestedStage]=useState<{index:number}>();
+  const trackPosition=useCallback((pos:GrammarBoardPosition)=>{
+    if(pos.view==='lesson')setStageIndex(pos.step);
+    onPositionChange?.(pos);
+  },[onPositionChange]);
   const [copyName, setCopyName] = useState<string | null>(null);
   const catalogPoint = grammarPoint(point.id);
   const saving = useRef(false);
@@ -42,6 +51,10 @@ export default function GrammarContentEditor({ point, themeId, inline, initialPo
   function change(key: GrammarField, value: string, index = 0) {
     setDraft(prev => {
       if (key === 'prompt' || key === 'hint' || key === 'answer' || key === 'followUp') {
+        if(prev.workshop && ((key==='prompt' && index===0)||(key==='answer' && index===5))){
+          const w=prev.workshop, school=schoolOf(w.grade);
+          return {...prev,workshop:{...w,scenes:{...w.scenes,[school]:{...w.scenes[school],[key==='prompt'?'opening':'model']:value}}}};
+        }
         return { ...prev, steps: prev.steps?.map((step, i) => i === index ? { ...step, [key]: value } : step) };
       }
       if (key === 'rule' || key === 'detail' || key === 'usage') return { ...prev, [key]: value.split('\n') };
@@ -116,12 +129,23 @@ export default function GrammarContentEditor({ point, themeId, inline, initialPo
     setError('');
   }
   async function save(copy = false) {
-    if (saving.current) return;
+    if (saving.current || uploading) return;
     const name = (copy ? copyName ?? '' : draft.name).trim();
     if (!name || !draft.pattern.trim() || !draft.examples.length || draft.examples.some(en => !en.trim())) {
       setError(t('myGrammar.required')); return;
     }
-    if (draft.steps?.some(step => Object.values(step).some(value => !value.trim()))) {
+    if(draft.steps?.some(s=>s.practice?.panels?.some(line=>line.glosses && (line.glosses.length!==line.chunks.length || line.glosses.some(gloss=>!gloss.trim()))))){
+      setError('영어 조각 하나마다 같은 줄에 우리말 뜻을 넣어 주세요.');return;
+    }
+    if(Object.values(draft.workshop?.overrides??{}).some(q=>
+      !q.prompt.trim() || !q.answer.trim() || !q.reason.trim() || q.kind==='order'&&q.answer.trim().split(/\s+/).length<3 || q.options&&(
+        !q.options.includes(q.answer)||q.options.some(s=>!s.trim())||new Set(q.options.map(s=>s.trim())).size!==q.options.length))){
+      setError('심화 문제의 보기와 정답, 풀이를 확인해 주세요.');return;
+    }
+    if (draft.workshop && Object.values(draft.workshop.scenes).some(scene=>Object.values(scene).some(v=>!v.trim())) ||
+        draft.steps?.some(({ prompt, hint, answer, followUp,practice },i) => [prompt, hint, ...(draft.workshop && i===5?[]:[answer]), followUp,
+          ...(practice?.assembly??[]), ...(practice?.map?.flatMap(entry=>[entry.label,entry.text])??[]), ...(practice?.why.flat()??[]), ...(practice?.panels?.flatMap(p=>[p.meaning,p.label,...p.chunks])??[]),
+          ...(practice && 'choices'in practice?practice.choices.flat():[])].some(value => !value.trim()))) {
       setError(t('myGrammar.stepsRequired')); return;
     }
     saving.current = true;
@@ -154,10 +178,11 @@ export default function GrammarContentEditor({ point, themeId, inline, initialPo
     }}>
       <PresentSyncContext.Provider value={null}>
         <GrammarBoard point={{ ...point, ...draft }} themeId={themeId} keyboard={false} editor={editor}
-          initialPosition={initialPosition} onPositionChange={onPositionChange}
+          initialPosition={initialPosition} onPositionChange={trackPosition} requestedStage={requestedStage}
           initialRevealAll={initialRevealAll} initialShowKo={initialShowKo} />
       </PresentSyncContext.Provider>
     </div>
+    {draft.workshop && <WorkshopEditor draft={draft} setDraft={setDraft} onUploading={setUploading} index={stageIndex} onStage={index=>setRequestedStage({index})}/>}
     {draft.steps && draft.steps.length !== 6 && <details className="rounded-lg border p-3">
       <summary className="cursor-pointer font-bold">{t('myGrammar.sixSteps')}</summary>
       {draft.steps.map((step, index) => <fieldset key={index} className="my-3 grid gap-2">
@@ -177,13 +202,13 @@ export default function GrammarContentEditor({ point, themeId, inline, initialPo
         {!editing && <button type="button" className="rounded-lg border px-2 py-1" onClick={() => setEditing(true)}>{t('common.edit')}</button>}
         {removable && <button type="button" className="rounded-lg border px-2 py-1" onClick={remove}>{t('myGrammar.remove')}</button>}
       </>}
-      <button type="button" className="ml-auto px-2 py-2" disabled={busy} onClick={onClose}>{t('common.cancel')}</button>
-      {onSaveCopy && <button type="button" className="rounded-lg border px-3 py-2 font-bold text-primary" disabled={busy}
+      <button type="button" className="ml-auto px-2 py-2" disabled={busy || uploading} onClick={onClose}>{t('common.cancel')}</button>
+      {onSaveCopy && <button type="button" className="rounded-lg border px-3 py-2 font-bold text-primary" disabled={busy || uploading}
         onClick={() => { setCopyName(draft.name); setError(''); }}>{t('myGrammar.save')}</button>}
-      {catalogPoint && <button type="button" className="rounded-lg border px-3 py-2" disabled={busy} onClick={restoreOriginal}>
+      {catalogPoint && <button type="button" className="rounded-lg border px-3 py-2" disabled={busy || uploading} onClick={restoreOriginal}>
         {t('myGrammar.restoreOriginal')}
       </button>}
-      <button type="button" disabled={busy} className="rounded-lg bg-primary px-4 py-2 text-white" onClick={() => void save()}>{saveLabel}</button>
+      <button type="button" disabled={busy || uploading} className="rounded-lg bg-primary px-4 py-2 text-white" onClick={() => void save()}>{saveLabel}</button>
     </footer>
     {copyName !== null && <AccessibleDialog label={t('myGrammar.save')} onClose={() => { if (!saving.current) { setCopyName(null); setError(''); } }}>
       <div className="grid gap-4 p-5">
@@ -198,13 +223,13 @@ export default function GrammarContentEditor({ point, themeId, inline, initialPo
         </label>
         {error && <p role="alert" className="text-error">{error}</p>}
         <div className="flex justify-end gap-2">
-          <button type="button" className="px-3 py-2" disabled={busy} onClick={() => { setCopyName(null); setError(''); }}>{t('common.cancel')}</button>
+          <button type="button" className="px-3 py-2" disabled={busy || uploading} onClick={() => { setCopyName(null); setError(''); }}>{t('common.cancel')}</button>
           <button type="button" className="rounded-lg bg-primary px-4 py-2 text-white" disabled={busy || !copyName.trim()} onClick={() => void save(true)}>{t('common.save')}</button>
         </div>
       </div>
     </AccessibleDialog>}
   </section>;
-  return inline ? body : <AccessibleDialog label={t('myGrammar.edit')} onClose={() => { if (!saving.current) onClose(); }}>
+  return inline ? body : <AccessibleDialog label={t('myGrammar.edit')} onClose={() => { if (!saving.current && !uploading) onClose(); }}>
     <div className="p-4">{body}</div>
   </AccessibleDialog>;
 }

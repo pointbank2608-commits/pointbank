@@ -1,7 +1,12 @@
 import { useId, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../context/ToastContext';
-import { grammarLevelTag } from '../../lib/grammar';
+import { grammarLevelTag, grammarSlidePoint, type GrammarPoint } from '../../lib/grammar';
+import {GradeSettings} from '../grammar/WorkshopEditor';
+import MyGrammarLibrary from '../MyGrammarLibrary';
+import GrammarContentEditor from '../GrammarContentEditor';
+import {useAuth} from '../../context/AuthContext';
+import {saveMyGrammar,type GrammarPreset} from '../../lib/myGrammar';
 import { LESSON_LEVELS, levelMatches, useLessonLevel, type LessonLevel } from '../../lib/lessonLevel';
 import { LESSON_SETS, pickSetWords } from '../../lib/lessonSets';
 import { buildSoloScenarioLesson, SOLO_SCENARIOS } from '../../lib/soloScenarios';
@@ -107,12 +112,19 @@ export default function SoloCatalogModal({
 }) {
   const { t, i18n } = useTranslation();
   const { notify } = useToast();
+  const {profile}=useAuth();
+  const [editGrammar,setEditGrammar]=useState<{point:GrammarPoint;preset?:GrammarPreset}|null>(null);
   const ko = i18n.language.startsWith('ko');
   const [view, setView] = useState<View>({ id: 'home' });
   // 수업 대상(단체수업 만들기와 같은 선택을 기억해 쓴다)
   const [level, setLevel] = useLessonLevel();
   const [busy, setBusy] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const [grammarGrade,setGrammarGrade]=useState(7);
+  const [grammarCounts,setGrammarCounts]=useState<Record<number,number>>({});
+  function forClass(point:GrammarPoint){
+    return point.workshop?{...point,workshop:{...point.workshop,grade:grammarGrade,count:grammarCounts[grammarGrade]??5}}:point;
+  }
   /** 수업 구성: 기본(약 15분) / 표준 50분 흐름 / 교과과정 3단계(기본 → 심화 → 총정리, 2026-10-13) */
   type LengthMode = 'basic' | 'standard' | 'stages';
   const [mode, setModeState] = useState<LengthMode>(() => {
@@ -140,6 +152,11 @@ export default function SoloCatalogModal({
   /** 3단계 틀의 기본·심화 그룹 합격선(null = 없음) */
   const [stagePass, setStagePass] = useState<SoloPass | null>(DEFAULT_STAGED_PASS);
   const stagedOpts = { games: gameSlots, pass: stagePass };
+  async function buildChosenGrammar(point:GrammarPoint){
+    if(stages)return buildStagedGrammarLesson(point,stagedOpts);
+    if(standard)return buildStandardGrammarLesson(point,await loadWordBank());
+    return buildBasicGrammarLesson(point);
+  }
   /** 만들 수업 묶음 — 블록 조립기에서 켜고 끄고 만든다 */
   const [pending, setPending] = useState<{ title: string; lessons: BatchLesson[]; level: string; source: string } | null>(null);
   const [videoDraft, setVideoDraft] = useState<SoloVideoDraft | null>(initialVideoDraft?.draft ?? null);
@@ -245,24 +262,25 @@ export default function SoloCatalogModal({
       });
     }
     for (const p of SOLO_GRAMMAR_POINTS) {
+      const guided = !!p.steps?.[0]?.practice;
       list.push({
         key: `g-${p.id}`,
         type: 'grammar',
         icon: 'rule',
         title: p.name,
         desc: grammarLevelTag(p),
-        minutes: stages ? 40 : standard ? 42 : 25,
+        minutes: stages ? 40 : standard ? 50 : guided ? 12+Math.ceil((grammarCounts[grammarGrade]??5)*0.8) : 25,
         haystack: `${p.name} ${p.pattern ?? ''} ${grammarLevelTag(p)}`,
         levels: p.stage === 'elementary' ? ['elementary'] : p.stage === 'middle' ? ['middle'] : p.stage === 'high' ? ['high'] : ['elementary', 'middle', 'high'],
         build: async () => ({
-          lessons: [stages ? buildStagedGrammarLesson(p, stagedOpts) : standard ? buildStandardGrammarLesson(p, await loadWordBank()) : buildBasicGrammarLesson(p)],
+          lessons: [await buildChosenGrammar(forClass(p))],
           level: grammarLevelTag(p),
           source: `solo-grammar-${p.id}${stages ? '-stages' : standard ? '-std' : ''}`,
         }),
       });
     }
     return list;
-  }, [ko, i18n.language, t, standard, stages, gameSlots, stagePass]);
+  }, [ko, i18n.language, t, standard, stages, gameSlots, stagePass,grammarGrade,grammarCounts]);
   const visible = useMemo(() => entries.filter((e) => levelMatches(level, e.levels)), [entries, level]);
 
   const byKey = useMemo(() => new Map(entries.map((e) => [e.key, e])), [entries]);
@@ -357,7 +375,10 @@ export default function SoloCatalogModal({
   async function makeGrammarAll(points: typeof SOLO_GRAMMAR_POINTS, label: string) {
     setBusy(label);
     try {
-      setPending({ title: label, lessons: points.map((p) => buildBasicGrammarLesson(p)), level: label, source: `solo-grammar-${points[0]?.id ?? ''}` });
+      const lessons=await Promise.all(points.map(p=>buildChosenGrammar(forClass(p))));
+      setPending({ title: label, lessons, level: label, source: `solo-grammar-${points[0]?.id ?? ''}` });
+    } catch {
+      notify(t('solo.buildFailed'),'error');
     } finally {
       setBusy(null);
     }
@@ -715,6 +736,18 @@ export default function SoloCatalogModal({
       body = (
         <div className="space-y-2">
           <p className="font-caption text-caption text-on-surface-variant">{t('solo.grammarHint')}</p>
+          <GradeSettings grade={grammarGrade} count={grammarCounts[grammarGrade]??5} max={15} onChange={(g,n)=>{
+            if(g===grammarGrade)setGrammarCounts(prev=>({...prev,[g]:n}));setGrammarGrade(g);
+          }}/>
+          <details><summary>내 문법에서 불러오기</summary><MyGrammarLibrary onPick={async preset=>{
+            const point=grammarSlidePoint({...preset,id:preset.grammarId,kind:'grammar'});
+            if(point)try{
+              setPending({title:point.name,lessons:[await buildChosenGrammar(point)],level:grammarLevelTag(point),source:'solo-grammar-'+point.id});
+            }catch{notify(t('solo.buildFailed'),'error');}
+          }} onEdit={preset=>{
+            const point=grammarSlidePoint({...preset,id:preset.grammarId,kind:'grammar'});
+            if(point)setEditGrammar({point,preset});
+          }}/></details>
           {grammarGroups.map(([key, points]) => {
             const label = grammarLevelTag(points[0]);
             return (
@@ -736,9 +769,8 @@ export default function SoloCatalogModal({
                   </button>
                 </summary>
                 <div className="grid gap-1.5 px-3 pb-3 sm:grid-cols-2">
-                  {points.map((pt) => (
+                  {points.map((pt) => <div key={pt.id} className="flex items-center gap-1">
                     <button
-                      key={pt.id}
                       type="button"
                       disabled={busy !== null}
                       onClick={() => {
@@ -749,7 +781,9 @@ export default function SoloCatalogModal({
                     >
                       {pt.name}
                     </button>
-                  ))}
+                    <button type="button" className="shrink-0 rounded px-2 text-sm text-primary" aria-label={pt.name+' 내용 수정'}
+                      onClick={()=>setEditGrammar({point:forClass(pt)})}>수정</button>
+                  </div>)}
                 </div>
               </details>
             );
@@ -981,6 +1015,14 @@ export default function SoloCatalogModal({
         )}
 
         {body}
+        {editGrammar&&<GrammarContentEditor point={editGrammar.point} onClose={()=>setEditGrammar(null)} saveLabel="내 문법에 저장하고 수업에 사용" onSave={async content=>{
+          if(!profile)throw Error('Missing teacher');
+          const point={...editGrammar.point,...content};
+          const lesson=await buildChosenGrammar(point);
+          const source=editGrammar.preset?.librarySource;
+          await saveMyGrammar(academyId,profile.id,{...editGrammar.preset,librarySource:undefined,grammarId:point.id,content},source?.owner===profile.id&&source.academy===academyId?source:undefined);
+          setPending({title:point.name,lessons:[lesson],level:grammarLevelTag(point),source:'solo-grammar-'+point.id});
+        }}/>}
       </div>
     </div>
   );

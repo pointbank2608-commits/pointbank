@@ -2,11 +2,12 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useSyncedSubState } from '../lib/presentSync';
 import { useTranslation } from 'react-i18next';
 import { BOARD_FONTS, boardSlideStyle, boardTheme } from '../lib/boardThemes';
-import { grammarLevelTag, parseMarked, plainText, type GeneratedSentence, type GrammarPoint, type GrammarTeachingStep } from '../lib/grammar';
+import { classroomStep, grammarLevelTag, parseMarked, plainText, type GeneratedSentence, type GrammarPoint, type GrammarTeachingStep } from '../lib/grammar';
 import { speak, speakSequence } from '../lib/speech';
 import { CanvasStageBox } from './CanvasSlideView';
+import GuidedPracticePanel from './grammar/GuidedPracticePanel';
 
-export type GrammarField = 'name' | 'pattern' | 'explain' | 'rule' | 'en' | 'ko' | 'usage' | 'detail' | 'tip' | 'wrong' | 'right' | 'why' | keyof GrammarTeachingStep;
+export type GrammarField = 'name' | 'pattern' | 'explain' | 'rule' | 'en' | 'ko' | 'usage' | 'detail' | 'tip' | 'wrong' | 'right' | 'why' | Exclude<keyof GrammarTeachingStep, 'practice'>;
 export interface GrammarBoardPosition {
   view: 'lesson' | 'examples' | 'pitfalls' | 'explain';
   step: number;
@@ -40,6 +41,7 @@ export default function GrammarBoard({
   onCue,
   editor,
   initialPosition,
+  requestedStage,
   onPositionChange,
 }: {
   point: GrammarPoint;
@@ -54,9 +56,10 @@ export default function GrammarBoard({
   initialShowKo?: boolean;
   /** 슬라이드 설정: 예문을 처음부터 모두 보여주기(하나씩 꺼내지 않음) */
   initialRevealAll?: boolean;
-  onCue?: (action: 'shown' | 'hint' | 'revealed', stageIndex: number) => void;
+  onCue?: (action: 'shown' | 'submitted' | 'hint' | 'revealed', stageIndex: number) => void;
   editor?: GrammarBoardEditor;
   initialPosition?: GrammarBoardPosition;
+  requestedStage?: { index:number };
   onPositionChange?: (position: GrammarBoardPosition) => void;
 }) {
   const { t } = useTranslation();
@@ -73,7 +76,7 @@ export default function GrammarBoard({
   const [step, setStep] = useState(initialPosition?.step ?? 0);
   const [hintOpen, setHintOpen] = useState(initialPosition?.hintOpen ?? false);
   const [answerOpen, setAnswerOpen] = useState(initialPosition?.answerOpen ?? false);
-  const lesson = point.steps?.[step];
+  const lesson = classroomStep(point,step);
   const cue = useRef(onCue);
   cue.current = onCue;
   const observed = !!onCue;
@@ -85,6 +88,9 @@ export default function GrammarBoard({
     setHintOpen(false);
     setAnswerOpen(false);
   }
+  useEffect(()=>{
+    if(requestedStage){setView('lesson');moveTo(requestedStage.index);}
+  },[requestedStage]);
   const pitfalls = point.pitfalls ?? [];
   const hasExplain = !!(point.usage?.length || point.detail?.length);
   // 예문 해석(초보자용) — 켜면 예문 아래에 작게 한국어가 붙는다.
@@ -123,7 +129,7 @@ export default function GrammarBoard({
     if (!keyboard || follower) return;
     function onKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement | null)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (tag === 'BUTTON' && e.key === ' ')) return;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || ((tag === 'BUTTON' || tag === 'SUMMARY') && e.key === ' ')) return;
       const forward = e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown';
       const back = e.key === 'ArrowLeft' || e.key === 'PageUp';
       if (view === 'lesson') {
@@ -252,12 +258,12 @@ export default function GrammarBoard({
         >
           <div className="flex items-center gap-[1.5cqh]" style={{ fontSize: '2.8cqh', color: th.muted }}>
             <span className="rounded-full px-[1.4cqh] py-[0.3cqh]" style={{ background: th.chip }}>
-              {grammarLevelTag(point)}
+              {point.workshop ? (point.workshop.grade<=6?'초'+point.workshop.grade:point.workshop.grade<=9?'중'+(point.workshop.grade-6):'고'+(point.workshop.grade-9)) : grammarLevelTag(point)}
             </span>
-            <span>{field('name', point.name)}</span>
+            <span>{view === 'lesson' && lesson?.practice?.independentPrompts && !editor ? lesson.practice.title : field('name', point.name)}</span>
           </div>
           {view === 'lesson' && lesson ? <section key={step} className="mt-[2cqh] min-h-0 flex-1 space-y-[2cqh] overflow-y-auto pb-[9cqh]" style={{ fontFamily: BOARD_FONTS.sans }}>
-            <h2 className="font-bold" style={{ fontSize: '4.8cqh', color: th.accent }}>{step + 1} / 6 · {t('myGrammar.stage' + (step + 1))}</h2>
+            <h2 className="font-bold" style={{ fontSize: '4.8cqh', color: th.accent }}>{step + 1} / 6 · {lesson.practice?.title ?? t('myGrammar.stage' + (step + 1))}</h2>
             {step === 0 && point.audience && <div className="space-y-[0.8cqh] rounded-[1cqh] p-[1.6cqh]" style={{ background: th.chip, fontSize: '3.2cqh' }}>
               <p>{field('explain', point.explain, <Marked text={point.explain} />)}</p>
               {point.examples[0] && <div>
@@ -266,10 +272,13 @@ export default function GrammarBoard({
               </div>}
             </div>}
             <p className="whitespace-pre-line leading-snug" style={{ fontSize: '4.2cqh' }}>{field('prompt', lesson.prompt, <Marked text={lesson.prompt} />, step)}</p>
-            {hintOpen && <p className="whitespace-pre-line rounded-[1cqh] p-[1.4cqh]" style={{ background: th.chip, fontSize: '3.2cqh' }}>
+            {interactive && lesson.practice && <div style={{ fontSize: '3.4cqh' }}>
+              <GuidedPracticePanel practice={lesson.practice} workshop={point.workshop} review={[lesson.answer, lesson.followUp].join('\n\n')} onHelp={() => onCue?.('hint', step)} onReveal={() => {onCue?.('submitted',step);onCue?.('revealed', step);}} />
+            </div>}
+            {hintOpen && (!lesson.practice?.independentPrompts || editor) && <p className="whitespace-pre-line rounded-[1cqh] p-[1.4cqh]" style={{ background: th.chip, fontSize: '3.2cqh' }}>
               <strong>{t('myGrammar.hint')} · </strong>{field('hint', lesson.hint, <Marked text={lesson.hint} />, step)}
             </p>}
-            {answerOpen && <div className="space-y-[1cqh] whitespace-pre-line" style={{ fontSize: '3.4cqh' }}>
+            {answerOpen && (!lesson.practice?.independentPrompts || editor) && <div className="space-y-[1cqh] whitespace-pre-line" style={{ fontSize: '3.4cqh' }}>
                 <div className="pt-[1cqh]"><strong className="block" style={{ color: th.accent, fontSize: '2.6cqh' }}>{t('myGrammar.answer')}</strong>{field('answer', lesson.answer, <Marked text={lesson.answer} />, step)}</div>
                 <div className="mt-[2cqh] border-t pt-[1.3cqh]" style={{ borderColor: th.muted }}><strong className="block" style={{ color: th.accent, fontSize: '2.6cqh' }}>{t('myGrammar.followUp')}</strong>{field('followUp', lesson.followUp, <Marked text={lesson.followUp} />, step)}</div>
             </div>}
@@ -393,10 +402,11 @@ export default function GrammarBoard({
         </div>
         {interactive && (
           <div className="absolute bottom-[2.5cqh] right-[3cqh] flex items-center gap-[1cqh]" style={{ fontSize: '2.4cqh' }}>
-            {point.steps?.length === 6 && <BoardButton icon={view === 'lesson' ? undefined : 'menu_book'}
+            {point.steps?.length === 6 && (view !== 'lesson' || !lesson?.practice?.independentPrompts || editor) && <BoardButton icon={view === 'lesson' ? undefined : 'menu_book'}
               label={t(view === 'lesson' ? 'grammar.backToExamples' : 'myGrammar.sixSteps')}
               onClick={() => setView(view === 'lesson' ? 'examples' : 'lesson')} />}
             {view === 'lesson' && <>
+              {(!lesson?.practice?.independentPrompts || editor) && <>
               <BoardButton pressed={hintOpen} label={t('myGrammar.hint')} onClick={() => {
                 if (!hintOpen) onCue?.('hint', step);
                 setHintOpen(!hintOpen);
@@ -405,6 +415,7 @@ export default function GrammarBoard({
                 if (!answerOpen) onCue?.('revealed', step);
                 setAnswerOpen(!answerOpen);
               }} />
+              </>}
               <BoardButton label={t('myGrammar.prev')} disabled={step === 0} onClick={() => moveTo(step - 1)} />
               <BoardButton label={t('myGrammar.next')} disabled={step === 5} onClick={() => moveTo(step + 1)} />
             </>}

@@ -1,0 +1,509 @@
+{
+  "steps": [
+    {
+      "prompt": "민서는 매주 물에서 연습하고 지우는 요즘 쉬어도 혼자 헤엄쳐요.",
+      "hint": "매주 수영하니?",
+      "answer": "Do you swim every week?는 매주 실제로 수영하는지 묻는 말이에요. 요즘 쉬는 지우는 “No, I don’t.”라고 답해요. Can you swim on your own?은 혼자 할 수 있는지 묻기 때문에 같은 지우도 “Yes, I can.”이라고 답해요.",
+      "followUp": "이 쓰임을 내 말로 설명해 보세요.",
+      "practice": {
+        "title": "쓰임 지도",
+        "why": [
+          [
+            "수영할 줄 아는 지우가 “Do you swim every week?”에는 왜 아니라고 할까요?",
+            "Do you swim every week?는 매주 실제로 수영하는지 묻는 말이에요. 요즘 쉬는 지우는 “No, I don’t.”라고 답해요. Can you swim on your own?은 혼자 할 수 있는지 묻기 때문에 같은 지우도 “Yes, I can.”이라고 답해요."
+          ]
+        ],
+        "map": [
+          {
+            "label": "능력 · 할 줄 아니?",
+            "text": "Can you swim? 수영할 줄 아는지 궁금해요."
+          },
+          {
+            "label": "허락 · 해도 돼?",
+            "text": "Can I swim now? 내가 물에 들어가도 되는지 물어요."
+          },
+          {
+            "label": "허락해 주기",
+            "text": "You can swim now. 이제 수영해도 돼요."
+          },
+          {
+            "label": "부탁 · 해 줄래?",
+            "text": "Can you pass my towel? 수건을 건네줄 행동을 기다려요."
+          },
+          {
+            "label": "도움 제안",
+            "text": "Can I carry your bag? 내가 가방을 들어 줄지 물어요."
+          },
+          {
+            "label": "가능성",
+            "text": "Wet floors can be slippery. 젖은 바닥은 미끄러울 수 있어요."
+          },
+          {
+            "label": "매주 수영하니?",
+            "text": "Do you swim every week?"
+          },
+          {
+            "label": "혼자 수영할 줄 아니?",
+            "text": "Can you swim on your own?"
+          },
+          {
+            "label": "평소 생활",
+            "text": "Do you swim?"
+          },
+          {
+            "label": "능력",
+            "text": "Can you swim?"
+          },
+          {
+            "label": "부탁",
+            "text": "Can you help me?"
+          }
+        ],
+        "panels": [
+          {
+            "label": "장면 A",
+            "chunks": [
+              "Do",
+              "you",
+              "swim every week?"
+            ],
+            "meaning": "매주 수영하니?",
+            "image": "/word-bank-images/swim.webp",
+            "glosses": [
+              "평소 습관을 물어요",
+              "너는",
+              "매주 수영하니"
+            ]
+          }
+        ],
+        "question": "",
+        "choices": [],
+        "correct": 0
+      }
+    },
+    {
+      "prompt": "두 장면에서 강조되는 말과 우리말 뜻을 함께 읽어 보세요.",
+      "hint": "수영할 줄 아는 지우가 “Do you swim every week?”에는 왜 아니라고 할까요?",
+      "answer": "Do you swim every week?는 매주 실제로 수영하는지 묻는 말이에요. 요즘 쉬는 지우는 “No, I don’t.”라고 답해요. Can you swim on your own?은 혼자 할 수 있는지 묻기 때문에 같은 지우도 “Yes, I can.”이라고 답해요.",
+      "followUp": "혼자 수영할 줄 아니?",
+      "practice": {
+        "title": "두 장면 비교하기",
+        "why": [
+          [
+            "수영할 줄 아는 지우가 “Do you swim every week?”에는 왜 아니라고 할까요?",
+            "Do you swim every week?는 매주 실제로 수영하는지 묻는 말이에요. 요즘 쉬는 지우는 “No, I don’t.”라고 답해요. Can you swim on your own?은 혼자 할 수 있는지 묻기 때문에 같은 지우도 “Yes, I can.”이라고 답해요."
+          ]
+        ],
+        "panels": [
+          {
+            "label": "장면 A",
+            "chunks": [
+              "Do",
+              "you",
+              "swim every week?"
+            ],
+            "meaning": "매주 수영하니?",
+            "image": "/word-bank-images/swim.webp",
+            "glosses": [
+              "평소 습관을 물어요",
+              "너는",
+              "매주 수영하니"
+            ]
+          },
+          {
+            "label": "장면 B",
+            "chunks": [
+              "Can",
+              "you",
+              "swim on your own?"
+            ],
+            "meaning": "혼자 수영할 줄 아니?",
+            "image": "/word-bank-images/swim.webp",
+            "glosses": [
+              "능력을 물어요",
+              "너는",
+              "혼자 수영할 줄 아니"
+            ]
+          }
+        ],
+        "question": "",
+        "choices": [],
+        "correct": 0
+      }
+    },
+    {
+      "prompt": "우리말 뜻을 읽고 영어 조각을 순서대로 놓으세요.",
+      "hint": "Do",
+      "answer": "Do you swim every week?",
+      "followUp": "매주 수영하니?",
+      "practice": {
+        "title": "문장 조립하기",
+        "why": [
+          [
+            "어떤 덩어리부터 읽으면 돼요?",
+            "Do → you → swim every week? 순서로 이으면 “매주 수영하니?”라는 뜻이에요. Do you swim every week?는 매주 실제로 수영하는지 묻는 말이에요. 요즘 쉬는 지우는 “No, I don’t.”라고 답해요. Can you swim on your own?은 혼자 할 수 있는지 묻기 때문에 같은 지우도 “Yes, I can.”이라고 답해요."
+          ]
+        ],
+        "assembly": [
+          "Do",
+          "you",
+          "swim every week?"
+        ],
+        "question": "매주 수영하니?",
+        "choices": [],
+        "correct": 0
+      }
+    },
+    {
+      "prompt": "두 사람이 모두 “Can you open this door?”라고 물어요. 한 사람은 학생의 손목 움직임을 확인하는 치료사이고, 다른 사람은 상자를 든 친구예요. “응, 열 수 있어”라고만 하고 지나가면 누가 여전히 곤란할까요?",
+      "hint": "수영할 줄 아는 지우가 “Do you swim every week?”에는 왜 아니라고 할까요?",
+      "answer": "친구의 두 손은 이미 꽉 차 있어요. 친구가 기다린 건 문을 열 수 있다는 말보다 실제로 문을 열어 주는 행동이에요.",
+      "followUp": "어떤 말이 선택의 단서였나요?",
+      "practice": {
+        "title": "장면의 단서 찾기",
+        "why": [
+          [
+            "어떤 단서로 고르나요?",
+            "친구의 두 손은 이미 꽉 차 있어요. 친구가 기다린 건 문을 열 수 있다는 말보다 실제로 문을 열어 주는 행동이에요."
+          ]
+        ],
+        "panels": [],
+        "question": "장면에 맞는 답을 골라 보세요.",
+        "choices": [
+          [
+            "치료사",
+            "고른 말은 “치료사”예요. 친구의 두 손은 이미 꽉 차 있어요. 친구가 기다린 건 문을 열 수 있다는 말보다 실제로 문을 열어 주는 행동이에요."
+          ],
+          [
+            "상자를 든 친구",
+            "친구의 두 손은 이미 꽉 차 있어요. 친구가 기다린 건 문을 열 수 있다는 말보다 실제로 문을 열어 주는 행동이에요."
+          ]
+        ],
+        "correct": 1,
+        "image": "/grammar-scenes/open-door.jpg",
+        "imageDescription": "왼쪽은 손목이 회복됐는지 확인하는 치료사, 오른쪽은 양손에 짐을 든 친구가 문 앞에 서 있는 모습."
+      }
+    },
+    {
+      "prompt": "기타 반주를 할 줄 아는 사람을 찾아요. 어떤 질문이 알맞을까요?",
+      "hint": "알고 싶은 것은 음악 듣는 습관이 아니라 연주 능력이에요.",
+      "answer": "Can you play the guitar? · 알고 싶은 것은 음악 듣는 습관이 아니라 연주 능력이에요.",
+      "followUp": "고른 말이 어떤 단서와 어울리는지 짚어 보세요.",
+      "practice": {
+        "title": "의도에 맞게 고르고 쓰기",
+        "why": [
+          [
+            "왜 이 표현이 어울려요?",
+            "알고 싶은 것은 음악 듣는 습관이 아니라 연주 능력이에요."
+          ]
+        ],
+        "question": "알맞은 표현을 고르세요.",
+        "choices": [
+          [
+            "Do you listen to music every day?",
+            "고른 말은 “Do you listen to music every day?”예요. 알고 싶은 것은 음악 듣는 습관이 아니라 연주 능력이에요."
+          ],
+          [
+            "Can you play the guitar?",
+            "알고 싶은 것은 음악 듣는 습관이 아니라 연주 능력이에요."
+          ]
+        ],
+        "correct": 1,
+        "writingPrompt": "고른 표현을 사용해 한 문장을 써 보세요."
+      }
+    },
+    {
+      "prompt": "새 장면에서 전하고 싶은 내용을 영어로 써 보세요.",
+      "hint": "먼저 스스로 써 보세요.",
+      "answer": "Can you play the piano?",
+      "followUp": "예시와 표현이 달라도 의도가 전달되는지 확인해 보세요.",
+      "practice": {
+        "title": "새 상황에서 혼자 쓰기",
+        "why": [
+          [
+            "왜 먼저 내 문장을 써요?",
+            "예시를 보기 전에 상대에게 하고 싶은 말을 떠올려 보세요."
+          ]
+        ],
+        "independentPrompts": [
+          "내 문장"
+        ]
+      }
+    }
+  ],
+  "workshop": {
+    "version": 1,
+    "grade": 7,
+    "count": 5,
+    "scenes": {
+      "elementary": {
+        "opening": "친구와 놀이를 시작하기 전에 대화를 나눠요. 민서는 매주 물에서 연습하고 지우는 요즘 쉬어도 혼자 헤엄쳐요.",
+        "task": "친구가 평소에 그림을 그리는지 물어보세요.",
+        "model": "Do you draw pictures?"
+      },
+      "middle": {
+        "opening": "동아리 활동 전에 친구와 가능한 일을 확인해요. 민서는 매주 물에서 연습하고 지우는 요즘 쉬어도 혼자 헤엄쳐요.",
+        "task": "축제 반주자가 필요해요. 친구가 피아노를 칠 줄 아는지 물어보세요.",
+        "model": "Can you play the piano?"
+      },
+      "high": {
+        "opening": "행사 준비팀이 진행 전에 행동과 조건을 확인해요. 민서는 매주 물에서 연습하고 지우는 요즘 쉬어도 혼자 헤엄쳐요.",
+        "task": "방송반 지원자가 평소 녹음을 하는지, 혼자 영상을 편집할 줄 아는지 각각 물어보세요.",
+        "model": "Do you record audio regularly? Can you edit videos on your own?"
+      }
+    },
+    "models": [
+      {
+        "en": "Do you cook on Fridays?",
+        "ko": "금요일마다 요리하니?"
+      },
+      {
+        "en": "Can you bake bread?",
+        "ko": "빵을 구울 줄 아니?"
+      },
+      {
+        "en": "Do you ride to school?",
+        "ko": "평소 자전거로 등교하니?"
+      },
+      {
+        "en": "Can you ride without help?",
+        "ko": "혼자서 탈 줄 아니?"
+      },
+      {
+        "en": "Do you read before bed?",
+        "ko": "자기 전에 책을 읽니?"
+      },
+      {
+        "en": "Can you read this sign?",
+        "ko": "이 표지판을 읽을 수 있니?"
+      },
+      {
+        "en": "Do you play chess at lunch?",
+        "ko": "점심시간에 체스를 두니?"
+      },
+      {
+        "en": "Can you teach me chess?",
+        "ko": "나에게 체스를 가르쳐 줄래?"
+      },
+      {
+        "en": "Do you draw every day?",
+        "ko": "매일 그림을 그리니?"
+      },
+      {
+        "en": "Can you draw faces?",
+        "ko": "얼굴을 그릴 줄 아니?"
+      }
+    ],
+    "choices": [
+      {
+        "prompt": "금요일마다 요리하니?\n____ you cook on Fridays?",
+        "options": [
+          "Do",
+          "Can"
+        ],
+        "correct": 0,
+        "reason": "알고 싶은 것은 평소 실제로 하는 일이에요."
+      },
+      {
+        "prompt": "빵을 구울 줄 아니?\n____ you bake bread?",
+        "options": [
+          "Do",
+          "Can"
+        ],
+        "correct": 1,
+        "reason": "상대가 그 행동을 할 수 있는지 궁금해요."
+      },
+      {
+        "prompt": "평소 자전거로 등교하니?\n____ you ride to school?",
+        "options": [
+          "Do",
+          "Can"
+        ],
+        "correct": 0,
+        "reason": "알고 싶은 것은 평소 실제로 하는 일이에요."
+      },
+      {
+        "prompt": "혼자서 탈 줄 아니?\n____ you ride without help?",
+        "options": [
+          "Do",
+          "Can"
+        ],
+        "correct": 1,
+        "reason": "상대가 그 행동을 할 수 있는지 궁금해요."
+      },
+      {
+        "prompt": "자기 전에 책을 읽니?\n____ you read before bed?",
+        "options": [
+          "Do",
+          "Can"
+        ],
+        "correct": 0,
+        "reason": "알고 싶은 것은 평소 실제로 하는 일이에요."
+      },
+      {
+        "prompt": "이 표지판을 읽을 수 있니?\n____ you read this sign?",
+        "options": [
+          "Do",
+          "Can"
+        ],
+        "correct": 1,
+        "reason": "상대가 그 행동을 할 수 있는지 궁금해요."
+      },
+      {
+        "prompt": "점심시간에 체스를 두니?\n____ you play chess at lunch?",
+        "options": [
+          "Do",
+          "Can"
+        ],
+        "correct": 0,
+        "reason": "알고 싶은 것은 평소 실제로 하는 일이에요."
+      },
+      {
+        "prompt": "나에게 체스를 가르쳐 줄래?\n____ you teach me chess?",
+        "options": [
+          "Do",
+          "Can"
+        ],
+        "correct": 1,
+        "reason": "상대가 지금 가르쳐 줄지 부탁하는 말이에요."
+      },
+      {
+        "prompt": "매일 그림을 그리니?\n____ you draw every day?",
+        "options": [
+          "Do",
+          "Can"
+        ],
+        "correct": 0,
+        "reason": "알고 싶은 것은 평소 실제로 하는 일이에요."
+      },
+      {
+        "prompt": "얼굴을 그릴 줄 아니?\n____ you draw faces?",
+        "options": [
+          "Do",
+          "Can"
+        ],
+        "correct": 1,
+        "reason": "상대가 그 행동을 할 수 있는지 궁금해요."
+      },
+      {
+        "prompt": "Can you ____ soccer?",
+        "options": [
+          "play",
+          "plays"
+        ],
+        "correct": 0,
+        "reason": "Can you 뒤에는 동사원형을 씁니다."
+      },
+      {
+        "prompt": "My brother is a baby. He ____ walk.",
+        "options": [
+          "can",
+          "can't"
+        ],
+        "correct": 1,
+        "reason": "아기라서 걸을 수 없으므로 can't를 씁니다."
+      },
+      {
+        "prompt": "A fish can ____ in the water.",
+        "options": [
+          "swim",
+          "swims"
+        ],
+        "correct": 0,
+        "reason": "조동사 can 뒤에는 주어가 3인칭 단수여도 동사원형을 씁니다."
+      },
+      {
+        "prompt": "I have no pen. I ____ write my name.",
+        "options": [
+          "can",
+          "can't"
+        ],
+        "correct": 1,
+        "reason": "펜이 없어서 쓸 수 없으므로 can't를 씁니다."
+      },
+      {
+        "prompt": "They ____ make a snowman. There is a lot of snow.",
+        "options": [
+          "can",
+          "can't"
+        ],
+        "correct": 0,
+        "reason": "눈이 많아서 눈사람을 만들 수 있으므로 can을 씁니다."
+      },
+      {
+        "prompt": "Can she jump rope? — No, she ____.",
+        "options": [
+          "can",
+          "can't"
+        ],
+        "correct": 1,
+        "reason": "No로 대답했으므로 can't를 씁니다."
+      },
+      {
+        "prompt": "We can ____ a song together.",
+        "options": [
+          "sing",
+          "sings",
+          "singing"
+        ],
+        "correct": 0,
+        "reason": "can 뒤에는 항상 동사원형이 옵니다."
+      },
+      {
+        "prompt": "____ you open the door? It is too heavy.",
+        "options": [
+          "Can",
+          "Are"
+        ],
+        "correct": 0,
+        "reason": "능력을 묻거나 부탁할 때는 Can을 씁니다."
+      }
+    ],
+    "repairs": [
+      {
+        "wrong": "Does you play chess?",
+        "right": "Do you play chess?",
+        "reason": "you와 함께 평소 일을 물으면 Do로 시작해요."
+      },
+      {
+        "wrong": "Can you to dance?",
+        "right": "Can you dance?",
+        "reason": "can 뒤에는 to 없이 동사의 기본 모양을 써요."
+      },
+      {
+        "wrong": "Do you reads every night?",
+        "right": "Do you read every night?",
+        "reason": "Do가 앞에 있으므로 뒤에는 read를 써요."
+      },
+      {
+        "wrong": "Can you are swim?",
+        "right": "Can you swim?",
+        "reason": "swim이 이미 행동을 말하므로 are를 더 붙이지 않아요."
+      },
+      {
+        "wrong": "Do can you draw?",
+        "right": "Can you draw?",
+        "reason": "그릴 능력을 물을 때 Can이 질문을 시작해요."
+      }
+    ],
+    "interpretation": {
+      "prompt": "민서는 매주 물에서 연습하고 지우는 요즘 쉬어도 혼자 헤엄쳐요.\nA. Do you swim every week?\nB. Can you swim on your own?\n두 표현을 문맥에 맞게 설명한 것을 고르세요.",
+      "options": [
+        "Do you swim every week?는 매주 실제로 수영하는지 묻는 말이에요. 요즘 쉬는 지우는 “No, I don’t.”라고 답해요. Can you swim on your own?은 혼자 할 수 있는지 묻기 때문에 같은 지우도 “Yes, I can.”이라고 답해요.",
+        "매주 수영장에 가는 사람이라면 반드시 혼자 수영할 수 있다."
+      ],
+      "correct": 0,
+      "reason": "Do you swim every week?는 매주 실제로 수영하는지 묻는 말이에요. 요즘 쉬는 지우는 “No, I don’t.”라고 답해요. Can you swim on your own?은 혼자 할 수 있는지 묻기 때문에 같은 지우도 “Yes, I can.”이라고 답해요."
+    },
+    "reading": {
+      "prompt": "Mina swims well but rarely visits a pool. The survey asks about regular exercise.\nWhich question belongs on the survey?",
+      "options": [
+        "Can you swim across the pool?",
+        "Can I swim now?",
+        "Do you swim every week?"
+      ],
+      "correct": 2,
+      "reason": "조사하려는 것은 능력이나 허락이 아니라 평소 실제로 하는 행동이에요."
+    }
+  }
+}

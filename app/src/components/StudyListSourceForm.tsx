@@ -1,5 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { GradeSettings } from './grammar/WorkshopEditor';
+import { schoolOf } from '../../../supabase/functions/_shared/grammarWorkshop';
 import type { SourceMaterialDraft } from '../lib/aiMaterials';
 import type { SourceMaterialOptions } from '../lib/teachingMaterials';
 import {
@@ -26,12 +28,13 @@ export default function StudyListSourceForm({ academy, busy, onBusy, onDraft, on
   busy: boolean;
   onBusy: (busy: boolean) => void;
  } & ({ onDraft: (draft: StudyListSourceDraft) => void; onGrammar?: never } |
-    { onDraft?: never; onGrammar: (files: File[], first: number, last: number, audience: string) => Promise<void> })) {
+    { onDraft?: never; onGrammar: (files: File[], first: number, last: number, audience: string, grade:number, count:number, countsByGrade:Record<number,number>) => Promise<void> })) {
   const { t } = useTranslation();
   const [source, setSource] = useState<'camera' | 'file'>('file');
   const [files, setFiles] = useState<File[]>([]);
   const [first, setFirst] = useState('1');
-  const [audience, setAudience] = useState('middle');
+  const [grade,setGrade]=useState(7);
+  const [counts,setCounts]=useState<Record<number,number>>({});
   const [last, setLast] = useState('1');
   const [outputs, setOutputs] = useState<(typeof studyOutputs[number])[]>(['words', 'sentences']);
   const [error, setError] = useState('');
@@ -73,7 +76,7 @@ export default function StudyListSourceForm({ academy, busy, onBusy, onDraft, on
     const requestOptions = outputs.length === 2 ? undefined : options;
     try {
       if (onGrammar) {
-        await onGrammar(files, start, end, audience);
+        await onGrammar(files, start, end, schoolOf(grade),grade,counts[grade]??5,counts);
         return;
       }
       const items = await extractTextbook(academy, files, start, end, requestOptions);
@@ -82,7 +85,7 @@ export default function StudyListSourceForm({ academy, busy, onBusy, onDraft, on
         title: files[0].name.replace(/\.[^.]+$/, '') || files[0].name, options,
         original: { files, first: isPdf ? start : 1, unclearPages: items.unclearPages } });
     } catch (err) {
-      setError(err instanceof Error && [...extractionErrors, 'noStudyItems'].includes(err.message)
+      setError(err instanceof Error && [...extractionErrors, 'noStudyItems','noGrammarSource','incompleteGrammar'].includes(err.message)
         ? err.message : 'extractionFailed');
     } finally {
       onBusy(false);
@@ -121,12 +124,9 @@ export default function StudyListSourceForm({ academy, busy, onBusy, onDraft, on
       <label>{t('textbook.last')}<input type="number" min={1} max={1000} disabled={busy} value={last}
         onChange={event => setLast(event.target.value)} /></label>
     </div>}
-    <p className="textbook-note">{t('textbook.privacy')}</p>
-    {onGrammar ? <label className="grid gap-1 font-bold">{t('myGrammar.audience')}
-      <select className="rounded-lg border p-2" disabled={busy} value={audience} onChange={e => setAudience(e.target.value)}>
-        {['elementary', 'middle', 'high'].map(value => <option key={value} value={value}>{t('myGrammar.' + value)}</option>)}
-      </select>
-    </label> : <fieldset disabled={busy} className="teaching-output-picker">
+    <p className="textbook-note">{t(onGrammar ? 'aiMaterials.grammarPhotoNotice' : 'textbook.privacy')}</p>
+    {onGrammar ? <GradeSettings disabled={busy} grade={grade} count={counts[grade]??5} max={25}
+      onChange={(g,n)=>{if(g===grade)setCounts(old=>({...old,[g]:n}));setGrade(g);}}/> : <fieldset disabled={busy} className="teaching-output-picker">
       <legend>{t('aiMaterials.outputs')}</legend>
       <div className="teaching-output-options">
         {studyOutputs.map(output => <label className="teaching-output" key={output}>
@@ -145,7 +145,7 @@ export default function StudyListSourceForm({ academy, busy, onBusy, onDraft, on
     <button type="submit" className={button + ' textbook-primary'}
       disabled={busy || !outputs.length || !files.length}>
       <span className="material-symbols-outlined" aria-hidden="true">auto_awesome</span>
-      {t(busy ? 'aiMaterials.readingSource' : onGrammar ? 'myGrammar.generateAndSave' : 'textbook.extract')}
+      {t(busy ? onGrammar ? 'aiMaterials.readingGrammar' : 'aiMaterials.readingSource' : onGrammar ? 'myGrammar.generateAndSave' : 'textbook.extract')}
     </button>
   </form>;
 }

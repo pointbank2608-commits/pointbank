@@ -1,0 +1,69 @@
+name|i-am how-are-you
+family|he-she-is
+pear|i-like
+bench|imperative
+sick|be-not because pos-conjunction
+run|third-s present-progressive tense-overview
+walk|does-he tense-present
+key|wh-questions m-superlative-one-of
+clock|time-day m-prep-time tense-future-perfect
+sunny|weather
+card|these-those
+calendar|date-months m-tag-questions
+door|can-i-may-i
+small|and-but
+rain|so m-because-although m-if-conditional
+rabbit|describe
+walk|frequency
+bank|directions
+pilot|jobs-future
+help|object-pronouns h-without-its-time
+photo|past-be m-relative-object
+island|past-irregular tense-present-perfect
+tower|superlative
+team|i-think tense-past
+headache|whats-wrong
+quiet|adverb-ly m-adj-adv
+tennis|m-present-vs-progressive
+home|m-past
+cold|m-it-impersonal
+bus|m-conj-when-if-that
+exercise|m-how-questions tense-future-perfect-progressive
+team|m-be-verb
+sing|m-wh-questions m-object-complement
+mirror|m-reflexive
+write|m-gerund-vs-inf
+helmet|m-have-to
+chair|m-participle
+coach|m-causative
+wait|m-it-to tense-present-perfect-progressive
+box|m-too-enough-so
+station|m-indirect-question
+tired|m-reported-speech forms-2
+music|pos-noun
+hat|pos-adjective
+run|pos-adverb
+bird|tense-present-progressive
+sing|tense-past-progressive
+plane|tense-future-progressive
+bus|tense-past-perfect-progressive
+team|forms-5
+store|h-modal-perfect
+busy|h-tense-agreement
+speak|h-inf-subject-tense
+meet|h-gerund-idioms h-prep-relative
+walk|h-participle-clause
+sister|h-relative-nonrestrictive
+join|h-compound-relative h-correlative
+leave|h-noun-clause
+read|h-comparison-advanced
+early|h-subjunctive-demand
+snow|h-inversion
+seat|h-quantifiers
+pen|h-pronoun-reference
+draw|h-parallelism
+work|h-adj-adv-usage
+captain|h-ellipsis-insertion
+student|h-negation
+book|as-long-as
+loud|so-that-purpose

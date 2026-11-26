@@ -1067,6 +1067,7 @@ export interface GrammarSlide {
   kind: 'grammar';
   grammarId: string;
   content?: import('./grammar').GrammarBoardContent;
+  librarySource?: {id:string; revision:number; owner:string; academy:string};
   /** 수업 단어장 낱말로 만든 예문도 같이 보여줄지 */
   useWordList?: boolean;
   words?: FullCardItem[];

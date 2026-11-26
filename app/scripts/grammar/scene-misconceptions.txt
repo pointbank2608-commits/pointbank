@@ -1,0 +1,170 @@
+this-is|That은 여러 개를 가리킬 때만 쓴다.
+it-is|It은 방금 물은 것과 다른 물건을 새로 소개한다.
+a-an|과일 이름 앞에는 종류에 관계없이 an을 쓴다.
+plural|숫자가 이미 둘 이상을 나타내면 영어 이름은 언제나 그대로 쓴다.
+i-am|am 뒤에는 꼭 사람 이름만 올 수 있다.
+he-she-is|가족을 소개할 때는 누구를 가리켜도 am을 쓴다.
+i-like|배를 좋아한다는 말로 지금 배를 가지고 있음을 알 수 있다.
+i-have|물병이 갖고 싶다고 말하면 이미 물병을 챙겼다는 뜻이다.
+i-want|평소 빵을 좋아하는 사람은 그날 밥을 원한다고 말할 수 없다.
+i-can|수영할 줄 아는 사람에게는 지금 수영해도 되는지 물을 이유가 없다.
+imperative|읽는 사람을 가리키는 you가 없으니 안내가 누구에게 하는 말인지 알 수 없다.
+lets|Let's로 시작하면 말하는 사람은 빠지고 듣는 사람만 움직인다.
+adj-noun|가방을 달라고 할 때는 영어에서도 색깔을 언제나 가방 뒤에 붙인다.
+how-are-you|How are you?에는 이름으로 답하면 된다.
+is-it|is와 it의 순서를 바꿔도 두 문장 모두 사실을 알려 주는 말이다.
+be-not|not을 붙이면 원래 상태가 과거에만 해당한다는 뜻이다.
+do-you-like|Do가 들어 있으니 무엇을 만드는지에 관한 질문이다.
+i-dont|don't 뒤의 행동은 지금 이 순간에만 못 한다는 뜻이다.
+third-s|runs의 s는 달리는 사람이 여러 명이라는 표시다.
+does-he|한 사람을 물으므로 Does she 뒤에도 walks를 쓴다.
+there-is|there가 보이면 항상 물건이 멀리 있다는 뜻이다.
+prepositions|desk가 같으면 열쇠를 찾아볼 위치도 같다.
+present-progressive|am running은 달리기를 이미 끝냈다는 뜻이다.
+wh-questions|it이 있으면 질문의 첫말이 달라도 같은 정보로 대답한다.
+possessive|한 물건을 두고 한 사람이 my, 다른 사람이 your라고 하면 반드시 주인이 두 명이다.
+time-day|월요일이라는 답으로 현재 시각도 알 수 있다.
+how-many|내용물이 물이면 병의 개수를 물을 때도 much를 써야 한다.
+weather|날씨 문장에서는 it이 가리키는 특정 물건을 반드시 찾아야 한다.
+these-those|these와 those의 차이는 오직 개수다.
+apostrophe-s|이름 뒤의 's는 그 이름을 가진 사람이 여러 명이라는 뜻이다.
+date-months|May third의 third는 행사가 세 번 열린다는 뜻이다.
+can-i-may-i|Can I와 Can you는 같은 사람이 행동한다는 뜻이다.
+and-but|but은 두 특징을 아무런 대비 없이 단순히 더한다.
+because|because 다음에는 일어난 결과를 놓는다.
+so|so 바로 뒤에서 앞 사건의 원인을 알려 준다.
+describe|It is long ears.로 인형이 긴 귀를 가졌다고 말할 수 있다.
+frequency|always나 sometimes를 보면 바로 지금 행동 중인지 알 수 있다.
+want-to|want 다음에는 물건을 말할 때에도 항상 to를 넣는다.
+have-to-should|should가 든 조언은 언제나 지켜야 하는 규칙과 같다.
+directions|은행이라는 낱말만 알아들으면 어느 방향으로 꺾을지도 정해진다.
+jobs-future|want to be a pilot은 이미 조종사로 일하고 있다는 뜻이다.
+how-do-you|How do you go to school?은 학교 이름을 묻는 질문이다.
+countable-uncountable|우유 두 잔은 내용물인 milk에 복수 표시를 붙여야 한다.
+object-pronouns|같은 사람을 말하면 문장 속 역할이 바뀌어도 she만 쓴다.
+past-be|같은 장소에 있었다면 어제 이야기도 am으로 전한다.
+past-regular|yesterday가 있으면 영어 행동 말의 과거 모양은 필요 없다.
+past-irregular|모든 동사는 과거를 말할 때 ed만 붙인다.
+did-you|어제에 관해 묻는 질문이므로 Did you 뒤에도 saw를 써야 한다.
+future|be going to와 will은 어느 장면에서나 같은 마음을 전달한다.
+comparative|longer than 뒤에는 가장 긴 물건을 놓아야 한다.
+superlative|어떤 물건이 tallest라면 어느 집단에 넣어도 항상 가장 높다.
+sequence|first와 finally는 행동의 순서와 관계없는 꾸밈말이다.
+i-think|I think를 붙이면 누구나 동의하는 사실이라는 뜻이 강해진다.
+whats-wrong|I have a headache는 손에 어떤 물건을 들고 있다는 뜻이다.
+adverb-ly|quiet와 quietly는 자리를 바꿔도 언제나 같은 일을 한다.
+m-pronoun-case|my만으로 ‘나에게’라는 사람 자리를 채울 수 있다.
+m-present-vs-progressive|매주 금요일 테니스를 친다면 이 문장을 말하는 순간에도 꼭 경기 중이다.
+m-past|didn't 뒤에 과거형을 놓아야 과거의 부정이 된다.
+m-modals|수영해도 된다는 안내를 들으면 반드시 수영해야 한다.
+m-exclamation|How와 What은 뒤의 낱말 순서를 그대로 둔 채 언제나 바꿔 쓸 수 있다.
+m-it-impersonal|It is noon.에는 it이 대신하는 물건 이름이 숨어 있다.
+m-to-inf-noun|두 문장에서 to write a book이 끝에 있으니 둘 다 원하는 대상이다.
+m-gerund|ing로 끝나면 항상 지금 하는 행동을 뜻한다.
+m-dative|give 뒤에 물건을 먼저 놓으면 받는 사람을 밝힐 수 없다.
+m-linking-verbs|smell은 동사이므로 뒤에는 언제나 well 같은 부사를 써야 한다.
+m-conj-when-if-that|if 뒤의 내용은 이미 일어난 확실한 사실이다.
+m-comparison|같은 무게를 말할 때에는 as heavier as라고 해야 한다.
+m-prep-time|시각과 날짜는 모두 시간이므로 같은 전치사만 쓴다.
+m-how-questions|세 번이라는 답과 세 시간이라는 답은 같은 질문에 똑같이 어울린다.
+m-be-verb|상태를 나타내는 말이 같으면 앞 사람이 달라도 is만 쓴다.
+m-general-verb|문장의 어느 자리에서나 행동 말에는 똑같이 s를 붙인다.
+m-noun-count|먹는 빵 두 조각은 two breads로만 말한다.
+m-wh-questions|Who will sing?에는 행동할 사람이 빠졌으므로 반드시 이름을 더 넣어야 한다.
+m-there-be|There is a drum.은 듣는 사람이 이미 그 북을 안다고 전제한다.
+m-future|going to는 사람이 미리 세운 계획에만 쓸 수 있어서 비에는 쓸 수 없다.
+m-adj-adv|usually는 어떤 동사와 쓰든 문장 끝에만 놓는다.
+m-reflexive|herself를 쓰면 본 사람과 보인 사람이 서로 다른 사람이다.
+m-conj-coordinating|or로 연결한 두 방법은 이번에 둘 다 반드시 실행해야 한다.
+m-prep-place|학교라는 장소가 같으면 at과 to를 서로 바꿔도 된다.
+m-present-perfect|have lost는 열쇠를 잃어버린 정확한 시각을 알려 준다.
+m-past-progressive|was reading은 그 시점까지 책을 전부 읽었다는 뜻이다.
+m-passive|The window was broken.에서 창문이 무엇인가를 깨뜨렸다.
+m-to-inf-adj-adv|to read가 보이면 어디서나 행동의 목적만 말한다.
+m-gerund-vs-inf|한국어 뜻이 ‘쓰기를’로 같으면 finish와 decide 뒤에 똑같은 모양을 놓는다.
+m-object-complement|happy는 노래의 기분만 알려 준다.
+m-relative-subject|who가 있어도 plays 앞에 she를 또 넣어야 한다.
+m-relative-object|목적어 역할의 that을 생략하면 누가 사진을 찍었는지 알 수 없다.
+m-have-to|don't have to run은 뛰면 안 된다는 뜻이다.
+m-tag-questions|앞이 긍정이면 확인하는 꼬리 질문도 반드시 긍정이다.
+m-because-although|although는 비가 경기를 한 직접적인 원인이라고 말한다.
+m-superlative-one-of|하나를 골랐으므로 one of the best 뒤 이름도 단수다.
+m-comparative-emphasis|차이가 커지면 cheaper 앞에 반드시 more를 쓴다.
+m-if-conditional|내일 비가 올 조건이므로 if 바로 뒤에 반드시 will이 필요하다.
+m-relative-what|what 앞에는 항상 the thing 같은 이름을 먼저 써야 한다.
+m-relative-adverb|park가 장소이므로 그 뒤 연결 말은 항상 where다.
+m-participle|broken chair에서 의자가 다른 물건을 부쉈다.
+m-causative|let me 다음에는 항상 to가 있어야 한다.
+m-perception|crossing을 보았다고 말하면 길 건너기의 시작과 끝을 다 보았다고 장담한다.
+m-it-to|힘든 대상은 앞에서 찾은 it이라는 물건이다.
+m-too-enough-so|too heavy to lift는 무거워도 들 만큼은 된다는 뜻이다.
+m-indirect-question|긴 질문 속에서도 where is the station 순서를 그대로 둔다.
+m-subjunctive|had wings는 과거에 실제 날개가 있었다는 보고다.
+m-past-perfect|영화가 시작된 시점과 도착 시점 중 도착이 먼저다.
+m-passive-advanced|can be repaired는 자전거가 스스로 다른 물건을 수리하는 능력이다.
+m-indefinite-pronouns|another는 둘 중 정해진 나머지 하나만 가리킨다.
+m-reported-speech|원래 말한 사람이 I라고 했으면 다른 사람이 전할 때에도 항상 I로 적는다.
+m-relative-whose|whose collar was red는 반드시 개의 몸 색깔이 빨갛다는 뜻이다.
+pos-overview|철자가 같으면 두 문장에서 맡은 역할도 같다.
+pos-noun|손에 잡히지 않는 음악은 명사가 될 수 없다.
+pos-pronoun|앞에서 표를 말해도 it은 반드시 새로운 물건을 소개한다.
+pos-verb|움직임이 없으면 영어 문장에는 동사가 필요 없다.
+pos-adjective|red가 is 뒤에 가면 더는 모자의 색을 나타내지 않는다.
+pos-adverb|often과 slowly는 같은 질문에 대한 대답이다.
+pos-preposition|under나 beside 뒤에 무엇이 오는지는 위치를 찾는 데 중요하지 않다.
+pos-conjunction|사건이 같으면 so와 because 뒤에 항상 같은 내용을 넣는다.
+pos-interjection|Wow가 나오면 뒤 문장에는 주어를 따로 쓸 수 없다.
+tense-overview|행동이 일어난 날짜만 알면 진행인지 완료인지도 알 수 있다.
+tense-present|현재형은 말하는 바로 그 순간의 동작만 나타낸다.
+tense-past|won은 지금도 늘 이긴다는 일반적인 사실을 말한다.
+tense-future|주어가 I이므로 will 뒤에도 am이 와야 한다.
+tense-present-progressive|is making을 들으면 새가 이미 다 만들어졌음을 알 수 있다.
+tense-past-progressive|were singing은 정오에 노래가 딱 끝났다는 뜻이다.
+tense-future-progressive|will be flying at noon은 정오에 비행기가 반드시 출발한다는 말이다.
+tense-present-perfect|have visited twice는 방문이 정확히 작년에만 이루어졌다는 뜻이다.
+tense-past-perfect|had left는 내가 도착한 뒤 버스가 떠났음을 알려 준다.
+tense-future-perfect|by Friday는 금요일보다 일찍 끝낼 수 없다는 뜻이다.
+tense-present-perfect-progressive|have been waiting for an hour는 한 시간 뒤부터 기다린다는 뜻이다.
+tense-past-perfect-progressive|기다린 한 시간은 지금을 기준으로 세는 시간이다.
+tense-future-perfect-progressive|1년의 훈련은 7월이 된 다음에야 처음 시작된다.
+forms-overview|모든 행동 말 뒤에 같은 수의 이름을 붙여야 문장이 완성된다.
+forms-1|at noon이 없으면 무엇이 울렸는지조차 알 수 없다.
+forms-2|tired는 지우와 별개인 다른 사람을 가리킨다.
+forms-3|cup과 flag는 민서가 어떤 사람인지 설명하는 말이다.
+forms-4|Jiu와 a card는 각각 별개의 보내는 물건이다.
+forms-5|our leader와 Jiu는 서로 다른 두 사람이다.
+h-modal-perfect|must have left와 might have left는 확신의 정도가 같다.
+h-passive-advanced|is being repaired는 도로 보수가 벌써 끝났다는 뜻이다.
+h-have-pp|had my bike repaired라고 말하면 자전거를 내가 직접 고쳤다는 뜻만 가능하다.
+h-tense-agreement|전달한 문장에 was가 보이므로 지금은 한가하다고 결론지을 수 있다.
+h-inf-subject-tense|seems to have practiced는 앞으로 연습할 거라는 짐작이다.
+h-gerund-idioms|to가 보이면 언제나 그 바로 뒤에는 동사원형이 와야 한다.
+h-participle-clause|Walking home의 주체는 뒤에서 보인 지우다.
+h-with-absolute|with her eyes closed에서 눈이 다른 물건을 닫는다.
+h-emotion-participle|사람을 가리키는 말 뒤에는 언제나 excited만 쓸 수 있다.
+h-relative-nonrestrictive|쉼표 사이의 말은 여러 지우 중 한 명을 반드시 골라내는 단서다.
+h-prep-relative|which 앞에 in을 쓰면 끝에 in을 한 번 더 붙여야 한다.
+h-compound-relative|whoever는 이미 정해진 단 한 사람만 가리킨다.
+h-noun-clause|whether she left는 그 아이가 떠난 게 확실하다는 뜻이다.
+h-correlative|not only 앞쪽에 가까운 이름 하나만 보고 동사를 고른다.
+h-conj-vs-prep|despite 다음에도 although처럼 완성된 문장을 바로 붙인다.
+h-relative-what-that|what과 that은 앞에 letter가 있는지와 무관하게 언제나 서로 바꿔 쓴다.
+h-subjunctive-past-perfect|과거를 상상한 조건 뒤에는 현재 결과가 올 수 없다.
+h-wish-as-if|I wish I had practiced는 어제 실제로 연습했음을 알려 준다.
+h-without-its-time|without이 있으므로 실제로 누구의 도움도 받지 않았다.
+h-comparison-advanced|두 번의 the는 서로 관계없는 두 물건을 각각 가리키기만 한다.
+h-subjunctive-demand|she가 나왔으므로 제안의 내용도 항상 arrives로 써야 한다.
+h-inversion|have가 I보다 앞이면 어떤 상황에서도 상대에게 한 질문이다.
+h-emphasis|It was Jiu who opened the window.는 지우가 연 물건이 창문임을 특별히 강조한다.
+h-agreement|The box of pens에서 동사 바로 앞이 pens이므로 are를 쓴다.
+h-article-noun|같은 고양이를 다시 말해도 한 마리이므로 a만 써야 한다.
+h-quantifiers|조금 남았으면 좌석과 시간 모두 a little로 말한다.
+h-pronoun-reference|새로 산 다른 펜은 반드시 잃어버린 바로 그 펜을 가리키는 it으로 부른다.
+h-parallelism|and 뒤에 있는 행동은 앞의 행동과 어떤 형태로도 자유롭게 이어진다.
+h-adj-adv-usage|hardly는 hard보다 더 열심히 일했다는 뜻이다.
+h-ellipsis-insertion|our captain은 지우와 다른 사람이어서 두 사람이 웃었다.
+h-negation|Not all students came.를 읽으면 참석자가 0명이라고 확정할 수 있다.
+as-long-as|as long as가 들어가면 항상 기간만 나타낸다.
+so-that-purpose|so that 뒤는 항상 실제로 일어난 결과를 보장한다.
+used-to|am used to swimming은 지금은 수영을 그만뒀다는 뜻이다.
+do-you-can-you|매주 수영장에 가는 사람이라면 반드시 혼자 수영할 수 있다.

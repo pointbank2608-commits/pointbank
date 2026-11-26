@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import grammarData from '../data/grammarPoints.json';
+import { doYouCanYou, type GuidedPractice } from '../data/doYouCanYou';
+import doYouWorkshop from '../data/doYouCanYouWorkshop.json';
+import { schoolOf, type Workshop } from '../../../supabase/functions/_shared/grammarWorkshop';
 import { fetchWordBank } from './api';
 import type { FullCardItem, GrammarSlide, WordBankEntry } from './types';
 
@@ -31,6 +34,7 @@ export interface GrammarPitfall {
 }
 
 export interface GrammarTeachingStep {
+  practice?: GuidedPractice;
   prompt: string;
   hint: string;
   answer: string;
@@ -38,6 +42,7 @@ export interface GrammarTeachingStep {
 }
 
 export interface GrammarPoint {
+  workshop?: Workshop;
   steps?: GrammarTeachingStep[];
   goal?: string;
   audience?: 'elementary' | 'middle' | 'high';
@@ -67,20 +72,30 @@ export interface GrammarPoint {
   slots: GrammarSlot[] | null;
 }
 
-export const GRAMMAR_POINTS = (grammarData as GrammarPoint[]).map(point => ({
+export const GRAMMAR_POINTS = [...grammarData as unknown as GrammarPoint[], { ...doYouCanYou, ...doYouWorkshop } as unknown as GrammarPoint].map(point => ({
   ...point, name: point.name + ' — ' + point.goal,
 }));
 
-export type GrammarBoardContent = Pick<GrammarPoint, 'name' | 'pattern' | 'explain' | 'examples' | 'translations' | 'rule' | 'usage' | 'detail' | 'pitfalls' | 'tip' | 'steps' | 'audience'>;
+export type GrammarBoardContent = Pick<GrammarPoint, 'name' | 'pattern' | 'explain' | 'examples' | 'translations' | 'rule' | 'usage' | 'detail' | 'pitfalls' | 'tip' | 'steps' | 'audience' | 'workshop'>;
 
-export function grammarBoardContent({ name, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip, steps, audience }: GrammarPoint): GrammarBoardContent {
-  return { name, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip, steps, audience };
+export function grammarBoardContent({ name, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip, steps, audience, workshop }: GrammarPoint): GrammarBoardContent {
+  return { name, pattern, explain, examples, translations, rule, usage, detail, pitfalls, tip, steps, audience, workshop };
+}
+
+export function classroomStep(point: GrammarPoint, index: number) {
+  const step = point.steps?.[index];
+  if (!step || !point.workshop) return step;
+  const scene = point.workshop.scenes[schoolOf(point.workshop.grade)];
+  if (index === 0) return { ...step, prompt: scene.opening };
+  if (index === 5 && step.practice?.independentPrompts) return { ...step, answer: scene.model,
+    practice: { ...step.practice, independentPrompts: [scene.task] } };
+  return step;
 }
 
 export function grammarSlidePoint(slide: GrammarSlide): GrammarPoint | null {
   const base = grammarPoint(slide.grammarId);
   if (!slide.content) return base;
-  if (base) return { ...base, ...slide.content, steps: slide.content.steps };
+  if (base) return { ...base, ...slide.content, steps: slide.content.steps, workshop:slide.content.workshop };
   const stage = slide.content.audience ?? 'middle';
   return { id: slide.grammarId, level: 0, grade: { elementary: '초등', middle: '중등', high: '고등' }[stage],
     stage, band: 'entry', slots: null, ...slide.content };

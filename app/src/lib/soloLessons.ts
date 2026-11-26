@@ -1,6 +1,8 @@
-import { GRAMMAR_POINTS, grammarLevelTag, plainText, sentencesForUnscramble, type GrammarPoint } from './grammar';
+import { GRAMMAR_POINTS, classroomStep, grammarLevelTag, plainText, sentencesForUnscramble, type GrammarPoint } from './grammar';
+import { extensionPool } from '../../../supabase/functions/_shared/grammarWorkshop';
 import { LESSON_SETS, pickSetWords } from './lessonSets';
 import { parseShadowText } from './shadowLines';
+import type { GuidedPractice } from '../data/doYouCanYou';
 import { posOptionLabel, SPEAKING_ITEMS, STRUCTURE_ITEMS } from './rainbow';
 import type { FullCardItem, GameItem, GameTemplateConfig, MatchPair, WordBankEntry } from './types';
 
@@ -54,6 +56,7 @@ export type SoloTestItem = SoloQuestionStep & { area: TestArea; sec: number };
 export type TestScope = 'lesson';
 
 interface SoloRuleStep {
+  practice?: GuidedPractice;
   t: 'rule';
   title: string;
   pattern: string;
@@ -494,6 +497,28 @@ function exampleSteps(point: GrammarPoint): { sentence: string; ko: string }[] {
  */
 export function buildSoloGrammarLesson(point: GrammarPoint): { name: string; steps: SoloStep[]; minutes: number } {
   const name = point.name;
+  if (point.steps?.length === 6 && point.steps.every(s => s.practice)) {
+    const steps:SoloStep[] = point.steps.map((_,i)=>{
+      const s=classroomStep(point,i)!;
+      return ({
+      t: 'rule', title: s.practice!.title, pattern: `${i + 1} / 6`, explain: s.prompt,
+      lines: [], practice: s.practice, tip: [s.answer, s.followUp].join('\n\n'),
+    });});
+    if(point.workshop) for(const item of extensionPool(point.workshop).slice(0,point.workshop.count)){
+      if(item.kind==='choice' && item.options) {
+        const choices=item.options;
+        const distinguishCase=new Set(choices.map(s=>s.trim().toLowerCase())).size<choices.length;
+        const options=distinguishCase?choices.map((s,i)=>(i+1)+'. '+s):choices;
+        steps.push({t:'sayPick',situation:item.prompt,options,answer:choices.indexOf(item.answer),tip:item.reason});
+      }
+      else if(item.kind==='order'){
+        const words=item.answer.split(/\s+/);
+        steps.push({t:'orderWrite',ko:item.prompt,words:[...words.slice(1),words[0]],answer:item.answer});
+      } else steps.push({t:'rule',title:item.title,pattern:'심화 연습',explain:item.prompt,lines:[],tip:item.answer+'\n'+item.reason,
+        practice:{title:item.title,independentPrompts:['내 답'],why:[]}});
+    }
+    return {name,minutes:12+Math.ceil((steps.length-6)*0.8),steps};
+  }
   const steps: SoloStep[] = [{ t: 'intro', title: name, text: point.tip ?? point.explain }];
   const lines = [...(point.usage ?? []), ...(point.detail ?? []), ...(point.rule ?? [])].map(plainText);
   steps.push({ t: 'rule', title: name, pattern: plainText(point.pattern), explain: point.explain, lines, tip: point.tip ?? '' });
@@ -526,7 +551,7 @@ export function buildSoloGrammarLesson(point: GrammarPoint): { name: string; ste
 }
 
 /** 개별수업으로 만들 수 있는 문법: 초등·중등 */
-export const SOLO_GRAMMAR_POINTS = GRAMMAR_POINTS.filter((p) => p.stage === 'elementary' || p.stage === 'middle');
+export const SOLO_GRAMMAR_POINTS = GRAMMAR_POINTS;
 export { grammarLevelTag };
 
 /* ---------------- 노래 수업 ---------------- */

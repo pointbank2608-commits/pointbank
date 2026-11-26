@@ -53,11 +53,12 @@ function AiGrammarCreator({ academy, owner, onSaved, onClose }: {
           try { await persist(pending); } finally { lock.current = false; setBusy(false); }
         }}>{t('guide.retry')}</button>
       </> : <StudyListSourceForm academy={academy} busy={busy} onBusy={setBusy}
-        onGrammar={async (files, first, last, audience) => {
+        onGrammar={async (files, first, last, audience, grade, count, countsByGrade) => {
           if (lock.current) return;
           lock.current = true;
           try {
-            const content = await extractGrammar(academy, files, first, last, audience);
+            const content = await extractGrammar(academy, files, first, last, audience, grade, count);
+            if(content.workshop)content.workshop={...content.workshop,countsByGrade:{...countsByGrade,[grade]:count}};
             const id = crypto.randomUUID();
             await persist({ id, block: { grammarId: 'custom-' + id, content, boardTheme: 'green' } });
           } finally { lock.current = false; }

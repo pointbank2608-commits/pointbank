@@ -1,0 +1,170 @@
+this-is|On a video call, Mina holds one badge against her own shirt and points across the hall to another.|She points across the hall and says, “____ is our old badge.”|That|This|Those|먼 곳의 배지 하나를 가리키므로 That이에요.
+it-is|A volunteer pulls an object from a lost-property box. A visitor points and asks what it is.|“____ a camera,” the volunteer replies.|It's|Is it|They are|질문이 끝나고 물건 한 개의 정체를 알려 주는 대답이에요.
+a-an|A student reporter interviews a man for the school paper. He designs bridges.|In her notes she writes, “He is ____ engineer.”|an|a|many|engineer의 첫소리가 모음이고 직업 한 명을 소개해요.
+plural|One class collected a single box. Another class collected six.|The second class collected six ____.|boxes|box|box's|six 뒤의 box는 여러 상자이므로 boxes가 돼요.
+i-am|Mina fills in a profile for her new team. She speaks about herself.|“I ____ ready to start.”|am|is|are|자신을 I로 가리켜 현재 상태를 연결하므로 am이에요.
+he-she-is|Leo's sister runs the school podcast. A visitor asks who she is.|Leo says, “She ____ our host.”|is|am|are|말을 듣는 사람이나 화자 자신이 아닌 한 사람을 소개해요.
+i-like|Mina owns no camera, but she loves taking pictures with a borrowed one.|Which statement matches her words? “I ____ photography.”|like|avoid|dislike|카메라 소유 여부와 별개로 사진 찍기를 좋아해요.
+i-have|The teacher checks supplies. Jiu opens her bag and points to the ruler inside.|She says, “I ____ a ruler right here.”|have|need to buy|lost|가방 속의 실제 물건을 보여 주므로 이미 가지고 있다는 말이에요.
+i-want|Leo has no ticket yet. He tells the clerk what he would like to buy.|“I ____ a ticket for tonight, please.”|want|lost|sold|현재 가진 물건이나 끝낸 거래가 아니라 얻고 싶은 것을 전해요.
+i-can|Jiu can swim well. The lifeguard is still checking the pool, so Jiu waits beside it.|Jiu asks the lifeguard, “____ swim now?”|Can I|Do you|Are you|행동할 사람은 지우 자신이고 지금 필요한 것은 안전요원의 허락이에요.
+imperative|The paint on a bench is still wet. A worker puts a warning on it.|“____ sit here.”|Don't|Let's|Please do|앉으면 옷에 페인트가 묻으므로 행동을 막는 안내예요.
+lets|Two club members have both finished their work. One wants them to leave together.|“____ go home together.”|Let's|Does she|Is it|말하는 사람도 함께할 행동을 제안해요.
+adj-noun|Two identical cups have different colors. A visitor wants the green one.|“May I have the ____?”|green cup|cup green|greenly cup|색으로 컵을 고를 때 색을 나타내는 형용사를 이름 앞에 놓아요.
+how-are-you|Jiu has been ill. Her friend knows her name and is checking how she feels today.|The friend asks, “____?”|How are you|Who are you|Where is your name|상태를 확인하는 장면이므로 how로 물어요.
+is-it|A visitor finds a card and wants confirmation that it is a ticket.|“____ a ticket?”|Is it|It does|Are it|it is라는 내용을 맞는지 묻기 위해 is를 앞으로 옮겨요.
+be-not|A sign says the hall is closed. A staff member corrects the sign: visitors may enter.|“The hall ____ closed today.”|isn't|don't|aren't|한 장소의 상태를 부정하므로 is not을 줄인 isn't가 와요.
+do-you-like|The cafeteria is planning a menu. Its survey asks about taste.|“____ you like corn?”|Do|Are|Does|you의 평소 취향을 like라는 일반동사로 물으므로 Do로 시작해요.
+i-dont|Mina marks zero trips by car on her weekly form. She walks to school.|“I ____ ride to school in a car.”|don't|am not|doesn't|I의 평소 행동을 부정할 때 don't와 기본형을 이어요.
+third-s|Jun walks home, but his brother uses a bike every day.|His brother ____ home.|rides|ride|riding|his brother 한 사람이 평소 하는 일이므로 rides예요.
+does-he|The coach is asking about one new player. He wants to know the player's routine.|“Does he ____ before school?”|train|trains|training|한 사람의 현재 질문 표시는 does가 맡아 train을 기본형으로 써요.
+there-is|The supply cupboard looked empty. When Mina opens it, she sees two lamps inside.|“There ____ two lamps after all.”|are|is|am|새로 발견한 물건이 two lamps로 여럿이에요.
+prepositions|A ball rolls beneath a desk. Jiu kneels down and finds it near the floor.|The ball is ____ the desk.|under|on top of|above|바닥 가까이로 몸을 낮춘 장면이 under의 단서예요.
+present-progressive|Mina practices after school every day. Look through the window at this very moment.|She ____ the drums now.|is playing|play|has play|지금 눈에 보이는 동작에는 is와 playing을 함께 써요.
+wh-questions|The map shows what the building is called, but its location is missing.|“____ is the library?”|Where|Who|When|빠진 정보가 위치이므로 Where예요.
+possessive|Jiu owns a blue cap. She picks it up and speaks about herself.|“This is ____ cap.”|my|me|I|뒤의 cap의 주인을 밝혀야 하므로 my예요.
+time-day|The secretary writes Monday on the board. A visitor still needs the clock time.|“____ does the meeting start?”|What time|Which month|What color|요일은 이미 알았고 시계에서 읽을 정보가 필요해요.
+how-many|For the trip, the leader counts the bottles one by one. She does not measure the water.|“How ____ bottles are left?”|many|much|long|bottles의 개수를 세므로 many예요.
+weather|The outdoor concert is delayed. Flags are blowing strongly in the wind.|“____ is very windy today.”|It|There are|They|날씨를 말하는 문장의 앞자리에 it을 놓아요.
+these-those|The guide is holding two old tickets in her hand. The other tickets are behind glass across the room.|Pointing to the two in her hand, she says, “____ are from 1980.”|These|That|This|가까이 들고 있는 여러 장을 가리켜요.
+apostrophe-s|A lunch box belongs to one person named Jiu. Her name is written on the lid.|It is ____ lunch box.|Jiu's|Jius|Jius'|지우 한 명의 소유임을 이름 뒤의 's로 표시해요.
+date-months|The fair starts on the third day of May. The announcer reads the date aloud.|“The fair begins on May ____.”|third|three times|thirty times|횟수가 아니라 그달의 셋째 날이에요.
+can-i-may-i|No pictures are allowed in one room of the museum. In another room, Jiu wants to check the rule before using her own camera.|“____ take a photo here?”|May I|Am I|Do you|사진을 찍으려는 지우가 자기 행동의 허락을 구해요.
+and-but|The bicycle looks old. Surprisingly, it runs very smoothly.|It looks old, ____ it runs smoothly.|but|because of|or else|낡아서 잘 달리지 못하리라는 예상과 실제가 달라요.
+because|A reporter asks why a match ended early. The field was flooded.|The match ended early ____ the field was flooded.|because|because of|despite|뒤에 the field was flooded라는 완전한 이유 절이 와요.
+so|All the trains stopped. As a result, we walked to the hall.|All the trains stopped, ____ we walked.|so|because of|despite|앞 사건에 따른 결과를 이어요.
+describe|The missing toy is small and has long ears. Its owner lists one body part.|“It ____ two long ears.”|has|is|are|귀는 인형 자체가 아니라 인형이 가진 부분이에요.
+frequency|On every school day this month, Jiu walked home. She never missed a day.|This month she ____ walked home on school days.|always|never|rarely|모든 등교일이라는 단서가 always에 맞아요.
+want-to|A poster shows a painted box. Mina wants to do the painting herself.|“I want ____ the box.”|to paint|painted|paints|원하는 것이 행동일 때 want에 to와 기본형을 연결해요.
+have-to-should|A school rule requires everyone to wear a helmet on the course.|“You ____ wear a helmet. It is required.”|have to|don't have to|must not|선택이나 금지가 아닌 의무예요.
+directions|A visitor must stay on the same street past the bank. Turning there would lead away from the library.|At the bank, ____ straight.|go|turn left and stop|turn back and walk|길을 바꾸지 말고 같은 길로 계속 가야 해요.
+jobs-future|Jiu is a student now. She is talking about a job she hopes to have one day.|“I want to ____ a pilot.”|be|am|was|want to 뒤에는 장래에 되고 싶은 상태를 잇는 기본형 be가 와요.
+how-do-you|A survey lists bus, bike and train as possible answers.|Which question fits? “____ do you travel to school?”|How|When|Who|선택지는 모두 이동 수단이므로 방법을 물어요.
+countable-uncountable|A cook pours milk into two glasses. The shopping note should name the amount.|“Bring two ____ of milk.”|glasses|milks|waters|세는 것은 액체 자체가 아니라 잔이라는 단위예요.
+object-pronouns|Mina sees Jiu and waves. Jiu then walks over to Mina.|Mina says, “Jiu came over to ____.”|me|my|I|전치사 to 뒤에서 다가온 대상인 나를 가리켜요.
+past-be|The gym is open today. Yesterday the doors were locked.|The gym ____ closed yesterday.|was|is|were|어제 한 장소의 상태를 말해요.
+past-regular|A journal entry describes a completed trip last Friday.|“We ____ home after the game.”|walked|walks|are walking|지난 금요일의 끝난 사건이라 walk에 ed를 붙여요.
+past-irregular|The team is back at school now. Yesterday it visited the museum.|“We ____ to the museum yesterday.”|went|goed|goes|go의 과거형은 went예요.
+did-you|A friend asks about yesterday's concert. She wants to know whether Leo saw the singer.|“Did you ____ the singer?”|see|saw|seen|did가 과거를 표시해요.
+future|Jiu notices a visitor struggling with a suitcase. She decides to help at that moment.|“I ____ carry it for you.”|will|was|have|말하는 순간에 한 결정을 will로 전해요.
+comparative|Two runners finish a race. Mina takes 16 seconds and Jiu takes 18.|Mina is faster ____ Jiu.|than|as much|most|두 주자의 속도를 비교해요.
+superlative|Three models enter a contest. Model A costs more than either of the others.|It is ____ expensive of the three.|the most|more than|as much|세 개 전체에서 최고가를 말해요.
+sequence|A recipe starts with washing rice and ends with serving it. The rice is already cooked.|“____, serve it in bowls.”|Finally|Before starting|First of all|이미 조리가 끝나 마지막 단계만 남았어요.
+i-think|Two judges disagree about a song. One introduces her own opinion.|“____ the song fits our show.”|I think|How many|Look at|뒤의 완성된 내용을 자신의 판단으로 전해요.
+whats-wrong|Jiu holds her head and tells the nurse that it hurts.|“I have ____.”|a headache|a ticket|a turn|머리가 아픈 증상을 나타내는 표현이에요.
+adverb-ly|The audience is sleeping. Mina closes the door without making a sound.|She closes it ____.|quietly|quiet|quietness|문을 닫는 방식을 설명하므로 quietly예요.
+m-pronoun-case|Mina is the new team leader. Our coach gave Mina a key.|The coach gave ____ a key.|her|she|hers|열쇠를 받은 사람을 가리켜요. 동사 뒤에는 her를 써요.
+m-present-vs-progressive|Ben normally walks. Today his leg hurts and a taxi is waiting.|Right now he ____ into the taxi.|is getting|got yesterday|will get later|바로 지금 차 안으로 들어가는 중인 한 장면이에요.
+m-past|The school trip ended yesterday. Everyone is back home.|We ____ the museum on that trip.|visited|visit|will visit|이미 끝난 여행에서 한 일이에요.
+m-modals|The bottle says that this liquid is poisonous. The teacher warns the class.|You ____ drink it.|must not|do not have to|might as well|위험해서 마시면 안 된다는 금지예요. 하지 않아도 된다는 뜻과 달라요.
+m-exclamation|The class sees an unusually tall tree for the first time.|____ tall the tree is!|How|What a|What an|빈칸 다음에 tall이라는 성질이 바로 나와요. How tall로 놀라움을 나타내요.
+m-it-impersonal|The coach checks the time before the race. The clock reads eight.|____ is eight o’clock.|It|They|There|시각을 말할 때 It으로 문장을 시작해요.
+m-to-inf-noun|Everyone names a goal. Mina dreams of flying a plane.|Her goal is ____ a pilot.|to become|become|became|목표의 내용인 ‘조종사가 되는 것’을 to become으로 표현해요.
+m-gerund|The coach notices that Mina smiles in the pool. She loves the time she spends there.|Mina enjoys ____.|swimming|to swim|swim|enjoy 다음에 즐기는 활동을 넣을 때 swim에 -ing를 붙여요.
+m-dative|Jin lent his bike to Mina for the weekend.|Jin lent ____ his bike.|Mina|to Mina|for Mina|lent 바로 다음에 받는 사람을 먼저 두면 to를 쓰지 않아요.
+m-linking-verbs|A cook asks about the flavor of her soup. One spoonful is enough to tell.|It tastes ____.|salty|saltily|saltiness|맛을 보는 동작의 방법이 아니라 수프의 성질을 알려 줘요.
+m-conj-when-if-that|No one knows whether tomorrow will be sunny. The match depends on the weather.|We will play ____ it is sunny.|if|though|that|경기를 할 조건이 맑은 날씨예요.
+m-comparison|One box weighs two kilos. The other weighs five.|The second box is ____ than the first.|heavier|heaviest|heavy|상자 두 개의 무게를 견줘요. than 앞에는 heavier가 와요.
+m-prep-time|Practice starts exactly as the clock strikes six.|Meet me ____ six.|at|on|in|정확한 시각을 한 점처럼 짚을 때 at을 붙여요.
+m-how-questions|The bus to school costs 900 won. Mina asks about the fare.|____ is a bus ticket?|How much|How often|How long|물건의 값이 답으로 나오니 How much가 어울려요.
+m-be-verb|Mina introduces two people at the door. Both teach music.|They ____ our music teachers.|are|is|am|They는 여러 사람이라 are와 한 짝이에요.
+m-general-verb|Every morning, Jiu feeds the class hamster. It is her regular job.|Jiu ____ it before class.|feeds|feed|is feed|평소 일이고 주어가 한 사람이라 feeds예요.
+m-noun-count|The recipe asks for rice. The chef weighs it by the cup.|How ____ rice do we need?|much|many|a|rice는 여기서 낱개로 세지 않으므로 양을 묻는 much를 써요.
+m-wh-questions|Jiu found the missing keys. Nobody else touched them.|____ found the keys?|Who|When|Where|답이 ‘지우’처럼 사람일 때 Who로 물어요.
+m-there-be|The teacher opens the cupboard. Inside are three clean cups.|There ____ three cups on the shelf.|are|is|am|새로 소개하는 것이 cups 세 개라서 are예요.
+m-future|Mina has already bought the tickets and packed a bag.|She is ____ visit Busan tomorrow.|going to|goes to|went to|미리 준비해 둔 계획을 be going to로 말해요.
+m-adj-adv|The test hall must stay silent. Jiu shuts the door without a sound.|Jiu shuts the door ____.|quietly|quiet|quietness|어떻게 닫았는지 행동을 꾸미는 quietly예요.
+m-reflexive|Nobody else was home. Jin prepared the whole meal without help.|Jin made it by ____.|himself|him|his|by himself는 남의 도움 없이 혼자 했다는 뜻이에요.
+m-conj-coordinating|The weather was sunny. The water was still too cold to swim in.|It was sunny, ____ the water was cold.|but|so|or|기대와 다른 두 사실을 but으로 이어요.
+m-prep-place|A map is hanging flat against the classroom wall.|It is ____ the wall.|on|inside|through|벽 표면에 붙어 있으므로 on이에요.
+m-present-perfect|Jiu cannot open the locker now. Her key is still missing.|She ____ her key.|has lost|will lose|has found|잃어버린 일이 지금도 문을 못 여는 결과로 이어져요.
+m-past-progressive|At noon yesterday Mina was halfway across the pool. The whistle interrupted her.|She ____ when the whistle blew.|was swimming|will swim|has swum|과거 어느 순간에 진행 중이던 동작이에요.
+m-passive|Workers built this hall in 1980. The sign describes the hall.|This hall ____ in 1980.|was built|built|is building|건물이 지어진 대상이고 시점은 과거라 was built예요.
+m-to-inf-adj-adv|Jin is thirsty. The fridge is empty, so he goes to a shop.|He goes there ____ some water.|to buy|buys|bought|가게에 간 목적을 to buy로 덧붙여요.
+m-gerund-vs-inf|Mina needs to post her form today. She has not sent it yet.|She must remember ____ it.|to send|sending yesterday|sent|잊지 않고 앞으로 해야 하는 일은 remember to send예요.
+m-object-complement|The team had to choose a leader. Mina won the vote.|They elected Mina ____.|captain|captains|captainly|captain은 선거 결과 미나가 맡은 역할을 말해요.
+m-relative-subject|Two students enter. Only one is carrying a violin.|The student ____ is carrying the violin is my cousin.|who|whose|whom|뒤의 is carrying 동작을 하는 사람이 필요해요.
+m-relative-object|I borrowed a book yesterday. That same book is now on the desk.|The book ____ I borrowed is on the desk.|that|whose|where|I borrowed 뒤에 빌린 물건 자리가 비어 있어요.
+m-have-to|Wearing a helmet is required. Bringing your own helmet is optional because the club lends them.|You ____ bring your own helmet.|do not have to|must not|cannot possibly|자기 것을 가져와도 되지만 그럴 의무는 없어요.
+m-tag-questions|Mina expects her friend to confirm that the bus is late.|The bus is late, ____?|isn’t it|doesn’t it|was it|앞 문장의 is를 써서 짧게 확인하고 긍정문 뒤라 부정형으로 물어요.
+m-because-although|Rain usually keeps us inside. Today we finished the outdoor race in the rain.|We finished ____ it was raining.|although|so|unless|비가 왔는데도 완주해서 예상과 반대예요.
+m-superlative-one-of|Many different bridges are famous. This one belongs to that group.|It is one of the most famous ____ in town.|bridges|bridge|bridging|여러 다리 중 하나이므로 of 뒤에는 복수 bridges예요.
+m-comparative-emphasis|Yesterday the suitcase weighed four kilos. Today it weighs twenty.|It is ____ heavier today.|much|very|most|이미 비교하는 말 heavier를 더 강조할 때 much를 써요.
+m-if-conditional|Tomorrow’s picnic depends on the sky. No decision has been made.|If it ____ tomorrow, we will stay home.|rains|will rain|is rained|미래의 조건을 나타내는 if절 안에서는 rains처럼 현재형을 써요.
+m-relative-what|The speaker shows an empty box. Nobody can see its former contents.|Please tell me ____ was inside.|what|which it|that it|안에 있었던 ‘것’ 자체를 묻고 있어요. what이 그 자리를 맡아요.
+m-relative-adverb|The cafe has closed. Jiu remembers meeting her friend there.|That is the cafe ____ we first met.|where|whose|who|we first met에 만난 장소의 뜻을 보태요.
+m-participle|The librarian points to one of the children. He has an open book in his hands.|The boy ____ by the window is my cousin.|reading|read by someone|to be read|소년이 직접 읽는 중이라 reading으로 꾸며요.
+m-causative|Our coach required us to repeat the final lap.|The coach made us ____ it again.|run|to run|ran|made + 사람 뒤에 그 사람이 한 행동을 동사원형으로 붙여요.
+m-perception|Jin was in the hall for the whole performance. He heard the entire song.|He heard Mina ____ the song from start to finish.|sing|to sing|sang|heard + 사람 + 동사원형으로 처음부터 끝까지 들은 일을 표현해요.
+m-it-to|Waiting on this road is dangerous. The notice begins with It.|It is dangerous ____ here.|to wait|waited|waits|It이 자리를 잡고 실제로 위험한 행동을 뒤에서 to wait로 풀어요.
+m-too-enough-so|Mina cannot lift a heavy box. She tries twice and gives up.|It is ____ heavy for her to lift.|too|enough|such|너무 무거워 들 수 없다는 결과를 too heavy로 전해요.
+m-indirect-question|A tourist needs directions. He wants to ask politely about the station.|Could you tell me where ____?|the station is|is the station|does the station is|질문이 문장 속으로 들어가면서 the station 뒤에 is가 와요.
+m-subjunctive|Ben is not a bird. He imagines flying across the sea.|If I ____ a bird, I could fly there.|were|will be|have been|지금 사실과 다른 상상임을 were로 표시해요.
+m-past-perfect|We arrived at nine. The last bus left at eight.|By the time we arrived, it ____.|had left|would leave|was about to leave|도착보다 앞서 일어난 일을 had left로 표시해요.
+m-passive-advanced|Someone must return these books before Friday. The notice puts books first.|These books must ____ by Friday.|be returned|return them|have returning|반납되는 대상이 앞에 있으므로 must 뒤에 be returned예요.
+m-indefinite-pronouns|The shop sells many items. Mina wants any item that is cheap.|She is looking for something ____.|cheap|cheaply|cheapest than|something을 설명하는 형용사 cheap은 그 뒤에 와요.
+m-reported-speech|On Monday Jin said, “I am tired.” On Friday Mina reports his words about Monday.|Jin said that he ____ tired that day.|was|will be|has been tomorrow|월요일에 피곤했다고 나중에 옮겨 말해요.
+m-relative-whose|A girl is waiting outside. Her bike has a broken wheel.|The girl ____ bike is broken is waiting outside.|whose|whom|where|소녀와 그 소녀의 자전거를 소유 관계로 연결해요.
+pos-overview|The first runner is fast. She runs fast, too.|In “She runs fast,” fast describes ____.|how she runs|which runner she is|when she started|같은 단어라도 여기서는 달리는 방법을 알려 줘요.
+pos-noun|Jin enjoys music. It helps him relax.|In his sentence, music names ____.|something he enjoys|how quickly he moves|a link between clauses|music은 그가 좋아하는 대상의 이름이에요.
+pos-pronoun|Two players arrive together. Both are ready.|____ are ready.|They|Their|Them|두 선수를 다시 부르며 주어 자리에 놓으므로 They예요.
+pos-verb|Mina writes postcards after every trip. She wants to underline the action word.|Which word tells what Mina does?|writes|postcards|trip|writes가 미나의 행동인 ‘쓴다’를 나타내요.
+pos-adjective|Mina picks the red hat from the shelf. Several hats have other colors.|Which word identifies the hat by its color?|red|picks|the|red가 물건의 특징을 말해 어떤 모자인지 알려 줘요.
+pos-adverb|Two boys walk to class. Only one walks slowly.|Which word tells how one boy walks?|slowly|boys|class|slowly는 사람이 아니라 걷는 방식을 설명해요.
+pos-preposition|A note is hidden under the box. Students lift the box to find it.|Which word gives the note’s position?|under|hidden|note|under가 쪽지와 상자의 위치 관계를 표시해요.
+pos-conjunction|Jiu wants to attend the match. However, she has a class at the same time.|She wants to go, ____ she has a class.|but|or|so|두 내용 사이의 걸림돌을 알려 주는 but이 어울려요.
+pos-interjection|Mina lifts a lid and sees a huge cake. She immediately cries out in surprise.|“____! That cake is enormous!”|Wow|Under|Because|완성된 문장 앞에서 즉각적인 놀라움을 표현하는 말이에요.
+tense-overview|The reporter describes a match that ended last night. She has the final score.|Our team ____ the match last night.|won|will win|wins every day|last night가 끝난 때를 짚어 줘요.
+tense-present|The school bell follows the same schedule every day.|It ____ at nine each morning.|rings|rang once yesterday|rang just once|반복되는 일정이라 현재형을 사용해요.
+tense-past|The team visited Jeju last summer. This year everyone is staying home.|They ____ the island last summer.|visited|visit|will visit|last summer라는 끝난 시점의 사건이에요.
+tense-future|A student suddenly notices the heavy books in her friend’s hands. She offers help.|I ____ carry those for you.|will|was|have|말하는 순간 결정한 도움을 will로 표현해요.
+tense-present-progressive|The camera shows Jiu halfway up a ladder. Watch the live video.|She ____ the ladder now.|is climbing|has just left|will climb tomorrow|지금 화면에 진행 중인 동작이에요.
+tense-past-progressive|Yesterday a call interrupted practice. Mina had already started singing.|Mina ____ when the phone rang.|was singing|will sing|had not started|전화가 울렸을 때 노래하는 도중이었어요.
+tense-future-progressive|The flight lasts from two until five tomorrow. Think of three o’clock.|At three tomorrow, we ____ over the sea.|will be flying|were flying|flew yesterday|미래의 특정 순간에 진행 중일 비행이에요.
+tense-present-perfect|Mina joined the team in March. She is still a member.|She ____ on the team since March.|has been|was once|will soon be|과거에 시작한 상태가 지금까지 이어져요.
+tense-past-perfect|The power failed after the students finished the test. They had already handed it in.|When the lights went out, they ____ the test.|had finished|will finish|have yet to starting tomorrow|불이 꺼진 과거 시점보다 먼저 완료했어요.
+tense-future-perfect|Construction is scheduled to end in May. The festival is in June.|By the festival, the builders ____ the hall.|will have finished|will start building|have yet to start|미래의 행사 시점에는 이미 공사가 끝난 상태예요.
+tense-present-perfect-progressive|Jiu began practicing at two. It is four now and she is still practicing.|She ____ for two hours.|has been practicing|practiced last week|will practice later|지금까지 계속하는 활동과 그 기간을 함께 말해요.
+tense-past-perfect-progressive|The hikers reached the shelter at noon. They had started walking three hours earlier.|Before reaching shelter, they ____ for three hours.|had been walking|will be walking|have just begun|과거의 도착 시점을 기준으로 그전부터 계속 걸었어요.
+tense-future-perfect-progressive|Mina began training on Monday. Her plan runs well beyond Friday.|By Friday evening, she ____ for five days.|will have been training|was training|would have quit|미래 기준 시점까지 활동이 얼마나 이어질지 말해요.
+forms-overview|Mina gave Jiu a ticket. A teacher wants to identify who received it.|Who received something?|Jiu|Mina|the ticket|gave 다음의 사람 Jiu가 받는 사람이고 ticket은 받은 물건이에요.
+forms-1|The guests arrived at noon. Nobody received anything in this sentence.|Which part names the action?|arrived|the guests|at noon|arrived만으로 주어가 한 동작이 완성돼요.
+forms-2|After the hike, the soup tasted wonderful. The writer is describing the soup.|What does wonderful describe?|the soup|the speed of tasting|the cook’s identity|tasted 뒤의 wonderful은 주어인 수프의 맛을 알려 줘요.
+forms-3|Mina drew a map before the walk. Her teacher asks what she drew.|Which words give the object of drew?|a map|before the walk|Mina|그린 대상이 목적어이고 언제 그렸는지는 별도 정보예요.
+forms-4|Mina showed Jiu a photo. Jiu saw it and smiled.|Which pair identifies the receiver and the thing shown, in order?|Jiu / a photo|a photo / Mina|Mina / Jiu|보여 준 사람 다음에 받는 사람과 보여 준 물건이 차례로 와요.
+forms-5|The team painted the gate green. The writer describes the result.|What became green?|the gate|the team|the paintbrush|green이 칠한 결과 목적어인 gate가 어떤 색이 됐는지 알려 줘요.
+h-modal-perfect|The studio is locked and all the lights are off. The crew’s van is gone. Jin is almost certain the crew left.|The crew ____ already left.|must have|should not have|cannot have|지난 일을 강하게 추측할 때 must have + 과거분사를 써요.
+h-passive-advanced|The repairs are still in progress. Workers have closed the bridge today.|The bridge is ____ repaired.|being|been yesterday|be|현재 공사 중이고 다리는 수리되는 대상이라 is being repaired예요.
+h-have-pp|Mina’s phone screen broke. A technician fixed it for her.|She had the screen ____.|repaired|repair|repairing the technician|화면은 수리되는 물건이라 had + 물건 + 과거분사를 써요.
+h-tense-agreement|The teacher repeats a scientific fact that remains true today.|She explained that light ____ faster than sound.|travels|must stop|had stopped traveling|지금도 성립하는 사실은 전달 동사가 과거여도 현재형으로 말할 수 있어요.
+h-inf-subject-tense|Jin says he saw the comet yesterday. People now believe his claim.|Jin is believed ____ the comet yesterday.|to have seen|to see|to be seeing|믿는 현재 시점보다 본 일이 앞서므로 to have seen이에요.
+h-gerund-idioms|Mina is excited about meeting a new teammate tomorrow.|She looks forward to ____ her.|meeting|meet|met|look forward to의 to 뒤에는 활동 이름인 meeting이 와요.
+h-participle-clause|Mina walked home and listened to music at the same time.|____ home, Mina listened to music.|Walking|Walked by Mina|Having been walked by someone|두 동작의 주체가 모두 미나이고 직접 걷기 때문에 Walking이에요.
+h-with-absolute|The patient rested. His eyes remained shut throughout the checkup.|He rested with his eyes ____.|closed|to close the doctor|closing the curtains|눈이 감겨 있는 상태를 with + 명사 + closed로 나타내요.
+h-emotion-participle|The performance thrilled the audience. Mina was one of the people watching.|Mina felt ____.|thrilled|thrilling the show|thrill|감정을 느낀 사람의 상태를 thrilled로 말해요.
+h-relative-nonrestrictive|Jiu has one aunt. The writer adds extra information about her work.|Her aunt, ____ lives in Jeju, runs a shop.|who|that|what|이미 정해진 사람에 관한 덧붙임 설명이에요. 쉼표 뒤에서 who를 써요.
+h-prep-relative|Mina sent the report to one teacher. That teacher is now on the phone.|The teacher to ____ she sent it is calling.|whom|whoever she|that|전치사 to 바로 뒤에 사람을 가리키는 whom을 놓아요.
+h-compound-relative|The club welcomes every applicant. No audition is required.|____ signs up may join.|Whoever|Whenever|However|신청하는 사람이 누구든지라는 뜻이고 signs up의 주어예요.
+h-noun-clause|The bus might be late. Nobody knows the answer yet.|____ the bus will arrive on time remains unclear.|Whether|Because|Although|제시간에 올지 여부 전체가 remains의 주어예요.
+h-correlative|Jiu takes photos and writes the captions as well. The teacher values both jobs.|She not only takes photos ____ writes captions.|but also|or|nor|not only와 but also를 한 쌍으로 써서 두 일을 더해요.
+h-conj-vs-prep|Dark clouds brought rain. The event continued in spite of the rain.|The event continued ____ the bad weather.|despite|although|even though|뒤에 the bad weather라는 명사 덩어리만 있어서 despite예요.
+h-relative-what-that|The lab lost an important object. Nobody can identify the object now.|Nobody knows ____ was lost.|what|that it|which it|잃어버린 ‘것’ 자체를 나타내고 was lost의 주어도 맡아요.
+h-subjunctive-past-perfect|Mina missed yesterday’s train because she left home late.|If she ____ earlier, she would have caught it.|had left|leaves tomorrow|will leave|이미 지나간 사실과 반대로 상상해 had left를 써요.
+h-wish-as-if|Jin cannot play the cello now. He wishes this were different.|I wish I ____ play the cello.|could|can|may|현재 갖지 못한 능력을 바라는 말은 wish 뒤에 could를 써요.
+h-without-its-time|Water kept the hikers alive. They now imagine that earlier trip without water.|Without water, they ____ survived.|would not have|will not have tomorrow|are not|지난 여행의 결과와 반대되는 상상을 would not have survived로 말해요.
+h-comparison-advanced|Each new practice session improves Jiu’s timing.|The more she practices, ____ her timing becomes.|the better|the best of|the fewest|두 변화가 함께 일어날 때 the + 비교급을 두 번 연결해요.
+h-subjunctive-demand|A committee makes a formal demand about a document. Its members insist on publication.|They demand that the report ____ published.|be|was|were|당위를 나타내는 demand 뒤 that절에서는 주어가 단수여도 be 원형을 써요.
+h-inversion|Mina has seldom seen snow in her town. Her essay opens with the negative adverb.|Seldom ____ such heavy snow.|has she seen|she has seen|she saw has|부정 의미의 seldom을 앞으로 옮기면 has가 주어 she보다 앞에 와요.
+h-emphasis|Jin fixed the light on Monday. The speaker stresses the day.|It was ____ that Jin fixed the light.|on Monday|the light twice by|fixing it to|강조하고 싶은 시간 덩어리를 It was와 that 사이에 놓아요.
+h-agreement|A basket of fresh apples sits on a desk. The writer describes the basket itself.|The basket of apples ____ heavy.|is|are|have|동사의 수를 정하는 중심말은 apples가 아니라 basket이에요.
+h-article-noun|A student sees an unfamiliar owl. She introduces it for the first time.|I saw ____ owl near school.|an|a|many|하나를 처음 말하고 owl이 모음 소리로 시작해 an을 써요.
+h-quantifiers|Tickets are almost sold out. Only two places remain in the hall.|Very ____ seats are left.|few|little|much|seats는 세는 복수 명사이고 남은 수가 매우 적어요.
+h-pronoun-reference|A phone and two chargers lie on the table. Mina needs both chargers.|Please pass ____ to me.|them|it|itself|대상이 둘이므로 목적어 them으로 받아요.
+h-parallelism|The art club advertises three weekly activities in one list.|We enjoy drawing, painting, and ____.|sculpting|to sculpt|sculpted|같은 enjoy에 연결되는 세 활동의 형태를 -ing로 맞춰요.
+h-adj-adv-usage|The new volunteer works until midnight. Everyone recognizes her effort.|She works ____.|hard|hardly|harden|hard는 열심히라는 뜻이에요. hardly는 거의 하지 않는다는 뜻이에요.
+h-ellipsis-insertion|Mina reads more books than Jin reads. The writer avoids repeating the same verb.|Mina reads more books than Jin ____.|does|is|was|반복되는 현재형 reads를 대신해 does를 써요.
+h-negation|Twenty students voted. Sixteen voted yes and four voted no.|____ student voted yes.|Not every|No|Not a single|일부만 반대했으므로 모두가 찬성한 것은 아니라는 부분 부정이에요.
+as-long-as|Books may leave the library on one condition. They must come back by Friday.|You can borrow them ____ you return them by Friday.|as long as|unless|before|반납한다는 조건에서 허락하므로 as long as예요.
+so-that-purpose|Mina speaks louder on purpose. She wants the back row to hear her.|She speaks louder ____ everyone can hear.|so that|despite|because of|모두가 들을 수 있게 하려는 목적을 so that 다음에 문장으로 붙여요.
+used-to|Jin cycled to work years ago. These days he always walks.|He ____ cycle to work.|used to|is used to|has yet to|예전에는 반복했지만 지금은 달라진 습관이에요.
+do-you-can-you|Mina swims well but rarely visits a pool. The survey asks about regular exercise.|Which question belongs on the survey?|Do you swim every week?|Can you swim across the pool?|Can I swim now?|조사하려는 것은 능력이나 허락이 아니라 평소 실제로 하는 행동이에요.

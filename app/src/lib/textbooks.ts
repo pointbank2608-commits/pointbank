@@ -128,12 +128,15 @@ async function requestExtraction<T>(body: FormData) {
 }
 
 export async function extractGrammar(academy: string, files: File[], first: number, last: number,
-  audience: string) {
+  audience: string, grade=audience==='elementary'?3:audience==='high'?10:7, count=5) {
   const body = await textbookForm(academy, files, first, last);
   body.set('mode', 'grammar');
   body.set('audience', audience);
+  body.set('grammarGrade',String(grade));
+  body.set('grammarCount',String(count));
   const result = await requestExtraction<{ content: import('./grammar').GrammarBoardContent }>(body);
-  if (result?.content?.steps?.length !== 6 || !result.content.examples?.length) throw new Error('extractionFailed');
+  if (result?.content?.steps?.length !== 6 || !result.content.examples?.length || result.content.workshop?.version!==1 ||
+    !result.content.steps.every(step=>step.practice)) throw new Error('extractionFailed');
   return result.content;
 }
 

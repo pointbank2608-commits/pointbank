@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import GrammarPickerPanel from './GrammarPickerPanel';
+import { GradeSettings } from './grammar/WorkshopEditor';
+import { grammarPoint, grammarBoardContent } from '../lib/grammar';
+import { extensionPool } from '../../../supabase/functions/_shared/grammarWorkshop';
 import MyGrammarLibrary from './MyGrammarLibrary';
 import { AiGrammarCreateButton } from './AiGrammarCreator';
 import type { GrammarPreset } from '../lib/myGrammar';
@@ -83,6 +86,24 @@ export default function LessonActivityPicker({onPick,onGrammarPick,onVideo,onPdf
  const {t,i18n}=useTranslation(),ko=i18n.language.startsWith('ko');
  const [cat,setCat]=useState<ActivityCategory>('recent'),[query,setQuery]=useState('');
  const [gameGroup, setGameGroup] = useState<GameBrowseGroup | 'all'>('all');
+ const [customGrade,setCustomGrade]=useState(false);
+ const [grade,setGrade]=useState(7);
+ const [counts,setCounts]=useState<Record<number,number>>({});
+ function pickGrammar(id:string,preset?:GrammarPreset){
+   if(locked.current)return;
+   locked.current=true;
+   if(customGrade){
+     const point=grammarPoint(id);
+     const content=preset?.content??(point&&grammarBoardContent(point));
+     if(content?.workshop){
+       const workshop={...content.workshop,grade,countsByGrade:{...content.workshop.countsByGrade,...counts}};
+       workshop.count=Math.min(counts[grade]??5,extensionPool(workshop).length);
+       onGrammarPick(id,{useWordList:cards.length>0,...preset,grammarId:id,content:{...content,workshop}});
+       return;
+     }
+   }
+   onGrammarPick(id,preset);
+ }
  const [printTab,setPrintTab] = useState<PrintTab>('words');
  const printTabSections = printGroups[printTab].flatMap(key=>printSections.filter(section=>section.key===key));
  const [pdfBusy, setPdfBusy] = useState(false);
@@ -211,15 +232,12 @@ export default function LessonActivityPicker({onPick,onGrammarPick,onVideo,onPdf
            setGrammarRevision(n => n + 1);
          }} />
        </div>
-       {myGrammar ? <MyGrammarLibrary key={grammarRevision} query={query} onPick={preset => {
-         if (locked.current) return;
-         locked.current = true;
-         onGrammarPick(preset.grammarId, preset);
-       }} /> : <GrammarPickerPanel searchQuery={query} onPick={grammarId => {
-         if (locked.current) return;
-         locked.current = true;
-         onGrammarPick(grammarId);
-       }} />}
+       <label className="mb-2 flex items-center gap-2"><input type="checkbox" checked={customGrade} onChange={e=>setCustomGrade(e.target.checked)}/>이 수업의 학년·심화 문제 수 지정</label>
+       {customGrade&&<GradeSettings grade={grade} count={counts[grade]??5} max={15} onChange={(g,n)=>{
+         if(g===grade)setCounts(old=>({...old,[g]:n}));setGrade(g);
+       }}/>}
+       {myGrammar ? <MyGrammarLibrary key={grammarRevision} query={query} onPick={preset=>pickGrammar(preset.grammarId,preset)} />
+         : <GrammarPickerPanel searchQuery={query} onPick={id=>pickGrammar(id)} />}
      </> : <>
      <h3>{t('lessonUx.'+(q?'results':cat==='recent'&&!recent.length?'defaults':cat))}</h3>
      <p className="activity-caption">{t(q?'lessonUx.allSearch':'lessonUx.chooseActivity')}</p>
