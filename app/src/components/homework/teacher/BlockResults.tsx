@@ -51,7 +51,7 @@ export function useBlockRows(assignmentId: string) {
 }
 
 /** 반 전체 피드백: 색 설명 · 교사 확인 필요 개수 · 활동 방식별 평균(낮은 것부터) */
-export function ClassMethods({ rows }: { rows: BlockResult[] }) {
+export function ClassMethods({ rows, material = false }: { rows: BlockResult[]; material?: boolean }) {
   const { i18n } = useTranslation();
   const en = i18n.language.startsWith("en");
   const { methods, pending } = useMemo(() => {
@@ -71,7 +71,9 @@ export function ClassMethods({ rows }: { rows: BlockResult[] }) {
     <div className="space-y-2">
       {pending > 0 && (
         <p className="rounded-lg bg-warm-yellow/30 px-3 py-2 text-sm font-bold text-deep-navy">
-          {en ? `${pending} activities need your review (marked !)` : `교사 확인이 필요한 활동 ${pending}개 (학생 카드의 ! 표시)`}
+          {material
+            ? (en ? `${pending} submissions need your review (marked !)` : `교사 확인이 필요한 제출물 ${pending}개 (학생 카드의 ! 표시)`)
+            : (en ? `${pending} activities need your review (marked !)` : `교사 확인이 필요한 활동 ${pending}개 (학생 카드의 ! 표시)`)}
         </p>
       )}
       {methods.length > 0 && (
@@ -140,12 +142,14 @@ export function StudentStrip({
       <div className="flex flex-wrap gap-1">
         {mine.map((r, i) => {
           const c = cellStyle(r);
+          const prompt = originals?.[r.item_id]?.text;
+          const label = prompt ? `${r.title} · ${prompt}` : r.title;
           return (
             <button
               key={r.item_id}
               type="button"
-              title={`${i + 1}. ${r.title}`}
-              aria-label={`${name} · ${r.title}`}
+              title={`${i + 1}. ${label}`}
+              aria-label={`${name} · ${label}`}
               aria-pressed={open === r.item_id}
               onClick={() => setOpen(open === r.item_id ? null : r.item_id)}
               className={`relative flex h-8 w-8 items-center justify-center rounded text-[11px] font-bold text-deep-navy ${c.bg} ${open === r.item_id ? "ring-2 ring-primary ring-offset-1" : ""}`}
@@ -161,6 +165,11 @@ export function StudentStrip({
           <p className="font-bold">
             {detail.title} · {statusText(detail)}
           </p>
+          {original?.materialName && <div className="space-y-1">
+            <small>{original.materialName}{original.role && ` · ${original.role}`}</small>
+            {!original.videoUrl && <p className="font-semibold">{original.text}</p>}
+            {original.translation && <p>{original.translation}</p>}
+          </div>}
           {detail.spelling_hints && <details className="rounded-lg border bg-white p-3">
             <summary className="cursor-pointer font-bold">
               {en?'Spelling hints allowed':'허용한 철자 힌트'} · {HINT_NAMES[detail.spelling_hints.allowed][en?1:0]}
@@ -189,6 +198,10 @@ export function StudentStrip({
             {en ? "Hints / listens" : "힌트 / 다시 듣기"}: {detail.meta.hints || 0} / {detail.meta.listens || 0}
           </p>
           {detail.meta.response && <p className="whitespace-pre-wrap">{detail.meta.response}</p>}
+          {detail.meta.recordingCheck && <p>{en ? 'Speech recognition' : '음성 인식'} · {{
+            matched: en ? 'Matched' : '일치', different: en ? 'Different words' : '다른 발화',
+            unrecognized: en ? 'Not recognized' : '인식하지 못함', unavailable: en ? 'Unavailable' : '판정 불가',
+          }[detail.meta.recordingCheck]}</p>}
           {detail.meta.recording && <RecordingComparison key={detail.meta.recording} path={detail.meta.recording} original={original} originalsFailed={originalsFailed} en={en} onError={onError}/>}
           {detail.meta.review === "pending" && (
             <button
@@ -218,8 +231,8 @@ function RecordingComparison({path,original,originalsFailed,en,onError}:{
     catch { onError(en?'Could not load the recording. Try again.':'녹음을 불러오지 못했습니다. 다시 시도하세요.'); }
     finally { setLoading(false); }
   }
-  return <div className={original?'grid gap-3 md:grid-cols-2':'space-y-2'}>
-    {original&&<section className="min-w-0 rounded-xl border bg-white p-3">
+  return <div className={original?.videoUrl?'grid gap-3 md:grid-cols-2':'space-y-2'}>
+    {original?.videoUrl&&<section className="min-w-0 rounded-xl border bg-white p-3">
       <h4 className="font-bold">{en?'Original audio':'원음'}</h4>
       <p className="mb-2">{original.text}</p>
       {showOriginal?<div className="min-h-[280px]"><PlainTeachingVideo simple videoUrl={original.videoUrl} title={original.text} start={original.start} end={original.end}

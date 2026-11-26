@@ -8,6 +8,7 @@ import MatchupGame from './MatchupGame';
 import QuestionCard, { isStudioQuestion } from './QuestionCard';
 import { StudioCard, StudioShell, StudioTopBar } from '../studio/StudioKit';
 import { GUIDED_FINAL } from '../../lib/homework/guided';
+import { activityCardCount, activityCountLabel, activityGroups, nextActivityCard } from '../../lib/homework/activityGroups';
 import { answerKey, type AnswerResult, type RunnerApi, type SaveState } from './runnerTypes';
 import ShadowingActivity from './ShadowingActivity';
 import BlockActivity from './BlockActivity';
@@ -18,7 +19,7 @@ const SFX_CORRECT = 4015;
 const SFX_WRONG = 4025;
 const SFX_FINISH = 5037;
 
-type Phase = { k: 'intro' } | { k: 'item'; i: number; sub: 'lines' | 'questions' } | { k: 'finishing'; error?: boolean } | { k: 'done'; score: number; total: number } | { k: 'retry'; keys: string[]; pos: number };
+type Phase = { k: 'intro' } | { k: 'between'; i: number } | { k: 'item'; i: number; sub: 'lines' | 'questions' } | { k: 'finishing'; error?: boolean } | { k: 'done'; score: number; total: number } | { k: 'retry'; keys: string[]; pos: number };
 
 /**
  * 숙제 한 개를 처음부터 끝까지(학생 화면·선생님 미리보기 공용). 활동을 차례로: 쉐도잉 → 퀴즈 → 워크시트 → 게임.
@@ -59,14 +60,19 @@ export default function HomeworkRunner({
   /** 끝 화면의 "홈으로" 버튼(없으면 버튼을 숨긴다) */
   onHome?: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const en = i18n.language.startsWith('en');
   const [showWrong, setShowWrong] = useState(false);
   const [answers, setAnswers] = useState(initialAnswers);
   const [doneItems, setDoneItems] = useState(finishedItems);
   const first = preview ? Math.max(0,Math.min(previewStart,items.length-1)) : 0;
-  const [phase, setPhase] = useState<Phase>(() => alreadyFinished ? { k: 'finishing' } : startImmediately && items.length ? { k: 'item', i: first, sub: items[first].kind === 'shadowing' && items[first].content.lines?.length ? 'lines' : 'questions' } : { k: 'intro' });
+  const [phase, setPhase] = useState<Phase>(() => alreadyFinished
+    ? { k: 'done', score: [...initialAnswers.values()].filter(a => a.correct).length, total: initialAnswers.size }
+    : startImmediately && items.length ? { k: 'item', i: first, sub: items[first].kind === 'shadowing' && items[first].content.lines?.length ? 'lines' : 'questions' } : { k: 'intro' });
   const [feedback, setFeedback] = useState<(AnswerResult & { key: string }) | null>(null);
   const [busy, setBusy] = useState(false);
+  const savingItem = useRef(false);
+  const finishing = useRef(false);
   const shownAt = useRef(performance.now());
   const autoNextMs = useRef(900);
   const sensorItem = phase.k === 'item' ? items[phase.i] : phase.k === 'retry' ? items.find(it => it.id === phase.keys[phase.pos]?.split(':')[0]) : undefined;
@@ -84,12 +90,17 @@ export default function HomeworkRunner({
   const progressTotal = total + items.filter((it) => !it.content?.questions?.length).length;
   const progressCount = answeredCount + items.filter((it) => !it.content?.questions?.length && doneItems.has(it.id)).length;
 
-  // 이미 끝난 숙제를 다시 열면 결과 화면으로
-  useEffect(() => {
-    if (phase.k === 'finishing' && !phase.error) void doFinish();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  const groups = useMemo(() => damaged ? [] : activityGroups(items), [items, damaged]);
+  const currentGroup = phase.k === 'item' ? groups.find(group => group.indices.includes(phase.i)) : undefined;
+  let displayCount = progressCount;
+  let displayTotal = progressTotal;
+  if (phase.k === 'item' && currentGroup && items[phase.i].config.block?.groupKey) {
+    const earlier = currentGroup.indices.slice(0, currentGroup.indices.indexOf(phase.i));
+    const offset = earlier.reduce((count, index) => count + activityCardCount(items[index]), 0);
+    const questionIndex = feedback ? Number(feedback.key.split(':')[1]) : sensorQuestion ?? 0;
+    displayCount = Math.min(currentGroup.count, offset + questionIndex + 1);
+    displayTotal = currentGroup.count;
+  }
   const firstOpenItem = () => items.findIndex((it) => !doneItems.has(it.id));
 
   function openItem(i: number) {
@@ -103,25 +114,31 @@ export default function HomeworkRunner({
     shownAt.current = performance.now();
   }
 
-  async function completeItem(i: number, meta: Record<string, unknown> = {}) {
+  async function completeItem(i: number, meta: Record<string, unknown> = {}, reportToCard = false) {
+    if (savingItem.current || alreadyFinished) return;
+    savingItem.current = true;
     const it = items[i];
     setBusy(true);
     try {
       await api.progress(it.id, 'item_complete', meta);
     } catch (e) {
-      setBusy(false);
-      if (it.config.block) throw e;
+      if (reportToCard) throw e;
       return;
+    } finally {
+      savingItem.current = false;
+      setBusy(false);
     }
-    setBusy(false);
     const next = new Set(doneItems).add(it.id);
     setDoneItems(next);
-    const n = items.findIndex((x) => !next.has(x.id));
-    if (n < 0) void doFinish();
-    else openItem(n);
+    const following = nextActivityCard(items, groups, next, i);
+    if (!following) void doFinish();
+    else if (following.transition && !kids) setPhase({ k: 'between', i: following.index });
+    else openItem(following.index);
   }
 
   async function doFinish() {
+    if (finishing.current || alreadyFinished) return;
+    finishing.current = true;
     setPhase({ k: 'finishing' });
     try {
       const r = await api.finish();
@@ -131,6 +148,8 @@ export default function HomeworkRunner({
       setPhase({ k: 'done', score: r.score, total: r.total });
     } catch {
       setPhase({ k: 'finishing', error: true });
+    } finally {
+      finishing.current = false;
     }
   }
 
@@ -178,11 +197,11 @@ export default function HomeworkRunner({
   const header = (
     <div className="sticky top-0 z-10 bg-[#f8f1e3]/95 px-4 pb-2 pt-3 backdrop-blur">
       <div className="flex items-center gap-3">
-        <div className="h-3 flex-1 overflow-hidden rounded-full bg-[#efe8d4]" role="progressbar" aria-valuenow={progressCount} aria-valuemin={0} aria-valuemax={progressTotal}>
-          <div className="h-full rounded-full bg-warm-yellow transition-all" style={{ width: `${progressTotal ? (progressCount / progressTotal) * 100 : 0}%` }} />
+        <div className="h-3 flex-1 overflow-hidden rounded-full bg-[#efe8d4]" role="progressbar" aria-valuenow={displayCount} aria-valuemin={0} aria-valuemax={displayTotal}>
+          <div className="h-full rounded-full bg-warm-yellow transition-all" style={{ width: `${displayTotal ? (displayCount / displayTotal) * 100 : 0}%` }} />
         </div>
         <span className="text-base font-bold tabular-nums">
-          {progressCount} / {progressTotal}
+          {displayCount} / {displayTotal}
         </span>
       </div>
       <div className="mt-1 flex items-center justify-between text-sm text-[#5b6580]">
@@ -221,22 +240,33 @@ export default function HomeworkRunner({
           {started && <div className="mt-2 rounded-full bg-emerald-600/80 px-4 py-1.5 text-base">{t('studentHw.resumeNote')}</div>}
         </div>
         <ol className="flex flex-col gap-2">
-          {items.map((it, i) => (
-            <li key={it.id} className="flex min-h-14 items-center gap-3 rounded-2xl bg-white shadow-sm ring-1 ring-[#eadfc5] px-4">
-              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-base font-bold ${doneItems.has(it.id) ? 'bg-emerald-500' : 'bg-[#efe8d4]'}`}>
-                {doneItems.has(it.id) ? '✓' : i + 1}
-              </span>
-              <span className="flex-1 text-lg">{itemLabel(it)}</span>
-              <span className="text-sm text-[#5b6580]">{it.kind === 'shadowing' ? t('studentHw.linesN', { n: it.content.lines?.length ?? 0 }) : t('studentHw.questionCount', { count: it.content.questions.length })}</span>
-            </li>
-          ))}
+          {groups.map((group, index) => {
+            const next = group.indices.find(i => !doneItems.has(items[i].id));
+            return <li key={group.key}>
+              <button type="button" disabled={next === undefined} onClick={() => next !== undefined && openItem(next)}
+                className="flex min-h-16 w-full items-center gap-3 rounded-2xl bg-white px-4 py-2 text-left shadow-sm ring-1 ring-[#eadfc5] disabled:opacity-65">
+                <span className="shrink-0 rounded-full bg-[#efe8d4] px-3 py-1 font-bold">{next === undefined ? '✓' : index + 1}</span>
+                <span className="min-w-0 flex-1 break-words text-lg font-bold">{group.title || itemLabel(items[group.indices[0]])}
+                  {group.materialName && <small className="block font-normal text-[#5b6580]">{group.materialName}</small>}
+                </span>
+                <span className="shrink-0 text-sm text-[#5b6580]">{activityCountLabel(items[group.indices[0]], group.count, en)}</span>
+              </button>
+            </li>;
+          })}
         </ol>
-        <button type="button" onClick={() => openItem(firstOpenItem())} className="mt-auto min-h-14 rounded-full bg-[#3b5bdb] text-xl font-bold text-white shadow-lg">
-          {started ? t('studentHw.continue') : t('studentHw.start')}
-        </button>
+        {groups.length > 0 && groups.every(group => group.indices.every(i => doneItems.has(items[i].id))) &&
+          <button type="button" onClick={() => void doFinish()} className="min-h-14 rounded-full bg-[#3b5bdb] text-xl font-bold text-white">{en ? 'Save completion' : '완료 저장'}</button>}
       </div>
     );
   }
+
+  if (phase.k === 'between') return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-5 p-6 text-center">
+      <p className="text-lg text-[#5b6580]">{en ? 'Next activity' : '다음 활동'}</p>
+      <h2 className="break-words text-3xl font-bold">{itemLabel(items[phase.i])}</h2>
+      <button type="button" className="min-h-14 rounded-full bg-[#3b5bdb] px-8 text-xl font-bold text-white" onClick={() => openItem(phase.i)}>{t('studentHw.start')}</button>
+    </div>
+  );
 
   if (kids && phase.k === 'finishing' && !phase.error) {
     return (
@@ -285,6 +315,7 @@ export default function HomeworkRunner({
     const ratio = phase.total ? phase.score / phase.total : 1;
     const stars = ratio >= 0.9 ? 3 : ratio >= 0.7 ? 2 : 1;
     const wrongKeys = items.flatMap((it) => it.content.questions.map((_, qi) => answerKey(it.id, qi)).filter((k) => answers.get(k)?.correct === false));
+    const allowLegacyRetry = !alreadyFinished && !items.some(item => item.config.block?.groupKey);
     const qOf = (k: string) => {
       const [id, qi] = k.split(':');
       return items.find((x) => x.id === id)?.content.questions[Number(qi)];
@@ -330,10 +361,10 @@ export default function HomeworkRunner({
                 })}
               </div>
             )}
-            <button type="button" onClick={() => setPhase({ k: 'retry', keys: wrongKeys, pos: 0 })} className="mt-1 min-h-12 w-full rounded-full bg-[#3b5bdb] text-lg font-bold text-white">
+            {allowLegacyRetry && <button type="button" onClick={() => setPhase({ k: 'retry', keys: wrongKeys, pos: 0 })} className="mt-1 min-h-12 w-full rounded-full bg-[#3b5bdb] text-lg font-bold text-white">
               {t('studentHw.retryWrong')}
-            </button>
-            <p className="text-sm text-[#5b6580]">{t('studentHw.retryNote')}</p>
+            </button>}
+            {allowLegacyRetry && <p className="text-sm text-[#5b6580]">{t('studentHw.retryNote')}</p>}
           </div>
         )}
         {onHome && (
@@ -365,7 +396,7 @@ export default function HomeworkRunner({
     if (it.config.block?.type === 'study' && it.config.block.method === 'flip') {
       content = <FlipDeck key={it.id} text={it.config.block.text} onListen={()=>sensor('audio')} busy={busy} onDone={() => void completeItem(phase.i, { confirmed: true })} />;
     } else if (it.config.block && it.config.block.type !== 'watch' && it.config.block.completion !== 'answers') {
-      content = <BlockActivity key={it.id} item={it} api={api} preview={preview} previewHidden={previewHidden&&phase.i===first} onSensor={sensor} onDone={(meta) => completeItem(phase.i, meta)} />;
+      content = <BlockActivity key={it.id} item={it} api={api} preview={preview} previewHidden={previewHidden&&phase.i===first} onSensor={sensor} onDone={(meta) => completeItem(phase.i, meta, true)} />;
       if (finalCheck) content = <StudioCard label={it.title}>{content}</StudioCard>;
     } else if (it.config.watch) {
       content = <KidsWatch key={it.id} item={it} index={phase.i} total={items.length} watchApi={api.watch} onDone={() => void completeItem(phase.i)} />;
@@ -429,8 +460,8 @@ export default function HomeworkRunner({
       <StudioShell className={finalCheck && !preview ? 'border-x-4 border-[#0e1530] sm:border-x-0' : ''}>
         <StudioTopBar
           title={rp ? t('studentHw.retryWrong') : phase.k === 'item' ? itemLabel(items[phase.i]) : title}
-          progressText={rp ? `${rp.pos + 1} / ${rp.keys.length}` : `${progressCount} / ${progressTotal}`}
-          progress={rp ? (rp.pos + 1) / rp.keys.length : progressTotal ? progressCount / progressTotal : 0}
+          progressText={rp ? `${rp.pos + 1} / ${rp.keys.length}` : `${displayCount} / ${displayTotal}`}
+          progress={rp ? (rp.pos + 1) / rp.keys.length : displayTotal ? displayCount / displayTotal : 0}
           right={<SaveBadge state={preview ? 'saved' : saveState} preview={preview} light />}
         />
         {content}

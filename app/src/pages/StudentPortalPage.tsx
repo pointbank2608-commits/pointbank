@@ -43,8 +43,10 @@ export default function StudentPortalPage() {
   const load = useCallback(async (tk: string) => {
     setError(null);
     try {
-      setHome(await studentHome(tk));
+      const next = await studentHome(tk);
+      if (savedToken() === tk) setHome(next);
     } catch (e) {
+      if (savedToken() !== tk) return;
       if (e instanceof PortalError && e.kind === 'expired') {
         forgetStudentToken();
         setToken(null);
@@ -67,8 +69,8 @@ export default function StudentPortalPage() {
       home={home}
       error={error}
       onRetry={() => void load(token)}
-      onLogout={async () => {
-        await studentLogout(token);
+      onLogout={() => {
+        void studentLogout(token).catch(() => undefined);
         setHome(null);
         setToken(null);
       }}
@@ -86,10 +88,11 @@ function Brand() {
 }
 
 function LoginView({ homeworkCode, onDone }: { homeworkCode: string; onDone: (token: string) => void }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const code = codeFromUrl();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [remember, setRemember] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<PortalErrorKind | null>(null);
   const ready = name.trim().length > 0 && phone.replace(/\D/g, '').length >= 10;
@@ -99,7 +102,7 @@ function LoginView({ homeworkCode, onDone }: { homeworkCode: string; onDone: (to
     setBusy(true);
     setError(null);
     try {
-      onDone(await studentLogin(code, name, phone, homeworkCode));
+      onDone(await studentLogin(code, name, phone, homeworkCode, remember));
     } catch (e) {
       setError(e instanceof PortalError ? e.kind : 'unknown');
       setBusy(false);
@@ -134,6 +137,10 @@ function LoginView({ homeworkCode, onDone }: { homeworkCode: string; onDone: (to
         />
         <span className="text-sm text-[#5b6580]">{t('studentPortal.phoneHint')}</span>
       </label>
+      <label className="flex min-h-11 w-full max-w-xs items-center gap-2 whitespace-nowrap font-bold">
+        <input type="checkbox" checked={remember} onChange={event => setRemember(event.target.checked)} className="size-5 accent-[#3b5bdb]" />
+        {i18n.language.startsWith('en') ? 'Stay signed in on this device' : '이 기기에서 로그인 유지'}
+      </label>
       {error && (
         <p className="max-w-xs text-center text-lg text-[#3b5bdb]" role="alert">
           {t(`studentPortal.err_${error}`)}
@@ -158,6 +165,9 @@ function HomeView({
   onLogout: () => void;
 }) {
   const { t, i18n } = useTranslation();
+  const [section, setSection] = useState<'homework' | 'history' | 'study' | 'calendar'>('homework');
+  const [hasWordProject, setHasWordProject] = useState<boolean | null>(null);
+  const history = section === 'history';
   const grammar = useGrammarPortalAssignments(home && !error ? savedToken() : null);
   const canLoadTransfer = home && !error && home.features?.homework !== false && home.features?.solo !== false
     && home.lessons?.some(lesson => !lesson.kind || lesson.kind === 'lesson');
@@ -187,14 +197,14 @@ function HomeView({
   const soloClosed = home.features?.solo === false;
   const hwClosed = home.features?.homework === false;
   const grammarSolo = soloClosed ? [] : grammar.rows.filter(row => row.mode === 'individual');
-  const grammarHomework = soloClosed || hwClosed ? [] : grammar.rows.filter(row => row.mode === 'homework');
+  const grammarHomework = soloClosed || hwClosed ? [] : grammar.rows.filter(row => row.mode === 'homework' && (row.status === 'finished') === history);
   const isAdaptiveHomework = (lesson: PortalHome['lessons'][number]) => lesson.kind==='homework' && lesson.learning_path;
   const lessons = (home.lessons ?? []).filter(l=>!isAdaptiveHomework(l));
-  const adaptive = hwClosed||soloClosed?[]:(home.lessons ?? []).filter(isAdaptiveHomework);
+  const adaptive = hwClosed||soloClosed?[]:(home.lessons ?? []).filter(lesson => isAdaptiveHomework(lesson) && lesson.done === history);
   const firstOpenId = lessons.find((l) => !l.done && !l.path_waiting)?.id ?? null;
   const en=i18n.language.startsWith('en');
-  const open = home.homework.filter((h) => !h.done);
-  const done = home.homework.filter((h) => h.done);
+  const assignments = hwClosed ? [] : home.homework.filter(h => h.done === history);
+  const transferRows = transfer.filter(row => row.done === history);
   return (
     <div className={`${shell} gap-5 p-5`}>
       <header className="mx-auto flex w-full max-w-xl items-center gap-3">
@@ -208,12 +218,19 @@ function HomeView({
         </button>
       </header>
 
+      <nav aria-label={en ? 'Student menu' : '학생 메뉴'} className="mx-auto grid w-full max-w-xl grid-cols-2 gap-2 sm:grid-cols-4">
+        {([['homework', en ? 'Homework' : '숙제'], ['history', en ? 'Completed homework' : '완료한 숙제'],
+          ['study', en ? 'Lessons & review' : '학습·복습'], ['calendar', en ? 'Stamp calendar' : '도장 달력']] as const).map(([key, label]) =>
+          <button type="button" key={key} aria-pressed={section === key} onClick={() => setSection(key)}
+            className={`min-h-12 rounded-2xl px-3 font-bold ${section === key ? 'bg-[#3b5bdb] text-white' : 'bg-white ring-1 ring-[#eadfc5]'}`}>{label}</button>)}
+      </nav>
+
       {savedToken() && <ClassNoticeBanner load={() => studentNotice(savedToken() as string)} />}
       {grammar.error && <div role="status" className="mx-auto w-full max-w-xl">
         문법 목록을 불러오지 못했어요. <button type="button" onClick={grammar.retry} className="underline">다시 시도</button>
       </div>}
 
-      <section className="mx-auto w-full max-w-xl rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-5">
+      {section === 'study' && <section className="mx-auto w-full max-w-xl rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-5">
         <h2 className="mb-1 flex items-center gap-2 text-xl font-bold">
           <span className="material-symbols-outlined text-[24px] text-[#3b5bdb]">school</span>
           {t('studentPortal.todayLesson')}
@@ -244,26 +261,24 @@ function HomeView({
             </li>
           ))}
         </ul>
-      </section>
+      </section>}
 
-      {savedToken() && <ReviewSection token={savedToken() as string} />}
+      {section === 'study' && savedToken() && <ReviewSection token={savedToken() as string} />}
 
-      {savedToken() && !hwClosed && <WordMemoryPortalLinks token={savedToken() as string} />}
+      {section === 'calendar' && savedToken() && <StudentStampCalendar token={savedToken() as string} />}
 
-      {savedToken() && <StudentStampCalendar token={savedToken() as string} />}
-
-      <section className="mx-auto w-full max-w-xl rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-5">
+      {(section === 'homework' || history) && <section className="mx-auto w-full max-w-xl rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-5">
         <h2 className="mb-3 flex items-center gap-2 text-xl font-bold">
           <span className="material-symbols-outlined text-[24px] text-[#3b5bdb]">edit_note</span>
-          {t('studentPortal.homework')}
+          {history ? (en ? 'Completed homework' : '완료한 숙제') : (en ? 'Assigned homework' : '배정된 숙제')}
         </h2>
         {hwClosed && <p className="text-base text-[#5b6580]">{t('studentPortal.featureClosed')}</p>}
-        {!hwClosed && home.homework.length === 0 && adaptive.length === 0 && !grammarHomework.length && !(transferToken && (transfer.length || transferError)) && <p className="text-base text-[#5b6580]">{t('studentPortal.homeworkEmpty')}</p>}
+        {!hwClosed && (history || hasWordProject === false) && assignments.length === 0 && adaptive.length === 0 && !grammarHomework.length && !(transferToken && (transferRows.length || transferError)) && <p className="text-base text-[#5b6580]">{history ? (en ? 'No completed homework yet.' : '아직 완료한 숙제가 없어요.') : t('studentPortal.homeworkEmpty')}</p>}
         {transferToken && transferError && <p role="status" className="mb-2 text-sm">
           카이유 숙제를 불러오지 못했어요. <button className="underline" type="button" onClick={() => { setTransferError(false); setTransferRefresh(value => value + 1); }}>다시 시도</button>
         </p>}
         <ul className="flex flex-col gap-3">
-          {transferToken && transfer.map(row => <li key={row.assignment_id}>
+          {transferToken && transferRows.map(row => <li key={row.assignment_id}>
             <CaillouHomeworkCard state={row} act={async (action, answer) => {
               const next = await actOnTransferHomework(transferToken, row.assignment_id, action, answer);
               setTransfer(current => current.map(item => item.assignment_id === next.assignment_id ? next : item));
@@ -278,7 +293,7 @@ function HomeView({
               <span className="shrink-0 font-bold">{h.done?(en?'View':'보기'):h.path_waiting?t('studentPortal.pathSchedule',{defaultValue:'일정 보기'}):h.path_first_completed?(en?'Review':'복습하기'):t('studentPortal.start')}</span>
             </a>
           </li>)}
-          {[...open, ...done].map((h) => (
+          {assignments.map((h) => (
             <li key={h.access}>
               <a
                 href={`/hw/p/${h.access}`}
@@ -298,7 +313,8 @@ function HomeView({
             </li>
           ))}
         </ul>
-      </section>
+      </section>}
+      {section === 'homework' && savedToken() && !hwClosed && <WordMemoryPortalLinks token={savedToken() as string} onAvailability={setHasWordProject} />}
     </div>
   );
 }

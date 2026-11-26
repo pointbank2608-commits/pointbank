@@ -1,4 +1,5 @@
-// 새 숙제 3단계(자료 선택 → 숙제 구성 → 학생에게 보내기) 화면 검증. guided-server 의 가짜 서버를 쓰므로 운영 DB 에 접속하지 않는다.
+// The saved-lesson review shortcut retains the guided three-step workflow. The
+// main new-homework button uses the material-based two-step composer.
 import assert from 'node:assert/strict';
 import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -20,14 +21,14 @@ try{
  await page.goto('http://127.0.0.1:5410/scripts/homework/guided-fixture.html?go='+encodeURIComponent('/homework'));
  const body=await page.locator('body').innerText();
  assert.ok(!body.includes('기존 방식으로 만들기')&&!body.includes('직접 세부 편집'));
- await page.getByRole('button',{name:/새 숙제 내기/}).click();
+ await page.getByRole('button',{name:/오늘 수업 복습시키기/}).click();
  assert.ok((await text(composer())).includes('어떤 자료로 숙제를 낼까요?'));
  await composer().getByRole('button',{name:/수업에서 가져오기/}).waitFor();
  await composer().getByRole('button',{name:/내 단어장·문장 모음에서 가져오기/}).waitFor();
  await composer().getByRole('button',{name:/맞춤 단어 숙제/}).waitFor();
  await composer().getByRole('button',{name:/장기 단어 프로젝트/}).waitFor();
  assert.equal(await page.getByRole('button',{name:'맞춤 단어 숙제 만들기'}).count(),0,'숙제 페이지 위쪽 별도 진입 카드는 없다');
- pass('새 숙제 내기 → 1단계 자료 선택 (수업/단어장 두 입구, 옛 4단계·세부 편집 진입 없음)');
+ pass('오늘 수업 복습시키기 → 기존 수업 자료 선택 (별도 수업 복습 경로)');
 
  await composer().getByRole('button',{name:/수업에서 가져오기/}).click();
  await composer().getByLabel('수업 선택',{exact:true}).selectOption('lesson');

@@ -132,7 +132,7 @@ export interface HwServerItemAttempt {
   finished: boolean;
   score: number;
   total: number;
-  meta: { listens?: number; repeats?: number; lines?: number };
+  meta: { listens?: number; repeats?: number; lines?: number; recording?: string | null; response?: string | null; recordingCheck?: string };
 }
 
 export interface HwStudentState {

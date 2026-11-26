@@ -583,6 +583,10 @@ export function estimateMinutes(items: HwItemDraft[], rounds = 1): number {
         // FlipDeck presents one card per line with a non-empty front.
         const cards = (block.text ?? '').split('\n').filter(line => line.split('|')[0].trim());
         sec += Math.max(1, cards.length) * 10;
+      } else if (block.method === 'material:dub' || block.method === 'material:shadow') {
+        sec += Math.max(1, block.end - block.start);
+      } else if (block.method === 'material:echo') {
+        sec += Math.max(1, block.end - block.start) * 2;
       } else if (block.type === 'video') {
         sec += Math.max(0, block.end - block.start) || 60;
       } else if (block.type === 'speak') {

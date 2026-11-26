@@ -11,6 +11,7 @@ import HomeworkBlockEditor from '../components/homework/teacher/HomeworkBlockEdi
 import PublishedHomeworkDialog from '../components/homework/teacher/PublishedHomeworkDialog';
 import type { CheckType } from '../lib/homework/guided';
 import HomeworkComposer from '../components/homework/teacher/HomeworkComposer';
+import MaterialHomeworkComposer from '../components/homework/teacher/MaterialHomeworkComposer';
 import AdaptiveHomeworkComposer from '../components/homework/teacher/AdaptiveHomeworkComposer';
 import AdaptiveHomeworkResults from '../components/homework/teacher/AdaptiveHomeworkResults';
 import GrammarTeacherPanel from '../components/grammar/GrammarTeacherPanel';
@@ -21,7 +22,7 @@ import RecommendReview from '../components/homework/teacher/RecommendReview';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { fetchStudentsOfClass } from '../lib/api';
-import { deleteHomework, fetchHomeworkOverview, fetchHomeworkUsage, teacherErrorKey, type HomeworkOverviewRow } from '../lib/homework';
+import { deleteHomework, fetchHomeworkOverview, fetchHomeworkUsage, materialWorkloadLabel, teacherErrorKey, type HomeworkOverviewRow } from '../lib/homework';
 import type { FullCardItem, Student } from '../lib/types';
 import { useClasses } from '../lib/useClasses';
 
@@ -56,6 +57,8 @@ export default function HomeworkPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [panel, setPanel] = useState<Panel>({ k: 'none' });
+  const materialComposer = panel.k === 'compose' && panel.mode !== 'lesson' && !panel.lessonId &&
+    !panel.cards && !panel.followUp && !panel.studentIds;
   const [wordProjectRevision, setWordProjectRevision] = useState(0);
   const projectLocation = location.state as { wmPlanId?: string; fromClassId?: string } | null;
   const openPlanId = !projectLocation?.fromClassId || projectLocation.fromClassId === classId ? projectLocation?.wmPlanId : undefined;
@@ -207,7 +210,22 @@ export default function HomeworkPage() {
         <button type="button" onClick={()=>setPanel({k:'compose',mode:'lesson'})}><span className="material-symbols-outlined" aria-hidden>school</span><strong>{i18n.language.startsWith('en')?'Review a lesson':'오늘 수업 복습시키기'}</strong><span>{i18n.language.startsWith('en')?'Choose a saved lesson and collect its learning content.':'만든 수업을 고르면 단어·표현을 한 번에 모아요.'}</span></button>
         <button type="button" onClick={()=>setPanel({k:'compose',mode:'list'})}><span className="material-symbols-outlined" aria-hidden>style</span><strong>{i18n.language.startsWith('en')?'Learn words and expressions':'단어·문장 외우게 하기'}</strong><span>{i18n.language.startsWith('en')?'Use your collections to build a practice routine.':'내 단어장·문장 모음으로 반복 학습을 만들어요.'}</span></button>
       </div>}
-      {panel.k==='compose'&&classId&&academy?.id&&profile&&<HomeworkComposer
+      {materialComposer && classId && academy?.id && profile && <MaterialHomeworkComposer
+        key={classId} classId={classId} className={className} classes={classes} academyId={academy.id} ownerId={profile.id}
+        students={classId === loadedClass ? students : []} onClose={() => setPanel({ k: 'none' })}
+        onSwitch={kind => setPanel({ k: kind })} adaptiveEnabled={soloOpen}
+        onCreated={async (result, targetClass) => {
+          setPanel({ k: 'none' });
+          const continued = result.project?.skipped?.length ?? 0;
+          notify(continued && !result.assignment && !result.project?.plan_id ? t('materialHomework:projectExists') :
+            [t('studentHw.created'),continued ? t('materialHomework:continues',{n:continued}) : ''].filter(Boolean).join(' '));
+          if (result.project) setWordProjectRevision(n => n + 1);
+          if (targetClass !== classId) { select(targetClass); return; }
+          await reload();
+          if (result.assignment) setShareId(result.assignment.id);
+        }}
+      />}
+      {panel.k==='compose'&&!materialComposer&&classId&&academy?.id&&profile&&<HomeworkComposer
         key={`${classId}:${panel.lessonId||panel.mode||'new'}:${panel.cards?.length||0}`}
         academyId={academy.id} ownerId={profile.id} classId={classId} className={className}
         initialLessonId={panel.lessonId} initialMode={panel.mode} initialStudents={panel.studentIds} followUp={panel.followUp} initialCards={panel.cards} initialTitle={panel.title}
@@ -336,7 +354,7 @@ function HomeworkCard({
             {!hw.closed_at && pastDue && <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-sm text-amber-900">{t('studentHw.pastDue')}</span>}
           </div>
           <div className="text-sm text-on-surface-variant">
-            {t('studentHw.questionCount', { count: hw.question_count })}
+            {hw.material_workload ? materialWorkloadLabel(hw.material_workload, i18n.language.startsWith('en')) : t('studentHw.questionCount', { count: hw.question_count })}
             {hw.kind !== 'custom' && (
               <>
                 {' · '}

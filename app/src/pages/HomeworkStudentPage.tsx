@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import HomeworkRunner from '../components/homework/HomeworkRunner';
+import CompletedHomework from '../components/homework/CompletedHomework';
 import ClassNoticeBanner from '../components/solo/ClassNoticeBanner';
 import { hwNotice } from '../lib/soloChat';
 import { answerKey, type AnswerResult, type RunnerApi, type SaveState } from '../components/homework/runnerTypes';
@@ -10,6 +11,7 @@ import { forgetStudentToken, PortalError, savedToken } from '../lib/studentPorta
 import { uploadRecording } from '../lib/homework/blockApi';
 import {
   enqueue,
+  commitRecording,
   flush,
   forgetToken,
   HwError,
@@ -63,7 +65,11 @@ export default function HomeworkStudentPage() {
     // 개인 링크: 열쇠를 받아 반 숙제 주소로 옮긴다(개인 열쇠가 주소창에 남지 않게)
     if (access) {
       try {
-        const r = await hwOpenPersonal(access);
+        const r = await hwOpenPersonal(access, savedToken());
+        if (r.requires_login) {
+          navigate(`/s?hw=${encodeURIComponent(r.code)}`, { replace: true });
+          return;
+        }
         navigate(`/hw/${r.code}`, { replace: true });
       } catch (e) {
         const k = kindOf(e);
@@ -75,7 +81,7 @@ export default function HomeworkStudentPage() {
       navigate('/s', { replace: true });
       return;
     }
-    const saved = readToken(code);
+    const saved = savedToken() ? null : readToken(code);
     if (saved) {
       try {
         try {
@@ -125,6 +131,7 @@ export default function HomeworkStudentPage() {
 
   if (screen.k === 'loading') return <div className={`${shell} items-center justify-center text-lg text-[#5b6580]`}>{t('studentHw.loading')}</div>;
   if (screen.k === 'error') return <ErrorScreen kind={screen.kind} onRetry={screen.retry} onHome={() => navigate('/hw')} />;
+  if (screen.state.finished) return <div className={shell}><CompletedHomework state={screen.state} onHome={() => navigate('/s')} /></div>;
   return (
     <PlayScreen
       key={screen.token}
@@ -240,10 +247,22 @@ function PlayScreen({ token, state, onFatal, onHome, onNextRound }: { token: str
           if (r === 'queued' || !r) return { correct: null, answer: null };
           return { correct: r.correct, answer: r.answer };
         }),
-      progress: (itemId, event, meta) =>
-        run(async () => {
+      progress: async (itemId, event, meta) => {
+        if (event === 'item_complete' && typeof meta.recording === 'string') {
+          setSaveState('saving');
+          try {
+            await commitRecording(token, itemId, meta, typeof meta.submission === 'string' ? meta.submission : newId());
+            syncState();
+          } catch (error) {
+            setSaveState('error');
+            throw error;
+          }
+          return;
+        }
+        await run(async () => {
           await enqueue(token, { op: 'progress', clientId: newId(), itemId, event, meta });
-        }),
+        });
+      },
       // 시청 기록은 5초마다 가는 작은 호출이라 저장 상태 표시(run)에 올리지 않는다
       watch: {
         report: (itemId, viewKey, durationSec, watchedSec) => hwWatchReport(token, itemId, viewKey, durationSec, watchedSec),

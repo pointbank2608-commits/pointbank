@@ -23,6 +23,10 @@ export interface PublishedHomework {
   shortRepeat: HomeworkDraft["shortRepeat"] | null;
 }
 export const loadPublication = (id: string) => rpc<PublishedHomework>("hw_publication", { p_assignment: id });
+export const reissuePublication = (sourceId: string, draft: HomeworkDraft, students: string[], due: string, request: string) =>
+  rpc<{ id: string; code: string }>('hw_reissue_publication', {
+    p_source: sourceId, p_draft: draft, p_students: students, p_due: due ? new Date(due).toISOString() : null, p_request: request,
+  });
 export const revisePublication = (id: string, version: string, title: string, due: string | null, items: HomeworkDraft["items"], itemIds: (string | null)[]) =>
   rpc<void>("hw_edit_activities", { p_assignment: id, p_version: version, p_title: title, p_due: due, p_items: items, p_item_ids: itemIds });
 export const saveDraft = (classId: string, draft: HomeworkDraft) =>
@@ -59,6 +63,7 @@ export interface BlockResult {
   meta: {
     response?: string;
     recording?: string;
+    recordingCheck?: 'matched' | 'different' | 'unrecognized' | 'unavailable';
     hints?: number;
     listens?: number;
     review?: string;
@@ -73,17 +78,20 @@ export interface BlockResult {
 export const blockResults = (assignmentId: string) =>
   rpc<BlockResult[]>("hw_block_results", { p_assignment: assignmentId });
 
-export type RecordingOriginal = { text: string; videoUrl: string; start: number; end: number };
+export type RecordingOriginal = { text: string; videoUrl: string; start: number; end: number; materialName?: string; translation?: string; role?: string };
 
 export async function recordingOriginals(assignmentId: string): Promise<Record<string, RecordingOriginal>> {
-  const { data, error } = await supabase.from('homework_items').select('id,config').eq('assignment_id', assignmentId);
+  const { data, error } = await supabase.rpc('hw_recording_originals', {p_assignment:assignmentId});
   if (error) throw error;
   const originals: Record<string, RecordingOriginal> = {};
   for (const item of data ?? []) {
     const block = item.config?.block as HomeworkBlock | undefined;
-    if (block?.type !== 'speak' || block.completion !== 'recording' || typeof block.videoUrl !== 'string' || !extractYoutubeId(block.videoUrl) ||
-      !Number.isFinite(block.start) || !Number.isFinite(block.end) || block.start < 0 || block.end <= block.start) continue;
-    originals[item.id] = { text:block.text, videoUrl:block.videoUrl, start:block.start, end:block.end };
+    if (block?.type !== 'speak' || block.completion !== 'recording') continue;
+    const timedVideo = typeof block.videoUrl === 'string' && extractYoutubeId(block.videoUrl) &&
+      Number.isFinite(block.start) && Number.isFinite(block.end) && block.start >= 0 && block.end > block.start;
+    if (!timedVideo && !block.method?.startsWith('material:')) continue;
+    originals[item.id] = { text:block.text, videoUrl:timedVideo ? block.videoUrl : '', start:block.start, end:block.end,
+      materialName:block.materialName, translation:block.translation, role:block.role };
   }
   return originals;
 }

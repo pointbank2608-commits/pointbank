@@ -1,8 +1,18 @@
-/** Local recording survives refresh/upload failure; removed after confirmed upload. No external AI. */
+import type { UtteranceCheck } from './localUtterance';
+
+export type SavedRecording = {
+  blob: Blob;
+  duration: number;
+  check?: UtteranceCheck;
+  uploadedPath?: string;
+  /** Stable key for committing this take after a lost response. */
+  submission?: string;
+};
+/** Local recording survives refresh/upload failure; removed after confirmed submission. */
 export async function recordingCache(
   key: string,
-  value?: { blob: Blob; duration: number } | null,
-): Promise<{ blob: Blob; duration: number } | undefined> {
+  value?: SavedRecording | null,
+): Promise<SavedRecording | undefined> {
   const db = await new Promise<IDBDatabase>((resolve, reject) => {
     const req = indexedDB.open("classbank-homework-audio", 1);
     req.onupgradeneeded = () => req.result.createObjectStore("recordings");

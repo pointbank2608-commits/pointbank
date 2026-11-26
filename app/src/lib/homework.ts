@@ -27,7 +27,27 @@ export interface HomeworkOverviewRow {
   avg_pct: number | null;
   kinds: string[] | null;
   question_count: number;
+  material_workload?: MaterialWorkload | null;
   custom_student: string | null;
+}
+
+interface MaterialWorkload {
+  activities: number;
+  questions: number;
+  recordings: number;
+  videos: number;
+  practice: number;
+}
+
+export function materialWorkloadLabel(work: MaterialWorkload, en: boolean): string {
+  const amount = (n: number, unit: string) => `${n} ${unit}${n === 1 ? '' : 's'}`;
+  return [
+    en ? `${work.activities} ${work.activities === 1 ? 'activity' : 'activities'}` : `활동 ${work.activities}개`,
+    work.questions && (en ? amount(work.questions, 'question') : `${work.questions}문제`),
+    work.recordings && (en ? amount(work.recordings, 'recording') : `녹음 ${work.recordings}개`),
+    work.videos && (en ? amount(work.videos, 'video') : `영상 ${work.videos}개`),
+    work.practice && (en ? amount(work.practice, 'practice item') : `연습 ${work.practice}개`),
+  ].filter(Boolean).join(' · ');
 }
 
 export interface HomeworkSummary {

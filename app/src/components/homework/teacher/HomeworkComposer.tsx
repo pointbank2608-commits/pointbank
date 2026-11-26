@@ -14,9 +14,17 @@ import '../../../styles/homework-composer.css';
 import { grammarWordHomework, lessonGrammarWordSelection } from '../../../lib/grammarCoreWords';
 import type { HwItemDraft } from '../../../lib/homework/types';
 import '../../../i18n/grammarLessonLocales';
+import '../../../i18n/materialHomeworkLocales';
 
 type State={mode:'lesson'|'list'|null;sourceId:string;excluded:string[];edits:Record<string,{word:string;meaning:string}>;videos:string[];goals:PracticeGoal[];check:boolean;checkTypes:CheckType[]|null;checkCount:FinalCheck['count'];portion:number;part:number;title:string;due:string;everyone:boolean;students:string[];spellingHints:SpellingHintPolicy};
 type Receipt={fingerprint:string;request:string;draft:HomeworkDraft;result?:{id:string;code:string}};
+export function VocabularyProjectLinks({onSwitch, adaptiveEnabled}: {onSwitch:(kind:'adaptive'|'wordProject')=>void;adaptiveEnabled:boolean}) {
+ const {t}=useTranslation('materialHomework');
+ return <div className="hw-content-card"><h3>{t('multiDay')}</h3><p className="hw-muted">{t('multiDayHelp')}</p><div className="hw-source-choices">
+  <button type="button" disabled={!adaptiveEnabled} onClick={()=>onSwitch('adaptive')}><span aria-hidden className="material-symbols-outlined">auto_awesome</span><strong>{t('adaptive')}</strong><span>{t(adaptiveEnabled?'adaptiveHelp':'adaptiveClosed')}</span></button>
+  <button type="button" onClick={()=>onSwitch('wordProject')}><span aria-hidden className="material-symbols-outlined">event_repeat</span><strong>{t('project')}</strong><span>{t('projectHelp')}</span></button>
+ </div></div>;
+}
 const empty=():State=>({mode:null,sourceId:'',excluded:[],edits:{},videos:[],goals:[],check:false,checkTypes:null,checkCount:5,portion:20,part:0,title:'',due:'',everyone:true,students:[],spellingHints:{defaultLevel:0,overrides:{}}});
 function validRecovery(value:unknown):value is State{
  if(!value||typeof value!=='object')return false;const s=value as State;
@@ -33,7 +41,6 @@ export default function HomeworkComposer({academyId,ownerId,classId,className,in
  onClose:()=>void;onCreated:(result:{id:string;code:string})=>void;
 }){
  const {t,i18n}=useTranslation(),en=i18n.language.startsWith('en');const l=useCallback((ko:string,english:string)=>en?english:ko,[en]);
- const switchOptions=onSwitch?([['adaptive',l('맞춤 단어 숙제','Adaptive vocabulary homework'),l('단어를 고르고 계획을 확인하면, 학생마다 필요한 연습과 이후 복습 확인이 이어져요.','Students practise what they need, then get later review checks.'),'auto_awesome',adaptiveEnabled],['wordProject',l('장기 단어 프로젝트','Long-term word project'),l('큰 단어 범위를 한 번 배정하면, 학생별로 매일 새 단어와 복습을 나눠 학습해요.','Assign a large word range once; each student gets daily new words and review.'),'event_repeat',true]] as const):[];
  const cache=`classbank.hw.guided.v1.${ownerId}.${academyId}.${classId}`+(followUp?':followup:'+followUp.studentId+':'+followUp.type:'');
  const [state,setState]=useState<State>(()=>{
   try{const saved=JSON.parse(localStorage.getItem(cache)||'null');if(saved?.version===1&&saved.state&&!saved.state.goals)saved.state={...empty(),...saved.state,goals:[saved.state.goal]};if(saved?.version===1&&saved.state)saved.state={...empty(),...saved.state};if(saved?.version===1&&validRecovery(saved.state)&&(!initialLessonId||saved.state.sourceId===initialLessonId)&&(!initialMode||saved.state.mode===initialMode)&&!initialCards?.length)return saved.state;}catch{/* malformed recovery never changes server data */}
@@ -128,7 +135,7 @@ export default function HomeworkComposer({academyId,ownerId,classId,className,in
   <fieldset disabled={busy||waiting} className="hw-compose-body">
    {step===0&&<>
     <div className="hw-source-choices">{(['lesson','list'] as const).map(mode=><button key={mode} type="button" aria-pressed={state.mode===mode} onClick={()=>{patch({...empty(),mode,goals:[]});setError('');}}><span aria-hidden className="material-symbols-outlined">{mode==='lesson'?'school':'style'}</span><strong>{mode==='lesson'?l('수업에서 가져오기','Use a saved lesson'):l('내 단어장·문장 모음에서 가져오기','Use my words and sentences')}</strong><span>{mode==='lesson'?l('만든 수업에서 학습 내용을 모아요.','Use the learning content from a saved lesson.'):l('내 단어장·문장 모음을 사용해요.','Use your word or sentence collection.')}</span></button>)}</div>
-    {switchOptions.length>0&&<div className="hw-content-card"><h3>{l('며칠에 걸쳐 배우는 단어 숙제','Multi-day vocabulary homework')}</h3><p className="hw-muted">{l('한 번 내는 숙제가 아니라, 학생마다 계획에 따라 이어지는 숙제예요. 선택하면 전용 구성 화면으로 이동해요.','These follow a plan over several days for each student. Choosing one opens its own setup.')}</p><div className="hw-source-choices">{switchOptions.map(([kind,name,help,icon,enabled])=><button key={kind} type="button" disabled={!enabled} onClick={()=>onSwitch?.(kind)}><span aria-hidden className="material-symbols-outlined">{icon}</span><strong>{name}</strong><span>{enabled?help:l('학원의 개별수업 기능이 열려 있어야 만들 수 있어요.','Requires the academy’s individual learning feature.')}</span></button>)}</div></div>}
+    {onSwitch&&<VocabularyProjectLinks onSwitch={onSwitch} adaptiveEnabled={adaptiveEnabled}/>}
     {state.mode&&<label className="hw-compose-label">{state.mode==='lesson'?l('수업 선택','Choose a lesson'):l('단어장·문장 모음 선택','Choose a collection')}<select aria-label={state.mode==='lesson'?l('수업 선택','Choose a lesson'):l('단어장·문장 모음 선택','Choose a collection')} value={state.sourceId} onChange={e=>chooseSource(e.target.value)}><option value="">{state.mode==='list'&&initialCards?.length?(initialTitle||l('선택한 단어·표현','Selected entries')):l('선택해 주세요','Please choose')}</option>{(state.mode==='lesson'?lessons:lists).map(row=><option key={row.id} value={row.id}>{row.name}</option>)}</select></label>}
     {lesson&&grammarSource&&onGrammarReview&&<div className="hw-content-card">
      <h3>{t('grammarLesson.coreHomework')}</h3>

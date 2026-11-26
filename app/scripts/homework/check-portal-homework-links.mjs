@@ -72,6 +72,8 @@ try {
   await db.close();
 }
 
+if (process.argv.includes('--database-only')) process.exit(0);
+
 const server = await createGuidedServer();
 let browser;
 try {
@@ -84,26 +86,32 @@ try {
   await page.waitForURL('**/s?hw=100001');
   await page.getByLabel('내 이름',{exact:true}).fill('민서');
   await page.getByLabel(/등록된 전화번호/).fill('01012345678');
-  assert.equal(await page.locator('form input').count(),2);
+  assert.equal(await page.getByRole('textbox').count(),2);
+  assert.equal(await page.getByRole('checkbox',{name:'이 기기에서 로그인 유지'}).isChecked(),false);
   await page.getByRole('button',{name:'들어가기'}).click();
   await page.waitForURL('**/hw/100001');
   await page.getByText('테스트 숙제 이어서',{exact:true}).waitFor();
-  assert.ok(await page.evaluate(()=>localStorage.getItem('classbank.hw.100001')==='homework-token'));
+  assert.ok(await page.evaluate(()=>sessionStorage.getItem('classbank.studentToken')==='portal-token'
+    && !localStorage.getItem('classbank.studentToken') && !localStorage.getItem('classbank.hw.100001')));
   await page.reload();
   await page.getByText('테스트 숙제 이어서',{exact:true}).waitFor();
-  await page.evaluate(()=>localStorage.clear());
+  await page.evaluate(()=>{ localStorage.clear(); sessionStorage.clear(); });
   await page.goto(base+encodeURIComponent('/s'));
   await page.getByLabel('내 이름',{exact:true}).fill('민서');
   await page.getByLabel(/등록된 전화번호/).fill('01012345678');
-  assert.equal(await page.locator('form input').count(),2);
+  assert.equal(await page.getByRole('textbox').count(),2);
+  await page.getByRole('checkbox',{name:'이 기기에서 로그인 유지'}).check();
   await page.getByRole('button',{name:'들어가기'}).click();
   await page.getByText('민서, 안녕!',{exact:true}).waitFor();
   assert.ok(await page.evaluate(()=>window.__guided.calls.some(call=>call.name==='student_login_by_phone')));
-  await page.evaluate(()=>localStorage.clear());
+  assert.ok(await page.evaluate(()=>localStorage.getItem('classbank.studentToken')==='portal-token'));
+  await page.getByRole('button',{name:'로그아웃'}).click();
+  await page.getByRole('button',{name:'들어가기'}).waitFor();
+  assert.ok(await page.evaluate(()=>!localStorage.getItem('classbank.studentToken') && !sessionStorage.getItem('classbank.studentToken')));
   await page.goto(base+encodeURIComponent('/s?c=ABC123'));
   await page.getByLabel('내 이름',{exact:true}).fill('민서');
   await page.getByLabel(/등록된 전화번호/).fill('01012345678');
-  assert.equal(await page.locator('form input').count(),2);
+  assert.equal(await page.getByRole('textbox').count(),2);
   await page.getByRole('button',{name:'들어가기'}).click();
   await page.getByText('민서, 안녕!',{exact:true}).waitFor();
   console.log('PASS browser: shared homework link → two-field portal login → original homework → reload; direct /s and academy portal link use the same two fields.');

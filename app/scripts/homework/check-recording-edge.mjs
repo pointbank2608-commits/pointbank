@@ -4,7 +4,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { File } from "node:buffer";
 import ts from "typescript";
-import { parseBuffer } from "../../node_modules/homework-test-tools/node_modules/music-metadata/lib/index.js";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+const toolsDir = resolve(process.env.HOMEWORK_AUDIO_TOOLS || "node_modules/homework-test-tools");
+const { parseBuffer } = await import(pathToFileURL(resolve(toolsDir, "node_modules/music-metadata/lib/index.js")));
 globalThis.File = File;
 const source = readFileSync(
   "../supabase/functions/homework-recording/index.ts",
@@ -20,22 +23,24 @@ let handler;
 let access = false;
 let uploadCount = 0;
 let storedMetadata;
+const storedPaths = new Set();
 const token = "10000000-0000-4000-8000-000000000001",
   item = "20000000-0000-4000-8000-000000000001";
 const client = {
   rpc: async (name, args) =>
-    name === "hw_recording_target"
+    name === "hw_recording_target_v2"
       ? {
           data:
             args.p_token === token && args.p_item === item
-              ? "synthetic/item/audio"
+              ? { path: "synthetic/item/" + args.p_digest, limit: 120, stored: storedPaths.has("synthetic/item/" + args.p_digest) }
               : null,
           error: null,
         }
       : { data: access, error: null },
   storage: {
     from: () => ({
-      upload: async (_path, _bytes, options) => {
+      upload: async (path, _bytes, options) => {
+        storedPaths.add(path);
         uploadCount++;
         storedMetadata = options.metadata;
         return { error: null };
@@ -57,9 +62,7 @@ new Function("createClient", "parseBuffer", "Deno", js)(
     },
   },
 );
-const bytes = readFileSync(
-  "node_modules/homework-test-tools/synthetic-recording.webm",
-);
+const bytes = readFileSync(resolve(toolsDir, process.env.HOMEWORK_AUDIO_FIXTURE || "synthetic-recording.webm"));
 const request = (audio, options = {}) => {
   const form = new FormData();
   form.set("token", options.token || token);
@@ -67,7 +70,7 @@ const request = (audio, options = {}) => {
   form.set("duration", String(options.duration ?? 1));
   form.set(
     "audio",
-    new File([audio], "synthetic.webm", { type: options.mime || "audio/webm" }),
+    new File([audio], "synthetic-recording", { type: options.mime || process.env.HOMEWORK_AUDIO_MIME || "audio/webm" }),
   );
   return new Request("http://synthetic.invalid/record", {
     method: "POST",
@@ -77,6 +80,8 @@ const request = (audio, options = {}) => {
 assert.equal((await handler(request(bytes))).status, 200);
 assert.equal(uploadCount, 1);
 assert(Number(storedMetadata.duration) >= 0.5);
+assert.equal((await handler(request(bytes))).status, 200);
+assert.equal(uploadCount, 1, "retry of identical validated bytes reuses the original object");
 assert.equal(
   (
     await handler(
@@ -106,5 +111,5 @@ access = true;
 assert.equal((await handler(playback())).status, 200);
 assert.equal(uploadCount, 1);
 console.log(
-  "8 recording Edge handler checks passed: real audio parsing, private upload, size/format/duration rejection, staff playback authorization. Synthetic adapters only.",
+  "9 recording Edge handler checks passed: real audio parsing, idempotent private upload, size/format/duration rejection, staff playback authorization. Synthetic adapters only.",
 );

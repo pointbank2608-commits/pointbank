@@ -72,9 +72,10 @@ export async function hwLoginName(code: string, name: string, pin: string): Prom
 }
 
 /** 개인 링크(QR) — 열쇠와 숙제 번호를 돌려준다 */
-export async function hwOpenPersonal(access: string): Promise<{ token: string; code: string }> {
-  const r = await rpc<{ token: string; code: string }>('hw_open_personal', { p_access: access });
-  saveToken(r.code, r.token);
+export async function hwOpenPersonal(access: string, portalToken?: string | null): Promise<{ token?: string; code: string; requires_login?: boolean }> {
+  if (portalToken) return rpc('student_open_homework_target', {p_access:access,p_token:portalToken});
+  const r = await rpc<{ token?: string; code: string; requires_login?: boolean }>('hw_open_personal', { p_access: access });
+  if (r.token) saveToken(r.code, r.token);
   return r;
 }
 
@@ -83,7 +84,6 @@ export async function hwOpenFromPortal(portalToken: string, code: string): Promi
     const { data, error } = await supabase.rpc('student_open_homework', { p_token: portalToken, p_code: code });
     if (error?.message === 'expired') throw new PortalError('expired');
     if (error || data?.error) throw error ?? data.error;
-    saveToken(code, data.token);
     return data.token;
   } catch (error) {
     if (error instanceof PortalError) throw error;
@@ -94,7 +94,12 @@ export async function hwOpenFromPortal(portalToken: string, code: string): Promi
 export const hwSpellingHint = (token:string,itemId:string,index:number,level:import('./spellingHints').HintLevel) =>
   rpc<import('./spellingHints').SpellingHint>('hw_spelling_hint',{p_token:token,p_item:itemId,p_index:index,p_level:level});
 
-export const hwState = (token: string) => openDelivery<HwStudentState>('homework', token, null, () => rpc<HwStudentState>('hw_state', { p_token: token })).catch(e => { throw toError(e); });
+export async function hwState(token: string): Promise<HwStudentState> {
+  const state = await rpc<HwStudentState>('hw_state', { p_token: token });
+  // Reopening a submitted assignment must not register a new learning run.
+  if (state.finished) return state;
+  return openDelivery('homework', token, null, () => Promise.resolve(state)).catch(e => { throw toError(e); });
+}
 
 /** 영상 시청 기록(093) — 본 초를 서버에 알리고, 한 번 다 봤으면 completed */
 export interface WatchReport {
@@ -140,6 +145,13 @@ async function send(token: string, op: QueuedOp): Promise<HwSubmitResult | null>
     return rpc<HwSubmitResult>('hw_submit', { p_token: token, p_item_id: op.itemId, p_q_index: op.qIndex, p_response: op.response, p_client_id: op.clientId, p_ms: Math.round(op.ms) });
   await rpc('hw_progress', { p_token: token, p_item_id: op.itemId, p_event: op.event, p_meta: op.meta, p_client_id: op.clientId });
   return null;
+}
+
+/** A recording card advances only after the server acknowledges the uploaded take.
+ * Keep the take in IndexedDB on network failure; a queued background completion
+ * could otherwise commit an older recording while the student re-records. */
+export async function commitRecording(token: string, itemId: string, meta: Record<string, unknown>, clientId: string) {
+  await send(token, { op: 'progress', clientId, itemId, event: 'item_complete', meta });
 }
 
 /** 대기열에 넣고 바로 보내 본다. 인터넷 문제면 'queued'(나중에 다시), 숙제가 닫혔으면 오류를 던진다. */

@@ -95,15 +95,18 @@ function listeningWrite(card:FullCardItem,en:boolean):HwQuestion{
  return {id:crypto.randomUUID(),qtype:'text',style:'dictation',prompt:'',speak:card.word,correct:card.word,word:card.word,skill:SKILL.dictation,gen:GEN_VERSION,card:{word:card.word,meaning:card.meaning,imageUrl:card.imageUrl,example:card.example},sub:en?'Listen and type.':'듣고 써 보세요.'};
 }
 /** Existing student activities, grouped into a few packs instead of 1 block per word. */
-export function buildGuidedPractice(contents:LearningContent[],videos:LearningVideo[],goal:PracticeGoal | PracticeGoal[],en=false,final:FinalCheck|null=null,spellingHints?:SpellingHintPolicy){
+export function buildGuidedPractice(contents:LearningContent[],videos:LearningVideo[],goal:PracticeGoal | PracticeGoal[],en=false,final:FinalCheck|null=null,spellingHints?:SpellingHintPolicy,mode:'practice'|'finalOnly'='practice'){
  const goals=Array.isArray(goal)?goal:[goal];
  const items:HwItemDraft[]=[],issues:string[]=[];
  if(contents.some(c=>c.card.word.length>300))issues.push(en?'An entry exceeds 300 characters. Shorten it before sending.':'300자를 넘는 내용이 있습니다. 내용을 줄여 주세요.');
  if(contents.some(c=>c.card.word.includes('/')))issues.push(en?'Split expressions containing / into separate entries; / is reserved for answer alternatives.':'‘/’가 들어간 표현은 각각 나눠 주세요. 이 기호는 정답 구분에 사용됩니다.');
+ const pool=contents.map(c=>c.card);
+ const pack=(qs:HwQuestion[],title:string)=>{for(let i=0;i<qs.length;i+=100){const it=newBlock('recall');it.title=title;it.content.questions=qs.slice(i,i+100);items.push(it);}};
+ if(mode==='practice'){
  let lines:string[]=[];let length=0;
  const flush=()=>{if(!lines.length)return;const it=newBlock('study');it.title=en?'Look and listen':'보고 듣기';Object.assign(it.config.block!,{method:'flip',count:lines.length,text:lines.join('\n')});items.push(it);lines=[];length=0;};
  for(const {card}of contents){const line=[card.word,card.meaning,card.example||''].map(clean).join(' | ');if(line.length>4800){issues.push(en?'A study card is too long.':'학습 카드 내용이 너무 깁니다.');continue;}if(lines.length>=40||length+line.length+1>4800)flush();lines.push(line);length+=line.length+1;}flush();
- const pool=contents.map(c=>c.card),recall:HwQuestion[]=[],writing:HwQuestion[]=[];
+ const recall:HwQuestion[]=[],writing:HwQuestion[]=[];
  for(const {card,kind}of contents){
   const sameWordMeanings=new Set(pool.filter(p=>normalize(p.word)===normalize(card.word)).map(p=>normalize(p.meaning)));
   const choice=isMeaning(card.meaning)&&sameWordMeanings.size===1?meaningQ(card,pool,Math.random):null;
@@ -117,7 +120,6 @@ export function buildGuidedPractice(contents:LearningContent[],videos:LearningVi
   }
   writing.push(spelling||listeningWrite(card,en));
  }
- const pack=(qs:HwQuestion[],title:string)=>{for(let i=0;i<qs.length;i+=100){const it=newBlock('recall');it.title=title;it.content.questions=qs.slice(i,i+100);items.push(it);}};
  if(recall.length)pack(recall,en?'Check what you remember':'기억 확인하기');
   if(goals.includes('memory')&&writing.length){
   const start=items.length;
@@ -127,6 +129,7 @@ export function buildGuidedPractice(contents:LearningContent[],videos:LearningVi
  if(goals.includes('speaking'))for(let i=0;i<contents.length;i+=5){const group=contents.slice(i,i+5),it=newBlock('speak');it.title=en?'Read, hide and speak':'읽고 가리고 말하기';Object.assign(it.config.block!,{text:group.map(c=>c.card.word).join('\n'),translation:group.map(c=>c.card.meaning).join(' · '),imageUrl:group.length===1?group[0].card.imageUrl||'':'',stages:['model','hidden'],hiddenWords:group.flatMap(c=>c.card.word.trim().split(/\s+/)).map((_,index)=>index),repeats:1});items.push(it);}
  items.push(...videos.map(v=>structuredClone(v.item)));
  for(const item of items)if(item.config.block)item.config.block.guidedPractice=true;
+ }
  const examples:Partial<Record<CheckType,HwItemDraft>>={};
  const finalSpeech=(card:FullCardItem,title:string)=>{
   const item=newBlock('speak');item.title=title;
@@ -199,6 +202,8 @@ export function buildGuidedPractice(contents:LearningContent[],videos:LearningVi
    }
   }
  }
- issues.push(...validateItems(items));
+ if(mode==='finalOnly' && items.length>60) {
+  for(let i=0;i<items.length;i+=60)issues.push(...validateItems(items.slice(i,i+60)));
+ } else issues.push(...validateItems(items));
  return {items,examples,issues:[...new Set(issues)],finalQuestions,questions:items.reduce((n,it)=>n+it.content.questions.length,0),recordings:items.filter(it=>it.config.block?.completion==='recording').length,contents:contents.length};
 }

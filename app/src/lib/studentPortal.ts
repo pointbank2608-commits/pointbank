@@ -73,17 +73,19 @@ async function rpc<T>(fn: string, args: Record<string, unknown>, fallback?: stri
   return data;
 }
 
-function read(key: string): string | null {
+let volatileToken: string | null = null;
+
+function readSession(storage: 'sessionStorage' | 'localStorage'): string | null {
   try {
-    return localStorage.getItem(key);
+    return window[storage].getItem(TOKEN_KEY);
   } catch {
     return null;
   }
 }
-function write(key: string, value: string | null) {
+function writeSession(storage: 'sessionStorage' | 'localStorage', value: string | null) {
   try {
-    if (value === null) localStorage.removeItem(key);
-    else localStorage.setItem(key, value);
+    if (value === null) window[storage].removeItem(TOKEN_KEY);
+    else window[storage].setItem(TOKEN_KEY, value);
   } catch {
     /* 저장이 막힌 브라우저면 이번 방문에서만 쓴다 */
   }
@@ -101,14 +103,14 @@ export function codeFromUrl(): string {
   return clean.length === 6 ? clean : '';
 }
 
-export const savedToken = () => read(TOKEN_KEY);
+export const savedToken = () => volatileToken ?? readSession('sessionStorage') ?? readSession('localStorage');
 
 export function homeworkCodeFromUrl(): string {
   const code = new URLSearchParams(window.location.search).get('hw') ?? '';
   return /^\d{6}$/.test(code) ? code : '';
 }
 
-export async function studentLogin(code: string, name: string, phone: string, homeworkCode = ''): Promise<string> {
+export async function studentLogin(code: string, name: string, phone: string, homeworkCode = '', remember = false): Promise<string> {
   const credentials = {
     p_name: name.trim(),
     p_phone: phone,
@@ -120,7 +122,9 @@ export async function studentLogin(code: string, name: string, phone: string, ho
     : academyCode
       ? await rpc<{ token: string }>('student_login', { ...credentials, p_code: academyCode })
       : await rpc<{ token: string }>('student_login_by_phone', credentials);
-  write(TOKEN_KEY, r.token);
+  forgetStudentToken();
+  volatileToken = r.token;
+  writeSession(remember ? 'localStorage' : 'sessionStorage', r.token);
   return r.token;
 }
 
@@ -138,15 +142,15 @@ export async function studentStamps(token: string, from: string, to: string): Pr
 }
 
 export async function studentLogout(token: string): Promise<void> {
-  try {
-    await supabase.rpc('student_logout', { p_token: token });
-  } finally {
-    write(TOKEN_KEY, null);
-  }
+  // Remove local access synchronously, including when the device is offline.
+  forgetStudentToken();
+  await supabase.rpc('student_logout', { p_token: token });
 }
 
 export function forgetStudentToken() {
-  write(TOKEN_KEY, null);
+  volatileToken = null;
+  writeSession('sessionStorage', null);
+  writeSession('localStorage', null);
 }
 
 /** 전화번호 입력 보기 좋게: 010-1234-5678 */

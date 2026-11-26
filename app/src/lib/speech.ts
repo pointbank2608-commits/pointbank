@@ -50,11 +50,12 @@ function makeUtter(text: string): SpeechSynthesisUtterance {
  * 앞에서 읽던 것을 멈추고 새로 읽는다. 안드로이드 크롬은 cancel 바로 뒤의 speak 를 삼키는 일이 있어
  * 읽는 중일 때만 cancel 하고 아주 잠깐 뒤에 시작한다. 일시정지 상태도 풀어 준다.
  */
-function start(utters: SpeechSynthesisUtterance[]) {
+function start(utters: SpeechSynthesisUtterance[], signal?: AbortSignal) {
   const synth = window.speechSynthesis;
   const busy = synth.speaking || synth.pending;
   if (busy) synth.cancel();
   const run = () => {
+    if (signal?.aborted) return;
     if (synth.paused) synth.resume();
     for (const u of utters) synth.speak(u);
   };
@@ -89,19 +90,22 @@ export function speakCanvasText(text: string, tone?: CanvasVoiceTone) {
 }
 
 /** For assessed listening, errors and timeouts cannot stand in for playback. */
-export function speakVerified(text: string): Promise<boolean> {
-  if (!text.trim() || typeof window === 'undefined' || !('speechSynthesis' in window)) return Promise.resolve(false);
+export function speakVerified(text: string, signal?: AbortSignal): Promise<boolean> {
+  if (signal?.aborted || !text.trim() || typeof window === 'undefined' || !('speechSynthesis' in window)) return Promise.resolve(false);
   return new Promise(resolve => {
     try {
       const utterance = makeUtter(text);
+      const aborted = () => finish(false);
       const finish = (played: boolean) => {
         window.clearTimeout(timer);
+        signal?.removeEventListener('abort', aborted);
         resolve(played);
       };
-      const timer = window.setTimeout(() => finish(false), 8000);
+      const timer = window.setTimeout(() => finish(false), signal ? Math.max(8000, text.length * 150) : 8000);
+      signal?.addEventListener('abort', aborted, {once:true});
       utterance.addEventListener('end', () => finish(true), { once: true });
       utterance.addEventListener('error', () => finish(false), { once: true });
-      start([utterance]);
+      start([utterance], signal);
     } catch { resolve(false); }
   });
 }

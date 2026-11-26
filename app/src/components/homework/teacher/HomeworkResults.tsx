@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../../context/ToastContext';
-import { closeHomework, deleteHomework, fetchHomeworkSummary, homeworkUrl, teacherErrorKey, type HomeworkOverviewRow, type HomeworkSummary } from '../../../lib/homework';
+import { closeHomework, deleteHomework, fetchHomeworkSummary, homeworkUrl, materialWorkloadLabel, teacherErrorKey, type HomeworkOverviewRow, type HomeworkSummary } from '../../../lib/homework';
 import type { FullCardItem } from '../../../lib/types';
 import { cardFromSnapshot } from '../../../lib/homework/teacherHelpers';
 import HomeworkRewardPanel from './HomeworkRewardPanel';
@@ -34,7 +34,7 @@ export default function HomeworkResults({
   onPrepareGuided: (studentId: string, cards: FullCardItem[], type: CheckType) => void;
   onCard: (studentId: string) => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { notify } = useToast();
   const [sum, setSum] = useState<HomeworkSummary | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -129,12 +129,14 @@ export default function HomeworkResults({
             <div className="text-xs text-on-surface-variant">평균 시간</div>
           </div>
           <div className={stat}>
-            <div className="text-xl font-bold tabular-nums">{sum.items.length}<span className="text-sm font-normal text-on-surface-variant"> / {totalQ}문제</span></div>
+            <div className="text-xl font-bold tabular-nums">{hw.material_workload
+              ? materialWorkloadLabel(hw.material_workload, i18n.language.startsWith('en'))
+              : <>{sum.items.length}<span className="text-sm font-normal text-on-surface-variant"> / {totalQ}문제</span></>}</div>
             <div className="text-xs text-on-surface-variant">활동</div>
           </div>
         </div>
 
-        <ClassMethods rows={block.rows} />
+        <ClassMethods rows={block.rows} material={!!hw.material_workload} />
         {block.error && <p role="status" className="text-sm text-error">{block.error}</p>}
 
         {sum.class_wrong_words.length > 0 && (
@@ -203,7 +205,7 @@ export default function HomeworkResults({
               </span>
               <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-sm ${pill(s.status)}`}>
                 {t(`studentHw.status_${s.status}`)}
-                {s.status === 'doing' && ` ${s.answered}/${totalQ}`}
+                {s.status === 'doing' && (!hw.material_workload || totalQ > 0) && ` ${s.answered}/${totalQ}`}
               </span>
               {s.rewarded && (
                 <span className="inline-flex items-center gap-0.5 whitespace-nowrap rounded-full bg-warm-yellow/40 px-2 py-0.5 text-sm text-deep-navy">

@@ -2,7 +2,8 @@ import PlainTeachingVideo from '../PlainTeachingVideo';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { HwItem } from "../../lib/homework/types";
-import { recordingCache } from "../../lib/homework/recordingCache";
+import { useHomeworkRecording } from "./useHomeworkRecording";
+import MaterialStudyCard from "./MaterialStudyCard";
 import {
   extractYoutubeId,
   loadYoutubeIframeApi,
@@ -14,21 +15,24 @@ import type { RunnerApi } from "./runnerTypes";
 
 const btn =
   "min-h-14 rounded-2xl bg-[#3b5bdb] px-5 py-3 text-lg font-bold text-white disabled:opacity-40 focus-visible:outline-4 focus-visible:outline-white";
-export default function BlockActivity({
+type Props = {
+  item: HwItem; api: RunnerApi; preview: boolean; previewHidden?: boolean;
+  onSensor?: (action: SensorAction) => void;
+  onDone: (meta: Record<string, unknown>) => Promise<void>;
+};
+
+export default function BlockActivity(props: Props) {
+  if (props.item.config.block?.method?.startsWith("material:")) return <MaterialStudyCard {...props} />;
+  return <LegacyBlockActivity {...props} />;
+}
+function LegacyBlockActivity({
   item,
   api,
   preview,
   previewHidden = false,
   onDone,
   onSensor,
-}: {
-  item: HwItem;
-  api: RunnerApi;
-  preview: boolean;
-  previewHidden?: boolean;
-  onSensor?: (action: SensorAction) => void;
-  onDone: (meta: Record<string, unknown>) => Promise<void>;
-}) {
+}: Props) {
   const { i18n } = useTranslation();
   const en = i18n.language.startsWith("en");
   const l = useCallback(
@@ -61,46 +65,10 @@ export default function BlockActivity({
   const [watched, setWatched] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [blob, setBlob] = useState<Blob | null>(null);
-  const [url, setUrl] = useState("");
-  const [duration, setDuration] = useState(0);
-  const [recording, setRecording] = useState(false);
-  const recorder = useRef<MediaRecorder | null>(null);
-  const stream = useRef<MediaStream | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const mounted = useRef(true);
-  const uploadPath = useRef<string | null>(null);
-  useEffect(() => {
-    mounted.current = true;
-    if (cache && !preview)
-      void recordingCache(cache)
-        .then((v) => {
-          if (v && mounted.current) {
-            setBlob(v.blob);
-            setDuration(v.duration);
-          }
-        })
-        .catch(() =>
-          setError(
-            l(
-              "기기 녹음 복구 저장을 사용할 수 없습니다.",
-              "Recording recovery is unavailable on this device.",
-            ),
-          ),
-        );
-    return () => {
-      mounted.current = false;
-      if (timer.current) clearTimeout(timer.current);
-      if (recorder.current?.state === "recording") recorder.current.stop();
-      stream.current?.getTracks().forEach((t) => t.stop());
-    };
-  }, [cache, preview, l]);
-  useEffect(() => {
-    if (!blob) return;
-    const u = URL.createObjectURL(blob);
-    setUrl(u);
-    return () => URL.revokeObjectURL(u);
-  }, [blob]);
+  const recording = useHomeworkRecording(preview ? '' : cache, '', 120, setError);
+  const blob = recording.take?.blob;
+  const url = recording.url;
+  const duration = recording.take?.duration ?? 0;
   useEffect(() => {
     if (cache && !preview) {
       try {
@@ -118,113 +86,13 @@ export default function BlockActivity({
       }
     }
   }, [cache, preview, response, hints, listens, stage, repeated, l]);
-  async function startRecording() {
-    setError("");
-    if (
-      !navigator.mediaDevices?.getUserMedia ||
-      typeof MediaRecorder === "undefined"
-    ) {
-      setError(
-        l(
-          "이 기기는 녹음을 지원하지 않습니다. 최신 Chrome 또는 Safari를 사용해 주세요.",
-          "Recording is unsupported. Use a current Chrome or Safari.",
-        ),
-      );
-      return;
-    }
-    try {
-      const media = await navigator.mediaDevices.getUserMedia({ audio: true });
-      if (!mounted.current) {
-        media.getTracks().forEach((t) => t.stop());
-        return;
-      }
-      stream.current = media;
-      const mime = [
-        "audio/webm;codecs=opus",
-        "audio/ogg;codecs=opus",
-        "audio/mp4",
-      ].find((t) => MediaRecorder.isTypeSupported(t));
-      if (!mime) {
-        media.getTracks().forEach((t) => t.stop());
-        throw new Error("unsupported");
-      }
-      const r = new MediaRecorder(media, { mimeType: mime });
-      recorder.current = r;
-      const chunks: BlobPart[] = [];
-      const start = performance.now();
-      r.ondataavailable = (e) => {
-        if (e.data.size) chunks.push(e.data);
-      };
-      r.onerror = () => {
-        setError(
-          l("녹음 실패. 다시 녹음해 주세요.", "Recording failed. Try again."),
-        );
-        media.getTracks().forEach((t) => t.stop());
-        setRecording(false);
-      };
-      r.onstop = () => {
-        media.getTracks().forEach((t) => t.stop());
-        if (timer.current) clearTimeout(timer.current);
-        const seconds = Math.min(120, (performance.now() - start) / 1000);
-        const audio = new Blob(chunks, { type: mime });
-        if (!mounted.current) return;
-        setRecording(false);
-        if (audio.size > 8 * 1024 * 1024 || audio.size < 64 || seconds < 0.5) {
-          setError(
-            l(
-              "녹음은 0.5~120초, 8MB 이하여야 합니다.",
-              "Record 0.5–120 seconds, up to 8 MB.",
-            ),
-          );
-          return;
-        }
-        setBlob(audio);
-        setDuration(seconds);
-        uploadPath.current = null;
-        if (cache && !preview)
-          void recordingCache(cache, { blob: audio, duration: seconds }).catch(
-            () =>
-              setError(
-                l(
-                  "기기 저장 실패. 화면을 유지하고 제출해 주세요.",
-                  "Device save failed. Keep this screen open and submit.",
-                ),
-              ),
-          );
-      };
-      r.start();
-      setRecording(true);
-      timer.current = setTimeout(() => {
-        if (r.state === "recording") r.stop();
-      }, 120000);
-    } catch (e) {
-      setError(
-        (e as DOMException).name === "NotAllowedError"
-          ? l(
-              "마이크 권한이 거부되었습니다. 브라우저 설정에서 허용한 뒤 다시 눌러 주세요.",
-              "Microphone permission denied. Allow it in browser settings and retry.",
-            )
-          : l(
-              "마이크를 사용할 수 없습니다. 기기와 권한을 확인해 주세요.",
-              "Microphone unavailable. Check your device and permissions.",
-            ),
-      );
-    }
-  }
   async function finish() {
     if (busy) return;
     setBusy(true);
     setError("");
     try {
-      let path = uploadPath.current;
-      if (b.completion === "recording") {
-        if (!blob) throw new Error("recording_required");
-        if (!preview && !path) {
-          if (!api.uploadRecording) throw new Error("upload_unavailable");
-          path = await api.uploadRecording(item.id, blob, duration);
-          uploadPath.current = path;
-        }
-      }
+      const uploaded = b.completion === "recording" ? await recording.upload(api, item.id, preview) : null;
+      const path = uploaded?.uploadedPath;
       await onDone({
         response: response.trim(),
         recording: path,
@@ -238,7 +106,7 @@ export default function BlockActivity({
       });
       if (cache && !preview) {
         localStorage.removeItem(`hw.block.${cache}`);
-        await recordingCache(cache, null);
+        recording.clear();
       }
     } catch {
       setError(
@@ -414,18 +282,18 @@ export default function BlockActivity({
         <div className="space-y-3 rounded-xl bg-white shadow-sm ring-1 ring-[#eadfc5] p-4">
           <p>
             {l(
-              "대표 녹음 1개 제출 · 최대 2분 · 8MB. 녹음은 선생님이 확인합니다.",
+              "이 문항의 녹음은 선생님이 확인합니다. 최대 2분 · 8MB.",
               "Submit one recording · Up to 2 minutes / 8 MB. Your teacher reviews it.",
             )}
           </p>
           <button
             className={btn}
-            disabled={busy}
+            disabled={busy || recording.phase === "permission" || recording.phase === "stopping"}
             onClick={() =>
-              recording ? recorder.current?.stop() : void startRecording()
+              recording.phase === "recording" ? recording.stop() : void recording.start()
             }
           >
-            {recording
+            {recording.phase === "recording"
               ? l("녹음 끝내기", "Stop recording")
               : blob
                 ? l("다시 녹음", "Record again")
@@ -442,7 +310,7 @@ export default function BlockActivity({
       {recordReady && (
         <button
           className={`${btn} mt-auto`}
-          disabled={!allowed || busy || recording}
+          disabled={!allowed || busy || recording.phase !== "idle"}
           onClick={() => void finish()}
         >
           {busy

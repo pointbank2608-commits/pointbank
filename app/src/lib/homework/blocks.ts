@@ -44,6 +44,10 @@ export interface HomeworkBlock {
   views?: number;
   /** recall 블록: 암기 방식(memory.ts)과 만들 때의 문제 수 — 같은 방식으로 다시 만들 때 쓴다 */
   method?: string;
+  groupKey?: string;
+  materialName?: string;
+  materialEntryId?: string;
+  role?: string;
   count?: number;
   /** Guided composer practice, separate from a scored final check. */
   guidedPractice?: boolean;

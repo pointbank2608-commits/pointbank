@@ -5,19 +5,25 @@ import { wmStudentLinks } from '../../lib/wordMemory/api';
 type PortalLink = Awaited<ReturnType<typeof wmStudentLinks>>[number];
 
 /** 성공한 빈 목록은 숨기고, 호출 실패는 학생이 다시 시도할 수 있게 한다. */
-export default function WordMemoryPortalLinks({ token }: { token: string }) {
+export default function WordMemoryPortalLinks({ token, onAvailability }: { token: string; onAvailability?: (hasAssignments: boolean | null) => void }) {
   const { t } = useTranslation();
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<{ token: string; attempt: number; links: PortalLink[] | null }>();
   useEffect(() => {
     let alive = true;
+    onAvailability?.(null);
     wmStudentLinks(token)
-      .then((rows) => alive && setResult({ token, attempt, links: Array.isArray(rows) ? rows : null }))
+      .then((rows) => {
+        if (!alive) return;
+        const links = Array.isArray(rows) ? rows : null;
+        setResult({ token, attempt, links });
+        onAvailability?.(links === null ? null : links.length > 0);
+      })
       .catch(() => alive && setResult({ token, attempt, links: null }));
     return () => {
       alive = false;
     };
-  }, [token, attempt]);
+  }, [token, attempt, onAvailability]);
   if (!result || result.token !== token || result.attempt !== attempt) return null;
   const { links } = result;
   if (links === null) return (
