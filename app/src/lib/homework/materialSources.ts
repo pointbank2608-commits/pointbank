@@ -19,9 +19,13 @@ export function savedMaterials(lists: WordList[]): Material[] {
   }));
 }
 
-export function sceneMaterials(clips: VideoClip[]): CatalogueMaterial[] {
-  return animationEpisodeLibrary(clips).episodes.flatMap(({ episode, chapters, words, source, lines }) =>
-    chapters.map((chapter, index) => ({
+export function homeworkEpisodes(clips: VideoClip[]) {
+  return animationEpisodeLibrary(clips).episodes.map(({ episode, chapters, words, source, lines }) => ({
+    id: episode.id, title: episode.title, series: source.series, start: episode.start,
+    thumbnail: episode.thumbnail, videoThumbnail: `https://i.ytimg.com/vi/${source.youtubeId}/hqdefault.jpg`,
+    searchTitles: [episode.title, ...(episode.aliases ?? []).filter(title=>!title.includes(':episode:')),
+      ...(source.episodes.length === 1 ? [source.title] : [])],
+    materials: (episode.chapters.length ? chapters : []).map((chapter, index) => ({
       id: `${episode.id}/chapter/${index}`, kind: 'scene' as const, name: `${episode.title} · ${chapter.title}`,
       episode: { id: episode.id, name: episode.title, start: episode.start },
       chapter: { title: chapter.title, start: chapter.start, end: chapter.end, intent: chapter.intent },
@@ -32,7 +36,12 @@ export function sceneMaterials(clips: VideoClip[]): CatalogueMaterial[] {
           .map(line => ({ s: line.start, e: line.end, en: line.en, ko: line.ko, speaker: line.speaker })),
       },
     })),
-  );
+  }));
+}
+export type HomeworkEpisode = ReturnType<typeof homeworkEpisodes>[number];
+
+export function sceneMaterials(clips: VideoClip[]): CatalogueMaterial[] {
+  return homeworkEpisodes(clips).flatMap(episode=>episode.materials);
 }
 
 export function bankCard(entry: WordBankEntry): FullCardItem {

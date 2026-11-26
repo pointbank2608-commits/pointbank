@@ -4,7 +4,7 @@ import { fetchAllWordLists, fetchStudentsOfClass, fetchWordBank } from '../../..
 import type { ClassRow, Student, WordBankEntry } from '../../../lib/types';
 import { fetchVideoClips } from '../../../lib/videoClips';
 import { activitiesByKind, buildMaterialPlan, type Activity, type Material, type Settings } from '../../../lib/homework/materialPlan';
-import { bankCard, frequentMaterials, savedMaterials, sceneMaterials, type CatalogueMaterial } from '../../../lib/homework/materialSources';
+import { bankCard, frequentMaterials, savedMaterials, homeworkEpisodes, type CatalogueMaterial, type HomeworkEpisode } from '../../../lib/homework/materialSources';
 import { dispatchMaterials, type DispatchResult, type MaterialDispatch } from '../../../lib/homework/materialDispatch';
 import { estimateMinutes } from '../../../lib/homework/build';
 import { newDraft, validateItems } from '../../../lib/homework/blocks';
@@ -88,6 +88,8 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
   const [notice, setNotice] = useState('');
   const [storageFailed, setStorageFailed] = useState(false);
   const [catalogue, setCatalogue] = useState<Catalogue>({});
+  const [episodes,setEpisodes] = useState<HomeworkEpisode[]>([]);
+  const [episodeView,setEpisodeView] = useState({id:'',series:'',query:''});
   const [bank, setBank] = useState<WordBankEntry[]>([]);
   const [failed, setFailed] = useState<Kind[]>([]);
   const [revision, setRevision] = useState(0);
@@ -120,7 +122,11 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
       setCatalogue(old => ({ ...old, word: materials.filter(m => m.kind === 'word'), sentence: materials.filter(m => m.kind === 'sentence') }));
     }).catch(() => failedKinds('word', 'sentence'));
     void fetchVideoClips().then(rows => {
-      if (active) setCatalogue(old => ({ ...old, scene: sceneMaterials(rows) }));
+      if (active) {
+        const available = homeworkEpisodes(rows);
+        setEpisodes(available);
+        setCatalogue(old => ({ ...old, scene: available.flatMap(episode=>episode.materials) }));
+      }
     }).catch(() => failedKinds('scene'));
     void fetchWordBank().then(rows => {
       if (active) { setBank(rows); setCatalogue(old => ({ ...old, frequent: frequentMaterials(rows) })); }
@@ -200,7 +206,8 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
   const ready = configValid && !!assignmentTitle && !invalidDue && targets.length > 0;
   const step = pending ? 2 : form.step;
   const heading = step === 0 ? t(expanded ? 'selectContent' : 'choose') : t(step === 1 ? 'configure' : 'sendHeading');
-  const sourceValid = !!selected.length && !missing.length && !emptySources.length;
+  const sourceValid = selected.some(m=>m.kind!=='scene' || m.cards.length || m.scene?.lines.length || (!form.selected[keyOf(m)].cardIds && !form.selected[keyOf(m)].lineIds))
+    && !missing.length && !emptySources.length;
   const dismissal = () => {
     if ((!storageFailed || window.confirm(t('leaveUnsaved'))) && !busy) onClose();
   };
@@ -213,6 +220,7 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
   }
   function category(kind: Kind) {
     const enabled = form.categories.includes(kind);
+    if (enabled && kind==='scene') setEpisodeView({id:'',series:'',query:''});
     const selected = { ...form.selected };
     if (enabled) for (const key of Object.keys(selected)) { if (key.startsWith(kind + '/')) delete selected[key]; }
     edit({ categories: toggle(form.categories, kind), selected, part: 0 });
@@ -284,6 +292,9 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
     ...gamePlan.items.map(item=>item.title),
     ...(frequent.length ? [t('dailySummary',{n:threshold})] : []), ...(form.final && finalPlan.items.length ? [t('final')] : []),
   ];
+  const nextInEpisode = step===0 && form.categories.includes('scene') && !!catalogue.scene && !failed.includes('scene');
+  const nextButton = <button type="button" className="hw-forward" disabled={step===0 ? !sourceValid : !configValid}
+    onClick={()=>{setNotice('');edit({step:step+1});}}>{t(step===0 ? 'toConfigure' : 'toStudents')} <span aria-hidden>→</span></button>;
   return <section className="hw-studio" aria-label={heading}>
     <nav className="hw-breadcrumb" aria-label={t('path')}><span>{t('ourClass')}</span><span aria-hidden>›</span>
       <button type="button" onClick={dismissal} disabled={busy}>{t('homework')}</button><span aria-hidden>›</span><span>{t('newHomework')}</span></nav>
@@ -295,6 +306,7 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
     <fieldset className="hw-studio-body" disabled={busy || !!pending}>
       {step === 0 && <>
         <HomeworkMaterialSelection catalogue={catalogue} categories={form.categories} selected={form.selected}
+          episodes={episodes} episodeView={episodeView} onEpisodeView={setEpisodeView} next={nextButton}
           failed={failed} onCategory={category} onChoose={choose} onConfigure={configure}
           onRetry={()=>setRevision(n=>n+1)} onExpandedChange={setExpanded}/>
         {!!missing.length && <p role="status">{t('missing')}</p>}
@@ -349,8 +361,7 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
     {error && <p role="alert" className="hw-studio-issue">{error}</p>}
     <footer className="hw-studio-footer">
       <button type="button" className="hw-back" disabled={busy || !!pending} onClick={()=>step ? edit({step:step-1}) : dismissal()}>{step ? t('back') : t('close')}</button>
-      {step < 2 ? <button type="button" className="hw-forward" disabled={step===0 ? !sourceValid : !configValid}
-        onClick={()=>{setNotice('');edit({step:step+1});}}>{t(step===0 ? 'toConfigure' : 'toStudents')} <span aria-hidden>→</span></button> :
+      {step < 2 ? (!nextInEpisode && nextButton) :
         <button type="button" className="hw-forward" disabled={busy || (!pending&&!ready)} onClick={()=>void send()}><span className="material-symbols-outlined" aria-hidden>send</span>{t(busy?'sending':'sendButton')}</button>}
     </footer>
     {preview && <AccessibleDialog label={t('preview')} onClose={() => setPreview(null)}><div className="hw-preview-dialog"><header><h3>{t('preview')}</h3><button type="button" onClick={() => setPreview(null)}>{t('close')}</button></header>
