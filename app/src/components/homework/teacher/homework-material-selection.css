@@ -23,6 +23,8 @@
 .art-frequent i { position: absolute; top: 5px; left: 2px; padding: 3px 8px 6px; border: 1.5px solid #635490; border-radius: 5px; color: #24283b; background: #e2d6fb; font-size: 19px; font-weight: 750; transform: rotate(-13deg); }
 .art-frequent i+i { inset: auto 0 1px auto; background: #ffec95; border-color: #bc8e2f; transform: rotate(10deg); }
 .hw-source-group { display: grid; gap: 8px; }
+.hw-source-list > summary { display: list-item; list-style: disclosure-closed inside; padding: 10px 0; font-weight: 700; cursor: pointer; }
+.hw-source-list[open] > summary { list-style-type: disclosure-open; }
 .hw-source-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 15px; }
 .hw-source-group .hw-source-filter select { max-width: 100%; min-width: 0; width: auto; padding: 8px; }
 .hw-source-accordion { border: 1px solid #cfd9e8; border-radius: 8px; overflow: hidden; background: white; }

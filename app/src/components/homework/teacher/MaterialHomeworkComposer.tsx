@@ -374,7 +374,7 @@ function MaterialOptions({ material, settings, onChange, onPreview, canPreview }
   return <section className="hw-plan-row">
     <div className="hw-plan-head"><strong>{material.kind === 'scene' ? t('categoryScene') : ''} {counts([material],t)}</strong>
       <div className="hw-plan-text"><small>{material.name}</small><span className="hw-checked-plan">{activities.length>0 && <span className="hw-plan-check" aria-hidden="true">✓</span>}{activities.length ? activities.map(id=>t(`activity.${id}`)).join(' · ') : t('pickType')}</span></div>
-      <button type="button" className="hw-small-action" aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)}><span className="material-symbols-outlined" aria-hidden>edit</span>{t(expanded?'done':'edit')}</button>
+      <button type="button" className="hw-small-action" aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)}><span className="material-symbols-outlined" aria-hidden>edit</span>{t(expanded?'done':'chooseLearningActivities')}</button>
     </div>
     {expanded && <div className="hw-plan-fields">
     <div className="hw-content-summary">{activitiesByKind[material.kind].map(id => <label key={id}><input type="checkbox" disabled={!!unavailable(id)} checked={activities.includes(id)}

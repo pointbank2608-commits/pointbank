@@ -128,11 +128,18 @@ export default function HomeworkMaterialSelection(props: Props) {
     <div className="hw-category-grid">{kinds.map(kind=><label key={kind} className={'hw-category'+(props.categories.includes(kind)?' is-selected':'')}>
       <input type="checkbox" checked={props.categories.includes(kind)} onChange={()=>props.onCategory(kind)}/>
       <CategoryArt kind={kind}/><strong>{t(category[kind])}</strong></label>)}</div>}
-    {kinds.filter(kind=>props.categories.includes(kind)).map(kind=><div key={kind}>
-      {props.failed.includes(kind) ? <p role="alert">{t('loadFailed')} <button type="button" onClick={props.onRetry}>{t('reload')}</button></p> :
+    {kinds.filter(kind=>props.categories.includes(kind)).map(kind=>{
+      const content = props.failed.includes(kind) ? <p role="alert">{t('loadFailed')} <button type="button" onClick={props.onRetry}>{t('reload')}</button></p> :
         !props.catalogue[kind] ? <p role="status">{t('loading')}</p> : !props.catalogue[kind].length ? <p>{t('noMaterials')}</p> :
         <SourceGroup kind={kind} rows={props.catalogue[kind]} en={en} expanded={expanded} setExpanded={setExpanded}
-          selected={props.selected} onChoose={props.onChoose} onConfigure={props.onConfigure}/>}
-    </div>)}
+          selected={props.selected} onChoose={props.onChoose} onConfigure={props.onConfigure}/>;
+      if (kind === 'word' || kind === 'sentence') {
+        return <details key={kind} open className="hw-source-list">
+          <summary>{kind === 'word' ? t('wordLists') : t('sentenceLists')}</summary>
+          {content}
+        </details>;
+      }
+      return <div key={kind}>{content}</div>;
+    })}
   </div>;
 }
