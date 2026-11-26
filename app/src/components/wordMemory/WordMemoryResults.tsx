@@ -17,7 +17,7 @@ function weakSkills(skill: Record<string, number>): string[] {
  * 숙제 페이지의 "단어암기숙제 현황". 숙제 완료(오늘 학습)와 장기 기억(며칠 뒤에도 기억한 단어)을 다른 지표로 나눠 보여 준다.
  * 능력별(뜻·철자·듣기…) 더 연습할 부분과 개인 링크도 여기서 본다.
  */
-export default function WordMemoryResults({ classId, initialPlanId, onDeleted }: { classId: string; initialPlanId?: string | null; onDeleted: () => void }) {
+export default function WordMemoryResults({ classId, initialPlanId, onDeleted, onlyPlanId }: { classId: string; initialPlanId?: string | null; onDeleted: () => void; onlyPlanId?: string }) {
   const { t } = useTranslation();
   const [plans, setPlans] = useState<WmPlanSummary[] | null>(null);
   const [openId, setOpenId] = useState<string | null>(initialPlanId ?? null);
@@ -110,7 +110,7 @@ export default function WordMemoryResults({ classId, initialPlanId, onDeleted }:
         </p>
       )}
       <ul className="space-y-2">
-        {plans.map((p) => (
+        {plans.filter(p=>!onlyPlanId || p.id===onlyPlanId).map((p) => (
           <li key={p.id} className="rounded-xl border border-outline-variant" data-wm-plan={p.id}>
             <button type="button" className="flex w-full flex-wrap items-center justify-between gap-2 p-3 text-left" aria-expanded={openId === p.id} onClick={() => setOpenId(openId === p.id ? null : p.id)}>
               <span>

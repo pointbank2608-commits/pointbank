@@ -44,7 +44,8 @@ export function activityCountLabel(item: HwItem, count: number, en: boolean) {
   else if (['listen', 'repeat', 'hide', 'order', 'write', 'echo'].includes(activity)) unit = ['문장', 'sentence'];
   else if (['watch', 'shadow', 'dub'].includes(activity)) unit = ['장면', 'scene'];
   else if (item.content.questions.length) unit = ['문항', 'question'];
-  return en ? `${count} ${unit[1]}${count === 1 ? '' : 's'}` : `${count}${unit[0]}`;
+  if (en) return `${count} ${unit[1]}${count === 1 ? '' : 's'}`;
+  return activity && unit[0] !== '개' ? `${unit[0]} ${count}개` : `${count}${unit[0]}`;
 }
 
 /** Finish the chosen activity, then follow assignment order, wrapping to earlier unfinished activities. */

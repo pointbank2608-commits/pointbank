@@ -18,21 +18,32 @@ process.env.VITE_SUPABASE_URL = origin;
 process.env.VITE_SUPABASE_ANON_KEY = 'isolated-homework-fixture';
 process.env.VITE_LEARNING_SENSORS = 'false';
 const {a,c}=fixtureIds;
+const studioQA=process.env.HOMEWORK_STUDIO_QA==='1';
+const classes=[{id:c,name:studioQA?'오후 리딩반':'테스트 반',academy_id:a}];
+if(studioQA){
+  await db.query('update classes set name=$2 where id=$1',[c,classes[0].name]);
+  const empty={id:crypto.randomUUID(),name:'오전 리딩반',academy_id:a};
+  await db.query('insert into classes(id,academy_id,name) values ($1,$2,$3)',[empty.id,a,empty.name]);
+  classes.push(empty);
+}
 const listVersion = new Date().toISOString();
-const lists=[['word',wordCards],['sentence',sentenceCards]].map(([kind,cards])=>({
+const studioWords=studioQA ? [...wordCards,{id:'w10',word:'roof',meaning:'지붕'},{id:'w11',word:'horn',meaning:'경적'}] : wordCards;
+const lists=[['word',studioWords],['sentence',sentenceCards]].map(([kind,cards])=>({
   id:crypto.randomUUID(),academy_id:a,class_id:c,name:'Family Road Trip',kind,
   items:cards.map(card=>({id:card.id,word:card.word,meaning:card.meaning,image_url:card.imageUrl,category:null})),
   created_at:listVersion,updated_at:listVersion,created_by:fixtureIds.owner,
 }));
 if (audioModule) lists.push({...lists[0],id:crypto.randomUUID(), name:'녹음 검수 · road', items:lists[0].items.slice(0,1)});
-if (process.env.HOMEWORK_PICKER_QA==='1') {
+if (process.env.HOMEWORK_PICKER_QA==='1' || studioQA) {
   const card=sentenceCards[0];
   const block={schemaVersion:1,type:'study',completion:'confirm',method:'material:listen',groupKey:'qa-picker',
     materialName:lists[1].name,text:card.word,translation:card.meaning,imageUrl:'',audioUrl:'',videoUrl:'',
     start:0,end:30,question:'',stages:['model'],hiddenWords:[],repeats:1};
   const draft={id:crypto.randomUUID(),revision:0,template:false,title:'활동 추가 검수 · Family Road Trip',
     items:[{kind:'worksheet',title:'문장 보고 듣기',config:{block},content:{questions:[]}}]};
-  await db.query('select hw_assign_draft($1,$2,$3,null,$4)',[c,JSON.stringify(draft),[students[0].id],crypto.randomUUID()]);
+  if(studioQA) draft.title='지난주 문장 복습';
+  const assigned=await db.query('select hw_assign_draft($1,$2,$3,null,$4) as issued',[c,JSON.stringify(draft),[students[0].id],crypto.randomUUID()]);
+  if(studioQA) await db.query("update homework_assignments set due_at=now()-interval '1 day' where id=$1",[assigned.rows[0].issued.id]);
 }
 // Only the catalogue row is adapted. Words, dialogue, roles and timing come
 // from the same checked-in episode and chapter teaching data as the application.
@@ -47,7 +58,7 @@ const signatures={
   hw_assign_short:['p_class','p_draft','p_students','p_due','p_request'],
   hw_assign_draft:['p_class','p_draft','p_students','p_due','p_request'],
   hw_assign_materials:['p_class','p_students','p_draft','p_due','p_request','p_project'],
-  wm_plan_list:['p_class_id'],wm_plan_progress:['p_plan'],wm_plan_cards:['p_plan','p_from','p_to'],
+  wm_plan_list:['p_class_id'],wm_plan_results:['p_plan'],wm_plan_links:['p_plan'],wm_plan_progress:['p_plan'],wm_plan_cards:['p_plan','p_from','p_to'],
   wm_plan_briefing:['p_plan'],wm_plan_steps:['p_plan'],wm_student_links:['p_token'],
   wm_open:['p_access'],wm_today_state:['p_access'],wm_collection:['p_access'],
   wm_ack:['p_access','p_session','p_q','p_client'],wm_hint:['p_access','p_session','p_q'],
@@ -73,7 +84,7 @@ from(table){
 rpc:async(name,args)=>(await fetch('/test-rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,args})})).json()
 };`;
 const server=await createGuidedServer(port,{
-  client,academy:a,seed:{students,classes:[{id:c,name:'테스트 반',academy_id:a}],lists,lessons:[],videoClips,bank},
+  client,academy:a,seed:{students,classes,lists,lessons:[],videoClips,bank},
   async handle(req,res){
     if(req.url?.startsWith('/audio/') && handleAudio){await handleAudio(req,res);return;}
     if(req.method!=='POST'||req.headers['content-type']!=='application/json'||req.headers.origin!==origin){res.writeHead(403);res.end();return;}

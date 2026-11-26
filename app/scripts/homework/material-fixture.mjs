@@ -18,7 +18,7 @@ export async function materialDatabase() {
   for(const name of ['student_guardian','student_sessions','student_login_failures']) await db.exec(table(portal,name));
   for(const name of ['sp_name_key','sp_phone_digits','student_session_student','student_login','student_logout']) await db.exec(fn(portal,name));
   for(const name of ['hw_open_personal','hw_class_overview','hw_assignment_summary']) await db.exec(fn(hw,name));
-  for(const file of ['074d_student_home_features.sql','093a_watch_tables.sql','113_student_portal_homework_links.sql','114_student_portal_login_by_phone.sql','144_short_memory_rounds.sql','151_edit_published_homework.sql','152_edit_homework_activities.sql','154_material_homework_portal.sql','155_homework_material_recordings.sql','157_material_homework_workload.sql']) await db.exec(sql(file));
+  for(const file of ['074d_student_home_features.sql','093a_watch_tables.sql','113_student_portal_homework_links.sql','114_student_portal_login_by_phone.sql','144_short_memory_rounds.sql','151_edit_published_homework.sql','152_edit_homework_activities.sql','154_material_homework_portal.sql','155_homework_material_recordings.sql','157_material_homework_workload.sql','158_material_sentence_answers.sql']) await db.exec(sql(file));
   const {a,c,student}=fixtureIds;
   const names=['하늘','바다','구름','강','봄','별'];
   const students=[];

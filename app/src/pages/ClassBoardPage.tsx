@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ClassroomHeader from '../components/ClassroomHeader';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import AddStudentModal from '../components/AddStudentModal';
 import ClassChipRow from '../components/ClassChipRow';
 import AccessibleDialog from '../components/AccessibleDialog';
@@ -33,7 +33,8 @@ export default function ClassBoardPage() {
   const { notify, run } = useToast();
   const { t, i18n } = useTranslation();
   const { classes, selectedId, selected, loading: classesLoading, select, reorder, reload: reloadClasses, error: classError } = useClasses(academy?.id);
-  const [manageClasses, setManageClasses] = useState(false);
+  const location = useLocation();
+  const [manageClasses, setManageClasses] = useState(location.state?.openClassManagement === true);
   const [deleteClassId, setDeleteClassId] = useState<string | null>(null);
   const [deletingClass, setDeletingClass] = useState(false);
   const [deleteError, setDeleteError] = useState(false);

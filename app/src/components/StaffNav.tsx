@@ -16,7 +16,7 @@ const ON = 'bg-primary text-white shadow-[0_6px_16px_rgb(8_102_255/35%)]';
 
 /** 선생님 메뉴(네이비 사이드바용): 묶음 5개 행 + 지금 화면이 속한 묶음만 펼친 항목 목록. NavLink 대신 Link 를 써서 같은 주소가 겹쳐 선택돼 보이지 않게 한다. */
 export default function StaffNav({ onNavigate }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { pathname, search } = useLocation();
   const { hasFullAccess } = useAuth();
   const groupOpen = useFeature('group');
@@ -59,6 +59,11 @@ export default function StaffNav({ onNavigate }: Props) {
             </Link>
             {!single && isActive && (
               <ul className="mb-1 mt-1.5 flex flex-col gap-0.5">
+                {pathname === '/homework' && g.id === 'class' && <li>
+                  <Link className="flex items-center gap-2.5 rounded-lg py-2.5 pl-12 pr-4 text-[15px] font-semibold" to="/board" state={{openClassManagement:true}} onClick={onNavigate}>
+                    <span className="material-symbols-outlined text-[19px]" aria-hidden>groups</span>{t('settings.classManageTitle')}
+                  </Link>
+                </li>}
                 {g.children.map((c) => {
                   const on = active?.child.to === c.to;
                   return (
@@ -72,7 +77,9 @@ export default function StaffNav({ onNavigate }: Props) {
                         }`}
                       >
                         <span aria-hidden="true" className="material-symbols-outlined text-[19px]">{c.icon}</span>
-                        <span className="flex-1 truncate">{t(c.labelKey)}</span>
+                        <span className="flex-1 truncate">{pathname === '/homework' && c.to === '/attendance'
+                          ? (i18n.language.startsWith('en') ? 'Students' : '학생 관리')
+                          : pathname === '/homework' && c.to === '/results' ? (i18n.language.startsWith('en') ? 'Learning reports' : '학습 리포트') : t(c.labelKey)}</span>
                         {lockedPath(c.to) && lock}
                       </Link>
                     </li>

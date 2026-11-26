@@ -24,6 +24,7 @@ try {
   const { activityGroups } = await vite.ssrLoadModule('/src/lib/homework/activityGroups.ts');
   const { gradeLocal } = await vite.ssrLoadModule('/src/lib/homework/grade.ts');
   const { sceneMaterials } = await vite.ssrLoadModule('/src/lib/homework/materialSources.ts');
+  const {selectHomeworkMaterial,dialogueKey}=await vite.ssrLoadModule('/src/lib/homework/materialSelection.ts');
   const vocabulary = { id:'road', name:'Road', kind:'word', cards:[wordCards[0]] };
   const sentences = { id:'map', name:'Map', kind:'sentence', cards:[sentenceCards[0]] };
   const only = (material, settings) => {
@@ -66,8 +67,20 @@ try {
   assert.equal(roleItem.config.block.role,'Caillou');
   assert.deepEqual(roleItem.content.lines,scene.scene.lines);
   assert.ok(buildMaterialPlan(scene,{activities:['dub'],role:'unknown'},[]).issues.length);
+  const oneLine=scene.scene.lines.find(line=>line.speaker==='Caillou');
+  const selectedLine=selectHomeworkMaterial(scene,{cardIds:[],lineIds:[dialogueKey(oneLine)]});
+  assert.deepEqual(only(selectedLine,{activities:['dub'],role:'Caillou'}).content.lines,[oneLine]);
+  const sceneWithoutLines=selectHomeworkMaterial(scene,{cardIds:[],lineIds:[]});
+  assert.equal(only(sceneWithoutLines,{activities:['watch']}).config.block.start,scene.scene.start);
+  assert.ok(buildMaterialPlan(sceneWithoutLines,{activities:['echo']},[]).issues.length);
   console.log('PASS teacher options and student projection: spelling x3, English masks x3, writing x2, order, four distinct choices, actual Caillou scene-only sources and assigned speaker');
-  const wordPlan = buildMaterialPlan({ id:'test-words', name:'Family Road Trip', kind:'word', cards:wordCards }, { activities:['choice'] }, wordCards);
+  const source={id:'test-words',name:'Family Road Trip',kind:'word',cards:structuredClone([
+    ...wordCards,{id:'roof',word:'roof',meaning:'지붕'},{id:'horn',word:'horn',meaning:'경적'},
+  ])};
+  const selectedWordIds=wordCards.map(card=>card.id);
+  assert.equal(selectHomeworkMaterial(source,{}).cards.length,12);
+  assert.equal(selectHomeworkMaterial(source,{cardIds:[]}).cards.length,0);
+  const wordPlan = buildMaterialPlan(selectHomeworkMaterial(source,{cardIds:selectedWordIds}), { activities:['choice'] }, wordCards);
   const sentencePlan = buildMaterialPlan({ id:'test-sentences', name:'Family Road Trip', kind:'sentence', cards:sentenceCards }, { activities:['hide'], mask:1 }, []);
   assert.deepEqual([...wordPlan.issues, ...sentencePlan.issues], []);
   const draft = { id:id(), revision:0, title:'Family Road Trip', template:false, items:[...wordPlan.items,...sentencePlan.items] };
@@ -85,6 +98,17 @@ try {
   const dispatch = () => val('hw_assign_draft($1,$2,$3,null,$4)', [fixtureIds.c, JSON.stringify(draft), targets, request]);
   const assigned = await dispatch();
   assert.deepEqual(await dispatch(), assigned);
+  source.cards[0].word='changed after sending';
+  source.cards.splice(1,1);
+  await db.exec('reset role');
+  await db.query('insert into students(id,academy_id,class_id,name) values ($1,$2,$3,$4)',[id(),fixtureIds.a,fixtureIds.c,'추가 학생']);
+  await staff();
+  const frozen=(await val('hw_publication($1)',[assigned.id]));
+  assert.equal(frozen.items[0].content.questions[0].word,'road');
+  assert.deepEqual(frozen.items[0].content.questions.map(q=>q.word),wordCards.map(card=>card.word));
+  const overviewRow=(await val('hw_class_overview($1)',[fixtureIds.c])).find(row=>row.id===assigned.id);
+  assert.equal(overviewRow.target_count,2);
+  console.log('PASS content selection and issued snapshot: 10 of 12 words, selected dialogue, scene without words, immutable questions and recipient count after source and roster change');
   await pupil();
   const lists = await Promise.all(sessions.map(home));
   assert.deepEqual(lists.map(list=>list.homework.length), [1,1,0,0,0,0]);
@@ -210,6 +234,39 @@ try {
   assert.equal(legacyRow.material_workload,null);
   assert.equal(legacyRow.question_count,10);
   console.log('PASS teacher workload labels: grouped mixed, recording-only, dubbing-only and original legacy graded count');
+  const longText = 'We read the story together and '.repeat(8) + 'we draw a picture.';
+  const sentence = {...sentenceCards[0],word:longText};
+  const writing = only({...sentences,cards:[sentence]}, {activities:['write'],writing:'full'});
+  const orderText = 'Everybody remembers beautifully painted butterflies and extraordinary adventures. '.repeat(2)
+    + 'Everybody imagines brightly colored flowers.';
+  const ordered = only({...sentences,cards:[{...sentence,word:orderText}]}, {activities:['order']});
+  const legacyWriting = structuredClone(writing);
+  legacyWriting.config.block.method = 'recall';
+  delete legacyWriting.config.block.groupKey;
+  const longDraft = {...draft,id:id(),items:[writing,ordered,legacyWriting]};
+  const sent = await val('hw_assign_draft($1,$2,$3,null,$4)',[fixtureIds.c,JSON.stringify(longDraft),targets,id()]);
+  await pupil();
+  const writer = (await open(sessions[1],sent.code)).token;
+  const [written,arranged,oldItem] = (await val('hw_state($1)',[writer])).items;
+  const firstSubmit = id();
+  assert.equal((await submit(writer,written.id,0,longText,firstSubmit)).correct,true);
+  assert.equal((await submit(writer,written.id,0,longText,firstSubmit)).first,true);
+  const retry = id();
+  const incorrect = 'x'.repeat(300);
+  assert.equal((await submit(writer,written.id,0,incorrect,retry)).correct,false);
+  await assert.rejects(submit(writer,written.id,0,incorrect+'x',id()),/bad_response/);
+  const arrangement = JSON.stringify(ordered.content.questions[0].correct);
+  assert.ok(arrangement.length>200 && arrangement.length<=300);
+  assert.equal((await submit(writer,arranged.id,0,arrangement,id())).correct,true);
+  assert.equal((await submit(writer,oldItem.id,0,longText,id())).correct,true);
+  await assert.rejects(val('hw_submit_before_blocks($1,$2,0,$3,$4,0)',[writer,written.id,longText,id()]),/permission denied/);
+  const saved = (await val('hw_state($1)',[writer])).answers;
+  assert.equal(saved.find(row=>row.item_id===written.id).response,longText);
+  assert.equal(saved.find(row=>row.item_id===arranged.id).response,arrangement);
+  assert.equal(saved.find(row=>row.item_id===oldItem.id).response,longText.slice(0,200));
+  await db.exec('reset role');
+  assert.equal(await val('(select response from learning_events where client_id=$1)',[retry]),incorrect);
+  console.log('PASS material sentence writing/order preserve the full first answer and retries; earlier results, legacy caps and direct RPC grants remain intact');
 } finally {
   await db.close();
   await vite.close();

@@ -1,9 +1,12 @@
 import { formatHomeworkDeadline } from '../lib/homework/deadline';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import WordMemoryResults from '../components/wordMemory/WordMemoryResults';
+import { toWmError, wmPlanList } from '../lib/wordMemory/api';
+import type { WmPlanSummary } from '../lib/wordMemory/types';
 import WordProjectHomework from '../components/wordMemory/WordProjectHomework';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import '../styles/homework-studio.css';
 import ClassChipRow from '../components/ClassChipRow';
 import HomeworkResults from '../components/homework/teacher/HomeworkResults';
 import HomeworkSharePanel from '../components/homework/teacher/HomeworkSharePanel';
@@ -44,9 +47,13 @@ export default function HomeworkPage() {
   const homeworkOpen = useFeature('homework');
   const soloOpen = useFeature('solo');
   const [adaptiveRevision,setAdaptiveRevision]=useState(0);
+  const [adaptiveState,setAdaptiveState]=useState<Record<string,'empty'|'present'|'error'>>({});
+  const onAdaptiveAvailability=useCallback((id:string,state:'empty'|'present'|'error')=>{
+    setAdaptiveState(old=>old[id]===state?old:{...old,[id]:state});
+  },[]);
   const en=i18n.language.startsWith('en');
   const { notify } = useToast();
-  const { classes, selectedId, select, reorder } = useClasses(academy?.id);
+  const { classes, selectedId, select, reorder, loading:classesLoading, error:classesError, reload:reloadClasses } = useClasses(academy?.id);
   const classId = selectedId ?? classes[0]?.id ?? null;
   const className = classes.find((c) => c.id === classId)?.name ?? '';
   const [list, setList] = useState<HomeworkOverviewRow[] | null>(null);
@@ -60,6 +67,7 @@ export default function HomeworkPage() {
   const materialComposer = panel.k === 'compose' && panel.mode !== 'lesson' && !panel.lessonId &&
     !panel.cards && !panel.followUp && !panel.studentIds;
   const [wordProjectRevision, setWordProjectRevision] = useState(0);
+  const [wordPlans,setWordPlans] = useState<{classId:string; plans:WmPlanSummary[]; error:boolean} | null>(null);
   const projectLocation = location.state as { wmPlanId?: string; fromClassId?: string } | null;
   const openPlanId = !projectLocation?.fromClassId || projectLocation.fromClassId === classId ? projectLocation?.wmPlanId : undefined;
   useEffect(() => {
@@ -68,11 +76,17 @@ export default function HomeworkPage() {
   const [shareId, setShareId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [cardStudent, setCardStudent] = useState<string | null>(null);
+  const [sent, setSent] = useState<{classId:string; id?:string; count?:number; existing?:boolean} | null>(null);
   const [usage, setUsage] = useState<number | null>(null);
 
   const reload = useCallback(async () => {
     const sequence=++loadSequence.current;
     if (!classId) return;
+    void wmPlanList(classId).then(plans=>{
+      if(sequence===loadSequence.current)setWordPlans({classId,plans,error:false});
+    },cause=>{
+      if(sequence===loadSequence.current)setWordPlans(old=>({classId,plans:old?.classId===classId?old.plans:[],error:!['feature_closed','not_found'].includes(toWmError(cause).kind)}));
+    });
     try {
       const [hw, st] = await Promise.all([fetchHomeworkOverview(classId), fetchStudentsOfClass(classId)]);
       if(sequence!==loadSequence.current)return;
@@ -83,9 +97,23 @@ export default function HomeworkPage() {
     } catch (e) {
       if(sequence!==loadSequence.current)return;
       setError(t(teacherErrorKey(e)));
-      setList([]);
+      setList(old=>old ?? []);
     }
   }, [classId, t]);
+  useEffect(()=>{
+    if (panel.k !== 'none' || !classId) return;
+    const refresh = () => { if(document.visibilityState==='visible') void reload(); };
+    const timer = window.setInterval(refresh,15000);
+    window.addEventListener('focus',refresh);
+    document.addEventListener('visibilitychange',refresh);
+    return ()=>{window.clearInterval(timer);window.removeEventListener('focus',refresh);document.removeEventListener('visibilitychange',refresh);};
+  },[classId,panel.k,reload]);
+  const sentCount = sent?.classId!==classId ? undefined : sent?.id ? (loadedClass===classId ? list?.find(row=>row.id===sent.id)?.target_count : undefined) : sent?.count;
+  useEffect(()=>{
+    if (sentCount==null && !sent?.existing) return;
+    const timeout = window.setTimeout(()=>setSent(null),4500);
+    return ()=>window.clearTimeout(timeout);
+  },[sent,sentCount]);
   function publicationChanged(newId?: string) {
     if (newId) {
       setOpenId(null);
@@ -96,11 +124,15 @@ export default function HomeworkPage() {
 
   useEffect(() => {
     setList(null);
+    setError(null);
     setPanel({ k: 'none' });
     setShareId(null);
     setOpenId(null);
     void reload();
   }, [reload]);
+  useEffect(()=>{
+    if(openPlanId)setOpenId(openPlanId);
+  },[openPlanId,location.key]);
 
   // 이번 달 온라인 숙제를 시작한 학생 수(안내용 — 요금·제한과 연결되지 않음)
   useEffect(() => {
@@ -109,7 +141,7 @@ export default function HomeworkPage() {
       (u) => setUsage(u.active_students),
       () => setUsage(null),
     );
-  }, [list]);
+  }, [academy?.id]);
 
   // 맞춤 숙제는 같은 묶음(group_id)끼리 모아서 보여 준다
   const groups = useMemo(() => {
@@ -126,6 +158,13 @@ export default function HomeworkPage() {
     }
     return out;
   }, [list]);
+
+  const register = useMemo(()=>{
+    const current = loadedClass===classId ? groups : [];
+    const words = wordPlans?.classId===classId ? wordPlans.plans : [];
+    return [...current.map(group=>({key:group.key,created:group.rows[0].created_at,group,plan:null as WmPlanSummary|null})),
+      ...words.map(plan=>({key:plan.id,created:plan.created_at,group:null as typeof groups[number]|null,plan}))].sort((a,b)=>Date.parse(b.created)-Date.parse(a.created));
+  },[groups,wordPlans,loadedClass,classId]);
 
   const openCard = (id: string) => setCardStudent(id);
   const startRecommend = (ids: string[]) => {
@@ -170,31 +209,18 @@ export default function HomeworkPage() {
   if (!homeworkOpen) return <p className="p-6 text-on-surface-variant">{t('studentHw.err_feature_closed')}</p>;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div className="font-label-md text-label-md text-primary">수업뚝딱 Student</div>
-          <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-deep-navy md:font-headline-lg md:text-headline-lg">{t('studentHw.pageTitle')}</h1>
-          <p className="mt-1 max-w-3xl font-body-md text-body-md text-on-surface-variant">{i18n.language.startsWith('en')?'Choose a lesson or collection, preview the practice, then send it to your students.':'수업이나 단어장을 고르고, 학생 화면을 확인한 뒤 숙제를 보내세요.'}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <details className="relative"><summary className={`${headerBtn} cursor-pointer border border-outline-variant bg-white`}>{i18n.language.startsWith('en')?'More':'더보기'}</summary><div className="absolute right-0 top-full z-20 mt-2 grid w-72 max-w-[85vw] gap-2 rounded-2xl border border-outline-variant bg-white p-3 shadow-xl">
-          <button type="button" disabled={!classId||!students.length} onClick={()=>setPanel({k:'recommend',studentIds:students.map(s=>s.id),gamesOnly:true})} className={`${headerBtn} bg-deep-navy text-white`}>{i18n.language.startsWith('en')?'Personal game practice':'학생별 맞춤 게임'}</button>
-          <button type="button" onClick={() => startRecommend([])} disabled={!classId} className={`${headerBtn} border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low disabled:opacity-40`}>
-            <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
-            {t('studentHw.checkRecommend')}
-          </button>
-          </div></details>
-          <button type="button" onClick={() => setPanel({ k: 'compose' })} disabled={!classId} className={`${headerBtn} bg-primary px-5 text-white shadow-sm hover:bg-primary-container disabled:opacity-40`}>
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            {t('studentHw.newButton')}
-          </button>
-        </div>
-      </div>
-
-      {classes.length > 0 && <ClassChipRow classes={classes} selectedId={classId} onSelect={select} onReorder={reorder} />}
-      {error && <div className="rounded-lg bg-error-container px-4 py-2 text-base text-on-error-container">{error}</div>}
-      {panel.k === 'none' && classId && soloOpen && homeworkOpen && <GrammarTeacherPanel classId={classId} mode="homework" />}
+    <div className="hw-management">
+      {!materialComposer && <>
+        <nav className="hw-breadcrumb" aria-label={en?'Breadcrumb':'현재 위치'}><span>{en?'My classes':'우리 반'}</span><span aria-hidden>›</span><span>{en?'Homework':'숙제'}</span></nav>
+        <div className="hw-management-heading"><h1>{en?'Homework':'숙제'}</h1>
+          {panel.k==='none' && <button type="button" className="hw-forward" disabled={!classId} onClick={()=>setPanel({k:'compose'})}><span aria-hidden>＋</span>{en?'New homework':'새 숙제 내기'}</button>}</div>
+        {classes.length>0 && <ClassChipRow classes={classes} selectedId={classId} onSelect={select} onReorder={reorder}/>}
+      </>}
+      {panel.k==='none' && sent?.classId===classId && (sentCount!=null || sent.existing) && <div className="hw-sent-toast" role="status"><span aria-hidden>✓</span>
+        {sent.existing ? t('materialHomework:projectExists') : t('materialHomework:sentCount',{n:sentCount})}
+        <button type="button" aria-label={en?'Close':'닫기'} onClick={()=>setSent(null)}>×</button></div>}
+      {error && <div role="alert" className="hw-studio-issue">{error} <button onClick={()=>void reload()}>{en?'Retry':'다시 불러오기'}</button></div>}
+      {classesError && <p role="alert">{en?'Could not load the class list.':'반 목록을 불러오지 못했어요.'} <button type="button" onClick={()=>void reloadClasses()}>{en?'Retry':'다시 불러오기'}</button></p>}
       {panel.k==='adaptive'&&classId&&academy?.id&&<AdaptiveHomeworkComposer key={classId} academyId={academy.id} classId={classId} onClose={()=>setPanel({k:'none'})} onCreated={()=>{setPanel({k:'none'});setAdaptiveRevision(n=>n+1);notify(en?'Homework assigned. Students can start from their portal.':'숙제를 배정했어요. 학생 홈의 숙제에서 시작할 수 있어요.');}}/>}
       {panel.k === 'wordProject' && classId && academy?.id && homeworkOpen && (
         <WordProjectHomework
@@ -202,27 +228,18 @@ export default function HomeworkPage() {
           academyId={academy.id}
           classId={classId}
           onClose={() => setPanel({ k: 'none' })}
-          onAssigned={() => setWordProjectRevision((revision) => revision + 1)}
+          onAssigned={() => {setWordProjectRevision(revision=>revision+1);void reload();}}
         />
       )}
 
-      {panel.k==='none'&&classId&&<div className="hw-source-choices rounded-2xl border border-outline-variant bg-white p-5">
-        <button type="button" onClick={()=>setPanel({k:'compose',mode:'lesson'})}><span className="material-symbols-outlined" aria-hidden>school</span><strong>{i18n.language.startsWith('en')?'Review a lesson':'오늘 수업 복습시키기'}</strong><span>{i18n.language.startsWith('en')?'Choose a saved lesson and collect its learning content.':'만든 수업을 고르면 단어·표현을 한 번에 모아요.'}</span></button>
-        <button type="button" onClick={()=>setPanel({k:'compose',mode:'list'})}><span className="material-symbols-outlined" aria-hidden>style</span><strong>{i18n.language.startsWith('en')?'Learn words and expressions':'단어·문장 외우게 하기'}</strong><span>{i18n.language.startsWith('en')?'Use your collections to build a practice routine.':'내 단어장·문장 모음으로 반복 학습을 만들어요.'}</span></button>
-      </div>}
       {materialComposer && classId && academy?.id && profile && <MaterialHomeworkComposer
-        key={classId} classId={classId} className={className} classes={classes} academyId={academy.id} ownerId={profile.id}
+        key={classId} classId={classId} classes={classes} academyId={academy.id} ownerId={profile.id}
         students={classId === loadedClass ? students : []} onClose={() => setPanel({ k: 'none' })}
-        onSwitch={kind => setPanel({ k: kind })} adaptiveEnabled={soloOpen}
-        onCreated={async (result, targetClass) => {
-          setPanel({ k: 'none' });
-          const continued = result.project?.skipped?.length ?? 0;
-          notify(continued && !result.assignment && !result.project?.plan_id ? t('materialHomework:projectExists') :
-            [t('studentHw.created'),continued ? t('materialHomework:continues',{n:continued}) : ''].filter(Boolean).join(' '));
-          if (result.project) setWordProjectRevision(n => n + 1);
-          if (targetClass !== classId) { select(targetClass); return; }
-          await reload();
-          if (result.assignment) setShareId(result.assignment.id);
+        onCreated={async (result,targetClass)=>{
+          setPanel({k:'none'}); setShareId(null); setOpenId(null);
+          setSent({classId:targetClass,id:result.assignment?.id,count:result.project?.created,existing:!result.assignment&&!result.project?.created});
+          if(result.project) setWordProjectRevision(n=>n+1);
+          if(targetClass!==classId) select(targetClass); else await reload();
         }}
       />}
       {panel.k==='compose'&&!materialComposer&&classId&&academy?.id&&profile&&<HomeworkComposer
@@ -264,29 +281,43 @@ export default function HomeworkPage() {
         />
       )}
 
-      {classId && <AdaptiveHomeworkResults key={`adaptive-${classId}`} classId={classId} revision={adaptiveRevision}/> }
-      {classId && <WordMemoryResults key={JSON.stringify([classId, wordProjectRevision, openPlanId ? location.key : null])} classId={classId} initialPlanId={openPlanId} onDeleted={() => void reload()} />}
+      {panel.k==='none' && <>
+        {wordPlans?.classId===classId && wordPlans?.error && <p role="alert">{en?'Could not load vocabulary homework.':'단어 프로젝트를 불러오지 못했어요.'} <button type="button" onClick={()=>void reload()}>{en?'Retry':'다시 불러오기'}</button></p>}
+        {classesLoading || (classId && !error && (list===null || loadedClass!==classId || wordPlans?.classId!==classId)) ? <p role="status">{t('common.loading')}</p> :
+        !register.length ? (!classesError && !error && !wordPlans?.error && (!classId || adaptiveState[classId]==='empty') && <div className="hw-empty"><span className="material-symbols-outlined" aria-hidden>assignment</span>
+          <strong>{en?'No homework yet.':'아직 등록된 숙제가 없습니다.'}</strong><p>{en?'Create homework and send it to your students.':'새 숙제를 만들어 학생들에게 보내보세요.'}</p>
+          <button type="button" className="hw-forward" disabled={!classId} onClick={()=>setPanel({k:'compose'})}>＋ {en?'New homework':'새 숙제 내기'}</button></div>) :
+          <div className="hw-table-wrap"><table className="hw-register"><colgroup><col/><col/><col/><col/></colgroup>
+            <thead><tr><th>{en?'Homework title':'숙제명'}</th><th>{en?'Due':'마감'}</th><th>{en?'Completion':'완료 현황'}</th><th>{en?'Results':'결과'}</th></tr></thead>
+            <tbody>{register.map(({group:g,plan})=>g ? (g.rows.length>1 ? <CustomGroup key={g.key} rows={g.rows} onChanged={publicationChanged} shareId={shareId} openId={openId} setShareId={setShareId} setOpenId={setOpenId} renderOpen={renderPanels}/> :
+                <HomeworkCard key={g.key} hw={g.rows[0]} shareOpen={shareId===g.rows[0].id} resultsOpen={openId===g.rows[0].id}
+                  onShare={()=>setShareId(shareId===g.rows[0].id ? null : g.rows[0].id)} onResults={()=>setOpenId(openId===g.rows[0].id ? null : g.rows[0].id)} onChanged={publicationChanged}>
+                  {renderPanels(g.rows[0])}
+                </HomeworkCard>) : plan && <Fragment key={plan.id}>
+              <tr className="hw-register-entry"><td><strong>{plan.title || t('wordMemory.title')}</strong></td><td>—</td><td>{en?'Today':'오늘 완료'} {plan.today_done}/{plan.students}</td>
+                <td><button className="hw-result" type="button" aria-expanded={openId===plan.id} onClick={()=>setOpenId(openId===plan.id?null:plan.id)}>{en?'Results':'결과'}</button></td></tr>
+              {openId===plan.id && classId && <tr className="hw-register-detail"><td colSpan={4}><WordMemoryResults key={wordProjectRevision} classId={classId} onlyPlanId={plan.id} initialPlanId={plan.id} onDeleted={()=>{setOpenId(null);void reload();}}/></td></tr>}
+            </Fragment>)}</tbody></table></div>}
+      {classId && <AdaptiveHomeworkResults key={`adaptive-${classId}`} classId={classId} revision={adaptiveRevision} onAvailability={onAdaptiveAvailability}/> }
 
-      {list === null ? (
-        <div className="text-base text-on-surface-variant">{t('common.loading')}</div>
-      ) : list.length === 0 && panel.k === 'none' ? (
-        <div className="rounded-xl bg-surface-container-lowest p-8 text-center text-base text-on-surface-variant shadow-sm">{t('studentHw.empty')}</div>
-      ) : (
-        <div className="space-y-3">
-          {groups.map((g) =>
-            g.rows.length > 1 || g.rows[0].kind === 'custom' ? (
-              <CustomGroup key={g.key} rows={g.rows} onChanged={publicationChanged} shareId={shareId} openId={openId} setShareId={setShareId} setOpenId={setOpenId} renderOpen={(hw) => renderPanels(hw)} />
-            ) : (
-              <HomeworkCard key={g.key} hw={g.rows[0]} shareOpen={shareId === g.rows[0].id} resultsOpen={openId === g.rows[0].id} onShare={() => setShareId(shareId === g.key ? null : g.key)} onResults={() => setOpenId(openId === g.key ? null : g.key)} onChanged={publicationChanged}>
-                {renderPanels(g.rows[0])}
-              </HomeworkCard>
-            ),
-          )}
-        </div>
-      )}
+        <details className="hw-other-tools"><summary>{en?'More homework tools':'다른 숙제 도구'}</summary><div>
+          <button type="button" disabled={!classId||!students.length} onClick={()=>setPanel({k:'recommend',studentIds:students.map(s=>s.id),gamesOnly:true})} className={`${headerBtn} bg-deep-navy text-white`}>{i18n.language.startsWith('en')?'Personal game practice':'학생별 맞춤 게임'}</button>
+          <button type="button" onClick={() => startRecommend([])} disabled={!classId} className={`${headerBtn} border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low disabled:opacity-40`}>
+            <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+            {t('studentHw.checkRecommend')}
+          </button>
 
-      {usage !== null && <p className="text-sm text-on-surface-variant">{t('studentHw.usageNote', { count: usage })}</p>}
+      {panel.k==='none'&&classId&&<div className="hw-source-choices rounded-2xl border border-outline-variant bg-white p-5">
+        <button type="button" onClick={()=>setPanel({k:'compose',mode:'lesson'})}><span className="material-symbols-outlined" aria-hidden>school</span><strong>{i18n.language.startsWith('en')?'Review a lesson':'오늘 수업 복습시키기'}</strong><span>{i18n.language.startsWith('en')?'Choose a saved lesson and collect its learning content.':'만든 수업을 고르면 단어·표현을 한 번에 모아요.'}</span></button>
+        <button type="button" onClick={()=>setPanel({k:'compose',mode:'list'})}><span className="material-symbols-outlined" aria-hidden>style</span><strong>{i18n.language.startsWith('en')?'Learn words and expressions':'단어·문장 외우게 하기'}</strong><span>{i18n.language.startsWith('en')?'Use your collections to build a practice routine.':'내 단어장·문장 모음으로 반복 학습을 만들어요.'}</span></button>
+      </div>}
 
+          {classId && <><button type="button" className={headerBtn} disabled={!soloOpen} onClick={()=>setPanel({k:'adaptive'})}>{t('materialHomework:adaptive')}</button>
+          <button type="button" className={headerBtn} onClick={()=>setPanel({k:'wordProject'})}>{t('materialHomework:project')}</button></>}
+      {panel.k === 'none' && classId && soloOpen && homeworkOpen && <GrammarTeacherPanel classId={classId} mode="homework" />}
+          {usage!==null && <p>{t('studentHw.usageNote',{count:usage})}</p>}
+        </div></details>
+      </>}
       {cardStudent && <LearningCardModal studentId={cardStudent} onClose={() => setCardStudent(null)} onRecommend={(id) => startRecommend([id])} />}
     </div>
   );
@@ -317,6 +348,12 @@ export default function HomeworkPage() {
   }
 }
 
+function DueStatus({due,en}:{due:string|null;en:boolean}) {
+  if (!due) return <>—</>;
+  if (new Date(due).getTime() < Date.now()) return <span className="hw-overdue">{en?'Past due':'마감 지남'}</span>;
+  return <>{formatHomeworkDeadline(due,en?'en':'ko')}</>;
+}
+
 function HomeworkCard({
   hw,
   shareOpen,
@@ -341,52 +378,21 @@ function HomeworkCard({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [publicationMode, setPublicationMode] = useState<'edit'|'reissue'|null>(null);
   const en = i18n.language.startsWith('en');
-  const pastDue = !!hw.due_at && new Date(hw.due_at).getTime() < Date.now();
-  const btn = 'flex min-h-11 items-center gap-1 rounded-full px-4 text-base font-bold';
-  return (
-    <div className={`${compact ? 'border-t border-outline-variant/40' : 'rounded-xl bg-surface-container-lowest shadow-sm'} ${hw.closed_at ? 'opacity-75' : ''}`}>
-      <div className="flex flex-wrap items-center gap-3 p-4">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-lg font-bold text-deep-navy">{compact && hw.custom_student ? hw.custom_student : hw.title || t('studentHw.defaultTitle')}</span>
-            {hw.kind === 'selected' && <span className="rounded-full bg-secondary-container/60 px-2.5 py-0.5 text-sm">{t('studentHw.kindSelected')}</span>}
-            {hw.closed_at && <span className="rounded-full bg-surface-container-high px-2.5 py-0.5 text-sm text-on-surface-variant">{t('studentHw.closed')}</span>}
-            {!hw.closed_at && pastDue && <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-sm text-amber-900">{t('studentHw.pastDue')}</span>}
-          </div>
-          <div className="text-sm text-on-surface-variant">
-            {hw.material_workload ? materialWorkloadLabel(hw.material_workload, i18n.language.startsWith('en')) : t('studentHw.questionCount', { count: hw.question_count })}
-            {hw.kind !== 'custom' && (
-              <>
-                {' · '}
-                {t('studentHw.code')} <b className="tabular-nums">{hw.code}</b>
-              </>
-            )}
-            {hw.due_at && ` · ${t('studentHw.dueShort', { date: formatHomeworkDeadline(hw.due_at) })}`}
-          </div>
-        </div>
-        <div className="flex items-center gap-5 text-center">
-          <div>
-            <div className="text-lg font-bold tabular-nums text-deep-navy">
-              {hw.done}/{hw.target_count}
-            </div>
-            <div className="text-sm text-on-surface-variant">{t('studentHw.doneCount')}</div>
-          </div>
-          <div>
-            <div className="text-lg font-bold tabular-nums text-deep-navy">{hw.avg_pct === null ? '–' : `${Math.round(hw.avg_pct)}%`}</div>
-            <div className="text-sm text-on-surface-variant">{t('studentHw.avgScore')}</div>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-1.5">
+  const btn = 'min-h-10 text-left';
+  return <>
+    <tr className="hw-register-entry">
+      <td><strong>{compact && hw.custom_student ? hw.custom_student : hw.title || t('studentHw.defaultTitle')}</strong>
+        {hw.closed_at && <small>{t('studentHw.closed')}</small>}</td>
+      <td><DueStatus due={hw.due_at} en={en}/></td>
+      <td>{en?'Done':'완료'} {hw.done}/{hw.target_count}</td>
+      <td><div className="hw-table-actions">
+        <button type="button" className="hw-result" aria-expanded={resultsOpen} onClick={onResults}>{en?'Results':'결과'}</button>
+        <details className="hw-row-menu"><summary aria-label={en?'More homework actions':'숙제 더보기'}>⋮</summary><div>
+          <p>{t('studentHw.code')} {hw.code} · {t('studentHw.avgScore')} {hw.avg_pct==null?'–':Math.round(hw.avg_pct)+'%'}</p>
+          <p>{hw.material_workload ? materialWorkloadLabel(hw.material_workload,en) : t('studentHw.questionCount',{count:hw.question_count})}</p>
           <button type="button" className={btn} onClick={()=>setPublicationMode('edit')}>{en?'Edit':'수정'}</button>
           <button type="button" className={btn} onClick={()=>setPublicationMode('reissue')}>{en?'Reissue':'재발행'}</button>
-          <button type="button" aria-expanded={shareOpen} onClick={onShare} className={`${btn} bg-secondary-container/60 text-on-surface hover:bg-secondary-container`}>
-            <span className="material-symbols-outlined text-[18px]">qr_code_2</span>
-            {t('studentHw.share')}
-          </button>
-          <button type="button" aria-expanded={resultsOpen} onClick={onResults} className={`${btn} bg-primary text-on-primary hover:bg-primary-container`}>
-            <span className="material-symbols-outlined text-[18px]">monitoring</span>
-            {t('studentHw.results')}
-          </button>
+          <button type="button" className={btn} aria-expanded={shareOpen} onClick={onShare}>{t('studentHw.share')}</button>
           {confirmDelete ? (
             <span className="flex flex-wrap items-center gap-1.5 rounded-full bg-error-container/40 px-3" role="alert">
               <span className="text-sm text-on-error-container">{t('studentHw.deleteConfirm')}</span>
@@ -415,17 +421,13 @@ function HomeworkCard({
               {t('studentHw.delete')}
             </button>
           )}
-        </div>
-      </div>
-      {children}
-      {publicationMode && <PublishedHomeworkDialog id={hw.id} initialMode={publicationMode}
-        onClose={()=>setPublicationMode(null)} onSaved={(newId,code)=>{
-          setPublicationMode(null);
-          notify(newId ? (en?`Homework reissued. New code: ${code}`:`재발행했어요. 새 숙제 번호는 ${code}예요.`) : (en?'Changes saved.':'숙제를 수정했어요.'));
-          onChanged(newId);
-        }}/>}
-    </div>
-  );
+        </div></details></div></td>
+    </tr>
+    {(shareOpen||resultsOpen) && <tr className="hw-register-detail"><td colSpan={4}>{children}</td></tr>}
+    {publicationMode && <PublishedHomeworkDialog id={hw.id} initialMode={publicationMode} onClose={()=>setPublicationMode(null)} onSaved={(newId,code)=>{
+      setPublicationMode(null); notify(newId ? (en?`Homework reissued. New code: ${code}`:`재발행했어요. 새 숙제 번호는 ${code}예요.`) : en?'Changes saved.':'숙제를 수정했어요.');onChanged(newId);
+    }}/>}
+  </>;
 }
 
 function CustomGroup({
@@ -445,22 +447,14 @@ function CustomGroup({
   setOpenId: (id: string | null) => void;
   renderOpen: (hw: HomeworkOverviewRow) => React.ReactNode;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
-  const done = rows.filter((r) => r.done > 0).length;
+  const done = rows.reduce((sum,row)=>sum+row.done,0);
+  const targets = rows.reduce((sum,row)=>sum+row.target_count,0);
   return (
-    <div className="rounded-xl bg-surface-container-lowest shadow-sm">
-      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="flex min-h-14 w-full flex-wrap items-center gap-3 p-4 text-left">
-        <span className="material-symbols-outlined text-primary">auto_awesome</span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-lg font-bold text-deep-navy">{t('studentHw.customGroup', { count: rows.length })}</span>
-          <span className="block text-sm text-on-surface-variant">{new Date(rows[0].created_at).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })}</span>
-        </span>
-        <span className="text-lg font-bold tabular-nums text-deep-navy">
-          {done}/{rows.length} <span className="text-sm font-normal text-on-surface-variant">{t('studentHw.doneCount')}</span>
-        </span>
-        <span className="material-symbols-outlined">{open ? 'expand_less' : 'expand_more'}</span>
-      </button>
+    <>
+      <tr className="hw-register-entry"><td>{t('studentHw.customGroup',{count:rows.length})}</td><td><DueStatus due={rows[0].due_at} en={i18n.language.startsWith('en')}/></td>
+        <td>{t('studentHw.doneCount')} {done}/{targets}</td><td><button type="button" className="hw-result" aria-expanded={open} onClick={()=>setOpen(o=>!o)}>{t('studentHw.results')}</button></td></tr>
       {open &&
         rows.map((hw) => (
           <HomeworkCard
@@ -476,6 +470,6 @@ function CustomGroup({
             {renderOpen(hw)}
           </HomeworkCard>
         ))}
-    </div>
+    </>
   );
 }

@@ -138,7 +138,10 @@ export function useHomeworkRecording(cache: string, expected: string, limit: num
     if (recording.uploadedPath) return recording;
     if (!api.uploadRecording) throw Error('upload_unavailable');
     const uploadedPath = await api.uploadRecording(itemId, recording.blob, recording.duration);
-    const saved = { ...recording, uploadedPath };
+    // Local recognition can finish while the same take is being uploaded.
+    const currentTake = current.current;
+    const latest = currentTake && currentTake.submission === recording.submission ? currentTake : recording;
+    const saved = { ...latest, uploadedPath };
     persist(saved);
     return saved;
   }

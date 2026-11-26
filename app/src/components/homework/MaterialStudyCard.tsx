@@ -35,6 +35,7 @@ export default function MaterialStudyCard({ item, api, preview, onSensor, onDone
   const [submitting, setSubmitting] = useState(false);
   const locked = useRef(false);
   const audio = useRef<HTMLAudioElement | null>(null);
+  const recordedAudio = useRef<HTMLAudioElement | null>(null);
   const speech = useRef<AbortController | null>(null);
   const audioGeneration = useRef(0);
   const control = useRef<TeachingVideoControl | null>(null);
@@ -72,6 +73,7 @@ export default function MaterialStudyCard({ item, api, preview, onSensor, onDone
   }, []);
   const listen = useCallback(async () => {
     stopAudio();
+    recordedAudio.current?.pause();
     const generation = audioGeneration.current;
     setError('');
     setPlaying(true);
@@ -96,9 +98,10 @@ export default function MaterialStudyCard({ item, api, preview, onSensor, onDone
   }, [block.text, block.audioUrl, stopAudio]);
   useEffect(() => {
     // A user gesture may be required on mobile. The speaker also invokes listen().
-    const start = flip ? window.setTimeout(() => { void listen(); }, 0) : undefined;
+    const autoplay = flip || method === 'listen' || method === 'repeat';
+    const start = autoplay ? window.setTimeout(() => { void listen(); }, 0) : undefined;
     return () => { window.clearTimeout(start); stopAudio(); };
-  }, [flip, listen, stopAudio]);
+  }, [flip, method, listen, stopAudio]);
 
   const visibleEnglish = method === 'hide' && progress.hidden && !hint
     ? block.text.split(/\s+/).map((word, i) => block.hiddenWords.includes(i)
@@ -113,7 +116,9 @@ export default function MaterialStudyCard({ item, api, preview, onSensor, onDone
     && (!video || watched);
   const beginRecording = () => {
     if (!canRecord || locked.current) return;
+    setError('');
     stopAudio();
+    recordedAudio.current?.pause();
     setPlaying(false);
     void rec.start(() => {
       if (continuous) {
@@ -126,6 +131,7 @@ export default function MaterialStudyCard({ item, api, preview, onSensor, onDone
   };
   function observe(at: number, running: boolean, ended: boolean) {
     setTime(at);
+    if (running && recordedAudio.current && !recordedAudio.current.paused) recordedAudio.current.pause();
     if (!running && !ended) return;
     if (continuous && !captureScene.current) return;
     const interval = coverage.current;
@@ -172,18 +178,20 @@ export default function MaterialStudyCard({ item, api, preview, onSensor, onDone
       setSubmitting(false);
     }
   }
-  return <article className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 p-4 text-deep-navy sm:p-6">
+  return <article className="mx-auto flex w-full min-w-0 max-w-3xl flex-1 flex-col gap-4 p-4 text-deep-navy [overflow-wrap:anywhere] sm:p-6">
     <h2 className="text-xl font-bold">{item.title}</h2>
     {preview && <p className="text-sm text-on-surface-variant">학생 화면 미리보기</p>}
     {video && <div className="min-w-0">
-      <PlainTeachingVideo videoUrl={block.videoUrl} start={block.start} end={block.end} title={item.title}
-        simple controlRef={control} rememberKey={'hw:' + item.id} onReady={() => setReady(true)} onTime={observe} />
+      <div inert={recordingBusy || undefined}>
+        <PlainTeachingVideo videoUrl={block.videoUrl} start={block.start} end={block.end} title={item.title}
+          simple controlRef={control} rememberKey={'hw:' + item.id} onReady={() => setReady(true)} onTime={observe} />
+      </div>
       {method === 'dub' && <div className="mt-3 space-y-2"><strong>내 역할 · {block.role}</strong>
         <div className="flex flex-wrap gap-2">{speakers.map(speaker => <span key={speaker} className={'rounded-lg border px-3 py-2 font-bold ' + (line?.speaker === speaker ? 'border-sky-500 bg-sky-200' : 'bg-white')}>
           {line?.speaker === speaker ? '✓ ' : ''}{speaker}</span>)}</div></div>}
       {(continuous || (method === 'echo' && hint)) && <p className="mt-3 text-center text-2xl font-bold">{method === 'echo' ? block.text : line?.en}</p>}
       {method === 'echo' && <div className="mt-3 flex flex-wrap gap-2">
-        <button className={button} disabled={!ready || recordingBusy || submitting} onClick={() => { sensor.current?.('audio'); control.current?.playFrom(block.start); }}>다시 듣기</button>
+        <button className={button} disabled={!ready || recordingBusy || submitting} onClick={() => { recordedAudio.current?.pause(); sensor.current?.('audio'); control.current?.playFrom(block.start); }}>다시 듣기</button>
         <button className={button} aria-pressed={hint} onClick={changeHint}>{hint ? '대사 가리기' : '대사 보기'}</button>
       </div>}
     </div>}
@@ -207,12 +215,20 @@ export default function MaterialStudyCard({ item, api, preview, onSensor, onDone
       <button className={button} disabled={submitting || rec.phase === 'permission' || rec.phase === 'stopping' || (!recordingBusy && !canRecord)}
         onClick={() => {
           if (rec.phase === 'recording') {
-            if (continuous) { captureScene.current = false; control.current?.pause(); }
+            if (continuous) {
+              captureScene.current = false;
+              control.current?.pause();
+              setError('장면이 끝나기 전에 멈췄어요. 다시 녹음을 누르고 장면 끝까지 녹음해 주세요.');
+            }
             rec.stop();
           } else beginRecording();
         }}>{rec.phase === 'permission' ? '마이크 연결 중…' : rec.phase === 'stopping' ? '녹음 확인 중…' : rec.phase === 'recording' ? '녹음 끝내기' : rec.take ? '다시 녹음' : '녹음하기'}</button>
-      {rec.take && !recordingBusy && <><strong className="ml-3" role="status">{rec.take.check === 'matched' ? 'Correct' : 'Incorrect'}</strong>
-        {rec.url && <audio className="w-full" controls src={rec.url} aria-label="내 녹음 듣기" />}</>}
+      {rec.take && !recordingBusy && <><strong className={'ml-3 ' + (rec.take.check === 'matched' ? 'text-emerald-700' : 'text-red-700')} role="status">{rec.take.check === 'matched' ? 'Correct' : 'Incorrect'}</strong>
+        {rec.url && <audio ref={recordedAudio} className="w-full" controls src={rec.url} aria-label="내 녹음 듣기" onPlay={() => {
+          stopAudio();
+          setPlaying(false);
+          control.current?.pause();
+        }} />}</>}
     </section>}
     {error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-red-900">{error}</p>}
     <button type="button" className={primary} disabled={!canSubmit || submitting} onClick={() => void submit()}>

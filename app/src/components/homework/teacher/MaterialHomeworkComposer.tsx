@@ -14,7 +14,9 @@ import type { HwItemDraft } from '../../../lib/homework/types';
 import AccessibleDialog from '../../AccessibleDialog';
 import HomeworkPreview from './HomeworkPreview';
 import HomeworkDeadlinePicker from './HomeworkDeadlinePicker';
-import { VocabularyProjectLinks } from './HomeworkComposer';
+import HomeworkMaterialSelection, { selectHomeworkMaterial, type ContentSelection } from './HomeworkMaterialSelection';
+import MaterialReviewGames from './MaterialReviewGames';
+import { buildReviewGames, reviewGameSource, type ReviewGame } from '../../../lib/homework/materialReviewGames';
 import '../../../styles/homework-composer.css';
 import '../../../i18n/materialHomeworkLocales';
 import type { TFunction } from 'i18next';
@@ -24,12 +26,12 @@ const kinds: Kind[] = ['word', 'sentence', 'scene', 'frequent'];
 const categoryLabels = { word: 'categoryWord', sentence: 'categorySentence', scene: 'categoryScene', frequent: 'categoryFrequent' } as const;
 const defaults: Settings = { activities: [], spelling: 'first', mask: 1, writing: 'blank', role: '' };
 type Form = {
-  request: string; step: number; categories: Kind[]; selected: Record<string, Settings>;
+  request: string; step: number; categories: Kind[]; selected: Record<string, Settings & ContentSelection>; titleEdited?:boolean; gameEnabled:boolean; games:ReviewGame[];
   recipientClass?: string; students: string[]; title: string; due: string; portion: number; part: number;
   daily: string; custom: string; final: boolean; types: CheckType[]; count: FinalCheck['count'];
 };
 const fresh = (): Form => ({ request: crypto.randomUUID(), step: 0, categories: [], selected: {}, students: [],
-  title: '', due: '', portion: 0, part: 0, daily: '5', custom: '', final: false, types: [], count: 5 });
+  title: '', gameEnabled:false, games:[], due: '', portion: 0, part: 0, daily: '5', custom: '', final: false, types: [], count: 5 });
 function restore(key: string): Form {
   try {
     const form: Form = JSON.parse(localStorage.getItem(key) || 'null');
@@ -66,10 +68,9 @@ function portionMaterials(materials: Material[], size: number, part: number) {
 }
 
 type Catalogue = Partial<Record<Kind, CatalogueMaterial[]>>;
-export default function MaterialHomeworkComposer({ academyId, classId, className, classes, ownerId, students, onCreated, onClose, onSwitch, adaptiveEnabled }: {
-  academyId: string; classId: string; className: string; classes: ClassRow[]; ownerId: string; students: Student[];
+export default function MaterialHomeworkComposer({ academyId, classId, classes, ownerId, students, onCreated, onClose }: {
+  academyId: string; classId: string; classes: ClassRow[]; ownerId: string; students: Student[];
   onCreated: (result: DispatchResult, targetClass:string) => void; onClose: () => void;
-  onSwitch:(kind:'adaptive'|'wordProject')=>void; adaptiveEnabled:boolean;
 }) {
   const { t, i18n } = useTranslation('materialHomework');
   const en = i18n.language.startsWith('en');
@@ -83,7 +84,9 @@ export default function MaterialHomeworkComposer({ academyId, classId, className
       return saved?.request === form.request && saved.classId === targetClass && saved.studentIds.length > 0 ? saved : null;
     } catch { return null; }
   });
-  const [open, setOpen] = useState<Kind[]>(() => form.categories.length ? form.categories : ['word']);
+  const [expanded, setExpanded] = useState(false);
+  const [notice, setNotice] = useState('');
+  const [storageFailed, setStorageFailed] = useState(false);
   const [catalogue, setCatalogue] = useState<Catalogue>({});
   const [bank, setBank] = useState<WordBankEntry[]>([]);
   const [failed, setFailed] = useState<Kind[]>([]);
@@ -103,7 +106,7 @@ export default function MaterialHomeworkComposer({ academyId, classId, className
   const [error, setError] = useState('');
   const lock = useRef(false);
   useEffect(() => {
-    try { localStorage.setItem(cache, JSON.stringify(form)); } catch { /* saving the send receipt below remains mandatory */ }
+    try { localStorage.setItem(cache, JSON.stringify(form)); setStorageFailed(false); } catch { setStorageFailed(true); }
   }, [cache, form]);
   useEffect(() => {
     let active = true;
@@ -128,8 +131,14 @@ export default function MaterialHomeworkComposer({ academyId, classId, className
     setError('');
     setForm(old => ({ ...old, ...patch }));
   }
+  useEffect(() => {
+    if (!storageFailed) return;
+    const beforeUnload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
+    window.addEventListener('beforeunload', beforeUnload);
+    return () => window.removeEventListener('beforeunload', beforeUnload);
+  }, [storageFailed]);
   const materials = useMemo(() => kinds.flatMap(kind => catalogue[kind] ?? []), [catalogue]);
-  const selected = useMemo(() => materials.filter(m => form.categories.includes(m.kind) && form.selected[keyOf(m)]), [materials, form.categories, form.selected]);
+  const selected = useMemo(() => materials.filter(m => form.categories.includes(m.kind) && form.selected[keyOf(m)]).map(m => selectHomeworkMaterial(m, form.selected[keyOf(m)])), [materials, form.categories, form.selected]);
   const selectedKeys = Object.keys(form.selected);
   const missing = selectedKeys.filter(key => !selected.some(m => keyOf(m) === key));
   const pool = useMemo(() => [...materials.filter(m => m.kind === 'word').flatMap(m => m.cards), ...bank.map(bankCard)], [bank, materials]);
@@ -138,29 +147,35 @@ export default function MaterialHomeworkComposer({ academyId, classId, className
     material, ...buildMaterialPlan(material, form.selected[keyOf(material)], pool),
   })), [portion, form.selected, pool]);
   const frequent = selected.filter(m => m.kind === 'frequent');
+  const emptySources = selected.filter(m => m.kind !== 'scene' && !m.cards.length);
+  const gamePlan = useMemo(() => buildReviewGames(portion.ordinary, form.gameEnabled ? form.games : [], en), [portion, form.games, form.gameEnabled, en]);
   const recurrentCards = toWmCards(frequent.flatMap(m => m.cards));
   const threshold = Number(form.daily === 'custom' ? form.custom : form.daily);
   const finalPlan = useMemo(() => {
-    if (!form.final || !portion.ordinary.length) return { items: [], issues: [] };
+    if (!form.final || !portion.ordinary.length) return { items: [], issues: [], covered:new Set<string>() };
     const contents: LearningContent[] = portion.ordinary.flatMap(m => [
-      ...m.cards.map(card => ({ id: `${m.id}/${card.id}`, kind: m.kind === 'sentence' ? 'sentence' as const : 'word' as const, card, origins: [m.name] })),
-      ...(m.scene?.lines ?? []).map(line => ({ id: `${m.id}/${line.s}`, kind: 'sentence' as const,
-        card: { id: `${m.id}/${line.s}`, word: line.en, meaning: line.ko || '', imageUrl: null }, origins: [m.name] })),
+      ...m.cards.map(card => ({ id: JSON.stringify([keyOf(m),'card',card.id]), kind: m.kind === 'sentence' ? 'sentence' as const : 'word' as const, card, origins: [keyOf(m)] })),
+      ...(m.scene?.lines ?? []).map(line => ({ id: JSON.stringify([keyOf(m),'line',line.s,line.e,line.en]), kind: 'sentence' as const,
+        card: { id: `${m.id}/${line.s}`, word: line.en, meaning: line.ko || '', imageUrl: null }, origins: [keyOf(m)] })),
     ]);
-    const { items, issues } = buildGuidedPractice(contents, [], [], en, { types: form.types, count: form.count }, undefined, 'finalOnly');
+    const { items, issues, finalContentIds } = buildGuidedPractice(contents, [], [], en, { types: form.types, count: form.count }, undefined, 'finalOnly');
     for (const item of items) {
       item.config.block!.groupKey = 'material-final';
       item.config.block!.materialName = t('final');
       item.title = t('final');
     }
-    return { items, issues };
+    return { items, issues, covered:new Set(contents.filter(content=>finalContentIds.has(content.id)).flatMap(content=>content.origins)) };
   }, [en, portion, form.final, form.types, form.count, t]);
-  const items = useMemo(() => [...plans.flatMap(plan => plan.items), ...finalPlan.items], [plans, finalPlan]);
+  const items = useMemo(() => [...plans.flatMap(plan => plan.items), ...gamePlan.items, ...finalPlan.items], [plans, gamePlan, finalPlan]);
   const targets = classStudents.filter(s => form.students.includes(s.id)).map(s => s.id).sort();
-  const issues: string[] = [];
+  const issues: string[] = [...gamePlan.issues];
+  if (emptySources.length) issues.push(t('emptySelection'));
   for (const plan of plans) {
-    if (!form.final && !form.selected[keyOf(plan.material)].activities.length) issues.push(t('chooseActivity',{name:plan.material.name}));
-    else issues.push(...plan.issues);
+    const gameUsesMaterial = !!gamePlan.items.length && form.games.some(game=>reviewGameSource([plan.material],game,en).cards.length>0);
+    if (!gameUsesMaterial && !finalPlan.covered.has(keyOf(plan.material)) && !form.selected[keyOf(plan.material)].activities.length) {
+      issues.push(t('chooseActivity',{name:plan.material.name}));
+    }
+    issues.push(...plan.issues);
   }
   if (items.length) {
     if (new Set(items.map(item => item.config.block?.groupKey)).size > 60 ||
@@ -174,9 +189,21 @@ export default function MaterialHomeworkComposer({ academyId, classId, className
       issues.push(t('limitError',{n:recurrentCards.length}));
     }
   }
-  if (portion.ordinary.length && form.due && new Date(form.due).getTime() <= Date.now()) issues.push(t('deadlineError'));
-  const title = form.title.trim() || selected.map(m => m.name).join(' · ').slice(0, 120);
-  const assignmentTitle = portion.count > 1 ? `${title} · ${portion.index + 1}/${portion.count}` : title;
+  const invalidDue = items.length > 0 && !!form.due && !(Date.parse(form.due) > Date.now());
+  const names = [...new Set(selected.map(m => m.name))];
+  const typeNames = kinds.filter(k => selected.some(m => m.kind === k)).map(k => t(categoryLabels[k]));
+  const typeTitle = !en && typeNames.length===2 && typeNames[0]===t('categoryWord') && typeNames[1]===t('categorySentence') ? '단어와 문장' : typeNames.join(en ? ' and ' : ' · ');
+  const generatedTitle = [names.join(' · '), typeTitle].filter(Boolean).join(' · ').slice(0,120);
+  const title = form.titleEdited || form.title ? form.title : generatedTitle;
+  const assignmentTitle = title.trim();
+  const configValid = !missing.length && !issues.length && (items.length > 0 || frequent.length > 0);
+  const ready = configValid && !!assignmentTitle && !invalidDue && targets.length > 0;
+  const step = pending ? 2 : form.step;
+  const heading = step === 0 ? t(expanded ? 'selectContent' : 'choose') : t(step === 1 ? 'configure' : 'sendHeading');
+  const sourceValid = !!selected.length && !missing.length && !emptySources.length;
+  const dismissal = () => {
+    if ((!storageFailed || window.confirm(t('leaveUnsaved'))) && !busy) onClose();
+  };
 
   function choose(m: Material) {
     const key = keyOf(m);
@@ -188,16 +215,27 @@ export default function MaterialHomeworkComposer({ academyId, classId, className
     const enabled = form.categories.includes(kind);
     const selected = { ...form.selected };
     if (enabled) for (const key of Object.keys(selected)) { if (key.startsWith(kind + '/')) delete selected[key]; }
-    if (!enabled && !open.includes(kind)) setOpen([...open, kind]);
     edit({ categories: toggle(form.categories, kind), selected, part: 0 });
   }
-  function configure(m: Material, patch: Partial<Settings>) {
+  function configure(m: Material, patch: Partial<Settings> & ContentSelection) {
     const key = keyOf(m);
-    edit({ selected: { ...form.selected, [key]: { ...form.selected[key], ...patch } } });
+    const next = {...form.selected[key],...patch};
+    if (m.scene && (patch.cardIds || patch.lineIds)) {
+      const filtered = selectHomeworkMaterial(m,next);
+      const lines = filtered.scene?.lines ?? [];
+      next.activities = next.activities.filter(activity=>{
+        if(activity==='sceneWords') return filtered.cards.length>0;
+        if(activity==='echo'||activity==='shadow') return lines.length>0;
+        return activity!=='dub'||lines.some(line=>line.speaker);
+      });
+      if(next.role && !lines.some(line=>line.speaker===next.role)) next.role='';
+      if(next.activities.length!==form.selected[key].activities.length || next.role!==form.selected[key].role) setNotice(t('removedOptions'));
+    }
+    edit({ selected:{...form.selected,[key]:next}, ...((patch.cardIds||patch.lineIds) ? {part:0} : {}) });
   }
 
   async function send() {
-    if (lock.current || (!pending && (issues.length || missing.length || !targets.length || (!items.length && !frequent.length)))) return;
+    if (lock.current || step !== 2 || (!pending && !ready)) return;
     lock.current = true;
     setBusy(true);
     setError('');
@@ -206,7 +244,7 @@ export default function MaterialHomeworkComposer({ academyId, classId, className
       if (!payload) {
         const ranges = frequent.map(m => m.id);
         const project = ranges.length ? {
-          request: form.request, cards: recurrentCards, title: `${t('categoryFrequent')} · ${frequent.map(m => m.name).join(', ')}`.slice(0, 120),
+          request: form.request, cards: recurrentCards, title: items.length ? `${assignmentTitle} · ${t('categoryFrequent')}`.slice(0,120) : assignmentTitle,
           limit: threshold, source: { type: 'curriculum' as const, name: t('categoryFrequent'), ranges },
         } : null;
         payload = { classId:targetClass, request: form.request, studentIds: targets, due: items.length ? form.due : '', project,
@@ -231,7 +269,7 @@ export default function MaterialHomeworkComposer({ academyId, classId, className
       const detail = cause instanceof Error ? cause.message : (cause as {message?:string})?.message;
       // A database rejection rolls back the operation. Transport failure leaves
       // the commit status unknown; retry that exact payload before editing it.
-      if ((cause as {code?:string})?.code === 'P0001') {
+      if (/^[0-9A-Z]{5}$/.test((cause as {code?:string})?.code ?? '')) {
         localStorage.removeItem(receiptKey);
         setPending(null);
       }
@@ -241,38 +279,45 @@ export default function MaterialHomeworkComposer({ academyId, classId, className
       setBusy(false);
     }
   }
-  return <section className="hw-composer" aria-label={t('newHomework')}>
-    <header className="hw-compose-header"><div><p>{className}</p><h2>{form.step === 0 ? t('choose') : t('configure')}</h2></div>
-      <button type="button" disabled={busy} onClick={onClose}>{t('close')}</button></header>
-    <nav className="hw-compose-steps" aria-label={t('steps')}>{[t('choose'),t('configure')].map((name, i) =>
-      <button type="button" key={name} disabled={busy || !!pending || (i === 1 && (!selected.length || !!missing.length))} aria-current={form.step === i ? 'step' : undefined} onClick={() => edit({ step: i })}><b>{i + 1}</b>{name}</button>)}</nav>
+  const summaries = [
+    ...new Set(plans.flatMap(plan => form.selected[keyOf(plan.material)].activities.map(activity=>t(`activity.${activity}`)))),
+    ...gamePlan.items.map(item=>item.title),
+    ...(frequent.length ? [t('dailySummary',{n:threshold})] : []), ...(form.final && finalPlan.items.length ? [t('final')] : []),
+  ];
+  return <section className="hw-studio" aria-label={heading}>
+    <nav className="hw-breadcrumb" aria-label={t('path')}><span>{t('ourClass')}</span><span aria-hidden>›</span>
+      <button type="button" onClick={dismissal} disabled={busy}>{t('homework')}</button><span aria-hidden>›</span><span>{t('newHomework')}</span></nav>
+    <h1>{heading}</h1>
+    {step === 0 && <p className="hw-intro">{t(expanded ? 'contentHelp' : 'chooseHelp')}</p>}
     {pending && !busy && <p role="status">{t('pending')}</p>}
-    <fieldset className="hw-compose-body" disabled={busy || !!pending}>
-      {form.step === 0 ? <>
-        {kinds.map(kind => <section key={kind} className="hw-content-card">
-          <div className="flex items-center gap-3"><input aria-label={t('useCategory', {name:t(categoryLabels[kind])})} type="checkbox" checked={form.categories.includes(kind)} onChange={() => category(kind)} />
-            <button type="button" className="flex-1 text-left" aria-expanded={open.includes(kind)} onClick={() => setOpen(toggle(open, kind))}>{t(categoryLabels[kind])} {open.includes(kind) ? '▴' : '▾'}</button></div>
-          {open.includes(kind) && (failed.includes(kind) ? <p role="alert">{t('loadFailed')} <button type="button" onClick={() => setRevision(n => n + 1)}>{t('reload')}</button></p> :
-            !catalogue[kind] ? <p>{t('loading')}</p> : catalogue[kind]?.length ?
-              <SourceChoices kind={kind} rows={catalogue[kind]!} selected={form.selected} onChoose={choose}/> : <p>{t('noMaterials')}</p>)}
-        </section>)}
-        <p aria-live="polite">{t('materialCount', {n:selected.length})}{selected.length > 0 && ' · ' + counts(selected, t)}</p>
-        <VocabularyProjectLinks onSwitch={onSwitch} adaptiveEnabled={adaptiveEnabled}/>
+    {storageFailed && <p role="alert">{t('storageFailed')}</p>}
+    {notice && <p role="status">{notice}</p>}
+    <fieldset className="hw-studio-body" disabled={busy || !!pending}>
+      {step === 0 && <>
+        <HomeworkMaterialSelection catalogue={catalogue} categories={form.categories} selected={form.selected}
+          failed={failed} onCategory={category} onChoose={choose} onConfigure={configure}
+          onRetry={()=>setRevision(n=>n+1)} onExpandedChange={setExpanded}/>
         {!!missing.length && <p role="status">{t('missing')}</p>}
-      </> : <>
-        <label className="hw-compose-label">{t('title')}<input value={form.title} placeholder={title} maxLength={120} onChange={e => edit({ title: e.target.value })}/></label>
+        {!!emptySources.length && <p role="status">{t('emptySelection')}</p>}
+      </>}
+      {step === 1 && <>
+        {plans.map(plan => <MaterialOptions key={keyOf(plan.material)} material={plan.material} settings={form.selected[keyOf(plan.material)]}
+          onChange={patch => configure(plan.material,patch)} onPreview={()=>setPreview(plan.items)} canPreview={!!plan.items.length&&!plan.issues.length}/>)}
+        {frequent.length > 0 && <details className="hw-plan-row"><summary><strong>{t('categoryFrequent')} {t('nItems',{n:recurrentCards.length})}</strong>
+          <span className="hw-checked-plan"><span className="hw-plan-check" aria-hidden="true">✓</span>{t('dailySummary',{n:threshold || '—'})}</span><span className="hw-small-action"><span className="material-symbols-outlined" aria-hidden="true">edit</span>{t('edit')}</span></summary><div className="hw-plan-fields">
+          <p>{frequent.map(m => m.name).join(' · ')}</p>
+          <label className="hw-compose-label">{t('newMax')}<select value={form.daily} onChange={e => edit({ daily: e.target.value })}>
+            {[5,10,15].map(n => <option key={n} value={n}>{t('nItems',{n})}</option>)}<option value="custom">{t('custom')}</option></select></label>
+          {form.daily === 'custom' && <label>{t('limit')}<input type="number" min={1} max={recurrentCards.length} step={1} value={form.custom} onChange={e => edit({ custom: e.target.value })}/></label>}
+          <p>{t('reviewHelp')}</p></div></details>}
+        {!missing.length && <MaterialReviewGames materials={portion.ordinary} enabled={form.gameEnabled} games={form.games} en={en}
+          onEnabled={value=>edit({gameEnabled:value})} onGames={games=>edit({games})}/>}
+        {!!portion.ordinary.length && <details className="hw-extra"><summary>{t('moreConfig')}</summary><div className="hw-plan-fields">
         {selected.some(m => m.kind === 'word' || m.kind === 'sentence') && <div className="hw-portion-choices" aria-label={t('portions')}>
           {[0,10,20].map(n => <button type="button" key={n} aria-pressed={form.portion === n} onClick={() => edit({ portion: n, part: 0 })}>{n ? t('each',{n}) : t('whole')}</button>)}
           {portion.count > 1 && <label>{t('part')}<select value={portion.index} onChange={e => edit({ part: Number(e.target.value) })}>
             {Array.from({ length: portion.count }, (_, i) => <option key={i} value={i}>{i + 1} / {portion.count}</option>)}</select></label>}
         </div>}
-        {plans.map(plan => <MaterialOptions key={keyOf(plan.material)} material={plan.material} settings={form.selected[keyOf(plan.material)]}
-          onChange={patch => configure(plan.material, patch)} onPreview={() => setPreview(plan.items)} canPreview={!!plan.items.length && !plan.issues.length}/>)}
-        {frequent.length > 0 && <section className="hw-content-card"><h3>{t('categoryFrequent')} · {t('nItems',{n:recurrentCards.length})}</h3><p>{frequent.map(m => m.name).join(' · ')}</p>
-          <label className="hw-compose-label">{t('newMax')}<select value={form.daily} onChange={e => edit({ daily: e.target.value })}>
-            {[5,10,15].map(n => <option key={n} value={n}>{t('nItems',{n})}</option>)}<option value="custom">{t('custom')}</option></select></label>
-          {form.daily === 'custom' && <label>{t('limit')}<input type="number" min={1} max={recurrentCards.length} step={1} value={form.custom} onChange={e => edit({ custom: e.target.value })}/></label>}
-          <p>{t('reviewHelp')}</p></section>}
         {!!portion.ordinary.length && <section className="hw-content-card"><label className="flex items-center gap-2"><input type="checkbox" checked={form.final} onChange={e => edit({ final: e.target.checked })}/>{t('final')}</label>
           {form.final && <><div className="hw-content-summary">{(Object.keys(CHECK_TYPES) as CheckType[]).map(type =>
             <label key={type}><input type="checkbox" checked={form.types.includes(type)} onChange={() => edit({ types: toggle(form.types,type) })}/>{CHECK_TYPES[type][en ? 1 : 0]}</label>)}</div>
@@ -283,60 +328,34 @@ export default function MaterialHomeworkComposer({ academyId, classId, className
           <p>{t('estimatedPart',{n:estimateMinutes(items)})}</p>
           <button type="button" onClick={() => setPreview(items)}>{t('previewAll')}</button>
         </>}
-        {portion.ordinary.length > 0 && <HomeworkDeadlinePicker value={form.due} onChange={due => edit({ due })} en={en}/>}
-        <fieldset className="hw-targets"><legend>{t('recipients')}</legend>
-          <label>{t('class')}<select value={targetClass} onChange={e => edit({ recipientClass:e.target.value,students:[] })}>
-            {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
-          {roster?.error && roster.classId === targetClass && <p role="alert">{t('rosterError')} <button type="button" onClick={() => setRevision(n => n + 1)}>{t('reload')}</button></p>}
-          <label><input type="checkbox" checked={!!classStudents.length && targets.length === classStudents.length} onChange={e => edit({ students: e.target.checked ? classStudents.map(s => s.id) : [] })}/>{t('selectAll')}</label>
-          <div>{classStudents.map(s => <label key={s.id}><input type="checkbox" checked={targets.includes(s.id)} onChange={() => edit({ students: toggle(targets, s.id) })}/>{s.name}</label>)}</div>
-          <p>{t('selectedCount',{total:classStudents.length,n:targets.length})}</p></fieldset>
-        {issues.length > 0 && <div className="hw-compose-error" role="status">{Array.from(new Set(issues)).map(issue => <p key={issue}>{issue.split(' / ')[en ? 1 : 0] || issue}</p>)}</div>}
+        </div></details>}
+        {!!issues.length && <div role="status" className="hw-studio-issue">{[...new Set(issues)].map(issue=><p key={issue}>{issue.split(' / ')[en?1:0] || issue}</p>)}</div>}
+      </>}
+      {step === 2 && <>
+        <label className="hw-form-row"><b>{t('title')}</b><input value={title} maxLength={120} onChange={e=>edit({title:e.target.value,titleEdited:true})}/></label>
+        <label className="hw-form-row"><b>{t('sendClass')}</b><select value={targetClass} onChange={e=>edit({recipientClass:e.target.value,students:[]})}>
+          {classes.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+        <div className="hw-form-row"><b id="hw-recipients">{t('sendStudents')}</b><div role="group" aria-labelledby="hw-recipients">
+          {roster?.error && roster.classId === targetClass && <p role="alert">{t('rosterError')} <button type="button" onClick={()=>setRevision(n=>n+1)}>{t('reload')}</button></p>}
+          <div className="hw-student-chips">{classStudents.map(s=><label key={s.id}><input type="checkbox" checked={targets.includes(s.id)} onChange={()=>edit({students:toggle(targets,s.id)})}/>{s.name}</label>)}</div>
+          <div className="hw-recipient-count"><button type="button" disabled={!classStudents.length} onClick={()=>edit({students:targets.length===classStudents.length ? [] : classStudents.map(s=>s.id)})}>
+            {t(targets.length && targets.length===classStudents.length ? 'clearAll' : 'selectAll')}</button> · {t('selectedCount',{total:classStudents.length,n:targets.length})}</div>
+        </div></div>
+        {!!items.length && <div className="hw-date-row"><HomeworkDeadlinePicker value={form.due} onChange={due=>edit({due})} en={en}/></div>}
+        <div className="hw-send-summary"><b>{t('summary')}</b><span>{summaries.join(' · ')}</span></div>
+        {(!assignmentTitle || invalidDue || !configValid) && <p role="alert">{!assignmentTitle ? t('emptyTitle') : invalidDue ? t('deadlineError') : t('reviewConfig')}</p>}
       </>}
     </fieldset>
-    {error && <p role="alert" className="hw-compose-error">{error}</p>}
-    <footer className="hw-compose-footer">{form.step === 0 ?
-      <button className="hw-primary" type="button" disabled={!selected.length || !!missing.length} onClick={() => edit({ step: 1 })}>{t('next')}</button> :
-      <><button type="button" disabled={busy || !!pending} onClick={() => edit({ step: 0 })}>{t('back')}</button>
-        <button className="hw-primary" type="button" disabled={busy || (!pending && (!targets.length || !!missing.length || !!issues.length || (!items.length && !frequent.length)))} onClick={() => void send()}>{busy ? t('sending') : t('send',{n:pending?.studentIds.length ?? targets.length})}</button></>}
+    {error && <p role="alert" className="hw-studio-issue">{error}</p>}
+    <footer className="hw-studio-footer">
+      <button type="button" className="hw-back" disabled={busy || !!pending} onClick={()=>step ? edit({step:step-1}) : dismissal()}>{step ? t('back') : t('close')}</button>
+      {step < 2 ? <button type="button" className="hw-forward" disabled={step===0 ? !sourceValid : !configValid}
+        onClick={()=>{setNotice('');edit({step:step+1});}}>{t(step===0 ? 'toConfigure' : 'toStudents')} <span aria-hidden>→</span></button> :
+        <button type="button" className="hw-forward" disabled={busy || (!pending&&!ready)} onClick={()=>void send()}><span className="material-symbols-outlined" aria-hidden>send</span>{t(busy?'sending':'sendButton')}</button>}
     </footer>
     {preview && <AccessibleDialog label={t('preview')} onClose={() => setPreview(null)}><div className="hw-preview-dialog"><header><h3>{t('preview')}</h3><button type="button" onClick={() => setPreview(null)}>{t('close')}</button></header>
       <HomeworkPreview title={assignmentTitle} items={preview}/></div></AccessibleDialog>}
   </section>;
-}
-
-function SourceChoices({kind,rows,selected,onChoose}:{kind:Kind; rows:CatalogueMaterial[];selected:Form['selected'];onChoose:(m:Material)=>void}) {
-  const {t} = useTranslation('materialHomework');
-  const [parent, setParent] = useState('');
-  const [level, setLevel] = useState('');
-  const field = kind === 'frequent' ? 'school' : 'episode';
-  const parents = new Map(rows.flatMap(m => m[field] ? [[m[field].id, m[field].name] as const] : []));
-  const withinParent = parent ? rows.filter(m => m[field]?.id === parent) : rows;
-  const levels = new Map(withinParent.flatMap(m => m.band ? [[m.band.id,m.band.name] as const] : []));
-  const filtered = level ? withinParent.filter(m => m.band?.id === level) : withinParent;
-  return <>
-    {!!parents.size && <div className="grid gap-2 sm:grid-cols-2">
-      <label>{t(kind === 'frequent' ? 'school' : 'episode')}<select value={parent} onChange={e => {setParent(e.target.value);setLevel('');}}>
-        <option value="">{t('all')}</option>{Array.from(parents, ([id,name]) => <option key={id} value={id}>{name}</option>)}</select></label>
-      {!!levels.size && <label>{t('level')}<select value={level} onChange={e=>setLevel(e.target.value)}>
-        <option value="">{t('all')}</option>{Array.from(levels, ([id,name]) => <option key={id} value={id}>{name}</option>)}</select></label>}
-    </div>}
-    <div className="grid max-h-80 gap-2 overflow-auto">{filtered.map(m =>
-      <MaterialChoice key={keyOf(m)} material={m} checked={!!selected[keyOf(m)]} onChange={() => onChoose(m)}/>)}</div>
-  </>;
-}
-
-function MaterialChoice({ material, checked, onChange }: { material:Material; checked:boolean; onChange:()=>void }) {
-  const { t } = useTranslation('materialHomework');
-  const [expanded, setExpanded] = useState(false);
-  return <div>
-    <label className="hw-video-choice"><input type="checkbox" disabled={!material.cards.length && !material.scene} checked={checked} onChange={onChange}/>
-      <span>{material.name}<small className="block">{counts([material], t) || t('sceneVideo')}</small></span></label>
-    {material.scene && <details onToggle={event => setExpanded(event.currentTarget.open)}><summary>{t('sceneContents')}</summary>
-      {expanded && <div className="grid gap-2 px-3 pb-2"><p>{material.cards.map(card => card.word + ' · ' + card.meaning).join(', ')}</p>
-        <ul>{material.scene.lines.map((line, i) => <li key={i}>{line.speaker && <b>{line.speaker} · </b>}{line.en}{line.ko && ' · ' + line.ko}</li>)}</ul></div>}
-    </details>}
-  </div>;
 }
 
 function MaterialOptions({ material, settings, onChange, onPreview, canPreview }: {
@@ -351,7 +370,13 @@ function MaterialOptions({ material, settings, onChange, onPreview, canPreview }
     if (id === 'dub' && !roles.length) return t('noRoles');
     return '';
   }
-  return <section className="hw-content-card"><h3>{material.name}</h3><p>{counts([material], t)}</p>
+  const [expanded, setExpanded] = useState(false);
+  return <section className="hw-plan-row">
+    <div className="hw-plan-head"><strong>{material.kind === 'scene' ? t('categoryScene') : ''} {counts([material],t)}</strong>
+      <div className="hw-plan-text"><small>{material.name}</small><span className="hw-checked-plan">{activities.length>0 && <span className="hw-plan-check" aria-hidden="true">✓</span>}{activities.length ? activities.map(id=>t(`activity.${id}`)).join(' · ') : t('pickType')}</span></div>
+      <button type="button" className="hw-small-action" aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)}><span className="material-symbols-outlined" aria-hidden>edit</span>{t(expanded?'done':'edit')}</button>
+    </div>
+    {expanded && <div className="hw-plan-fields">
     <div className="hw-content-summary">{activitiesByKind[material.kind].map(id => <label key={id}><input type="checkbox" disabled={!!unavailable(id)} checked={activities.includes(id)}
       onChange={() => onChange({ activities: toggle(activities, id) })}/>{t(`activity.${id}`)}{unavailable(id) && <small>{unavailable(id)}</small>}</label>)}</div>
     {activities.includes('spell') && <label>{t('spelling')}<select value={settings.spelling || 'first'} onChange={e => onChange({ spelling: e.target.value as Settings['spelling'] })}>
@@ -363,5 +388,6 @@ function MaterialOptions({ material, settings, onChange, onPreview, canPreview }
     {activities.includes('dub') && <label>{t('role')}<select value={settings.role || ''} onChange={e => onChange({ role: e.target.value })}>
       <option value="">{t('pickRole')}</option>{roles.map(role => <option key={role}>{role}</option>)}</select></label>}
     <button type="button" disabled={!canPreview} onClick={onPreview}>{t('preview')}</button>
+    </div>}
   </section>;
 }

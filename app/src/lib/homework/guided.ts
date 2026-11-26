@@ -137,6 +137,7 @@ export function buildGuidedPractice(contents:LearningContent[],videos:LearningVi
   return item;
  };
  let finalQuestions=0;
+ const finalContentIds=new Set<string>();
  if(final){
   const candidates=final.types.map(type=>({type,items:shuffleWith(contents.flatMap<{id:string;card:FullCardItem;question:HwQuestion|null}>(({card,kind,id})=>{
    const word=kind==='word';
@@ -188,7 +189,7 @@ export function buildGuidedPractice(contents:LearningContent[],videos:LearningVi
      if(!candidate.items.length)continue;
      const fresh=candidate.items.findIndex(item=>!seen.has(item.id));
      const [item]=candidate.items.splice(fresh<0?0:fresh,1);
-     picks[index].push(item);seen.add(item.id);finalQuestions++;
+     picks[index].push(item);seen.add(item.id);finalContentIds.add(item.id);finalQuestions++;
     }
    }
    for(const [index,{type}] of candidates.entries()){
@@ -205,5 +206,5 @@ export function buildGuidedPractice(contents:LearningContent[],videos:LearningVi
  if(mode==='finalOnly' && items.length>60) {
   for(let i=0;i<items.length;i+=60)issues.push(...validateItems(items.slice(i,i+60)));
  } else issues.push(...validateItems(items));
- return {items,examples,issues:[...new Set(issues)],finalQuestions,questions:items.reduce((n,it)=>n+it.content.questions.length,0),recordings:items.filter(it=>it.config.block?.completion==='recording').length,contents:contents.length};
+ return {items,examples,issues:[...new Set(issues)],finalQuestions,finalContentIds,questions:items.reduce((n,it)=>n+it.content.questions.length,0),recordings:items.filter(it=>it.config.block?.completion==='recording').length,contents:contents.length};
 }

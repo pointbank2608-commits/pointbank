@@ -23,6 +23,7 @@ import PrintWatermark from '../components/PrintWatermark';
 import { useAuth } from '../context/AuthContext';
 import { LessonRunnerProvider, useLessonRunner } from '../context/LessonRunnerContext';
 import StaffNav from '../components/StaffNav';
+import '../styles/homework-navigation.css';
 
 interface NavItem {
   to: string;
@@ -118,7 +119,7 @@ function AppLayoutInner() {
         </ul>
       )}
 
-      <div className="mx-5 mb-4 mt-4 hidden text-center [@media(min-height:820px)]:block">
+      <div data-sidebar-mascot className="mx-5 mb-4 mt-4 hidden text-center [@media(min-height:820px)]:block">
         <img src="/ui2/m-pencil.webp" alt="" aria-hidden width={669} height={654} loading="lazy" draggable={false} className="mx-auto h-[7.5rem] w-auto select-none" />
         <p className="mt-1 font-label-md text-[15px] text-white/90">{t('nav.sidebarCheer')}</p>
       </div>
@@ -192,7 +193,7 @@ function AppLayoutInner() {
   }
 
   return (
-    <div className={`min-h-screen flex bg-background font-body-md text-on-background ${isWorkbookPrint ? 'print:block print:min-h-0 print:bg-white' : ''}`}>
+    <div data-homework-shell={isStaff && pathname === '/homework' ? '' : undefined} className={`min-h-screen flex bg-background font-body-md text-on-background ${isWorkbookPrint ? 'print:block print:min-h-0 print:bg-white' : ''}`}>
       <PrintWatermark />
       {isMaterialsPrint && <PrintBrandFooter />}
       {/* 모바일 상단바 */}
@@ -221,7 +222,7 @@ function AppLayoutInner() {
       {/* 모바일 드로어 */}
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 bg-inverse-surface/40 z-50" onClick={() => setMobileOpen(false)}>
-          <nav
+          <nav data-staff-sidebar
             className="flex h-full w-[19rem] max-w-[86vw] flex-col overflow-y-auto overscroll-contain bg-deep-navy pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] pt-[calc(1.5rem+env(safe-area-inset-top,0px))]"
             onClick={(e) => e.stopPropagation()}
           >
@@ -232,7 +233,7 @@ function AppLayoutInner() {
 
       {/* 데스크톱 사이드바 */}
       {/* 화면 높이가 낮으면(작은 노트북·브라우저 창 축소) 하단 설정·로그아웃이 잘려서, 사이드바 자체를 스크롤되게 한다. */}
-      <nav data-app-chrome className="no-print fixed left-0 top-0 z-30 hidden h-[100dvh] w-[17.5rem] flex-col overflow-y-auto overscroll-contain bg-deep-navy py-7 md:flex">
+      <nav data-app-chrome data-staff-sidebar className="no-print fixed left-0 top-0 z-30 hidden h-[100dvh] w-[17.5rem] flex-col overflow-y-auto overscroll-contain bg-deep-navy py-7 md:flex">
         {sidebarContent}
       </nav>
 

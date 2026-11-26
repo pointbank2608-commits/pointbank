@@ -111,7 +111,7 @@ export default function QuestionCard({ q, onAnswer, disabled, eliminated, onSens
       {q.style === 'sfade' && <SentenceFadeThenType key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
       {q.style === 'fade' && <FadeThenType key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
       {q.style === 'hangman' && <HangmanInput key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} />}
-      {q.qtype === 'text' && !memo && q.style !== 'hangman' && <TextInput key={q.id} onAnswer={onAnswer} disabled={disabled} light={!stage} />}
+      {q.qtype === 'text' && !memo && q.style !== 'hangman' && <TextInput key={q.id} onAnswer={onAnswer} disabled={disabled} light={!stage} sentence={q.gen === 'homework-material-v1' && q.skill === 'writing.sentence'} />}
       {q.qtype === 'order' && <OrderBuilder key={q.id} q={q} onAnswer={onAnswer} disabled={disabled} finalCheck={finalCheck} />}
     </div>
   );
@@ -390,9 +390,9 @@ function SpellingCard({q,disabled,onAnswer,requestHint,onSensor,finalCheck}:{
   </div>;
 }
 
-function TextInput({ onAnswer, disabled, light = false }: { onAnswer: (r: string) => void; disabled: boolean; light?: boolean }) {
+function TextInput({ onAnswer, disabled, light = false, sentence = false }: { onAnswer: (r: string) => void; disabled: boolean; light?: boolean; sentence?: boolean }) {
   const [text, setText] = useState('');
-  return <TextAnswer light={light||undefined} text={text} setText={setText} disabled={disabled} onSubmit={() => text.trim() && !disabled && onAnswer(text.trim())} />;
+  return <TextAnswer light={light||undefined} text={text} setText={setText} disabled={disabled} sentence={sentence} onSubmit={() => text.trim() && !disabled && onAnswer(text.trim())} />;
 }
 
 /** 조각을 눌러 차례로 놓고, 놓은 조각을 누르면 되돌린다(끌기 없이도 풀 수 있게) */

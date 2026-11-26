@@ -21,6 +21,12 @@ try{
  const final=combined.items.filter(i=>i.config.block.method?.startsWith(g.GUIDED_FINAL));
  assert.deepEqual(final.map(i=>i.content.questions.length),[3,2]);
  assert.equal(new Set(final.flatMap(i=>i.content.questions.map(q=>q.word))).size,5);
+ assert.equal(combined.finalContentIds.size,5);
+ const selectedSources=[...parts[0],...sent.contents];
+ const wordOnly=g.buildGuidedPractice(selectedSources,[],[],false,{types:['spelling'],count:5},undefined,'finalOnly');
+ assert.equal(wordOnly.finalQuestions,5);
+ assert.ok([...wordOnly.finalContentIds].every(id=>parts[0].some(entry=>entry.id===id)));
+ assert.ok(sent.contents.every(entry=>!wordOnly.finalContentIds.has(entry.id)));
  assert.ok(final[1].content.questions.every(q=>q.style==='spell'&&!q.speak));
  assert.ok(combined.items.slice(0,-2).every(i=>i.config.block.guidedPractice));
  assert.ok(g.buildGuidedPractice(parts[0],[],['memory'],false,{types:['sentenceOrder'],count:5}).issues.length);

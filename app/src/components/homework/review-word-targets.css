@@ -1,0 +1,7 @@
+.hw-review-targets {padding:20px 16px; flex:1; text-align:center; color:#182c51}
+.hw-review-targets p {color:#56677d}
+.hw-review-targets h2 {font-size:clamp(24px,5vw,40px); font-weight:700; margin:12px 0 22px}
+.hw-review-targets>div {display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; max-width:540px; margin:auto}
+.hw-review-targets button {display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; overflow-wrap:anywhere; cursor:crosshair; border-radius:16px; padding:8px; min-height:82px; color:#173b77; border:2px solid #93b5ea; background:#ecf5ff; font-size:clamp(18px,4vw,27px)}
+.hw-review-targets button span {font-size:34px; line-height:1; color:#1e61cd}
+.hw-review-targets button:active {transform:scale(.96);background:#cfe3ff}

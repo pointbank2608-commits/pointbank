@@ -61,7 +61,7 @@ try {
     title:'Family Road Trip', items, initialAnswers:new Map(), finishedItems:new Set(), shadowLinesDone:new Map(), alreadyFinished:false, api:{}, saveState:'saved'
   })));
   assert.equal((intro.match(/<button/g) ?? []).length,2);
-  assert.ok(intro.includes('10단어') && intro.includes('8문장'));
+  assert.ok(intro.includes('단어 10개') && intro.includes('문장 8개'));
   console.log('PASS student activity list renders two actionable groups without a global start button');
   const first = { ...words, content: { questions: [{ qtype:'choice', prompt:'road', choices:['길','배','사과','모자'] }] } };
   const state = { title:'이전 배정', items:[first, sentences[0]], item_attempts:[{ item_id:sentences[0].id, finished:true, meta:{ recording:'private-path' } }],

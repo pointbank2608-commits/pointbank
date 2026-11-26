@@ -1,5 +1,6 @@
 import { validateItems } from './blocks';
 import { labels } from './materialPlan';
+import { isReviewGameGroup } from './materialReviewGames';
 import type { HwItemDraft } from './types';
 
 export interface PublicationRow { key: string; item: HwItemDraft }
@@ -13,7 +14,8 @@ export function publicationGroups(rows: PublicationRow[]): PublicationGroup[] {
     const method = block?.method ?? '';
     const grouped = block?.groupKey && (
       (method.startsWith('material:') && Object.hasOwn(labels, method.slice('material:'.length))) ||
-      (block.groupKey === 'material-final' && method.startsWith('guided-final:'))
+      (block.groupKey === 'material-final' && method.startsWith('guided-final:')) ||
+      isReviewGameGroup(row.item)
     );
     const key = grouped ? 'group:' + block.groupKey : 'row:' + row.key;
     let group = groups.get(key);

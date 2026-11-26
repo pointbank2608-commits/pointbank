@@ -5,6 +5,8 @@ import type { HwItem } from '../../lib/homework/types';
 import FlipDeck from './FlipDeck';
 import { useLearningActivity } from '../../lib/learningSensors/useLearningActivity';
 import MatchupGame from './MatchupGame';
+import ReviewWordTargets from './ReviewWordTargets';
+import { reviewGameKey } from '../../lib/homework/materialReviewGames';
 import QuestionCard, { isStudioQuestion } from './QuestionCard';
 import { StudioCard, StudioShell, StudioTopBar } from '../studio/StudioKit';
 import { GUIDED_FINAL } from '../../lib/homework/guided';
@@ -19,7 +21,7 @@ const SFX_CORRECT = 4015;
 const SFX_WRONG = 4025;
 const SFX_FINISH = 5037;
 
-type Phase = { k: 'intro' } | { k: 'between'; i: number } | { k: 'item'; i: number; sub: 'lines' | 'questions' } | { k: 'finishing'; error?: boolean } | { k: 'done'; score: number; total: number } | { k: 'retry'; keys: string[]; pos: number };
+type Phase = { k: 'intro' } | { k: 'between'; i: number; previous: number } | { k: 'item'; i: number; sub: 'lines' | 'questions' } | { k: 'finishing'; error?: boolean } | { k: 'done'; score: number; total: number } | { k: 'retry'; keys: string[]; pos: number };
 
 /**
  * 숙제 한 개를 처음부터 끝까지(학생 화면·선생님 미리보기 공용). 활동을 차례로: 쉐도잉 → 퀴즈 → 워크시트 → 게임.
@@ -132,7 +134,7 @@ export default function HomeworkRunner({
     setDoneItems(next);
     const following = nextActivityCard(items, groups, next, i);
     if (!following) void doFinish();
-    else if (following.transition && !kids) setPhase({ k: 'between', i: following.index });
+    else if (following.transition && !kids) setPhase({ k: 'between', i: following.index, previous: i });
     else openItem(following.index);
   }
 
@@ -260,13 +262,24 @@ export default function HomeworkRunner({
     );
   }
 
-  if (phase.k === 'between') return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-5 p-6 text-center">
-      <p className="text-lg text-[#5b6580]">{en ? 'Next activity' : '다음 활동'}</p>
-      <h2 className="break-words text-3xl font-bold">{itemLabel(items[phase.i])}</h2>
-      <button type="button" className="min-h-14 rounded-full bg-[#3b5bdb] px-8 text-xl font-bold text-white" onClick={() => openItem(phase.i)}>{t('studentHw.start')}</button>
-    </div>
-  );
+  if (phase.k === 'between') {
+    const countFor = (index: number) => {
+      const group = groups.find(activity => activity.indices.includes(index));
+      return group && activityCountLabel(items[index], group.count, en);
+    };
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-5 p-6 text-center">
+        <div className="break-words rounded-2xl bg-white px-5 py-3 text-lg">
+          <strong>{itemLabel(items[phase.previous])} {en ? 'complete!' : '완료!'}</strong>
+          <p>{countFor(phase.previous)}</p>
+        </div>
+        <p className="text-lg text-[#5b6580]">{en ? 'Next activity' : '다음 활동'}</p>
+        <h2 className="break-words text-3xl font-bold">{itemLabel(items[phase.i])}</h2>
+        <p>{countFor(phase.i)}</p>
+        <button type="button" className="min-h-14 rounded-full bg-[#3b5bdb] px-8 text-xl font-bold text-white" onClick={() => openItem(phase.i)}>{t('studentHw.start')}</button>
+      </div>
+    );
+  }
 
   if (kids && phase.k === 'finishing' && !phase.error) {
     return (
@@ -422,6 +435,7 @@ export default function HomeworkRunner({
       content = (
         <MatchupGame
           item={it}
+          faceDown={it.config.block?.groupKey===reviewGameKey('memory')}
           answered={answered}
           onSubmit={async (qi, r) => {
             sensor('submitted');
@@ -448,7 +462,12 @@ export default function HomeworkRunner({
       } else {
         const cq = it.content.questions[showQi];
         studioActive = finalCheck || isStudioQuestion(cq);
-        content = <QuestionCard key={`${it.id}-${showQi}`} q={cq} spellingHint={cq.guidedSpelling&&api.spellingHint?(level)=>api.spellingHint!(it.id,showQi,level):undefined} onSensor={sensor} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, showQi, r)} studio={studioActive} finalCheck={finalCheck} result={feedback} onNext={afterFeedback} nextBusy={busy} />;
+        if (it.config.block?.groupKey===reviewGameKey('shoot')) {
+          studioActive=false;
+          content=<ReviewWordTargets key={cq.id} question={cq} disabled={busy || !!feedback} onAnswer={r=>void answer(it.id,showQi,r)}/>;
+        } else {
+          content = <QuestionCard key={`${it.id}-${showQi}`} q={cq} spellingHint={cq.guidedSpelling&&api.spellingHint?(level)=>api.spellingHint!(it.id,showQi,level):undefined} onSensor={sensor} disabled={busy || !!feedback} onAnswer={(r) => void answer(it.id, showQi, r)} studio={studioActive} finalCheck={finalCheck} result={feedback} onNext={afterFeedback} nextBusy={busy} />;
+        }
       }
     }
   }

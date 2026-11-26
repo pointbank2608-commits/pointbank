@@ -2,10 +2,26 @@ import {useCallback,useEffect,useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {adaptiveHomeworkSummary,AdaptiveHomeworkError,type AdaptiveHomeworkPlan} from '../../../lib/homework/adaptive';
 
-export default function AdaptiveHomeworkResults({classId,revision}:{classId:string;revision:number}){
+export default function AdaptiveHomeworkResults({classId,revision,onAvailability}:{classId:string;revision:number;onAvailability?:(classId:string,state:'empty'|'present'|'error')=>void}){
  const {i18n}=useTranslation(),en=i18n.language.startsWith('en');const l=(ko:string,english:string)=>en?english:ko;
  const [plans,setPlans]=useState<AdaptiveHomeworkPlan[]>([]),[error,setError]=useState(false),[hidden,setHidden]=useState(false),[loading,setLoading]=useState(true);
- const load=useCallback(async()=>{setLoading(true);setError(false);try{setPlans((await adaptiveHomeworkSummary(classId)).plans);setHidden(false);}catch(e){if(e instanceof AdaptiveHomeworkError&&e.kind==='missing')setHidden(true);else setError(true);}finally{setLoading(false);}},[classId]);
+ const load=useCallback(async()=>{
+   setLoading(true);
+   setError(false);
+   try {
+     const next=(await adaptiveHomeworkSummary(classId)).plans;
+     setPlans(next);
+     setHidden(false);
+     onAvailability?.(classId,next.length?'present':'empty');
+   } catch(e) {
+     const missing=e instanceof AdaptiveHomeworkError && e.kind==='missing';
+     setHidden(missing);
+     setError(!missing);
+     onAvailability?.(classId,missing?'empty':'error');
+   } finally {
+     setLoading(false);
+   }
+ },[classId,onAvailability]);
  useEffect(()=>{void load();},[load,revision]);
  if(hidden||(!plans.length&&!error))return null;
  const date=(value:string)=>new Date(value).toLocaleString(en?'en-US':'ko-KR',{month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'});

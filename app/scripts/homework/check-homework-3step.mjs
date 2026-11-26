@@ -21,6 +21,7 @@ try{
  await page.goto('http://127.0.0.1:5410/scripts/homework/guided-fixture.html?go='+encodeURIComponent('/homework'));
  const body=await page.locator('body').innerText();
  assert.ok(!body.includes('기존 방식으로 만들기')&&!body.includes('직접 세부 편집'));
+ await page.getByText('다른 숙제 도구',{exact:true}).click();
  await page.getByRole('button',{name:/오늘 수업 복습시키기/}).click();
  assert.ok((await text(composer())).includes('어떤 자료로 숙제를 낼까요?'));
  await composer().getByRole('button',{name:/수업에서 가져오기/}).waitFor();

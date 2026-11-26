@@ -4,7 +4,7 @@ import { sqlRoot } from './block-fixture.mjs';
 
 export async function installMaterialProjects(db) {
   const memory = readdirSync(sqlRoot).filter(name => /^(090[a-m]|096[a-h])_wm_/.test(name)).sort();
-  for (const name of [...memory, '094a_watch_block_validate.sql','103_word_projects.sql','104_word_project_adaptive_pace.sql','153_material_homework_dispatch.sql','156_material_homework_card_limits.sql']) {
+  for (const name of [...memory, '094a_watch_block_validate.sql','103_word_projects.sql','104_word_project_adaptive_pace.sql','153_material_homework_dispatch.sql','156_material_homework_card_limits.sql','159_material_review_game_groups.sql']) {
     await db.exec(readFileSync(resolve(sqlRoot,name),'utf8'));
   }
 }
