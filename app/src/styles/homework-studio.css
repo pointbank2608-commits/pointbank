@@ -6,9 +6,7 @@
 .hw-management-heading,.hw-studio-footer,.hw-table-actions,.hw-plan-head,.hw-plan-row>summary,.hw-recipient-count,.hw-send-summary { display:flex; align-items:center; gap:12px; }
 .hw-management-heading,.hw-studio-footer { justify-content:space-between; }
 .hw-management-heading { margin-bottom:20px; }
-.hw-management [data-class-chip-row] { gap:10px; margin:0 0 24px; }
-.hw-management [data-class-chip-row] button { min-height:42px; padding:8px 20px; background:#e5eaf1; color:#10234f; border:0; box-shadow:none; }
-.hw-management [data-class-chip-row] button[aria-pressed=true] { background:#0648f5; color:white; }
+.hw-management [data-class-chip-row] { margin:0 0 24px; }
 .hw-forward,.hw-back,.hw-result,.hw-small-action { display:inline-flex; align-items:center; justify-content:center; gap:7px; border-radius:8px; font-weight:650; }
 .hw-forward { min-height:46px; padding:9px 23px; color:white; background:#0648f5; }
 .hw-forward:disabled,.hw-back:disabled,.hw-studio button:disabled { opacity:.48; cursor:not-allowed; }

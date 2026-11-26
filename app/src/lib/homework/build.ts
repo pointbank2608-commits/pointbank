@@ -282,12 +282,17 @@ export function orderGameQ(c: FullCardItem, rng: Rng, style: 'train' | 'rocket' 
   return { ...base(c, SKILL.sentence, 3), qtype: 'order', style, prompt: clean(c.meaning), sub: isSentenceCard(c) ? undefined : clean(c.word), tokens, correct: words, joiner: ' ', word: sentence };
 }
 
+/** The last word stays in place so terminal punctuation also stays in place. */
+export function detectiveSwapIndex(words: string[]): number {
+  if (words.length < 3 || words.length > 10) return -1;
+  return words.findIndex((w, i) => i <= words.length - 3 && w.toLowerCase() !== words[i + 1].toLowerCase());
+}
+
 /** 문법 탐정: 낱말 순서가 뒤바뀐 틀린 문장을 보고 바른 문장으로 고쳐 쓴다(끝 낱말은 그대로 두어 마침표를 지킨다) */
 export function detectiveQ(c: FullCardItem): HwQuestion | null {
   const sentence = sentenceOf(c);
   const words = sentence.split(/\s+/).filter(Boolean);
-  if (words.length < 3 || words.length > 10) return null;
-  const at = words.findIndex((w, i) => i <= words.length - 3 && w.toLowerCase() !== words[i + 1].toLowerCase());
+  const at = detectiveSwapIndex(words);
   if (at < 0) return null;
   const wrong = [...words];
   [wrong[at], wrong[at + 1]] = [wrong[at + 1], wrong[at]];

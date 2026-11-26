@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Material } from '../../../lib/homework/materialPlan';
 import type { CatalogueMaterial } from '../../../lib/homework/materialSources';
 import { dialogueKey, selectHomeworkMaterial, type ContentSelection } from '../../../lib/homework/materialSelection';
+import EpisodeChapterPicker from '../../solo/EpisodeChapterPicker';
 import './homework-material-selection.css';
 
 export { selectHomeworkMaterial, type ContentSelection };
@@ -69,13 +70,24 @@ function SourceGroup({kind,rows,en,expanded,setExpanded,...props}:Pick<Props,'se
   const withinParent=parents.size?rows.filter(row=>row[parentField]?.id===parent):rows;
   const bands=new Map(withinParent.flatMap(row=>row.band?[[row.band.id,row.band.name] as const]:[]));
   const matches=bands.size?withinParent.filter(row=>row.band?.id===band):withinParent;
-  const visible=rows.filter(row=>matches.includes(row) || props.selected[sourceKey(row)]);
+  const chapterRows = kind==='scene' ? matches.flatMap(source=>source.chapter ? [{source,chapter:source.chapter}] : []) : [];
+  const episodeStart = chapterRows[0]?.source.episode?.start;
+  const visible=rows.filter(row=>props.selected[sourceKey(row)] || (matches.includes(row) && !row.chapter));
+  function toggleSource(source:Material) {
+    const key = sourceKey(source);
+    const otherExpanded = expanded.filter(value=>value!==key);
+    setExpanded(props.selected[key] ? otherExpanded : [...otherExpanded,key]);
+    props.onChoose(source);
+  }
   const label=en?{word:'Word list',sentence:'Sentence list',scene:'Scene',frequent:'Vocabulary range'}[kind]:
     {word:'단어장',sentence:'문장 모음',scene:'장면',frequent:'빈출 단어'}[kind];
   return <div className="hw-source-group">
     {parents.size>0 && <label className="hw-source-filter">{kind==='scene'?(en?'Episode':'에피소드'):(en?'School level':'학교급')}
       <select value={parent} onChange={e=>{setParent(e.target.value);setBand('');}}><option value="">{en?'Choose':'선택해 주세요'}</option>
         {Array.from(parents,([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>}
+    {episodeStart!==undefined && <EpisodeChapterPicker chapters={chapterRows.map(row=>row.chapter)} episodeStart={episodeStart}
+      selected={chapterRows.flatMap(({source},index)=>props.selected[sourceKey(source)] ? [index] : [])}
+      onToggle={index=>toggleSource(chapterRows[index].source)} legend={en?'Chapters for this homework':'숙제에 넣을 챕터'}/>}
     {bands.size>0 && <label className="hw-source-filter">{en?'Level':'단계'}
       <select value={band} onChange={e=>setBand(e.target.value)}><option value="">{en?'Choose':'선택해 주세요'}</option>
         {Array.from(bands,([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>}
@@ -96,8 +108,8 @@ function SourceGroup({kind,rows,en,expanded,setExpanded,...props}:Pick<Props,'se
           <button type="button" disabled={!sourceTotal && !source.scene} aria-expanded={open} onClick={toggleOpen}>
             <span className="material-symbols-outlined" aria-hidden>{open?'expand_less':'expand_more'}</span>
             <strong>{name}</strong>{chosen && <small>{count}/{sourceTotal}{en?' selected':'개 선택'}</small>}</button>
-          <input aria-label={name+(en?' selected':' 선택')} type="checkbox" checked={!!settings} disabled={!sourceTotal && !source.scene}
-            onChange={()=>{props.onChoose(source);setExpanded(settings?expanded.filter(k=>k!==key):[...expanded,key]);}}/>
+          {(!source.chapter || source.episode?.id!==parent) && <input aria-label={name+(en?' selected':' 선택')} type="checkbox" checked={!!settings} disabled={!sourceTotal && !source.scene}
+            onChange={()=>toggleSource(source)}/>}
         </div>
         {open && <Contents source={source} settings={settings} en={en} onConfigure={props.onConfigure}/>}
       </div>;

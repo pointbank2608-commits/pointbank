@@ -1,12 +1,13 @@
 import { buildCurriculumWords } from '../curriculumWords';
-import { animationEpisodeLibrary } from '../animationEpisodes';
+import { animationEpisodeLibrary, type EpisodeChapter } from '../animationEpisodes';
 import { wordListToCards } from '../gameFromWords';
 import type { FullCardItem, WordBankEntry, WordList } from '../types';
 import type { VideoClip } from '../videoClips';
 import type { Material } from './materialPlan';
 
 export interface CatalogueMaterial extends Material {
-  episode?: { id:string; name:string };
+  episode?: { id:string; name:string; start:number };
+  chapter?: Pick<EpisodeChapter, 'title' | 'start' | 'end' | 'intent'>;
   school?: { id:string; name:string };
   band?: { id:string; name:string };
 }
@@ -22,7 +23,8 @@ export function sceneMaterials(clips: VideoClip[]): CatalogueMaterial[] {
   return animationEpisodeLibrary(clips).episodes.flatMap(({ episode, chapters, words, source, lines }) =>
     chapters.map((chapter, index) => ({
       id: `${episode.id}/chapter/${index}`, kind: 'scene' as const, name: `${episode.title} · ${chapter.title}`,
-      episode: { id: episode.id, name: episode.title },
+      episode: { id: episode.id, name: episode.title, start: episode.start },
+      chapter: { title: chapter.title, start: chapter.start, end: chapter.end, intent: chapter.intent },
       cards: words.filter(word => word.chapterIds.includes(index)),
       scene: {
         videoUrl: `https://www.youtube.com/watch?v=${source.youtubeId}`, start: chapter.start, end: chapter.end,

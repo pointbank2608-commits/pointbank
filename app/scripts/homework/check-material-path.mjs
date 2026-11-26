@@ -57,7 +57,21 @@ try {
   assert.equal(new Set(oneChoice.choices).size,4);
   assert.equal(oneChoice.choices[oneChoice.correct],wordCards[0].meaning);
   const clip = {id:'caillou',youtube_id:'DhKIqYVB_Ws',title:'Caillou',start_sec:0,end_sec:336,pack:{},script:'',tags:[]};
-  const scene = sceneMaterials([clip]).find(s=>s.scene.start===0 && s.scene.lines.some(line=>line.speaker==='Caillou'));
+  const chapters = sceneMaterials([clip]).filter(source=>source.episode.name==='아빠와 함께 출근해요');
+  assert.deepEqual(chapters.map(source=>source.chapter.title), ['아빠와 함께 출근하기','복사기 사용법 배우기','회의 참석하기']);
+  const copier = chapters[1], wantedWords = ['copy','glasses'];
+  const selectedCopier = selectHomeworkMaterial(copier,{
+    cardIds:[...copier.cards.filter(card=>wantedWords.includes(card.word)),...chapters[0].cards.filter(card=>card.word==='tie')].map(card=>card.id),
+    lineIds:[dialogueKey(chapters[0].scene.lines[0]),dialogueKey(copier.scene.lines[0])],
+  });
+  const copierPlan = buildMaterialPlan(selectedCopier,{activities:['sceneWords','echo']},[]);
+  assert.deepEqual(copierPlan.issues,[]);
+  assert.deepEqual(copierPlan.items.map(item=>item.config.block.text).slice(0,-1).sort(),wantedWords);
+  assert.deepEqual(copierPlan.items.at(-1).content.lines,[copier.scene.lines[0]]);
+  assert.equal(selectedCopier.scene.start,copier.chapter.start);
+  assert.equal(selectedCopier.scene.end,copier.chapter.end);
+  console.log('PASS selected Caillou chapter retains only copy, glasses and its selected dialogue, ignoring IDs from another chapter');
+  const scene = chapters.find(s=>s.scene.start===0 && s.scene.lines.some(line=>line.speaker==='Caillou'));
   assert.ok(scene && scene.cards.length && scene.scene.lines.some(line=>line.speaker==='Dad'));
   const course = buildMaterialPlan(scene,{activities:['sceneWords','watch','echo','shadow','dub'],role:'Caillou'},[]);
   assert.deepEqual(course.issues,[]);

@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
+import { GameThumbnail } from './GameBrowseCards';
 import { GAME_CATALOG } from '../lib/gameCatalog';
 
 
@@ -168,22 +169,9 @@ export function LessonActivityExample({ block, cards, gameMatch, phonicsMatch, s
       config?.statements?.[0]?.text ?? config?.groups?.[0]?.name ?? imageQuestion?.answer ?? prepared?.items[0]?.label;
     const choices = sentence?.tokens ?? question?.choices ?? live?.choices ?? (game.type === 'tictactoe'
       ? prepared?.items.slice(0, 3).map(item => item.label) : config?.adventure?.words.slice(0, 3).map(word => word.word));
-    const sentenceScene = sentence && (game.type === 'wordtrain' || game.type === 'sentencerocket');
     picture = large ? <Suspense fallback={t('common.loading')}>
       <NativeGamePreview path={game.path} title={t(game.nameKey)} content={prepared} />
-    </Suspense> : <div className="activity-game-cover" data-game-scene={game.type}>
-      {sentenceScene ? <>
-        <img src={game.type === 'wordtrain' ? '/skins/adventure/train.webp' : '/skins/adventure/rocket.webp'} alt="" loading="lazy" />
-        <div className={`activity-sentence-scene activity-sentence-${game.type}`}>
-          <img src={game.type === 'wordtrain' ? '/skins/adventure/engine.webp' : '/skins/adventure/rocket-sprite.webp'} alt="" />
-          <div>{sentence.tokens.map((token, i) => <span key={i}>{token}</span>)}</div>
-        </div>
-      </> : game.cover ? <img src={game.cover} alt="" loading="lazy" /> : <span className="material-symbols-outlined" aria-hidden>{game.icon}</span>}
-      {prompt && !sentenceScene && <div className="activity-game-prompt">
-        <b>{prompt}</b>
-        {choices?.length ? <div className="activity-game-choices">{choices.slice(0, 5).map((choice, index) => <span key={index}>{choice}</span>)}</div> : null}
-      </div>}
-    </div>;
+    </Suspense> : <GameThumbnail game={game} sentenceTokens={sentence?.tokens} prompt={prompt} choices={choices} />;
     if (!actual) {
       const needed = lessonGameRequirement(game.type, gameMatch);
       requirement = t(needed.key, { count: needed.count });

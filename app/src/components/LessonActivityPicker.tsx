@@ -12,7 +12,8 @@ import { workbookOfMaterial } from '../data/cvcWorkbook';
 import { workbookStep } from './LessonPrintPreview';
 import LessonWorkbookUnits, { type LessonWorkbookSelection } from './worksheets/LessonWorkbookUnits';
 import { materialSections, WORKSHEET_TAB_CATALOG } from '../lib/materialsCatalog';
-import { GAME_BROWSE_GROUPS, gameBrowseGroups, type GameBrowseGroup } from '../lib/gameBrowse';
+import { GameCategoryFilters } from './GameBrowseCards';
+import { gameBrowseGroups, type GameBrowseGroup } from '../lib/gameBrowse';
 import { GAME_CATALOG } from '../lib/gameCatalog';
 import { useVideoClips } from '../lib/videoClips';
 import { READY_STEM } from '../data/stemLessons';
@@ -233,10 +234,8 @@ export default function LessonActivityPicker({onPick,onGrammarPick,onVideo,onPdf
        </div>
        {printTab==='sightwords'&&<SightWordWorksheets onAdd={(url,title)=>{if(!locked.current){locked.current=true;onSightWord(url,title);}}}/>}
      </>}
-     {!q && cat==='games' && <div className="activity-game-filters" role="group" aria-label={t('lessonUx.games')}>
-       {(['all', ...GAME_BROWSE_GROUPS] as const).map(group => <button key={group} type="button" aria-pressed={group===gameGroup}
-         onClick={()=>setGameGroup(group)}>{t(group==='all'?'gameCategory.all':`gameBrowse.${group}`)} {group==='all'?gameCards.length:gameCards.filter(block=>belongsToGameGroup(block,group)).length}</button>)}
-     </div>}
+     {!q && cat==='games' && <GameCategoryFilters value={gameGroup} onChange={setGameGroup}
+       count={group=>group==='all'?gameCards.length:gameCards.filter(block=>belongsToGameGroup(block,group)).length} />}
      {canvasVisible && <div className="mb-3">
        <BoardThemeChips value={theme} onChange={value => setTheme(value?.id ?? null)} />
      </div>}

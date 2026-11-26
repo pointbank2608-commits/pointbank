@@ -13,6 +13,7 @@ import {createSoloLesson} from '../../lib/soloApi';
 import {createWordList} from '../../lib/api';
 import {useToast} from '../../context/ToastContext';
 import SoloCatalogModal from './SoloCatalogModal';
+import EpisodeChapterPicker from './EpisodeChapterPicker';
 import type {EpisodeGroupSelection} from '../../lib/animationEpisodeGroup';
 import {useNavigate} from 'react-router-dom';
 
@@ -51,13 +52,9 @@ export default function EpisodeLessonPanel({material,academyId,classId,teacherId
     <header><p className="text-sm font-bold text-primary">{source.series}</p><div className="flex items-center gap-4"><h2 className="mt-1 min-w-0 text-2xl font-bold text-deep-navy">{episode.title}</h2>{onGroupLesson&&<button className="min-h-12 shrink-0 rounded-xl bg-primary px-5 font-bold text-white" onClick={()=>{if(!selectedChapters.length){setWorksheetError('워크시트를 열려면 챕터를 하나 이상 선택해 주세요.');return;}control.current?.pause();const params=new URLSearchParams({episode:episode.id,chapters:JSON.stringify(groupSelection().chapterStarts),words:JSON.stringify(effective.map(w=>w.id))});navigate('/materials/video-worksheet?'+params.toString());}}>워크시트</button>}</div>{worksheetError&&<p role="alert" className="mt-2 text-red-700">{worksheetError}</p>}<p className="mt-2 text-sm">{t('animationSolo.episodeDuration',{time:sourceTime(episode.end-episode.start)})} · 챕터 {chapters.length}개</p>{episode.boundary?.method==='original-video-and-indexed-frames'&&<p className="mt-2 text-sm text-on-surface-variant">{t('animationSolo.boundaryNotice',{seconds:episode.boundary.sampleSeconds})}</p>}{episode.boundary?.revision===2&&<p className="mt-2 text-sm text-on-surface-variant">{t('animationSolo.boundaryVerifiedNotice')}</p>}</header>
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] items-start gap-5">
       <div ref={stage} className="episode-classroom-stage min-w-0 w-full"><AnimationClassroomPlayer slide={classroom} controlRef={control} onReady={()=>setReady(true)} onTime={setNow} onQuestionsChange={setSavedQuestions}/></div>
-      <fieldset className="grid max-h-[480px] min-w-0 gap-2 md:grid-cols-3 overflow-y-auto rounded-2xl border border-outline-variant bg-white p-4"><legend className="px-1 font-bold">{t('animationSolo.chooseChapters')}</legend>
-        {!episode.chapters.length&&<p className="text-sm text-on-surface-variant">{t('animationSolo.chapterPendingDetail')}</p>}
-        {chapters.map((chapter,index)=><div key={chapter.start} className={'flex items-center gap-3 rounded-xl border p-3 '+(activeChapter===index?'border-primary bg-sky-50':'border-outline-variant')}>
-          <input aria-label={t('animationSolo.selectChapter',{title:chapter.title})} type="checkbox" checked={selectedChapters.includes(index)} onChange={()=>toggleChapter(index)}/>
-          <button type="button" disabled={!ready} onClick={()=>{control.current?.playFrom(chapter.start);setScope('chapters');setWordChapter(index);}} className="min-h-11 min-w-0 flex-1 text-left disabled:opacity-60"><span className="block text-xs text-on-surface-variant">{sourceTime(chapter.start-episode.start)}–{sourceTime(chapter.end-episode.start)}</span><span className="font-bold">{chapter.title}</span>{chapter.intent&&<small className="mt-1 block text-on-surface-variant">{chapter.intent}</small>}</button>
-        </div>)}
-      </fieldset>
+      <EpisodeChapterPicker chapters={chapters} episodeStart={episode.start} selected={selectedChapters} onToggle={toggleChapter}
+        legend={t('animationSolo.chooseChapters')} notice={!episode.chapters.length ? t('animationSolo.chapterPendingDetail') : undefined}
+        playback={{active:activeChapter,ready,play:index=>{control.current?.playFrom(chapters[index].start);setScope('chapters');setWordChapter(index);}}}/>
     </div>
     <section className="space-y-3 rounded-2xl border border-outline-variant bg-white p-5">
       <h3 className="text-xl font-bold">{t('animationSolo.episodeWords')}</h3>

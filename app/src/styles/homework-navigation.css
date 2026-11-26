@@ -1,13 +1,2 @@
 [data-homework-shell] { background: #fff; }
-[data-homework-shell] [data-staff-sidebar] { background: #fff; border-right: 1px solid #dce4ef; color: #10234f; }
-[data-homework-shell] [data-staff-sidebar] :is(h1,p,button,a,a span) { color: inherit; }
-[data-homework-shell] [data-staff-sidebar] > a h1 { color: #0648f5; }
-[data-homework-shell] [data-staff-sidebar] :is(button,a):hover { background: #f1f5fb; }
-[data-homework-shell] [data-staff-sidebar] a[aria-expanded=true] { background: #e8f1ff; color: #10234f; box-shadow: none; }
-[data-homework-shell] [data-staff-sidebar] a[aria-current=page] { background: #d8e7ff; color: #0648f5; }
-[data-homework-shell] [data-sidebar-mascot] { display: none; }
 [data-homework-shell] [data-app-main] > header { background: #fff; border-bottom: 1px solid #edf1f7; }
-@media(min-width:768px) {
-  [data-homework-shell] > nav[data-staff-sidebar] { width: clamp(190px,18vw,248px); }
-  [data-homework-shell] > main[data-app-main] { margin-left: clamp(190px,18vw,248px); }
-}
