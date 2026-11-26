@@ -18,6 +18,16 @@ export function GradeSettings({grade,count,max,onChange,disabled=false}:{grade:n
 function TextField({label,value,onChange}:{label:string;value:string;onChange:(s:string)=>void}) {
   return <label className="grid text-sm">{label}<textarea className="rounded-md border p-2" rows={2} value={value} onChange={e=>onChange(e.target.value)}/></label>;
 }
+function DrillTextField({label,value,onChange}:{label:string;value:string;onChange:(text:string)=>void}) {
+  // Matching text metrics keep the textarea as tall as its wrapped contents, even after a resize.
+  const box='col-start-1 row-start-1 min-w-0 w-full rounded-md border p-2 whitespace-pre-wrap [overflow-wrap:anywhere]';
+  return <label className="grid min-w-0 gap-1 text-sm">{label}
+    <span className="grid min-w-0">
+      <span aria-hidden="true" className={box+' invisible'}>{value+' '}</span>
+      <textarea aria-label={label} rows={1} className={box+' resize-none'} value={value} onChange={e=>onChange(e.target.value)}/>
+    </span>
+  </label>;
+}
 export default function WorkshopEditor({draft,setDraft,onUploading,index,onStage}:{draft:GrammarBoardContent;setDraft:Dispatch<SetStateAction<GrammarBoardContent>>;onUploading:(busy:boolean)=>void;index:number;onStage:(index:number)=>void}) {
   const {academy}=useAuth();
   const [drillIndex,setDrillIndex]=useState(0);
@@ -102,11 +112,15 @@ export default function WorkshopEditor({draft,setDraft,onUploading,index,onStage
     {drill && <details className="rounded-lg border p-2"><summary>심화 문제 미리보기·수정 ({originals.length}개)</summary>
       <label>문제 선택 <select value={drillNumber} onChange={e=>setDrillIndex(Number(e.target.value))}>
         {originals.map((q,i)=><option key={i} value={i}>{i+1}. {q.title}</option>)}</select></label>
-      <TextField label="문제" value={drill.prompt} onChange={prompt=>changeDrill({prompt})}/>
-      {drill.options?.map((opt,j)=><label key={j} className="block"><input type="radio" name="drill-correct" checked={drill.answer===opt} onChange={()=>changeDrill({answer:opt})}/> 정답
-        <input aria-label={(j+1)+'번 보기'} value={opt} onChange={e=>changeDrill({options:drill.options!.map((s,i)=>i===j?e.target.value:s),answer:opt===drill.answer?e.target.value:drill.answer})}/></label>)}
-      {!drill.options&&<TextField label="정답 또는 예시" value={drill.answer} onChange={answer=>changeDrill({answer})}/>}
-      <TextField label="풀이" value={drill.reason} onChange={reason=>changeDrill({reason})}/>
+      <div className="mt-2 grid min-w-0 gap-3">
+        <DrillTextField label="문제" value={drill.prompt} onChange={prompt=>changeDrill({prompt})}/>
+        {drill.options?.map((opt,j)=><div key={j} className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
+          <label className="flex items-center gap-1"><input type="radio" name="drill-correct" aria-label={(j+1)+'번 보기를 정답으로 선택'} checked={drill.answer===opt} onChange={()=>changeDrill({answer:opt})}/> 정답</label>
+          <DrillTextField label={(j+1)+'번 보기'} value={opt} onChange={value=>changeDrill({options:drill.options!.map((s,i)=>i===j?value:s),answer:opt===drill.answer?value:drill.answer})}/>
+        </div>)}
+        {!drill.options&&<DrillTextField label="정답 또는 예시" value={drill.answer} onChange={answer=>changeDrill({answer})}/>}
+        <DrillTextField label="풀이" value={drill.reason} onChange={reason=>changeDrill({reason})}/>
+      </div>
     </details>}
   </section>;
 }

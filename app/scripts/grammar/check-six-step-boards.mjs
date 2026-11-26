@@ -187,6 +187,20 @@ try {
   await detail.getByRole('heading',{name:'지우의 부탁, 민서의 대답'}).waitFor();
   assert.equal(await button('2. 힌트').count(),0);
   assert.equal(await button('예문 보기').count(),0);
+  const drills = detail.locator('details').filter({has:page.locator('summary').filter({hasText:'심화 문제 미리보기·수정'})});
+  await drills.locator('summary').click();
+  const longText='문장을 끝까지 읽고 어떤 행동을 말하는지 생각해 보세요. '.repeat(12);
+  for(const name of ['문제','1번 보기','풀이']) {
+    await drills.getByRole('textbox',{name,exact:true}).fill(longText+'\n마지막 줄');
+  }
+  for(const width of [1180,390]) {
+    await page.setViewportSize({width,height:850});
+    for(const name of ['문제','1번 보기','풀이']) {
+      const field=drills.getByRole('textbox',{name,exact:true});
+      assert.ok(await field.evaluate(el=>el.scrollWidth<=el.clientWidth+1 && el.scrollHeight<=el.clientHeight+1),name+' clipped at '+width);
+    }
+  }
+  await page.setViewportSize({width:1180,height:850});
   const title = detail.getByRole('textbox',{name:'문법 제목',exact:true});
   await detail.getByRole('button',{name:/^문법 제목 수정/}).click();
   assert.equal(await title.evaluate(el => el === document.activeElement),true);
