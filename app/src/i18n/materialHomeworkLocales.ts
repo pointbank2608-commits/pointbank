@@ -61,6 +61,8 @@ const copy = {
   "level": ["단계","Level"],
   "large": ["활동은 60종류, 한 회차의 자료는 1MB까지 보낼 수 있어요. 회차를 나누거나 자료 범위를 줄여 주세요.","One part supports up to 60 activity groups and 1 MB of material. Split the selection or use a smaller range."],
   "noMaterials": ["등록된 자료가 없어요.", "No materials available."],
+  "noClassWordLists": ["이 반에 저장된 단어장이 없어요", "There are no word lists saved for this class."],
+  "noClassSentenceLists": ["이 반에 저장된 문장 모음이 없어요", "There are no sentence collections saved for this class."],
   "materialCount": ["자료 {{n}}개", "{{n}} materials"],
   "wordCount": ["단어 {{n}}개", "{{n}} words"],
   "sentenceCount": ["문장 {{n}}개", "{{n}} sentences"],

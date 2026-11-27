@@ -1003,7 +1003,8 @@ export const wordListKindOf = (l: { kind?: WordListKind | null }): WordListKind 
 const onlyKind = (rows: WordList[], kind: WordListKind | 'all'): WordList[] => (kind === 'all' ? rows : rows.filter((l) => wordListKindOf(l) === kind));
 
 /** 반(+학원 공용)의 목록, 만든 것이 최신순. 기본은 단어장만 — 문장 목록은 kind 로 따로 부른다. */
-export async function fetchWordLists(academyId: string, classId: string, kind: WordListKind | 'all' = 'word'): Promise<WordList[]> {
+export async function fetchWordLists(academyId: string, classId: string, kind: WordListKind | 'all' = 'word', scope: 'includeShared' | 'classOnly' = 'includeShared'): Promise<WordList[]> {
+  if (scope === 'classOnly') return fetchPagedWordLists(academyId, kind, classId);
   const rows = fixLegacyImageUrls(unwrap(
     await supabase
       .from('word_lists')
@@ -1039,9 +1040,15 @@ export async function saveFreeGameChoices(expected: string[], choices: string[])
 }
 
 export async function fetchAllWordLists(academyId: string, kind: WordListKind | 'all' = 'word'): Promise<WordList[]> {
+  return fetchPagedWordLists(academyId, kind);
+}
+
+async function fetchPagedWordLists(academyId: string, kind: WordListKind | 'all', classId?: string): Promise<WordList[]> {
   const rows: WordList[] = [];
   for (let offset = 0; ; offset += 500) {
-    const page = unwrap(await supabase.from('word_lists').select('*').eq('academy_id', academyId)
+    let query = supabase.from('word_lists').select('*').eq('academy_id', academyId);
+    if (classId !== undefined) query = query.eq('class_id', classId);
+    const page = unwrap(await query
       .order('created_at', { ascending: false }).order('id').range(offset, offset + 499)) as WordList[];
     rows.push(...page);
     if (page.length < 500) return onlyKind(fixLegacyImageUrls(rows), kind);

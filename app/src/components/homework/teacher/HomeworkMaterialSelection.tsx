@@ -10,6 +10,7 @@ export { selectHomeworkMaterial, type ContentSelection };
 type Kind = Material['kind'];
 const kinds: Kind[] = ['word','sentence','scene','frequent'];
 const category = { word:'categoryWord', sentence:'categorySentence', scene:'categoryScene', frequent:'categoryFrequent' };
+const emptyMessage = { word:'noClassWordLists', sentence:'noClassSentenceLists', scene:'noMaterials', frequent:'noMaterials' } as const;
 const sourceKey = (source: Material) => source.kind + '/' + source.id;
 type Props = {
   episodes: HomeworkEpisode[];
@@ -140,7 +141,7 @@ export default function HomeworkMaterialSelection(props: Props) {
       selected={chapter=>!!props.selected[sourceKey(chapter)]} onChoose={props.onChoose}/>}
     {kinds.filter(kind=>props.categories.includes(kind)).map(kind=>{
       const content = props.failed.includes(kind) ? <p role="alert">{t('loadFailed')} <button type="button" onClick={props.onRetry}>{t('reload')}</button></p> :
-        !props.catalogue[kind] ? <p role="status">{t('loading')}</p> : !props.catalogue[kind].length ? <p>{t('noMaterials')}</p> :
+        !props.catalogue[kind] ? <p role="status">{t('loading')}</p> : !props.catalogue[kind].length ? <p>{t(emptyMessage[kind])}</p> :
         <SourceGroup kind={kind} rows={props.catalogue[kind]} en={en} expanded={expanded} setExpanded={setExpanded}
           selected={props.selected} onChoose={props.onChoose} onConfigure={props.onConfigure}/>;
       if (kind === 'word' || kind === 'sentence') {

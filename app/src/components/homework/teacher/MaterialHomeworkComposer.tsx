@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { fetchAllWordLists, fetchStudentsOfClass, fetchWordBank } from '../../../lib/api';
-import type { ClassRow, Student, WordBankEntry } from '../../../lib/types';
+import { fetchAllWordLists, fetchStudentsOfClass, fetchWordBank, fetchWordLists } from '../../../lib/api';
+import type { ClassRow, FullCardItem, Student, WordBankEntry } from '../../../lib/types';
 import { fetchVideoClips } from '../../../lib/videoClips';
 import { activitiesByKind, buildMaterialPlan, type Activity, type Material, type Settings } from '../../../lib/homework/materialPlan';
 import { bankCard, frequentMaterials, savedMaterials, homeworkEpisodes, type CatalogueMaterial, type HomeworkEpisode } from '../../../lib/homework/materialSources';
@@ -90,6 +90,7 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
   const [episodes,setEpisodes] = useState<HomeworkEpisode[]>([]);
   const [episodeView,setEpisodeView] = useState({id:'',series:'',query:''});
   const [bank, setBank] = useState<WordBankEntry[]>([]);
+  const [choiceWords, setChoiceWords] = useState<FullCardItem[] | null>(null);
   const [failed, setFailed] = useState<Kind[]>([]);
   const [revision, setRevision] = useState(0);
   const [roster, setRoster] = useState<{classId:string;students:Student[];error?:boolean}|null>(null);
@@ -116,7 +117,7 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
     function failedKinds(...keys: Kind[]) {
       if (active) setFailed(previous => [...previous, ...keys]);
     }
-    void fetchAllWordLists(academyId, 'all').then(rows => {
+    void fetchWordLists(academyId, classId, 'all', 'classOnly').then(rows => {
       if (!active) return;
       const materials = savedMaterials(rows);
       setCatalogue(old => ({ ...old, word: materials.filter(m => m.kind === 'word'), sentence: materials.filter(m => m.kind === 'sentence') }));
@@ -132,7 +133,7 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
       if (active) { setBank(rows); setCatalogue(old => ({ ...old, frequent: frequentMaterials(rows) })); }
     }).catch(() => failedKinds('frequent'));
     return () => { active = false; };
-  }, [academyId, revision]);
+  }, [academyId, classId, revision]);
   function edit(patch: Partial<Form>) {
     setError('');
     setForm(old => ({ ...old, ...patch }));
@@ -141,7 +142,17 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
   const selected = useMemo(() => materials.filter(m => form.categories.includes(m.kind) && form.selected[keyOf(m)]).map(m => selectHomeworkMaterial(m, form.selected[keyOf(m)])), [materials, form.categories, form.selected]);
   const selectedKeys = Object.keys(form.selected);
   const missing = selectedKeys.filter(key => !selected.some(m => keyOf(m) === key));
-  const pool = useMemo(() => [...materials.filter(m => m.kind === 'word').flatMap(m => m.cards), ...bank.map(bankCard)], [bank, materials]);
+  // Multiple-choice distractors use the original academy pool, independently of the selectable lists.
+  const needsChoiceWords = selected.some(m => form.selected[keyOf(m)].activities.includes('choice'));
+  useEffect(() => {
+    if (!needsChoiceWords || choiceWords !== null) return;
+    let active = true;
+    fetchAllWordLists(academyId).then(rows => {
+      if (active) setChoiceWords(savedMaterials(rows).flatMap(m => m.cards));
+    }).catch(() => { /* The class words and word bank are still available. */ });
+    return () => { active = false; };
+  }, [academyId, needsChoiceWords, choiceWords, revision]);
+  const pool = useMemo(() => [...(choiceWords ?? materials.filter(m => m.kind === 'word').flatMap(m => m.cards)), ...bank.map(bankCard)], [bank, materials, choiceWords]);
   const portion = useMemo(() => portionMaterials(selected, form.portion, form.part), [selected, form.portion, form.part]);
   const plans = useMemo(() => portion.ordinary.map(material => ({
     material, ...buildMaterialPlan(material, form.selected[keyOf(material)], pool),

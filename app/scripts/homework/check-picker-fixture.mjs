@@ -10,7 +10,7 @@ globalThis.WebSocket ??= class {constructor(){throw Error('No realtime connectio
 const row=(kind,cards,cls='C')=>({id:kind+cls,academy_id:'A',class_id:cls,
   name:'Family Road Trip',kind,updated_at:'2026-11-26T00:00:00Z',
   items:cards.map(c=>({id:c.id,word:c.word,meaning:c.meaning,image_url:c.imageUrl,category:null}))});
-const lists=[row('word',wordCards),row('sentence',sentenceCards),row('word',wordCards,'other')];
+const lists=[row('word',wordCards),row('sentence',sentenceCards),row('word',wordCards,'other'),row('sentence',sentenceCards,null)];
 const server=await createGuidedServer(5549,{academy:'A',client:'export const supabase={}',
   seed:{lists},handle:(_req,_res,next)=>next()});
 try{
@@ -20,9 +20,11 @@ try{
   const {wordListToCards}=await server.ssrLoadModule('/src/lib/gameFromWords.ts');
   const {memoryItemFromCards}=await server.ssrLoadModule('/src/lib/homework/memory.ts');
   const available=await api.fetchWordLists('A','C','all');
-  assert.deepEqual(available.map(r=>api.wordListKindOf(r)),['word','sentence']);
+  assert.deepEqual(available.map(r=>api.wordListKindOf(r)),['word','sentence','sentence']);
+  assert.deepEqual((await api.fetchWordLists('A','C','all','classOnly')).map(r=>r.id),lists.slice(0,2).map(r=>r.id));
+  assert.deepEqual(await api.fetchWordLists('A','empty','all','classOnly'),[]);
   assert.deepEqual((await api.fetchWordLists('A','C')).map(r=>r.kind),['word']);
-  assert.equal((await api.fetchAllWordLists('A','all')).length,3);
+  assert.equal((await api.fetchAllWordLists('A','all')).length,lists.length);
   assert.deepEqual(await api.fetchWordLists('other','C','all'),[]);
   const [words,sentences]=available.map(wordListToCards);
   assert.deepEqual(words.map(c=>c.word),wordCards.map(c=>c.word));
