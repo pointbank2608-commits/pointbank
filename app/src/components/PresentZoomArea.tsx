@@ -20,6 +20,10 @@ export const PRESENT_FIT_EVENT = 'classbank:present-fit';
 /** 두 번 탭(더블클릭)으로 확대할 수 있는 슬라이드 — 게임·워크시트는 탭 조작과 겹쳐서 뺀다. */
 const DOUBLE_TAP_KINDS = ['image', 'canvas', 'grammar', 'reading'];
 
+function insideDisclosure(target: EventTarget | null) {
+  return target instanceof Element && !!target.closest('details');
+}
+
 export function zoomAt(prev: PresentZoom, nextScale: number, px: number, py: number): PresentZoom {
   const scale = clampScale(nextScale);
   if (Math.abs(scale - 1) < 0.02) return PRESENT_ZOOM_IDENTITY;
@@ -260,6 +264,10 @@ export default function PresentZoomArea({ children }: { children: ReactNode }) {
     }
     function onTapDown(e: PointerEvent) {
       if (e.pointerType !== 'touch') return;
+      if (insideDisclosure(e.target)) {
+        tapStart = lastTap = null;
+        return;
+      }
       tapStart = touches.size <= 1 ? { id: e.pointerId, x: e.clientX, y: e.clientY } : null;
     }
     function onTapUp(e: PointerEvent) {
@@ -283,14 +291,14 @@ export default function PresentZoomArea({ children }: { children: ReactNode }) {
         window.clearTimeout(clickTimer);
         clickTimer = 0;
       }
-      if (toggleZoomAt(e.clientX, e.clientY)) e.preventDefault();
+      if (!insideDisclosure(e.target) && toggleZoomAt(e.clientX, e.clientY)) e.preventDefault();
     }
 
     // PPT처럼 화면을 클릭하면 다음(슬라이드 안 단계가 있으면 그 단계부터). 버튼·링크·카드처럼 누를 수 있는
     // 곳은 제외, 확대 중에도 제외(살펴보는 중). 더블클릭 확대와 구분하려고 잠깐 기다렸다 넘긴다.
     let clickTimer = 0;
     function onAdvanceClick(e: MouseEvent) {
-      if (e.button !== 0 || e.defaultPrevented) return;
+      if (e.button !== 0 || e.defaultPrevented || insideDisclosure(e.target)) return;
       const kind = stepKindRef.current;
       if (!kind || !PPT_KEY_KINDS.includes(kind) || kind === 'study' || isZoomed()) return;
       const target = e.target as HTMLElement | null;
