@@ -8,7 +8,7 @@ export function workshopSnapshot(point:GrammarPoint, catalog?:GrammarPoint | nul
     point={...point,workshop:refreshCatalogChoices(point.workshop,catalog.workshop)};
   const saved=point.steps ?? [];
   const atlas=saved[0]?.practice;
-  if(point.workshop && saved.length===6 && atlas?.map?.length &&
+  if(point.workshop && saved.length===6 && atlas?.map && (atlas.map.length>0 || atlas.panels?.length===0) &&
     atlas.map.every(entry=>entry.panelIndex!==undefined && atlas.panels?.[entry.panelIndex])) {
     return {...point,workshop:point.workshop};
   }

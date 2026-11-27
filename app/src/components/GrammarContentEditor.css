@@ -3,60 +3,38 @@
   max-width: calc(100vw - 24px);
 }
 
-.grammar-edit-surface {
-  bottom: 9cqh;
-  overflow-y: auto;
-}
 
-.grammar-edit-surface > * {
-  flex-shrink: 0;
+.workshop-edit-toolbar {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; flex-wrap: wrap; align-items: center; gap: .5rem;
+  padding: .55rem; border: 1px solid #c4d5cb; border-radius: .75rem; background: #fffef8;
 }
-
-.grammar-edit-surface > .overflow-y-auto {
-  flex: none;
-  overflow: visible;
+.workshop-edit-toolbar strong { margin-right: auto; }
+.workshop-edit-toolbar button { border: 1px solid #829c90; border-radius: .5rem; padding: .4em .7em; }
+.workshop-edit-toolbar button:disabled {opacity: .55;}
+.workshop-edit-toolbar .workshop-save { background: #175e51; color: white; }
+.workshop-edit-toolbar p {flex-basis: 100%;}
+.grammar-visual-editor .workshop-edit-target {
+  font: inherit; color: inherit; background: transparent; white-space: pre-wrap;
+  text-align: inherit; border: 1px dashed #98b0a5; border-radius: .3em;
+  max-width: 100%; margin: .1em 0; padding: .08em .25em; overflow-wrap: anywhere;
 }
-
-.grammar-field,
-.grammar-inline-input {
-  max-width: 100%;
-  text-align: start;
-  overflow-wrap: anywhere;
-  border-radius: 3px;
-  font: inherit;
-  color: inherit;
-  line-height: inherit;
+.grammar-visual-editor .workshop-text-input {
+  display:block; width:100%; min-width:0; font:inherit; field-sizing: content; resize:vertical;
+  padding:.15em .3em; border:1px solid #377464; border-radius:.35em; color:#123e32; background:white;
 }
-
-.grammar-field {
-  display: inline-block;
-  padding-inline: 0.15em;
-  white-space: pre-wrap;
-  vertical-align: baseline;
-}
-
-.grammar-field:hover {
-  outline: 1px dashed currentColor;
-}
-
-/* Highlighted words and pattern blanks belong to the same selectable text box. */
-.grammar-field * {
-  pointer-events: none;
-}
-
-.grammar-field[aria-pressed="true"],
-.grammar-field:focus-visible,
-.grammar-inline-input {
-  outline: 2px solid #2385ff;
-  box-shadow: 0 0 0 3px white;
-}
-
-.grammar-inline-input {
-  display: block;
-  width: 100%;
-  min-width: min(10em, 100%);
-  padding-inline: 0.15em;
-  background: transparent;
-  field-sizing: content;
-  resize: vertical;
-}
+.workshop-image-control button { display:inline-grid; justify-items:center; }
+.grammar-scene-card .workshop-image-control { float:right; margin-left:.5em; }
+.grammar-visual-editor .workshop-image-control img { float:none; margin:0; width:4.8em; height:4.8em; object-fit:contain; }
+.grammar-visual-editor .workshop-stage-image { display:flex; gap:.5em; align-items:center; }
+.workshop-piece { display:flex; gap:.45em; align-items:end; flex-wrap:wrap; margin-block:.4em; }
+.workshop-piece label { display:grid; min-width:6em; flex:1; }
+.workshop-piece input { width:100%; min-width:0; border:1px solid #829c90; padding:.3em; background:white; border-radius:.3em; }
+.guided-practice button.grammar-chunk {background:#d6eadf;margin:.15em .12em;padding:.08em .35em;text-align:start;}
+.guided-practice button.grammar-chunk[data-role=helper]{background:#ffe4a8}
+.guided-practice button.grammar-chunk[data-role=person]{background:#d6e9fa}
+.workshop-map-item, .workshop-edit-row { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:.25em; }
+.grammar-visual-editor .workshop-item-remove { border:1px solid #be9993; border-radius:50%; color:#963f32; min-width:2em; min-height:2em; margin:0; padding:0; background:white; }
+.grammar-visual-editor .workshop-item-add { border:1px dashed #739488; background:transparent; text-align:center; color:#205c4b; }
+.workshop-edit-row details {min-width:0}
+@media(pointer:coarse){.grammar-visual-editor .workshop-item-remove,.grammar-visual-editor .workshop-item-add {min-width:44px;min-height:44px;}}

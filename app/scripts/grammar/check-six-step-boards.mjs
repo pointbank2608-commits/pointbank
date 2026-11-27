@@ -103,7 +103,7 @@ const bundle = await build({ root, configFile: false, logLevel:'error',
 const assets = new Map(bundle.output.map(file => ['/'+file.fileName, file.type==='chunk'?file.code:file.source]));
 const browser = await chromium.launch({ channel: process.env.GRAMMAR_BROWSER_CHANNEL || 'chrome', headless: true });
 try {
-  const page = await browser.newPage({viewport:{width:1180,height:850}});
+  const page = await browser.newPage({viewport:{width:1180,height:850},hasTouch:true});
   const pdfPage = await browser.newPage();
   await pdfPage.setContent('<main>Can you please open the door?</main>');
   const pdf = await pdfPage.pdf(); await pdfPage.close();
@@ -121,7 +121,13 @@ try {
     if (path.endsWith('/academy_scan_access')) return route.fulfill({json:{enabled}});
     if (path.endsWith('/teacher_grammar_blocks')) {
       if (req.method()==='POST') {
-        const row = req.postDataJSON(); rows.set(row.id,{...row,revision:1});
+        const row = req.postDataJSON();
+        if(!row.id){
+          const id=crypto.randomUUID();
+          rows.set(id,{...row,id,revision:1});
+          return route.fulfill({json:{id,revision:1}});
+        }
+        rows.set(row.id,{...row,revision:1});
         // First insert commits, but client loses the success response.
         return ++inserts === 1 ? route.fulfill({status:409,json:{message:'temporary'}}) : route.fulfill({status:201,body:''});
       }
@@ -205,11 +211,19 @@ try {
   await detail.locator('.workshop-board button[data-correct=false]').click();
   await detail.locator('p.grammar-wrong').filter({hasText:/아니에요.*now\(지금\)/}).waitFor();
   assert.ok(await detail.locator('p.grammar-wrong').evaluate(p => p.getBoundingClientRect().bottom <= p.closest('.workshop-body').getBoundingClientRect().bottom+1));
-  await button('문법 내용 수정').click();
-  await detail.getByRole('heading',{name:'지우의 부탁, 민서의 대답'}).waitFor();
+  await button('편집').click();
+  await button('단계 제목 수정').waitFor();
+  assert.equal(await detail.getByLabel('편집할 단계').count(),0);
+  await button('예문 수정 · Can').first().click();
+  const sentenceEditor=detail.getByRole('group',{name:'예문 수정'});
+  await sentenceEditor.getByLabel('영어',{exact:true}).fill('Could');
+  await sentenceEditor.getByRole('button',{name:'편집 닫기'}).click();
+  await button('↶ 되돌리기').click();
+  await detail.getByRole('button',{name:'예문 수정 · Can',exact:true}).first().waitFor();
+  await detail.locator('summary').filter({hasText:'수업 설정'}).click();
   assert.equal(await button('2. 힌트').count(),0);
   assert.equal(await button('예문 보기').count(),0);
-  const drills = detail.locator('details').filter({has:page.locator('summary').filter({hasText:'심화 문제 미리보기·수정'})});
+  const drills = detail.locator('details').filter({has:page.locator(':scope > summary').filter({hasText:'심화 문제 미리보기·수정'})});
   await drills.locator('summary').click();
   const longText='문장을 끝까지 읽고 어떤 행동을 말하는지 생각해 보세요. '.repeat(12);
   for(const name of ['문제','1번 보기','풀이']) {
@@ -234,18 +248,34 @@ try {
   assert.equal(await title.evaluate(el => el === document.activeElement),true);
   const renamed = '부탁하고 거절하기';
   await title.fill(renamed);
-  await button('2. 칠판 질문').dblclick();
-  await detail.getByRole('textbox',{name:'2. 칠판 질문'}).fill('문을 닫아 달라고 어떻게 부탁할까요?');
+  const example=detail.locator('.grammar-scene-grid article').first();
+  await example.getByRole('button',{name:'문장 전체 뜻 수정'}).click();
+  await example.getByRole('textbox',{name:'문장 전체 뜻'}).fill('문을 닫아 줄 수 있어?');
+  await example.getByRole('button',{name:'예문 수정 · Can',exact:true}).click();
+  await example.getByLabel('영어',{exact:true}).fill('Could');
+  await example.getByRole('button',{name:'편집 닫기'}).click();
+  await button('왜 질문 추가').click();
+  await detail.getByText('새 질문',{exact:true}).click();
+  await detail.getByRole('button',{name:'질문 제목 수정'}).last().click();
+  await detail.getByRole('textbox',{name:'질문 제목'}).fill('어떻게 부탁할까요?');
+  await detail.getByRole('button',{name:'펼쳐 볼 설명 수정'}).last().click();
+  await detail.getByRole('textbox',{name:'펼쳐 볼 설명'}).fill('친구가 해 주길 바라는 행동을 말해요.');
+  await button('장면 안내 수정').click();
+  await detail.getByRole('textbox',{name:'장면 안내'}).fill('문을 닫아 달라고 어떻게 부탁할까요?');
+  await detail.locator('summary').filter({hasText:'수업 설정'}).click();
   await detail.getByLabel('대상 학년').selectOption('10');
   await detail.getByRole('spinbutton').fill('3');
-  assert.equal(await detail.getByLabel('편집할 단계').inputValue(),'1');
-  await detail.getByLabel('단계 그림 추가·교체').setInputFiles({name:'new-map.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jG2sAAAAASUVORK5CYII=','base64')});
+  assert.equal(await detail.getByLabel('편집할 단계').count(),0);
+  await detail.getByLabel('단계 그림 파일',{exact:true}).setInputFiles({name:'new-map.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jG2sAAAAASUVORK5CYII=','base64')});
+  await button('그림 설명 수정').click();
   await detail.getByLabel('그림 설명',{exact:true}).fill('선생님이 바꾼 장면 그림');
-  await button('내 문법에 저장하고 이 슬라이드에 적용').click();
-  await button('문법 내용 수정').waitFor();
+  await button('내 문법에 저장하고 수업에 적용').click();
+  await button('편집').waitFor();
   const overview=detail.getByRole('navigation',{name:'수업 준비 한눈에 보기'});
   await overview.getByText(draft.goal).waitFor();
-  for (const panel of draft.steps[1].practice.panels) await overview.getByText(panel.chunks.join(' '),{exact:true}).waitFor();
+  await overview.getByText(draft.steps[1].practice.panels[0].chunks.join(' ').replace(/^Can/,'Could'),{exact:true}).waitFor();
+  await overview.getByText(draft.steps[1].practice.panels[1].chunks.join(' '),{exact:true}).waitFor();
+  await detail.getByText('어떻게 부탁할까요?',{exact:true}).waitFor();
   await overview.getByText(draft.workshop.scenes.high.task).waitFor();
   await overview.getByRole('button',{name:/마지막 과제/}).click();
   await detail.getByRole('heading',{name:draft.steps[5].practice.title}).waitFor();
@@ -264,6 +294,8 @@ try {
   const board=page.getByTestId('classroom-board');
   await board.getByRole('button',{name:'다음 단계'}).click();
   await board.getByAltText('선생님이 바꾼 장면 그림').waitFor();
+  await board.getByText('문을 닫아 줄 수 있어?',{exact:true}).waitFor();
+  await board.getByText('어떻게 부탁할까요?',{exact:true}).waitFor();
   for(const [width,height] of [[1024,768],[1280,720],[1366,768],[1920,1080]]) {
     await page.setViewportSize({width,height});
     await checkComparison(board, 'photo '+width);
@@ -309,6 +341,38 @@ try {
   await thisMap.getByRole('button',{name:/멀리 가리키기/}).click();
   await thisMap.locator('summary').click();
   await thisMap.getByText(/거리가 달라져요/).waitFor();
+  await button('편집').click();
+  const minus=thisMap.locator('.workshop-map-item').filter({hasText:'멀리 가리키기'}).getByRole('button',{name:/카드 삭제/});
+  await minus.click();
+  assert.equal(await minus.count(),0);
+  await button('↶ 되돌리기').click();
+  await minus.waitFor();
+  await button('쓰임 카드 추가').click();
+  await thisMap.getByRole('button',{name:'새 쓰임 카드 삭제'}).click();
+  assert.equal(await thisMap.getByRole('button',{name:'새 쓰임 카드 삭제'}).count(),0);
+  await button('쓰임 카드 추가').tap();
+  const newScene=thisMap.locator('article');
+  for(const [field,value] of [['쓰임 이름','가까운 물건'],['쓰임 설명','가까운 물건을 가리켜요.'],['말하는 사람','지우'],['문장 전체 뜻','이건 내 컵이야.']]){
+    await newScene.getByRole('button',{name:field+' 수정'}).tap();
+    await newScene.getByRole('textbox',{name:field}).fill(value);
+  }
+  await newScene.getByRole('button',{name:/^예문 수정/}).tap();
+  await newScene.getByLabel('영어',{exact:true}).fill('This is my cup.');
+  await newScene.getByLabel('우리말 뜻',{exact:true}).fill('이건 내 컵이야.');
+  await newScene.getByRole('button',{name:'편집 닫기'}).tap();
+  const uploadChooser=page.waitForEvent('filechooser');
+  await newScene.getByRole('button',{name:'지우 그림 추가'}).tap();
+  await (await uploadChooser).setFiles({name:'cup.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jG2sAAAAASUVORK5CYII=','base64')});
+  await newScene.getByRole('button',{name:'지우 그림 바꾸기'}).waitFor();
+  await button('내 문법에 저장하고 수업에 적용').tap();
+  await button('편집').waitFor();
+  await thisMap.getByText('This is my cup.',{exact:true}).waitFor();
+  await newScene.locator('img').evaluate(img=>img.decode());
+  const stored=[...rows.values()].find(r=>r.block.content.steps[0].practice.map.some(m=>m.label==='가까운 물건'));
+  assert(stored,'catalog edit must also be saved to the library');
+  const added=stored.block.content.steps[0].practice.map.find(m=>m.label==='가까운 물건');
+  assert.equal(stored.block.content.steps[0].practice.panels[added.panelIndex].chunks[0],'This is my cup.');
+  assert.equal(await thisMap.locator('.workshop-item-remove,.workshop-item-add').count(),0);
   if(process.env.GRAMMAR_BUILTIN_PNG)await detail.locator('.workshop-reading').screenshot({path:process.env.GRAMMAR_BUILTIN_PNG});
   await page.reload(); await page.getByRole('button',{name:'기본 문법 열기'}).click();
   const builtInMap=board.locator('.grammar-atlas');

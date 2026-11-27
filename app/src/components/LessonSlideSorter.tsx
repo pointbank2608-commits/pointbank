@@ -2266,7 +2266,6 @@ function GrammarSlideDetail({
     const previous = slide.librarySource;
     const source = await saveMyGrammar(academyId, profile.id, { grammarId, useWordList, words, seed, boardTheme, showKo, revealAll, content },
       updateExisting && previous?.owner===profile.id && previous.academy===academyId ? previous : undefined);
-    notify(t('myGrammar.saved'));
     return source;
   }
 
@@ -2299,6 +2298,10 @@ function GrammarSlideDetail({
   return (
     <div className="space-y-3">
       {contentMode !== 'edit' && <>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="rounded-lg border border-primary px-3 py-2 font-bold text-primary" onClick={() => setContentMode('edit')}>편집</button>
+          <button type="button" className="rounded-lg border px-3 py-2 font-bold" onClick={() => setContentMode('library')}>{t('myGrammar.saveCopy')}</button>
+        </div>
         <div className={point.workshop ? 'workshop-reading' : 'aspect-video w-full max-w-3xl'}>
           <GrammarBoard
             point={point}
@@ -2312,19 +2315,15 @@ function GrammarSlideDetail({
             initialShowKo={!!slide.showKo}
           />
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button type="button" className="rounded-lg border border-primary px-3 py-2 font-bold text-primary" onClick={() => setContentMode('edit')}>{t('myGrammar.edit')}</button>
-          <button type="button" className="rounded-lg border px-3 py-2 font-bold" onClick={() => setContentMode('library')}>{t('myGrammar.saveCopy')}</button>
-        </div>
       </>}
       {contentMode && <GrammarContentEditor inline={contentMode === 'edit'} point={point} themeId={slide.boardTheme} onClose={() => setContentMode(null)}
         titleRef={titleInput} initialPosition={position} onPositionChange={contentMode === 'edit' ? setPosition : undefined}
         initialRevealAll={slide.revealAll} initialShowKo={slide.showKo}
-        onSaveCopy={contentMode === 'edit' ? async content=>{await storeGrammar(content,false);} : undefined}
-        saveLabel={contentMode === 'edit' ? '내 문법에 저장하고 이 슬라이드에 적용' : t('myGrammar.save')}
+        saveLabel={contentMode === 'edit' ? '내 문법에 저장하고 수업에 적용' : t('myGrammar.save')}
         onSave={async content => {
           const source=await storeGrammar(content,contentMode==='edit');
           onUpdate({ content,librarySource:source });
+          notify('내 문법에 저장하고 이 수업에 적용했어요.');
         }} />}
       {!point.workshop && <>
       <div className="flex flex-wrap gap-x-5 gap-y-2 rounded-xl border border-outline-variant/50 bg-surface-container-low p-3">
@@ -2350,7 +2349,8 @@ function GrammarSlideDetail({
       <div className="flex flex-wrap items-center gap-2">
         <select
           value={point.id}
-          onChange={(e) => onUpdate({ grammarId: e.target.value, content: undefined })}
+          disabled={contentMode!==null}
+          onChange={(e) => onUpdate({ grammarId: e.target.value, content: undefined, librarySource: undefined })}
           className="w-80 max-w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary"
         >
           {GRAMMAR_STAGES.flatMap((st) => GRAMMAR_LEVELS_BY_STAGE[st].map((lv) => ({ st, lv }))).map(({ st, lv }) => (

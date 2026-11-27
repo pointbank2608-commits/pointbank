@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Workshop } from '../../../../supabase/functions/_shared/grammarWorkshop';
 import { classroomStep, parseMarked } from '../../lib/grammar';
 import { useSyncedSubState } from '../../lib/presentSync';
+import {InlineText} from './InlineWorkshopEdit';
 import WorkshopSheet from './WorkshopSheet';
 import type { GrammarBoardProps } from '../GrammarBoard';
 import GuidedPracticePanel from './GuidedPracticePanel';
@@ -9,9 +10,10 @@ import GrammarPrepOverview from './GrammarPrepOverview';
 import './workshop-board.css';
 
 export default function WorkshopBoard({point, workshop, mode, interactive = true, keyboard = interactive,
-  editor, initialPosition, onPositionChange, requestedStage, onCue, className = ''}: GrammarBoardProps & {workshop: Workshop}) {
+  editor, initialPosition, onPositionChange, onCue, className = ''}: GrammarBoardProps & {workshop: Workshop}) {
   const last = (point.steps?.length ?? 1) - 1;
   const [step, setStep] = useState(Math.max(0, Math.min(last, initialPosition?.step ?? 0)));
+  const [scene,setScene]=useState(initialPosition?.scene??0);
   const [modelOpen, setModelOpen] = useState(false);
   const lesson = classroomStep(point, step);
   const cue = useRef(onCue);
@@ -25,12 +27,11 @@ export default function WorkshopBoard({point, workshop, mode, interactive = true
     setModelOpen(false);
   }
   useEffect(() => {
-    if (requestedStage) goToStep(requestedStage.index);
-  }, [requestedStage]);
-  useEffect(() => {
     cue.current?.('shown', step);
-    onPositionChange?.({step, view: 'lesson', hintOpen: false, answerOpen: false, showKo: false, shown: 0});
-  }, [step, onPositionChange]);
+  }, [step]);
+  useEffect(() => {
+    onPositionChange?.({step, scene, view: 'lesson', hintOpen: false, answerOpen: false, showKo: false, shown: 0});
+  }, [step, scene, onPositionChange]);
   useEffect(() => {
     if (!keyboard || follower) return;
     const handle = (event: KeyboardEvent) => {
@@ -47,6 +48,7 @@ export default function WorkshopBoard({point, workshop, mode, interactive = true
     return () => document.removeEventListener('keydown', handle, true);
   }, [keyboard, follower, step, last]);
   if (!lesson?.practice) return null;
+  const edit=editor?.stage(step);
   const grade = workshop.grade;
   const presentComparison = mode === 'classroom' && step === 1 && !!lesson.practice.panels?.length;
   const classroomReview = mode === 'classroom' && step === last ? {
@@ -54,15 +56,15 @@ export default function WorkshopBoard({point, workshop, mode, interactive = true
     onOpen: follower ? undefined : () => { setModelOpen(true); onCue?.('revealed', step); },
   } : undefined;
   const prompt = parseMarked(lesson.prompt).map((part, i) => part.strong ? <strong key={i}>{part.text}</strong> : part.text);
-  return <>{mode === 'prepare' && <GrammarPrepOverview point={point} onStage={goToStep}/>}
-    <WorkshopSheet grade={grade} step={step} total={last+1} title={lesson.practice.title}
-    className={presentComparison ? className+' workshop-comparison' : className} map={interactive?point.steps?.[0].practice:undefined} onMap={()=>onCue?.('hint',step)}
-    topic={(step!==last || editor) && (editor?editor.field('name',point.name,point.name):point.name.split(' — ')[0])}
-    prompt={presentComparison ? undefined : editor?editor.field('prompt',lesson.prompt,prompt,step):prompt}
+  return <>{mode === 'prepare' && <GrammarPrepOverview point={point} onStage={goToStep} onGoal={editor?.goal}/>}
+    <WorkshopSheet grade={grade} step={step} total={last+1} title={<InlineText label="단계 제목" value={lesson.practice.title} onChange={edit?title=>edit.practice(p=>({...p,title})):undefined}/>}
+    className={presentComparison ? className+' workshop-comparison' : className} map={interactive&&!edit?point.steps?.[0].practice:undefined} onMap={()=>onCue?.('hint',step)}
+    topic={(step!==last || editor) && point.name.split(' — ')[0]}
+    prompt={presentComparison ? undefined : <InlineText label="장면 안내" value={lesson.prompt} onChange={editor?v=>editor.prompt(step,v):undefined}>{prompt}</InlineText>}
     footer={interactive && <>
       <button type="button" disabled={step===0 || follower} onClick={()=>goToStep(step-1)}>이전 단계</button>
       <button type="button" disabled={step===last || follower} onClick={()=>goToStep(step+1)}>다음 단계</button></>}>
-    <div inert={!interactive}><GuidedPracticePanel practice={lesson.practice} workshop={workshop}
+    <div inert={!interactive}><GuidedPracticePanel practice={lesson.practice} workshop={workshop} edit={edit} initialScene={scene} onScene={setScene} finalModel={lesson.answer} followUp={lesson.followUp}
       classroomReview={classroomReview} comparisonPrompt={presentComparison ? prompt : undefined}
       review={[lesson.answer,lesson.followUp].join('\n\n')} onHelp={()=>onCue?.('hint',step)}
       onReveal={()=>{onCue?.('submitted',step);onCue?.('revealed',step);}}/></div>

@@ -1,10 +1,11 @@
-import { useMemo, type ReactNode } from 'react';
-import { grammarPoint, type GeneratedSentence, type GrammarPoint, type GrammarTeachingStep } from '../lib/grammar';
+import { useMemo } from 'react';
+import { grammarPoint, type GeneratedSentence, type GrammarPoint } from '../lib/grammar';
 import { workshopSnapshot } from '../lib/grammarWorkshopSnapshot';
 import WorkshopBoard from './grammar/WorkshopBoard';
 
-export type GrammarField = 'name' | 'pattern' | 'explain' | 'rule' | 'en' | 'ko' | 'usage' | 'detail' | 'tip' | 'wrong' | 'right' | 'why' | Exclude<keyof GrammarTeachingStep, 'practice'>;
+import type {StageEdit} from './grammar/InlineWorkshopEdit';
 export interface GrammarBoardPosition {
+  scene?:number;
   view: 'lesson' | 'examples' | 'pitfalls' | 'explain';
   step: number;
   hintOpen: boolean;
@@ -13,9 +14,9 @@ export interface GrammarBoardPosition {
   shown: number;
 }
 export interface GrammarBoardEditor {
-  field: (key: GrammarField, value: string, display: ReactNode, index?: number) => ReactNode;
-  addExample: () => void;
-  addPitfall: () => void;
+  stage: (index:number) => StageEdit;
+  prompt: (index:number,value:string) => void;
+  goal: (value:string) => void;
 }
 
 export interface GrammarBoardProps {
@@ -35,7 +36,6 @@ export interface GrammarBoardProps {
   onCue?: (action: 'shown' | 'submitted' | 'hint' | 'revealed', stageIndex: number) => void;
   editor?: GrammarBoardEditor;
   initialPosition?: GrammarBoardPosition;
-  requestedStage?: { index:number };
   onPositionChange?: (position: GrammarBoardPosition) => void;
 }
 

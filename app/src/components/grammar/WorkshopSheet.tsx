@@ -5,7 +5,7 @@ import {SceneMap} from './GuidedPracticePanel';
 import './workshop-board.css';
 
 export default function WorkshopSheet({grade,step,total,title,topic,prompt,map,children,footer,onMap,className=''}:{
-  grade?:number;step:number;total:number;title:string;topic?:ReactNode;prompt:ReactNode;
+  grade?:number;step:number;total:number;title:ReactNode;topic?:ReactNode;prompt:ReactNode;
   map?:GuidedPractice;children:ReactNode;footer?:ReactNode;onMap?:()=>void;className?:string;
 }) {
   const [open,setOpen]=useState(false);
