@@ -166,6 +166,22 @@ try {
   });
   await page.getByText('내 문법에 저장했어요.').waitFor();
   assert.equal(calls,1); assert.equal(inserts,2); assert.equal(rows.size,1);
+  const libraryCard=page.getByRole('button',{name:/도움을 부탁하고/});
+  const preview=page.getByRole('dialog',{name:'문법 미리보기'});
+  await libraryCard.click();
+  assert.deepEqual(await preview.locator('header.workshop-edit-toolbar button').allTextContents(),['취소','편집']);
+  assert.equal(await preview.locator('.workshop-edit-target,.workshop-item-add,.workshop-item-remove').count(),0);
+  await preview.getByRole('button',{name:'다음 단계'}).click();
+  await preview.getByRole('button',{name:'편집',exact:true}).click();
+  const libraryEditor=page.getByRole('dialog',{name:'문법 내용 수정'});
+  await libraryEditor.getByText('2 / 6단계',{exact:true}).waitFor();
+  await libraryEditor.getByRole('button',{name:'단계 제목 수정'}).waitFor();
+  await libraryEditor.getByRole('button',{name:'취소'}).click();
+  await libraryCard.click();
+  await preview.getByText('1 / 6단계',{exact:true}).waitFor();
+  await preview.getByRole('button',{name:'취소'}).click();
+  assert.equal(await preview.count(),0);
+  assert.equal([...rows.values()][0].revision,1);
   const openPicker = async () => {
     await page.getByRole('button',{name:'활동 추가 열기'}).click();
     await page.getByRole('navigation').getByRole('button',{name:'문법',exact:true}).click();

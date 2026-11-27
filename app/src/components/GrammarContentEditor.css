@@ -1,4 +1,5 @@
-.classroom-dialog:has(.grammar-visual-editor) {
+.classroom-dialog:has(.grammar-visual-editor),
+.classroom-dialog.grammar-library-preview {
   width: min(1120px, calc(100vw - 24px));
   max-width: calc(100vw - 24px);
 }

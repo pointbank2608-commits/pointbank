@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { grammarBoardContent, grammarSlidePoint, GRAMMAR_POINTS } from '../lib/grammar';
 import { listMyGrammar, saveMyGrammar, type GrammarPreset, type SavedGrammar } from '../lib/myGrammar';
 import GrammarContentEditor from './GrammarContentEditor';
+import GrammarBoard, {type GrammarBoardPosition} from './GrammarBoard';
+import AccessibleDialog from './AccessibleDialog';
 import { AiGrammarCreateButton } from './AiGrammarCreator';
 
 export default function MyGrammarLibrary({ onPick, onEdit, query = '' }: { onPick?: (block: GrammarPreset) => void; onEdit?:(block:GrammarPreset)=>void; query?: string }) {
@@ -15,7 +17,9 @@ export default function MyGrammarLibrary({ onPick, onEdit, query = '' }: { onPic
   const [rows, setRows] = useState<SavedGrammar[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [baseId, setBaseId] = useState(GRAMMAR_POINTS[0].id);
-  const [editor, setEditor] = useState<{ block: GrammarPreset; previous?: SavedGrammar } | null>(null);
+  const [opened, setOpened] = useState<{ mode:'preview'|'edit'; block: GrammarPreset; previous?: SavedGrammar } | null>(null);
+  const previewPosition = useRef<GrammarBoardPosition | undefined>(undefined);
+  const point=opened && grammarSlidePoint({...opened.block,kind:'grammar',id:opened.block.grammarId});
   useEffect(() => {
     let active = true;
     setRows([]);
@@ -43,7 +47,8 @@ export default function MyGrammarLibrary({ onPick, onEdit, query = '' }: { onPic
       </label>
       <button type="button" className="rounded-lg border border-primary px-4 py-2 font-bold text-primary" onClick={() => {
         const point = GRAMMAR_POINTS.find(p => p.id === baseId)!;
-        setEditor({ block: { grammarId: point.id, content: grammarBoardContent(point), boardTheme:'green' } });
+        previewPosition.current = undefined;
+        setOpened({ mode:'edit', block: { grammarId: point.id, content: grammarBoardContent(point), boardTheme:'green' } });
       }}>{t('myGrammar.create')}</button>
       <AiGrammarCreateButton onSaved={() => { setLibraryQuery(''); setSaved(scope); setRefresh(n => n + 1); }} />
     </div>}
@@ -56,13 +61,32 @@ export default function MyGrammarLibrary({ onPick, onEdit, query = '' }: { onPic
     {status === 'ready' && !visible.length && <p>{t(search[0] ? 'grammar.noResults' : 'myGrammar.empty')}</p>}
     <div className="grid gap-2 sm:grid-cols-2">{visible.map(row => <div key={row.id} className="grid gap-1"><button type="button"
       className="rounded-xl border border-outline-variant bg-white p-3 text-left hover:border-primary"
-      onClick={() => onPick && profile && academy ? onPick({ ...structuredClone(row.block), librarySource:{id:row.id,revision:row.revision,owner:profile.id,academy:academy.id} }) : setEditor({ block:row.block, previous:row })}>
+      onClick={() => {
+        if(onPick && profile && academy){
+          onPick({ ...structuredClone(row.block), librarySource:{id:row.id,revision:row.revision,owner:profile.id,academy:academy.id} });
+          return;
+        }
+        previewPosition.current = undefined;
+        setOpened({mode:'preview', block:row.block, previous:row});
+      }}>
       <strong className="block">{row.block.content.name}</strong><span className="text-sm">{row.block.content.pattern.replaceAll('**','')}</span>
     </button>{onEdit&&profile&&academy&&<button type="button" className="justify-self-end text-sm text-primary" onClick={()=>onEdit({...structuredClone(row.block),librarySource:{id:row.id,revision:row.revision,owner:profile.id,academy:academy.id}})}>문법 내용 수정</button>}</div>)}</div>
-    {editor && <GrammarContentEditor point={grammarSlidePoint({ ...editor.block, kind: 'grammar', id: editor.block.grammarId })!} themeId={editor.block.boardTheme} saveLabel={t('myGrammar.save')} onClose={() => setEditor(null)}
+    {opened?.mode==='preview' && point && <AccessibleDialog className="grammar-library-preview" label={t('myGrammar.preview')} onClose={()=>setOpened(null)}>
+      <div className="space-y-3 p-4">
+        <header className="workshop-edit-toolbar">
+          <strong>{point.name}</strong>
+          <button type="button" onClick={()=>setOpened(null)}>{t('common.cancel')}</button>
+          <button type="button" className="workshop-save" onClick={()=>setOpened({...opened,mode:'edit'})}>{t('myGrammar.startEditing')}</button>
+        </header>
+        <div className="workshop-reading">
+          <GrammarBoard point={point} mode="prepare" keyboard={false} onPositionChange={next => { previewPosition.current = next; }}/>
+        </div>
+      </div>
+    </AccessibleDialog>}
+    {opened?.mode==='edit' && point && <GrammarContentEditor point={point} initialPosition={previewPosition.current} themeId={opened.block.boardTheme} saveLabel={t('myGrammar.save')} onClose={() => setOpened(null)}
       onSave={async content => {
         if (!academy || !profile) throw new Error('Missing account');
-        await saveMyGrammar(academy.id, profile.id, { ...editor.block, content }, editor.previous);
+        await saveMyGrammar(academy.id, profile.id, { ...opened.block, content }, opened.previous);
         setRefresh(n => n+1);
       }} />}
   </section>;
