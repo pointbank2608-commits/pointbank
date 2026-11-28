@@ -1,6 +1,7 @@
 import type { FullCardItem } from '../types';
 import { newBlock, type BlockType } from './blocks';
 import { meaningQ, shuffleWith, SKILL } from './build';
+import { isMeaning } from './quality';
 import type { HwItemDraft, HwQuestion, HwShadowLine } from './types';
 
 export const labels = {
@@ -14,11 +15,12 @@ export type Material = {
   scene?: { videoUrl: string; start: number; end: number; lines: HwShadowLine[] };
 };
 export type Settings = {
+  quantities?: Partial<Record<Activity, number>>;
   activities: Activity[]; spelling?: 'first' | 'one' | 'all'; mask?: 1 | 3 | 'all'; writing?: 'blank' | 'full'; role?: string;
 };
 export const activitiesByKind: Record<Material['kind'], Activity[]> = {
   word: ['learn','choice','say','spell'], sentence: ['listen','repeat','hide','order','write'],
-  scene: ['sceneWords','watch','echo','shadow','dub'], frequent: [],
+  scene: ['sceneWords','watch','echo','shadow','dub'], frequent: ['learn','choice','say','spell'],
 };
 const materialVersion = 'homework-material-v1';
 
@@ -60,6 +62,50 @@ function gradedQuestion(card: FullCardItem, activity: Activity, settings: Settin
   return {...writing,prompt,sub:meaning,correct:match[0]};
 }
 
+function timedLines(scene: NonNullable<Material['scene']>) {
+  return scene.lines.filter(line => line.en.trim() && line.s >= scene.start && line.e <= scene.end && line.e > line.s);
+}
+
+function usableCard(card: FullCardItem, activity: Activity, settings: Settings, pool: FullCardItem[], kind: Material['kind']) {
+  const word = card.word.trim();
+  if (!word || (!card.meaning.trim() && (kind !== 'sentence' || activity === 'order' || (activity === 'write' && settings.writing === 'full')))) return false;
+  if (['choice','order','spell','write'].includes(activity) && word.includes('/')) return false;
+  if (activity === 'choice') {
+    if (!isMeaning(card.meaning)) return false;
+    const meanings = new Set([card.meaning.trim().toLowerCase()]);
+    for (const other of pool) {
+      if (other.word.trim().toLowerCase() !== word.toLowerCase() && isMeaning(other.meaning)) meanings.add(other.meaning.trim().toLowerCase());
+      if (meanings.size >= 4) return true;
+    }
+    return false;
+  }
+  if (activity === 'order') {
+    const tokens = word.split(/\s+/);
+    return new Set(tokens).size >= 2 && JSON.stringify(tokens).length <= 300;
+  }
+  if (activity === 'write' && settings.writing === 'full') return card.word.length <= 300;
+  if (activity === 'spell' && settings.spelling === 'all' && card.word.length > 300) return false;
+  if (activity === 'spell' || (activity === 'write' && settings.writing !== 'full')) return /[a-z]/i.test(word);
+  return true;
+}
+
+export function activityCapacity(material: Material, activity: Activity, settings: Settings, pool: FullCardItem[]) {
+  if (material.scene && ['watch','echo','shadow','dub'].includes(activity)) {
+    if (!material.scene.videoUrl || material.scene.end <= material.scene.start) return 0;
+    const lines = timedLines(material.scene);
+    if (activity === 'echo') return lines.length;
+    if (activity === 'dub') return Number(lines.some(line => line.speaker && (!settings.role || line.speaker === settings.role)));
+    return Number(activity === 'watch' || lines.length > 0);
+  }
+  return material.cards.filter(card => usableCard(card,activity,settings,pool,material.kind)).length;
+}
+
+export function activityQuantity(settings: Settings, activity: Activity, maximum: number) {
+  if (!settings.activities.includes(activity) || !maximum) return 0;
+  const requested = settings.quantities?.[activity];
+  return Number.isSafeInteger(requested) ? Math.min(maximum, Math.max(1, requested!)) : maximum;
+}
+
 export function buildMaterialPlan(material: Material, settings: Settings, pool: FullCardItem[]) {
   const items: HwItemDraft[] = [], issues: string[] = [];
   const scene = material.scene;
@@ -67,6 +113,9 @@ export function buildMaterialPlan(material: Material, settings: Settings, pool: 
     return {items,issues:[material.name+'의 영상 구간을 확인해 주세요.']};
   }
   for (const activity of activitiesByKind[material.kind].filter(a => settings.activities.includes(a))) {
+    // New assignments use the same source order as the original portion selector.
+    const candidates = settings.quantities ? material.cards.filter(card => usableCard(card,activity,settings,pool,material.kind)) : material.cards;
+    const cards = settings.quantities ? candidates.slice(0,activityQuantity(settings, activity, candidates.length)) : candidates;
     const startCount = items.length;
     const issueCount = issues.length;
     const groupKey = JSON.stringify([material.kind,material.id,activity,activity === 'dub' ? settings.role : activity === 'spell' ? settings.spelling : activity === 'hide' ? settings.mask : activity === 'write' ? settings.writing : null]);
@@ -77,8 +126,8 @@ export function buildMaterialPlan(material: Material, settings: Settings, pool: 
       return item;
     };
     if (['choice','spell','order','write'].includes(activity)) {
-      const questions = material.cards.map(c=>gradedQuestion(c,activity,settings,pool));
-      const invalid = material.cards.filter((_,index)=>!questions[index]);
+      const questions = cards.map(c=>gradedQuestion(c,activity,settings,pool));
+      const invalid = cards.filter((_,index)=>!questions[index]);
       if (invalid.length && material.kind==='sentence') {
         const needsMeaning = activity==='order' || settings.writing==='full';
         const untranslated = invalid.filter(c=>needsMeaning && !c.meaning.trim());
@@ -93,7 +142,8 @@ export function buildMaterialPlan(material: Material, settings: Settings, pool: 
         items.push(item);
       }
     } else if (scene && ['watch','shadow','dub','echo'].includes(activity)) {
-      const lines = scene.lines.filter(line=>line.en.trim() && line.s>=scene.start && line.e<=scene.end && line.e>line.s);
+      const available = timedLines(scene);
+      const lines = activity === 'echo' ? available.slice(0, activityQuantity(settings, activity, available.length)) : available;
       if (activity === 'dub' && (!settings.role || !lines.some(line=>line.speaker===settings.role))) {
         issues.push(material.name+'에서 대사가 있는 역할을 지정해 주세요.');
         continue;
@@ -110,7 +160,7 @@ export function buildMaterialPlan(material: Material, settings: Settings, pool: 
         item.content.lines=lines; items.push(item);
       }
     } else {
-      for (const card of material.cards) {
+      for (const card of cards) {
         if (!card.word.trim() || (material.kind!=='sentence' && !card.meaning.trim())) {
           issues.push(material.name+' · '+(card.word||labels[activity])+'의 영어와 한글 뜻이 필요해요.');
           continue;

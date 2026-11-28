@@ -20,7 +20,7 @@ const home = token => val('student_home($1)', [token]);
 const open = (session, code) => val('student_open_homework($1,$2)', [session, code]);
 
 try {
-  const { buildMaterialPlan } = await vite.ssrLoadModule('/src/lib/homework/materialPlan.ts');
+  const { activityCapacity, buildMaterialPlan } = await vite.ssrLoadModule('/src/lib/homework/materialPlan.ts');
   const { activityGroups } = await vite.ssrLoadModule('/src/lib/homework/activityGroups.ts');
   const { gradeLocal } = await vite.ssrLoadModule('/src/lib/homework/grade.ts');
   const { sceneMaterials } = await vite.ssrLoadModule('/src/lib/homework/materialSources.ts');
@@ -95,6 +95,24 @@ try {
   assert.deepEqual(roleItem.content.lines,scene.scene.lines);
   assert.ok(buildMaterialPlan(scene,{activities:['dub'],role:'unknown'},[]).issues.length);
   const oneLine=scene.scene.lines.find(line=>line.speaker==='Caillou');
+  const core = {id:'core',name:'Core words',kind:'frequent',cards:wordCards};
+  const portions = {activities:['learn','say','spell'],quantities:{learn:10,say:3,spell:5}};
+  const limited = buildMaterialPlan(core,portions,wordCards);
+  assert.deepEqual(limited.issues,[]);
+  assert.deepEqual(activityGroups(limited.items).map(group=>group.count),[10,3,5]);
+  const reduced = buildMaterialPlan({...core,cards:wordCards.slice(0,4)},portions,wordCards);
+  assert.deepEqual(activityGroups(reduced.items).map(group=>group.count),[4,3,4]);
+  const withoutSpelling = buildMaterialPlan(core,{...portions,activities:['learn','say'],quantities:{...portions.quantities,say:2}},wordCards);
+  assert.deepEqual(activityGroups(withoutSpelling.items).map(group=>group.count),[10,2]);
+  assert.deepEqual(withoutSpelling.items.slice(-2).map(item=>item.config.block.materialEntryId),wordCards.slice(0,2).map(card=>card.id));
+  const partlyUsable = {...sentences,cards:[untranslated.cards[0],...sentenceCards.slice(1,4)]};
+  const ordering = {activities:['order'],quantities:{order:2}};
+  assert.equal(activityCapacity(partlyUsable,'order',ordering,[]),3);
+  assert.deepEqual(buildMaterialPlan(partlyUsable,ordering,[]).items[0].content.questions.map(q=>q.contentId),sentenceCards.slice(1,3).map(card=>card.id));
+  const limitedScene = buildMaterialPlan(scene,{activities:['sceneWords','echo','watch','shadow','dub'],role:'Caillou',
+    quantities:{sceneWords:2,watch:1,echo:2,shadow:1,dub:1}},[]);
+  assert.deepEqual(activityGroups(limitedScene.items).map(group=>group.count),[2,1,2,1,1]);
+  console.log('PASS per-source quantities, selected-order subsets, available capacity, unchecked activities and continuous chapter units');
   const selectedLine=selectHomeworkMaterial(scene,{cardIds:[],lineIds:[dialogueKey(oneLine)]});
   assert.deepEqual(only(selectedLine,{activities:['dub'],role:'Caillou'}).content.lines,[oneLine]);
   const sceneWithoutLines=selectHomeworkMaterial(scene,{cardIds:[],lineIds:[]});

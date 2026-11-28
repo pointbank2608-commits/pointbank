@@ -1,6 +1,9 @@
 import i18n from './index';
 
 const copy = {
+  decrease: ['{{activity}} 수량 줄이기', 'Decrease {{activity}} quantity'],
+  increase: ['{{activity}} 수량 늘리기', 'Increase {{activity}} quantity'],
+  noEligible: ['이 활동에 사용할 항목이 없어요.', 'No selected entries support this activity.'],
   "estimatedPart": ["이번 회차 일반 숙제 예상 시간 · 약 {{n}}분", "Estimated time for this part of the regular homework · about {{n}} min"],
   "newHomework": ["새 숙제 내기", "New homework"],
   "multiDay": ["며칠에 걸쳐 배우는 단어 숙제","Multi-day vocabulary homework"],

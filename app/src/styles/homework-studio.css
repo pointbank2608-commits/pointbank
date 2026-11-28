@@ -48,6 +48,22 @@
 .hw-studio-body { display:grid; gap:12px; min-width:0; margin:20px 0; padding:0; border:0; }
 .hw-studio-footer { margin:24px 0; }
 .hw-plan-row { border:1px solid #cfd9e8; border-radius:9px; background:white; }
+.hw-material-activities { padding:1rem; min-width:0; }
+.hw-material-activities header { display:flex; flex-wrap:wrap; align-items:baseline; gap:.35rem 1rem; margin-bottom:.85rem; }
+.hw-material-activities h2 { font-size:1.13rem; font-weight:750; overflow-wrap:anywhere; }
+.hw-material-activities header span { color:#405979; font-weight:600; }
+.hw-activity-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr)); gap:.65rem; }
+.hw-activity-quantity { display:flex; flex-direction:column; justify-content:space-between; gap:.4rem; min-width:0; padding:.65rem; border:1px solid #d5e1f1; border-radius:8px; }
+.hw-activity-quantity:has(input:checked) { border-color:#769ef7; background:#f4f8ff; }
+.hw-activity-quantity label,.hw-activity-quantity [role="group"] { display:flex; align-items:center; gap:.5rem; }
+.hw-activity-quantity label { font-weight:650; overflow-wrap:anywhere; }
+.hw-activity-quantity input { flex:none; accent-color:#0648f5; }
+.hw-activity-quantity button { min-width:2.3rem; min-height:2.3rem; border:1px solid #c4d3e7; border-radius:6px; background:white; font-weight:700; }
+.hw-activity-quantity output { min-width:2.7em; text-align:center; font-variant-numeric:tabular-nums; }
+.hw-activity-quantity small { color:#536783; }
+.hw-activity-settings:not(:empty) { display:flex; flex-wrap:wrap; gap:1rem; margin-top:.8rem; }
+.hw-activity-settings select { margin-inline-start:.5rem; max-width:100%; border:1px solid #c4d3e7; border-radius:6px; padding:.35rem; }
+.hw-assignment-preview { justify-self:start; border:1px solid #9eb9e4; border-radius:8px; color:#153f86; padding:.65rem 1rem; font-weight:700; font-size:1.1rem; }
 .hw-plan-head,.hw-plan-row>summary { min-height:58px; padding:10px 15px; }
 .hw-plan-head>strong,.hw-plan-row>summary>strong { padding:4px 9px; border-radius:5px; background:#dce8fa; font-size:16px; }
 .hw-plan-text { display:grid; flex:1; min-width:0; overflow-wrap:anywhere; }
