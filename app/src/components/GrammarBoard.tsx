@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { grammarPoint, type GeneratedSentence, type GrammarPoint } from '../lib/grammar';
 import { workshopSnapshot } from '../lib/grammarWorkshopSnapshot';
 import WorkshopBoard from './grammar/WorkshopBoard';
@@ -6,6 +6,7 @@ import WorkshopBoard from './grammar/WorkshopBoard';
 import type {StageEdit} from './grammar/InlineWorkshopEdit';
 export interface GrammarBoardPosition {
   scene?:number;
+  page?:number;
   view: 'lesson' | 'examples' | 'pitfalls' | 'explain';
   step: number;
   hintOpen: boolean;
@@ -14,6 +15,7 @@ export interface GrammarBoardPosition {
   shown: number;
 }
 export interface GrammarBoardEditor {
+  drills:ReactNode;
   stage: (index:number) => StageEdit;
   prompt: (index:number,value:string) => void;
   goal: (value:string) => void;

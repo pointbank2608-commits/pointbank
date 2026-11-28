@@ -29,8 +29,10 @@ try {
     async function expectStage(number) {
       // The presentation advances on a 260 ms timer to distinguish a double-click.
       await page.waitForTimeout(400);
-      assert.equal(await board.locator('.workshop-chapter span').innerText(),number+' / 6단계');
+      assert.equal(await board.locator('.workshop-chapter span').first().innerText(),number+' / 6단계');
     }
+    await press(board.locator('.grammar-map-options button').first());
+    await press(board.getByRole('button',{name:'더 궁금해요'}));
     await press(question);
     await expectStage(1);
     await explanation.waitFor();
@@ -42,6 +44,15 @@ try {
     assert.equal(await explanation.count(),0);
     await press(board.getByRole('button',{name:'다음 단계'}));
     await expectStage(2);
+    const pair=board.locator('.grammar-scene-grid .scene-sentence');
+    assert.equal(await pair.count(),2);
+    for(const sentence of await pair.all()){
+      assert(await sentence.evaluate(el=>{
+        const area=el.closest('.workshop-body');
+        const frame=area.getBoundingClientRect(), rect=el.getBoundingClientRect();
+        return area.scrollTop===0 && rect.top>=frame.top && rect.bottom<=Math.min(frame.bottom,innerHeight);
+      }),'Both examples must be visible when the comparison opens');
+    }
     console.log((touch?'Touch':'Mouse')+' passed on the lesson presentation route');
     await page.close();
   }

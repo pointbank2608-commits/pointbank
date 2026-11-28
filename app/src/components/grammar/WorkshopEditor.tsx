@@ -22,7 +22,23 @@ function DrillTextField({label,value,onChange}:{label:string;value:string;onChan
     </span>
   </label>;
 }
-export function WorkshopSettings({draft,setDraft,disabled}:{draft:GrammarBoardContent;setDraft:Dispatch<SetStateAction<GrammarBoardContent>>;disabled:boolean}) {
+type SettingsProps={draft:GrammarBoardContent;setDraft:Dispatch<SetStateAction<GrammarBoardContent>>};
+export function WorkshopSettings({draft,setDraft,disabled}:SettingsProps & {disabled:boolean}) {
+  const workshop=draft.workshop;
+  if(!workshop)return null;
+  return <details className="rounded-xl border p-2"><summary>수업 설정</summary>
+    <div className="grid gap-3 p-2">
+    <GradeSettings grade={workshop.grade} count={workshop.count} max={extensionPool(workshop).length} disabled={disabled}
+      onChange={(grade,count)=>setDraft(old=>{
+        const w=old.workshop!;
+        const next={...w,grade,countsByGrade:{...w.countsByGrade,[w.grade]:w.count}};
+        const n=grade===w.grade?count:(w.countsByGrade?.[grade]??5);
+        return {...old,workshop:{...next,count:Math.min(n,extensionPool(next).length)}};
+      })}/>
+    </div></details>;
+}
+
+export function WorkshopDrillEditor({draft,setDraft}:SettingsProps) {
   const [drillIndex,setDrillIndex]=useState(0);
   const workshop=draft.workshop;
   if (!workshop) return null;
@@ -35,15 +51,7 @@ export function WorkshopSettings({draft,setDraft,disabled}:{draft:GrammarBoardCo
   function changeDrill(patch:Partial<ExtensionQuestion>) {
     updateWorkshop(w=>({...w,overrides:{...w.overrides,[drillKey]:{...drill,...patch}}}));
   }
-  return <details className="rounded-xl border p-2"><summary>수업 설정</summary>
-    <div className="grid gap-3 p-2">
-    <GradeSettings grade={workshop.grade} count={workshop.count} max={extensionPool(workshop).length} disabled={disabled}
-      onChange={(grade,count)=>updateWorkshop(w=>{
-        const next={...w,grade,countsByGrade:{...w.countsByGrade,[w.grade]:w.count}};
-        const n=grade===w.grade?count:(w.countsByGrade?.[grade]??5);
-        return {...next,count:Math.min(n,extensionPool(next).length)};
-      })}/>
-    {drill && <details className="rounded-lg border p-2"><summary>심화 문제 미리보기·수정 ({originals.length}개)</summary>
+  return drill && <section aria-label="심화 문제 편집"><h3>심화 문제 편집</h3>
       <label>문제 선택 <select value={drillNumber} onChange={e=>setDrillIndex(Number(e.target.value))}>
         {originals.map((q,i)=><option key={i} value={i}>{i+1}. {q.title}</option>)}</select></label>
       <div className="mt-2 grid min-w-0 gap-3">
@@ -55,6 +63,5 @@ export function WorkshopSettings({draft,setDraft,disabled}:{draft:GrammarBoardCo
         {!drill.options&&<DrillTextField label="정답 또는 예시" value={drill.answer} onChange={answer=>changeDrill({answer})}/>}
         <DrillTextField label="풀이" value={drill.reason} onChange={reason=>changeDrill({reason})}/>
       </div>
-    </details>}
-    </div></details>;
+    </section>;
 }

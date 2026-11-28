@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import GuidedPracticePanel from '../grammar/GuidedPracticePanel';
-import WorkshopSheet from '../grammar/WorkshopSheet';
+import PagedWorkshopStage from '../grammar/PagedWorkshopStage';
 import { CAILLOU_VIDEO_ID } from '../../lib/caillouVideoCourse';
 import SoloGameStep from './SoloGameStep';
 import SoloReviewGame from './SoloReviewGame';
@@ -152,7 +151,6 @@ export default function SoloPlayer({
   const [idx, setIdx] = useState(() => Math.min(startAt, Math.max(0, steps.length - 1)));
   const [historyAt, setHistoryAt] = useState<number | null>(null);
   const [hintRequest, setHintRequest] = useState(0);
-  const [comparedAt,setComparedAt]=useState<number|null>(null);
   const [phase, setPhase] = useState<Phase>('ask');
   const [wrong, setWrong] = useState<number[]>([]);
   const [shownAnswer, setShownAnswer] = useState<string | null>(null);
@@ -1220,17 +1218,12 @@ export default function SoloPlayer({
           const stage=/^([1-6])\s*\/\s*6$/.exec(step.pattern);
           const stageIndex=stage?Number(stage[1])-1:0;
           const opening=steps[idx-stageIndex];
-          return <div className="workshop-reading"><WorkshopSheet grade={step.practice.lessonGrade}
-            step={stageIndex} total={stage?6:1} title={step.title} topic={stageIndex<5?step.practice.lessonTopic:undefined}
-            map={stage && opening?.t==='rule'?opening.practice:undefined} onMap={()=>sensor('hint')} prompt={step.explain}
-            footer={<><button type="button" disabled={!stageIndex || !canNavigate} onClick={()=>navigateStep(idx-1)}>이전 단계</button>
-              <button type="button" disabled={busy || !!step.practice.independentPrompts && comparedAt!==idx}
-                onClick={()=>{setComparedAt(null);void next();}}>{idx+1===steps.length?t('curriculum.play.finish'):t('myGrammar.next')}</button></>}>
-            <GuidedPracticePanel key={idx} practice={step.practice} review={step.tip} onHelp={() => sensor('hint')} onReveal={() => {
-              sensor('submitted');sensor('revealed');
-              if(step.practice?.independentPrompts)setComparedAt(idx);
-            }} />
-          </WorkshopSheet></div>;
+          return <div className="workshop-reading"><PagedWorkshopStage key={idx} grade={step.practice.lessonGrade} step={stageIndex} total={stage?6:1}
+            title={step.title} topic={stageIndex<5?step.practice.lessonTopic:undefined}
+            map={stage && opening?.t==='rule'?opening.practice:undefined} onHelp={()=>sensor('hint')} prompt={step.explain}
+            practice={step.practice} review={step.tip} onReveal={()=>{sensor('submitted');sensor('revealed');}}
+            onPrevious={stageIndex && canNavigate?()=>navigateStep(idx-1):undefined} onNext={busy?undefined:()=>void next()}
+            nextLabel={idx+1===steps.length?t('curriculum.play.finish'):t('myGrammar.next')}/></div>;
         })()}
 
         {step.t === 'rule' && !step.practice && (

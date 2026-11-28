@@ -75,3 +75,10 @@
 @container (min-width: 640px) {
   .workshop-comparison .grammar-scene-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+.workshop-page-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:.5em}
+.workshop-sheet footer{flex-wrap:wrap}
+.workshop-chapter{justify-content:flex-start;flex-wrap:wrap;gap:.35em .8em}
+.workshop-chapter .workshop-topic{margin-inline-start:auto}
+.workshop-chapter select{background:white;border:1px solid #7a9990;border-radius:.4em;padding:.2em}
+.workshop-clues{padding:.4em .8em;border-inline-start:3px solid #7a9990}

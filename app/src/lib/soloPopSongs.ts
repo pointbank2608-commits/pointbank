@@ -1,5 +1,5 @@
 import { grammarPoint } from './grammar';
-import { buildSoloGrammarLesson, buildSoloWordSteps, options, shuffle, type SoloStep } from './soloLessons';
+import { soloGrammarStages, buildSoloWordSteps, options, shuffle, type SoloStep } from './soloLessons';
 import { songWordCards, type SongLesson } from './songLessons';
 
 /**
@@ -26,13 +26,10 @@ export function buildSoloPopSongLesson(song: SongLesson): { name: string; steps:
     if (o.list.length >= 3) steps.push({ t: 'sayPick', situation: c.q, options: o.list, answer: o.answer });
   }
 
-  // 문법: 곡마다 최대 2개, 설명 → 소리 내어 읽기 → 확인 문제 한두 개
+  // 곡의 문법 항목도 쓰임 지도부터 독립 과제까지 한 블록으로 넣는다.
   for (const gid of song.grammarIds.slice(0, 2)) {
     const point = grammarPoint(gid);
-    if (!point) continue;
-    const g = buildSoloGrammarLesson(point).steps;
-    const take = (t: SoloStep['t'], n: number) => g.filter((s) => s.t === t).slice(0, n);
-    steps.push(...take('rule', 1), ...take('fadeRead', 2), ...take('translatePick', 1), ...take('pickCorrect', 1));
+    if (point) steps.push(...soloGrammarStages(point).steps);
   }
 
   // 문장 순서 맞추기(우리가 쓴 3~8낱말 문장)

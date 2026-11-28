@@ -1,4 +1,5 @@
-import { GRAMMAR_POINTS, classroomStep, grammarLevelTag, plainText, sentencesForUnscramble, type GrammarPoint } from './grammar';
+import { workshopSnapshot } from './grammarWorkshopSnapshot';
+import { GRAMMAR_POINTS, classroomStep, grammarLevelTag, grammarPoint, type GrammarPoint } from './grammar';
 import { extensionPool } from '../../../supabase/functions/_shared/grammarWorkshop';
 import { LESSON_SETS, pickSetWords } from './lessonSets';
 import { parseShadowText } from './shadowLines';
@@ -480,74 +481,37 @@ export function buildSoloDayLessons(
 
 /* ---------------- 문법 ---------------- */
 
-/** 해석에 붙은 역할 메모 "(주격)" 같은 꼬리를 뗀다 */
-function cleanKo(s: string): string {
-  return s.replace(/\s*\([^)]*\)\s*$/, '').trim();
+/** 같은 여섯 문법 단계를 단독 수업과 다른 수업 안의 문법 블록에서 함께 사용한다. */
+export function soloGrammarStages(source: GrammarPoint) {
+  const point = workshopSnapshot(source, grammarPoint(source.id));
+  const steps: SoloStep[] = point.steps!.map((_, index) => {
+    const step = classroomStep(point, index)!;
+    const practice = step.practice!;
+    return {
+      t: 'rule', title: practice.title, pattern: `${index + 1} / 6`, explain: step.prompt, lines: [],
+      practice: {...practice, lessonGrade: point.workshop.grade, lessonTopic: point.name.split(' — ')[0]},
+      tip: [step.answer, step.followUp].join('\n\n'),
+    };
+  });
+  return {steps, workshop: point.workshop};
 }
 
-/** 예문(여러 문장이 한 줄에 있으면 그대로) → 읽기 단계용 문장 */
-function exampleSteps(point: GrammarPoint): { sentence: string; ko: string }[] {
-  const tr = point.translations ?? [];
-  return point.examples.map((e, i) => ({ sentence: plainText(e).trim(), ko: cleanKo(tr[i] ?? '') })).filter((x) => x.sentence);
-}
-
-/**
- * 문법 항목 하나 → 개별수업: 소개 → 규칙 → 예문 읽기(소리·해석) → 해석 고르기 → 맞는 문장 고르기 → 문장 배열하기.
- * 해석 보기에 쓸 다른 해석은 같은 단계(초등/중등)의 다른 항목 해석에서 가져온다.
- */
 export function buildSoloGrammarLesson(point: GrammarPoint): { name: string; steps: SoloStep[]; minutes: number } {
-  const name = point.name;
-  if (point.steps?.length === 6 && point.steps.every(s => s.practice)) {
-    const steps:SoloStep[] = point.steps.map((_,i)=>{
-      const s=classroomStep(point,i)!;
-      return ({
-      t: 'rule', title: s.practice!.title, pattern: `${i + 1} / 6`, explain: s.prompt,
-      lines: [], practice: {...s.practice!,lessonGrade:point.workshop?.grade,lessonTopic:point.name.split(' — ')[0]}, tip: [s.answer, s.followUp].join('\n\n'),
-    });});
-    if(point.workshop) for(const item of extensionPool(point.workshop).slice(0,point.workshop.count)){
-      if(item.kind==='choice' && item.options) {
-        const choices=item.options;
-        const distinguishCase=new Set(choices.map(s=>s.trim().toLowerCase())).size<choices.length;
-        const options=distinguishCase?choices.map((s,i)=>(i+1)+'. '+s):choices;
-        steps.push({t:'sayPick',situation:item.prompt,options,answer:choices.indexOf(item.answer),tip:item.reason});
-      }
-      else if(item.kind==='order'){
-        const words=item.answer.split(/\s+/);
-        steps.push({t:'orderWrite',ko:item.prompt,words:[...words.slice(1),words[0]],answer:item.answer});
-      } else steps.push({t:'rule',title:item.title,pattern:'심화 연습',explain:item.prompt,lines:[],tip:item.answer+'\n'+item.reason,
-        practice:{title:item.title,independentPrompts:['내 답'],why:[]}});
+  const {steps, workshop} = soloGrammarStages(point);
+  for(const item of extensionPool(workshop).slice(0,workshop.count)){
+    if(item.kind==='choice' && item.options) {
+      const choices=item.options;
+      const distinguishCase=new Set(choices.map(s=>s.trim().toLowerCase())).size<choices.length;
+      const options=distinguishCase?choices.map((s,i)=>(i+1)+'. '+s):choices;
+      steps.push({t:'sayPick',situation:item.prompt,options,answer:choices.indexOf(item.answer),tip:item.reason});
     }
-    return {name,minutes:12+Math.ceil((steps.length-6)*0.8),steps};
+    else if(item.kind==='order'){
+      const words=item.answer.split(/\s+/);
+      steps.push({t:'orderWrite',ko:item.prompt,words:[...words.slice(1),words[0]],answer:item.answer});
+    } else steps.push({t:'rule',title:item.title,pattern:'심화 연습',explain:item.prompt,lines:[],tip:item.answer+'\n'+item.reason,
+      practice:{title:item.title,independentPrompts:['내 답'],why:[]}});
   }
-  const steps: SoloStep[] = [{ t: 'intro', title: name, text: point.tip ?? point.explain }];
-  const lines = [...(point.usage ?? []), ...(point.detail ?? []), ...(point.rule ?? [])].map(plainText);
-  steps.push({ t: 'rule', title: name, pattern: plainText(point.pattern), explain: point.explain, lines, tip: point.tip ?? '' });
-  const ex = exampleSteps(point);
-  for (const e of ex) steps.push({ t: 'fadeRead', sentence: e.sentence, ko: e.ko });
-
-  const koPool = GRAMMAR_POINTS.filter((p) => p.stage === point.stage && p.id !== point.id)
-    .flatMap((p) => (p.translations ?? []).map(cleanKo))
-    .filter((k) => k.length > 0);
-  const ownKo = ex.filter((e) => e.ko);
-  for (const e of shuffle(ownKo).slice(0, 3)) {
-    const o = options(e.ko, [e.ko, ...ex.map((x) => x.ko).filter((k) => k && k !== e.ko), ...koPool]);
-    if (o.list.length >= 3) steps.push({ t: 'translatePick', sentence: e.sentence, options: o.list, answer: o.answer });
-  }
-  for (const p of (point.pitfalls ?? []).slice(0, 3)) {
-    const right = plainText(p.right).replace(/\s*\([^)]*\)\s*$/, '').trim();
-    const wrong = plainText(p.wrong).replace(/\s*\([^)]*\)\s*$/, '').trim();
-    if (!right || !wrong || right === wrong) continue;
-    const list = shuffle([right, wrong]);
-    steps.push({ t: 'pickCorrect', options: list, answer: list.indexOf(right), why: p.why ?? '' });
-  }
-  for (const s of shuffle(sentencesForUnscramble(point, [])).slice(0, 4)) {
-    const words = s.split(/\s+/);
-    if (words.length < 3 || words.length > 10) continue;
-    let sc = shuffle(words);
-    for (let i = 0; i < 5 && sc.join(' ') === words.join(' '); i++) sc = shuffle(words);
-    steps.push({ t: 'unscramble', sentence: words.join(' '), words: sc });
-  }
-  return { name, steps, minutes: Math.max(8, Math.round(steps.length * 0.7)) };
+  return {name:point.name, minutes:12+Math.ceil((steps.length-6)*0.8), steps};
 }
 
 /** 개별수업으로 만들 수 있는 문법: 초등·중등 */

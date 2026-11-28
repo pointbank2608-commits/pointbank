@@ -8,7 +8,7 @@ import {schoolOf} from '../../../supabase/functions/_shared/grammarWorkshop';
 import AccessibleDialog from './AccessibleDialog';
 import GrammarBoard, {type GrammarBoardEditor, type GrammarBoardPosition} from './GrammarBoard';
 import {ActiveTextContext} from './grammar/InlineWorkshopEdit';
-import {WorkshopSettings} from './grammar/WorkshopEditor';
+import {WorkshopDrillEditor,WorkshopSettings} from './grammar/WorkshopEditor';
 import './GrammarContentEditor.css';
 
 type Draft = GrammarBoardContent;
@@ -53,6 +53,7 @@ export default function GrammarContentEditor({point,inline,initialPosition,onPos
     setDraft(old=>({...old,steps:old.steps?.map((step,i)=>i===index?{...step,[key]:value}:step)}));
   }
   const editor:GrammarBoardEditor={
+    drills:<WorkshopDrillEditor draft={draft} setDraft={setDraft}/>,
     goal:goal=>setDraft(old=>({...old,goal})),
     prompt:(index,value)=>index===0?scene('opening',value):stepText(index,'prompt',value),
     stage:index=>({

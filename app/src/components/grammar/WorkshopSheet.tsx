@@ -1,11 +1,12 @@
-import {useState, type ReactNode} from 'react';
+import {useState, type Ref, type ReactNode} from 'react';
 import type {GuidedPractice} from '../../data/doYouCanYou';
 import AccessibleDialog from '../AccessibleDialog';
 import {SceneMap} from './GuidedPracticePanel';
 import './workshop-board.css';
 
-export default function WorkshopSheet({grade,step,total,title,topic,prompt,map,children,footer,onMap,className=''}:{
+export default function WorkshopSheet({grade,step,total,title,topic,prompt,map,children,footer,onMap,pageInfo,bodyRef,className=''}:{
   grade?:number;step:number;total:number;title:ReactNode;topic?:ReactNode;prompt:ReactNode;
+  pageInfo?:ReactNode; bodyRef?:Ref<HTMLDivElement>;
   map?:GuidedPractice;children:ReactNode;footer?:ReactNode;onMap?:()=>void;className?:string;
 }) {
   const [open,setOpen]=useState(false);
@@ -14,8 +15,8 @@ export default function WorkshopSheet({grade,step,total,title,topic,prompt,map,c
     <header><strong>클래스뱅크 · {level}문법</strong>{map?.map?.length && step<total-1 ?
       <button type="button" onClick={()=>{setOpen(true);onMap?.();}}>장면 지도 열기</button>:null}</header>
     <progress max={total} value={step+1} aria-label="수업 진행"/>
-    <div className="workshop-body" key={step}>
-      <div className="workshop-chapter"><span>{step+1} / {total}단계</span><small className="workshop-topic">{topic}</small></div>
+    <div className="workshop-body" ref={bodyRef} tabIndex={-1} key={step}>
+      <div className="workshop-chapter"><span>{step+1} / {total}단계</span>{pageInfo}<small className="workshop-topic">{topic}</small></div>
       <h2>{title}</h2>{prompt && <div className="workshop-prompt">{prompt}</div>}{children}
     </div>
     {footer && <footer>{footer}</footer>}

@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { GuidedPractice } from '../../data/doYouCanYou';
 import { WordOrder, WorkshopExercises } from './WorkshopExercises';
 import type { SceneLine, Workshop } from '../../../../supabase/functions/_shared/grammarWorkshop';
 import './guided-practice.css';
+import type {LessonPage} from './lessonPages';
 
 import {ItemAction, InlineImage, InlineText, SceneSentence, type StageEdit} from './InlineWorkshopEdit';
 
@@ -34,16 +35,16 @@ function SceneCard({panel,index,title,onHelp,sentenceFirst=false,edit,onTitle,on
   </article>;
 }
 
-export function SceneMap({practice,onHelp,edit,initialScene=0,onScene}:{practice:GuidedPractice;onHelp?:()=>void;edit?:StageEdit;initialScene?:number;onScene?:(i:number)=>void}) {
-  const [selection,setSelected]=useState(initialScene);
+export function SceneMap({practice,onHelp,edit,initialScene,onScene,view='both',onOpen,locked}:{practice:GuidedPractice;onHelp?:()=>void;edit?:StageEdit;initialScene?:number;onScene?:(i:number)=>void;view?:'map'|'scene'|'both';onOpen?:()=>void;locked?:boolean}) {
+  const [selection,setSelected]=useState(0);
   const entries=practice.map??[];
-  const selected=Math.max(0,Math.min(selection,entries.length-1));
+  const selected=Math.max(0,Math.min(initialScene??selection,entries.length-1));
   const entry=entries[selected];
   const panel=entry?.panelIndex===undefined?undefined:practice.panels?.[entry.panelIndex];
   function select(i:number){setSelected(i);onScene?.(i);}
   function addScene(){
     edit?.practice(p=>({...p,map:[...p.map??[],{label:'',text:'',panelIndex:p.panels?.length??0}],panels:[...p.panels??[],emptyPanel()]}));
-    select(entries.length);
+    select(entries.length);onOpen?.();
   }
   function removeScene(i:number){
     const removed=entries[i].panelIndex;
@@ -57,24 +58,23 @@ export function SceneMap({practice,onHelp,edit,initialScene=0,onScene}:{practice
   }
   const mapChange=(key:'label'|'text',value:string)=>edit?.practice(p=>({...p,map:p.map?.map((m,i)=>i===selected?{...m,[key]:value}:m)}));
   return <div className="grammar-atlas">
-    <div className="grammar-map-options">{entries.map((item,i)=>{
-      const tile=<button type="button" key={i} aria-pressed={i===selected} onClick={()=>{select(i);onHelp?.();}}>
+    {view!=='scene' && <div className="grammar-map-options">{entries.map((item,i)=>{
+      const tile=<button type="button" key={i} aria-pressed={i===selected} disabled={locked} onClick={()=>{select(i);onOpen?.();onHelp?.();}}>
         <b>{item.label||(edit?'새 쓰임':'')}</b>{item.panelIndex!==undefined&&<small>{item.text}</small>}</button>;
       return edit?<div key={i} className="workshop-map-item">{tile}<ItemAction kind="remove" label={(item.label||'새 쓰임')+' 카드'} onClick={()=>removeScene(i)}/></div>:tile;
-    })}{edit&&<ItemAction kind="add" label="쓰임 카드" onClick={addScene}/>}</div>
-    <div aria-live="polite" key={selected}>{!entry?null:panel ? <SceneCard title={entry.label} panel={panel} index={entry.panelIndex!} edit={edit} onHelp={onHelp}
-      onTitle={edit?v=>mapChange('label',v):undefined} caption={entry.text} onCaption={edit?v=>mapChange('text',v):undefined}/> : <article className="grammar-scene-card"><h3>{entry.label}</h3><p>{entry.text}</p></article>}</div>
+    })}{edit&&<ItemAction kind="add" label="쓰임 카드" onClick={addScene}/>}</div>}
+    {view!=='map' && <div aria-live="polite" key={selected}>{!entry?null:panel ? <SceneCard title={entry.label} panel={panel} index={entry.panelIndex!} edit={edit} onHelp={onHelp}
+      onTitle={edit?v=>mapChange('label',v):undefined} caption={entry.text} onCaption={edit?v=>mapChange('text',v):undefined}/> : <article className="grammar-scene-card"><h3><InlineText label="쓰임 이름" value={entry.label} onChange={edit?v=>mapChange('label',v):undefined}/></h3><p><InlineText label="쓰임 설명" value={entry.text} onChange={edit?v=>mapChange('text',v):undefined}/></p></article>}</div>}
   </div>;
 }
 
-export default function GuidedPracticePanel({ practice, review, onHelp, onReveal, workshop, classroomReview, comparisonPrompt, edit, initialScene, onScene, finalModel, followUp }: {
+export default function GuidedPracticePanel({ practice, review, onHelp, onReveal, workshop, classroom, page, pageIndex, edit, initialScene, onScene, onOpenScene, finalModel, followUp, drafts, onDraft, locked }: {
   practice: GuidedPractice; review?: string; onHelp?: () => void; onReveal?: () => void; workshop?: Workshop;
-  classroomReview?: {open: boolean; onOpen?: () => void};
-  comparisonPrompt?: ReactNode; edit?:StageEdit; initialScene?:number; onScene?:(i:number)=>void; finalModel?:string; followUp?:string;
+  classroom?:boolean; page:LessonPage; pageIndex:number; edit?:StageEdit; initialScene?:number; onScene?:(i:number)=>void; onOpenScene:()=>void;
+  finalModel?:string; followUp?:string; drafts:string[]; onDraft:(i:number,value:string)=>void; locked?:boolean;
 }) {
   const [picked, setPicked] = useState<number | null>(null);
-  const [drafts, setDrafts] = useState<string[]>([]);
-  const [reviewing, setReviewing] = useState(false);
+  const [writing,setWriting]=useState('');
   const feedback = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (picked !== null) feedback.current?.scrollIntoView({block: 'nearest'});
@@ -89,43 +89,34 @@ export default function GuidedPracticePanel({ practice, review, onHelp, onReveal
   const questions=<>{practice.why.map(why)}{edit&&<ItemAction kind="add" label="왜 질문" onClick={()=>edit.practice(p=>({...p,why:[...p.why,['','']]}))}/>}</>;
   const artwork = edit?<div className="workshop-stage-image"><InlineImage edit={edit} label="단계 그림" src={practice.image} alt={practice.imageDescription}
     onChange={image=>edit.practice(p=>({...p,image}))}/>{practice.image&&<InlineText label="그림 설명" value={practice.imageDescription??''} onChange={imageDescription=>edit.practice(p=>({...p,imageDescription}))}/>}</div>:practice.image && <img src={practice.image} alt={practice.imageDescription ?? ''} className="max-h-48 rounded-lg object-contain" />;
-  if (practice.independentPrompts) {
-    if(edit)return <div className="guided-practice">{artwork}
-      <p><InlineText label="마지막 과제" value={practice.independentPrompts.join(' ')} onChange={edit.task}/></p>
-      <details><summary>예시 답과 확인할 점</summary>
-        <p><InlineText label="예시 답" value={finalModel??''} onChange={edit.model}/></p>
-        <p><InlineText label="예시를 본 뒤 확인할 점" value={followUp??''} onChange={edit.followUp}/></p>
-      </details>{questions}</div>;
-    const canOpen = classroomReview ? !!classroomReview.onOpen : practice.independentPrompts.every((_, i) => drafts[i]?.trim());
-    const openReview = classroomReview ? classroomReview.onOpen : () => { setReviewing(true); onReveal?.(); };
-    return <div className="guided-practice">{artwork}
-      {classroomReview && <strong>내 답을 말로 들려주세요.</strong>}
-      {practice.independentPrompts.map((task, index) => classroomReview
-        ? <p className="whitespace-pre-line" key={index}>{task}</p>
-        : <label className="question-draft" key={index}>{task}
-            <textarea rows={2} value={drafts[index] ?? ''} onChange={event => {
-              const next = [...drafts];
-              next[index] = event.target.value;
-              setDrafts(next);
-            }}/>
-          </label>)}
-      {(classroomReview?.open ?? reviewing) ? <>
-        <p className="question-model">{review}</p>{questions}
-        {workshop && <WorkshopExercises workshop={workshop} onReveal={onReveal}/>}
-      </> : <button type="button" disabled={!canOpen} onClick={openReview}>
-        {classroomReview ? '예시 답 보기' : '내 답과 예시 비교하기'}
-      </button>}
-    </div>;
+  if(page==='extensions') return workshop && <WorkshopExercises workshop={workshop} onReveal={onReveal}/>;
+  if(practice.independentPrompts){
+    if(page==='review') return <div className="guided-practice">
+      {edit ? <><p><InlineText label="예시 답" value={finalModel??''} onChange={edit.model}/></p>
+        <p><InlineText label="예시를 본 뒤 확인할 점" value={followUp??''} onChange={edit.followUp}/></p></> :
+        <>{drafts.map((draft,i)=><p key={i} className="whitespace-pre-line"><b>내 답</b> · {draft}</p>)}<p className="question-model">{review}</p></>}
+      {questions}</div>;
+    const task=practice.independentPrompts[pageIndex]??'';
+    return <div className="guided-practice">{artwork}{edit ? <InlineText label="마지막 과제" value={task} onChange={edit.task}/> :
+      classroom ? <><strong>내 답을 말로 들려주세요.</strong><p className="whitespace-pre-line">{task}</p></> :
+      <label className="question-draft">{task}<textarea rows={2} value={drafts[pageIndex]??''} onChange={e=>onDraft(pageIndex,e.target.value)}/></label>}</div>;
   }
-  return <div className="guided-practice">{!comparisonPrompt && artwork}
-    {practice.map && (edit||practice.map.length>0) && <SceneMap practice={practice} onHelp={onHelp} edit={edit} initialScene={initialScene} onScene={onScene}/>}
-    {(!practice.map||practice.map.length>0&&!practice.map.some(entry=>entry.panelIndex!==undefined)) && practice.panels && <div className="grammar-scene-grid">{practice.panels.map((panel,i)=>
-      <div key={i}><SceneCard index={i} edit={edit} panel={panel} sentenceFirst={!!comparisonPrompt} onHelp={onHelp}/>
+  if(page==='more') return <div className="guided-practice">{questions}</div>;
+  const showPanels=page==='examples' || page==='activity' && !!practice.assembly;
+  const hasActivity=practice.choices.length>0 || !!practice.assembly;
+  return <div className="guided-practice">
+    {(page==='map' || page==='scene') && <SceneMap view={page} locked={locked} practice={practice} onOpen={onOpenScene} onHelp={onHelp} edit={edit} initialScene={initialScene} onScene={onScene}/>}
+    {showPanels && practice.panels && <div className="grammar-scene-grid">{practice.panels.map((panel,i)=>
+      <div key={i}><SceneCard index={i} edit={edit} panel={panel} sentenceFirst={page==='examples'} onHelp={onHelp}/>
         {edit&&<ItemAction kind="remove" label={(i+1)+'번째 예문 카드'} onClick={()=>edit.practice(p=>({...p,panels:p.panels?.filter((_,j)=>i!==j)}))}/>}
       </div>)}{edit&&<ItemAction kind="add" label="예문 카드" onClick={()=>edit.practice(p=>({...p,panels:[...p.panels??[],emptyPanel()]}))}/>}</div>}
-    {comparisonPrompt && <><div className="workshop-prompt">{comparisonPrompt}</div>{artwork}</>}
-    {questions}
-    {edit ? <div>
+    {pageIndex===0 && artwork}
+    {page==='activity' && !practice.assembly && !!practice.panels?.length && <div className="workshop-clues">
+      {practice.panels.map((p,i)=><p key={i}><b>{p.label}</b> · <span lang="en">{p.chunks.join(' ')}</span> · {p.meaning}</p>)}
+    </div>}
+    {page==='write' && picked!==null && practice.choices[picked] && <p><b>내가 고른 표현</b> · {practice.choices[picked][0]}</p>}
+    {!practice.map?.length && (page==='activity' || !hasActivity && (page==='examples'||page==='write')) && questions}
+    {page==='activity' && (edit ? <div>
       {(practice.question||practice.choices.length>0)&&<p><InlineText label="연습 질문" value={practice.question} onChange={question=>edit.practice(p=>({...p,question}))}/></p>}
       {practice.assembly?.map((word,i)=><span key={i}><InlineText label={(i+1)+'번째 문장 조각'} value={word}
         onChange={v=>edit.practice(p=>({...p,assembly:p.assembly?.map((w,j)=>i===j?v:w)}))}/>
@@ -144,9 +135,9 @@ export default function GuidedPracticePanel({ practice, review, onHelp, onReveal
       {practice.choices.map(([label], index) => <button type="button" key={index} aria-pressed={picked === index} data-correct={index===practice.correct}
         onClick={() => {setPicked(index);onReveal?.();}}>{label}</button>)}
       <div role="status" ref={feedback}>{picked !== null && practice.choices[picked] && <p className={picked===practice.correct?'grammar-right':'grammar-wrong'}>{picked===practice.correct?'✓ 맞아요. ':'✕ 아니에요. '}{practice.choices[picked][1].replace(/^맞아요\.\s*/,'')} {picked !== practice.correct && '다시 골라 보세요.'}</p>}</div>
-    </fieldset>}
-    {edit&&practice.writingPrompt?<InlineText label="직접 쓰기 안내" value={practice.writingPrompt} onChange={writingPrompt=>edit.practice(p=>({...p,writingPrompt}))}/>:practice.writingPrompt && <label className="block">{practice.writingPrompt}
-      <textarea rows={3} className="block w-full rounded-lg bg-white p-2 text-slate-900" placeholder="내가 전하고 싶은 말을 적어 보세요." />
-    </label>}
+    </fieldset>)}
+    {page==='write' && (edit&&practice.writingPrompt?<InlineText label="직접 쓰기 안내" value={practice.writingPrompt} onChange={writingPrompt=>edit.practice(p=>({...p,writingPrompt}))}/>:practice.writingPrompt && <label className="block">{practice.writingPrompt}
+      <textarea value={writing} onChange={e=>setWriting(e.target.value)} rows={3} className="block w-full rounded-lg bg-white p-2 text-slate-900" placeholder="내가 전하고 싶은 말을 적어 보세요." />
+    </label>)}
   </div>;
 }

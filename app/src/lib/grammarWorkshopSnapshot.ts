@@ -8,8 +8,9 @@ export function workshopSnapshot(point:GrammarPoint, catalog?:GrammarPoint | nul
     point={...point,workshop:refreshCatalogChoices(point.workshop,catalog.workshop)};
   const saved=point.steps ?? [];
   const atlas=saved[0]?.practice;
-  if(point.workshop && saved.length===6 && atlas?.map && (atlas.map.length>0 || atlas.panels?.length===0) &&
-    atlas.map.every(entry=>entry.panelIndex!==undefined && atlas.panels?.[entry.panelIndex])) {
+  const completeMap=atlas?.map && (atlas.map.length>0 || atlas.panels?.length===0) &&
+    atlas.map.every(entry=>entry.panelIndex!==undefined && atlas.panels?.[entry.panelIndex]);
+  if(point.workshop && saved.length===6 && saved.every(s=>s.practice) && completeMap) {
     return {...point,workshop:point.workshop};
   }
   const models=point.examples.map((en,i)=>({en:en.replaceAll('**',''),ko:point.translations?.[i] ?? ''}));
@@ -39,6 +40,9 @@ export function workshopSnapshot(point:GrammarPoint, catalog?:GrammarPoint | nul
     const old=saved[i], reference=catalog?.steps?.[i];
     const practice=old?.practice ?? reference?.practice ?? makePractice(i);
     if(i!==0)return {...(reference ?? {prompt:point.explain,hint:'',answer:finalModel,followUp:''}),...old,practice};
+    // A complete map survives upgrades to unrelated, missing stages.
+    if(completeMap)
+      return {...old,practice:atlas};
     const current=reference?.practice ?? makePractice(0);
     // Keep old, individually edited use notes accessible alongside the new scene cards.
     const notes=atlas?.map?.map(m=>[m.label,m.text] as [string,string]) ?? [];

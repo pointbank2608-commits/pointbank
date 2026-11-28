@@ -3,9 +3,8 @@ import type { Workshop } from '../../../../supabase/functions/_shared/grammarWor
 import { classroomStep, parseMarked } from '../../lib/grammar';
 import { useSyncedSubState } from '../../lib/presentSync';
 import {InlineText} from './InlineWorkshopEdit';
-import WorkshopSheet from './WorkshopSheet';
+import PagedWorkshopStage from './PagedWorkshopStage';
 import type { GrammarBoardProps } from '../GrammarBoard';
-import GuidedPracticePanel from './GuidedPracticePanel';
 import GrammarPrepOverview from './GrammarPrepOverview';
 import './workshop-board.css';
 
@@ -14,59 +13,43 @@ export default function WorkshopBoard({point, workshop, mode, interactive = true
   const last = (point.steps?.length ?? 1) - 1;
   const [step, setStep] = useState(Math.max(0, Math.min(last, initialPosition?.step ?? 0)));
   const [scene,setScene]=useState(initialPosition?.scene??0);
-  const [modelOpen, setModelOpen] = useState(false);
+  const [page,setPage]=useState(initialPosition?.page??0);
+  const visited=useRef(new Map<number,{page:number;scene:number}>());
   const lesson = classroomStep(point, step);
   const cue = useRef(onCue);
   cue.current = onCue;
-  const follower = useSyncedSubState({step, view: 'lesson', modelOpen}, remote => {
+  const follower = useSyncedSubState({step, page, scene, view: 'lesson', modelOpen:step===last && page>0}, remote => {
     setStep(Math.max(0, Math.min(last, Number(remote.step) || 0)));
-    setModelOpen(remote.modelOpen === true);
+    setPage(Number(remote.page) || (remote.modelOpen?1:0));
+    setScene(Number(remote.scene)||0);
   });
-  function goToStep(index: number) {
+  function goToStep(index: number, back=false) {
+    visited.current.set(step,{page,scene});
+    const previous=back?visited.current.get(index):undefined;
     setStep(index);
-    setModelOpen(false);
+    setPage(previous?.page??0);
+    setScene(previous?.scene??0);
   }
   useEffect(() => {
     cue.current?.('shown', step);
   }, [step]);
   useEffect(() => {
-    onPositionChange?.({step, scene, view: 'lesson', hintOpen: false, answerOpen: false, showKo: false, shown: 0});
-  }, [step, scene, onPositionChange]);
-  useEffect(() => {
-    if (!keyboard || follower) return;
-    const handle = (event: KeyboardEvent) => {
-      if (event.target instanceof Element && event.target.closest('input,textarea,select,[contenteditable=true],dialog,[role="dialog"]')) return;
-      if (event.key === ' ' && event.target instanceof Element && event.target.closest('button,summary')) return;
-      const direction = ['ArrowRight', 'PageDown', ' '].includes(event.key) ? 1 : ['ArrowLeft', 'PageUp'].includes(event.key) ? -1 : 0;
-      const next = step + direction;
-      if (!direction || next < 0 || next > last) return;
-      event.preventDefault();
-      event.stopPropagation();
-      goToStep(next);
-    };
-    document.addEventListener('keydown', handle, true);
-    return () => document.removeEventListener('keydown', handle, true);
-  }, [keyboard, follower, step, last]);
+    onPositionChange?.({step, page, scene, view: 'lesson', hintOpen: false, answerOpen: false, showKo: false, shown: 0});
+  }, [step, scene, page, onPositionChange]);
   if (!lesson?.practice) return null;
   const edit=editor?.stage(step);
   const grade = workshop.grade;
-  const presentComparison = mode === 'classroom' && step === 1 && !!lesson.practice.panels?.length;
-  const classroomReview = mode === 'classroom' && step === last ? {
-    open: modelOpen,
-    onOpen: follower ? undefined : () => { setModelOpen(true); onCue?.('revealed', step); },
-  } : undefined;
   const prompt = parseMarked(lesson.prompt).map((part, i) => part.strong ? <strong key={i}>{part.text}</strong> : part.text);
   return <>{mode === 'prepare' && <GrammarPrepOverview point={point} onStage={goToStep} onGoal={editor?.goal}/>}
-    <WorkshopSheet grade={grade} step={step} total={last+1} title={<InlineText label="단계 제목" value={lesson.practice.title} onChange={edit?title=>edit.practice(p=>({...p,title})):undefined}/>}
-    className={presentComparison ? className+' workshop-comparison' : className} map={interactive&&!edit?point.steps?.[0].practice:undefined} onMap={()=>onCue?.('hint',step)}
-    topic={(step!==last || editor) && point.name.split(' — ')[0]}
-    prompt={presentComparison ? undefined : <InlineText label="장면 안내" value={lesson.prompt} onChange={editor?v=>editor.prompt(step,v):undefined}>{prompt}</InlineText>}
-    footer={interactive && <>
-      <button type="button" disabled={step===0 || follower} onClick={()=>goToStep(step-1)}>이전 단계</button>
-      <button type="button" disabled={step===last || follower} onClick={()=>goToStep(step+1)}>다음 단계</button></>}>
-    <div inert={!interactive}><GuidedPracticePanel practice={lesson.practice} workshop={workshop} edit={edit} initialScene={scene} onScene={setScene} finalModel={lesson.answer} followUp={lesson.followUp}
-      classroomReview={classroomReview} comparisonPrompt={presentComparison ? prompt : undefined}
-      review={[lesson.answer,lesson.followUp].join('\n\n')} onHelp={()=>onCue?.('hint',step)}
-      onReveal={()=>{onCue?.('submitted',step);onCue?.('revealed',step);}}/></div>
-  </WorkshopSheet></>;
+    <PagedWorkshopStage key={step} grade={grade} step={step} total={last+1} page={page} scene={scene} onPage={setPage} onScene={setScene}
+      title={<InlineText label="단계 제목" value={lesson.practice.title} onChange={edit?title=>edit.practice(p=>({...p,title})):undefined}/>}
+      className={className} map={interactive&&!edit?point.steps?.[0].practice:undefined} onHelp={()=>onCue?.('hint',step)}
+      topic={(step!==last || editor) && point.name.split(' — ')[0]}
+      prompt={<InlineText label="장면 안내" value={lesson.prompt} onChange={editor?v=>editor.prompt(step,v):undefined}>{prompt}</InlineText>}
+      practice={lesson.practice} drillEditor={editor?.drills} workshop={workshop} edit={edit} finalModel={lesson.answer} followUp={lesson.followUp}
+      classroom={mode==='classroom'} locked={follower} keyboard={keyboard} interactive={interactive}
+      review={[lesson.answer,lesson.followUp].join('\n\n')}
+      onReveal={()=>{onCue?.('submitted',step);onCue?.('revealed',step);}}
+      onModelOpen={mode==='classroom'?()=>onCue?.('revealed',step):undefined}
+      onPrevious={step>0?()=>goToStep(step-1,true):undefined} onNext={step<last?()=>goToStep(step+1):undefined}/></>;
 }
