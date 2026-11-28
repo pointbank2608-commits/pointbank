@@ -311,14 +311,26 @@ export default function MaterialHomeworkComposer({ academyId, classId, classes, 
   </section>;
 }
 
+const materialHeaders = {
+  word: { icon: 'menu_book', label: 'wordLists' },
+  sentence: { icon: 'chat', label: 'sentenceLists' },
+  scene: { icon: 'smart_display', label: 'categoryScene' },
+  frequent: { icon: 'style', label: 'categoryFrequent' },
+} as const;
+
 function MaterialOptions({ material, settings, capacities, onChange }: {
   material: Material; settings: Settings; capacities: Partial<Record<Activity,number>>; onChange: (patch: Partial<Settings>) => void;
 }) {
   const { t } = useTranslation('materialHomework');
   const activities = settings.activities;
+  const header = materialHeaders[material.kind];
   const roles = [...new Set(material.scene?.lines.flatMap(line => line.speaker ? [line.speaker] : []) ?? [])];
   return <section className="hw-plan-row hw-material-activities" aria-label={material.name}>
-    <header><h2>{material.name}</h2><span>{counts([material],t)}</span></header>
+    <header className="hw-material-heading">
+      <strong className="hw-material-type"><span className="material-symbols-outlined" aria-hidden="true">{header.icon}</span>{t(header.label)}</strong>
+      <h2>{material.name}</h2>
+      <span className="hw-material-count">{counts([material],t)}</span>
+    </header>
     <div className="hw-activity-grid">{activitiesByKind[material.kind].map(activity => {
       const maximum = capacities[activity] ?? 0;
       const checked = activities.includes(activity);
